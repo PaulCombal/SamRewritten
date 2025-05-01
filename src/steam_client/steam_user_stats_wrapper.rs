@@ -1,0 +1,99 @@
+use crate::steam_client::steam_user_stats_vtable::ISteamUserStats;
+use crate::steam_client::types::{SteamError};
+use std::sync::Arc;
+
+pub struct SteamUserStats {
+    inner: Arc<SteamUserStatsInner>,
+}
+
+struct SteamUserStatsInner {
+    ptr: *mut ISteamUserStats,
+}
+
+impl SteamUserStats {
+    pub unsafe fn from_raw(ptr: *mut ISteamUserStats) -> Self {
+        Self {
+            inner: Arc::new(SteamUserStatsInner { ptr }),
+        }
+    }
+
+    pub fn get_achievement_and_unlock_time(
+        &self,
+        achievement_name: &str,
+    ) -> Result<(bool, u32), SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let mut achieved = false;
+            let mut unlock_time = 0u32;
+            let c_achievement_name =
+                std::ffi::CString::new(achievement_name).map_err(|_| SteamError::UnknownError)?;
+
+            let success = (vtable.get_achievement_and_unlock_time)(
+                self.inner.ptr,
+                c_achievement_name.as_ptr(),
+                &mut achieved,
+                &mut unlock_time,
+            );
+
+            if success {
+                Ok((achieved, unlock_time))
+            } else {
+                Err(SteamError::UnknownError)
+            }
+        }
+    }
+    
+    pub fn get_stat_i32(&self, stat_name: &str) -> Result<i32, SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+            
+            let c_stat_name =
+                std::ffi::CString::new(stat_name).map_err(|_| SteamError::UnknownError)?;
+            let mut stat_value = 0i32;
+            
+            let success = (vtable.get_stat_int32)(
+                self.inner.ptr,
+                c_stat_name.as_ptr(),
+                &mut stat_value
+            );
+            
+            if success == false { 
+                return Err(SteamError::UnknownError);
+            }
+            
+            Ok(stat_value)
+        }
+    }
+
+    pub fn get_stat_float(&self, stat_name: &str) -> Result<f32, SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let c_stat_name =
+                std::ffi::CString::new(stat_name).map_err(|_| SteamError::UnknownError)?;
+            let mut stat_value = 0f32;
+
+            let success = (vtable.get_stat_float)(
+                self.inner.ptr,
+                c_stat_name.as_ptr(),
+                &mut stat_value
+            );
+
+            if success == false {
+                return Err(SteamError::UnknownError);
+            }
+
+            Ok(stat_value)
+        }
+    }
+}
