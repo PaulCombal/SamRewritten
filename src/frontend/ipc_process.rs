@@ -60,9 +60,7 @@ pub fn get_orchestrator_socket_path() -> (String, Name<'static>)
 #[cfg(target_os = "windows")]
 pub fn get_orchestrator_socket_path() -> (String, Name<'static>)
 {
-    use interprocess::os::windows::local_socket::NamedPipe;
-
     let socket_name_str = "\\\\.\\pipe\\sam2.orchestrator.sock".to_string();
-    let socket_name = socket_name_str.clone().to_fs_name::<NamedPipe>().expect("Name conversion failed");
+    let socket_name = socket_name_str.clone().to_fs_name::<GenericFilePath>().expect("Name conversion failed");
     (socket_name_str, socket_name)
 }
