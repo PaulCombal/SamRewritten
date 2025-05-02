@@ -1,8 +1,9 @@
 use std::collections::HashMap;
-use std::io;
+use std::io::{self, Error, ErrorKind};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, Command};
 use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 use interprocess::local_socket::{ListenerOptions, Stream as StreamEnum};
 use interprocess::local_socket::prelude::LocalSocketStream;
 use interprocess::local_socket::traits::{ListenerExt, Stream};
@@ -172,39 +173,27 @@ pub fn orchestrator() -> i32 {
                     .spawn()
                     .expect("Failed to spawn sam2 orchestrator process");
                 
-                // 4. Wait for the socket to be created
-                let (app_socket_name_str, app_socket_name) = get_app_socket_path(app_id);
-                let mut iter = 0;
-                while !std::fs::metadata(&app_socket_name_str).is_ok() {
-                    std::thread::sleep(std::time::Duration::from_millis(10));
-                    iter += 1;
-                    if iter > 100 {
-                        dev_println!("[ORCHESTRATOR] Failed to create socket for app {app_id}");
-                        child.kill().expect("Failed to kill child process");
-                        child.wait().expect("Failed to wait for child process");
-                        let response: SteamResponse<()> = SteamResponse::Error("Failed to create socket".to_owned());
-                        let response = serde_json::to_string(&response).unwrap() + "\n";
-                        conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
-                        continue;
+                // 4. Wait for the socket to allow connections 
+                let (.., app_socket_name) = get_app_socket_path(app_id);
+                let start = Instant::now();
+
+                loop {
+                    match LocalSocketStream::connect(app_socket_name.clone()) {
+                        Ok(..) => break,
+                        Err(..) if start.elapsed() < Duration::from_secs(2) => {
+                            std::thread::sleep(Duration::from_millis(500));
+                        },
+                        Err(error) => {
+                            dev_println!("[ORCHESTRATOR] Failed to connect to socket for app {app_id}: {error}");
+                            child.kill().expect("Failed to kill child process");
+                            child.wait().expect("Failed to wait for child process");
+                            let response: SteamResponse<()> = SteamResponse::Error("Failed to connect to socket".to_owned());
+                            let response = serde_json::to_string(&response).unwrap() + "\n";
+                            conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                            continue;
+                        }
                     }
                 }
-                
-                // 5. Wait for the socket to allow connections
-                iter = 0;
-                while LocalSocketStream::connect(app_socket_name.clone()).is_err() {
-                    std::thread::sleep(std::time::Duration::from_millis(10));
-                    iter += 1;
-                    if iter > 100 {
-                        dev_println!("[ORCHESTRATOR] Failed to connect to socket for app {app_id}");
-                        child.kill().expect("Failed to kill child process");
-                        child.wait().expect("Failed to wait for child process");
-                        let response: SteamResponse<()> = SteamResponse::Error("Failed to connect to socket".to_owned());
-                        let response = serde_json::to_string(&response).unwrap() + "\n";
-                        conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
-                        continue;
-                    }
-                }
-                
 
                 // All good!
                 children_processes.insert(app_id, child);
