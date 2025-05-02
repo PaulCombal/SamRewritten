@@ -9,7 +9,8 @@ pub enum SteamCommand {
     Shutdown,
     Status, // Ask for status of the process
     GetAchievements(u32),
-    GetStats(u32)
+    GetStats(u32),
+    SetAchievement(u32, bool, String),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -46,6 +46,58 @@ impl SteamUserStats {
             }
         }
     }
+
+    pub fn set_achievement(
+        &self,
+        achievement_name: &str,
+    ) -> Result<(), SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+            
+            let c_achievement_name =
+                std::ffi::CString::new(achievement_name).map_err(|_| SteamError::UnknownError)?;
+
+            let success = (vtable.set_achievement)(
+                self.inner.ptr,
+                c_achievement_name.as_ptr(),
+            );
+
+            if success {
+                Ok(())
+            } else {
+                Err(SteamError::UnknownError)
+            }
+        }
+    }
+
+    pub fn clear_achievement(
+        &self,
+        achievement_name: &str,
+    ) -> Result<(), SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let c_achievement_name =
+                std::ffi::CString::new(achievement_name).map_err(|_| SteamError::UnknownError)?;
+
+            let success = (vtable.clear_achievement)(
+                self.inner.ptr,
+                c_achievement_name.as_ptr(),
+            );
+
+            if success {
+                Ok(())
+            } else {
+                Err(SteamError::UnknownError)
+            }
+        }
+    }
     
     pub fn get_stat_i32(&self, stat_name: &str) -> Result<i32, SteamError> {
         unsafe {

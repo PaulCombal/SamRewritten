@@ -228,3 +228,18 @@ pub fn get_statistics(app_id: u32, connected_steam: &ConnectedSteam) -> Vec<Stat
 
     statistics_info
 }
+
+pub fn set_achievement(connected_steam: &ConnectedSteam, achievement_id: &str, unlock: bool) -> Result<(), String> {
+    if unlock {
+        match connected_steam.user_stats.set_achievement(achievement_id) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(format!("Failed to unlock achievement: {achievement_id}")),
+        }
+    }
+    else {
+        match connected_steam.user_stats.clear_achievement(achievement_id) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(format!("Failed to lock achievement: {achievement_id}")),
+        }
+    }
+}

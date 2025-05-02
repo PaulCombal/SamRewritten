@@ -24,13 +24,14 @@ fn handle_error(conn: io::Result<StreamEnum>) -> Option<StreamEnum> {
     }
 }
 
+// We should probably send a Status command here and wait for a response
+// However, adding a timeout is hard. For now, this gets the job done.
 fn is_app_running(app_id: u32) -> bool {
-    let res_str = send_app_command(app_id, SteamCommand::Status);
-    let deserialized: SteamResponse<bool> = serde_json::from_str(&res_str).expect("Failed to deserialize response");
+    let (_, socket_name) = get_app_socket_path(app_id);
 
-    match deserialized {
-        SteamResponse::Success(_) => true,
-        _ => false
+    match LocalSocketStream::connect(socket_name) {
+        Ok(_) => true,
+        Err(_) => false
     }
 }
 
@@ -173,7 +174,7 @@ pub fn orchestrator() -> i32 {
                     .spawn()
                     .expect("Failed to spawn sam2 orchestrator process");
                 
-                // 4. Wait for the socket to allow connections 
+                // 4. Wait for the socket to allow connections
                 let (.., app_socket_name) = get_app_socket_path(app_id);
                 let start = Instant::now();
 
@@ -261,6 +262,11 @@ pub fn orchestrator() -> i32 {
 
             SteamCommand::GetStats(app_id) => {
                 let response= send_app_command(app_id, SteamCommand::GetStats(app_id));
+                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+            }
+
+            SteamCommand::SetAchievement(app_id, unlocked, achievement_id) => {
+                let response= send_app_command(app_id, SteamCommand::SetAchievement(app_id, unlocked, achievement_id));
                 conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
             }
         }
