@@ -30,8 +30,15 @@ fn get_localized_string(kv: &KeyValue, language: &str, default_value: &str) -> S
 
 // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs
 pub fn load_user_game_stats_schema(app_id: u32, connected_steam: &ConnectedSteam) -> (Vec<AchievementDefinition>, Vec<StatDefinition>) {
+    #[cfg(target_os = "linux")]
     let home = env::var("HOME").expect("HOME not set");
+    #[cfg(target_os = "linux")]
     let bin_file = PathBuf::from(home + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_" + &app_id.to_string() + ".bin");
+    #[cfg(target_os = "windows")]
+    let program_files = env::var("ProgramFiles(x86)").expect("ProgramFiles(x86) not set");
+    #[cfg(target_os = "windows")]
+    let bin_file = PathBuf::from(program_files + "\\Steam\\appcache\\stats\\UserGameStatsSchema_" + &app_id.to_string() + ".bin");
+
     let kv = KeyValue::load_as_binary(bin_file).expect("Failed to load KeyValue");
     let current_language = connected_steam.apps.get_current_game_language();
     let stats = kv.get(&app_id.to_string());
