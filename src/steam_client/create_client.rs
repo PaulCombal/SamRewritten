@@ -12,9 +12,9 @@ static STEAM_CLIENT_LIB: OnceLock<Library> = OnceLock::new(); // Make the lifeti
 pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>> {
     unsafe {
         let home = std::env::var("HOME")?;
-        let lib_steamclient_path = PathBuf::from(home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.dll");
+        let lib_steamclient_path = PathBuf::from(home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so");
         let lib_steamclient = Library::new(lib_steamclient_path)?;
-        Ok(lib_steamclient.into())
+        Ok(lib_steamclient)
     }
 }
 
