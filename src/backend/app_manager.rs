@@ -45,7 +45,7 @@ impl<'a> AppManager<'a> {
         #[cfg(target_os = "windows")]
         let program_files = env::var("ProgramFiles(x86)")?;
         #[cfg(target_os = "windows")]
-        let bin_file = PathBuf::from(program_files + "\\Steam\\appcache\\stats\\UserGameStatsSchema_" + &app_id.to_string() + ".bin");
+        let bin_file = PathBuf::from(program_files + "\\Steam\\appcache\\stats\\UserGameStatsSchema_" + &self.app_id.to_string() + ".bin");
 
         let kv = KeyValue::load_as_binary(bin_file)?;
         let current_language = self.connected_steam.apps.get_current_game_language();
