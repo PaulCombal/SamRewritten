@@ -1,11 +1,11 @@
-use std::{env, io};
+use std::{io};
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 use interprocess::local_socket::{Listener, ListenerOptions, Stream};
 use interprocess::local_socket::traits::ListenerExt;
 use serde::Serialize;
-use crate::backend::app_functions::{get_achievements, get_statistics, set_achievement};
-use crate::backend::connected_steam::ConnectedSteam;
+use crate::backend::app_manager::AppManager;
+use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::frontend::ipc_process::get_app_socket_path;
 use crate::steam_client::types::AppId_t;
@@ -57,23 +57,15 @@ fn initialize_listener(app_id: AppId_t) -> Result<Listener, i32> {
     }
 }
 
-fn initialize_steam(app_id: AppId_t) -> Option<ConnectedSteam<'static>> {
-    unsafe {
-        env::set_var("SteamAppId", app_id.to_string());
-    }
-    
-    match ConnectedSteam::new() {
-        Ok(c) => Some(c),
-        Err(e) => {
-            dev_println!("Error connecting to Steam: {e}");
-            None
-        }
-    }
-}
-
 pub fn app(app_id: AppId_t) -> i32 {
     let listener = initialize_listener(app_id).expect("Failed to create listener");
-    let connected_steam = initialize_steam(app_id);
+    let mut app_manager = AppManager::new_connected(app_id);
+
+    #[cfg(debug_assertions)]
+    if app_manager.as_ref().is_err() {
+        dev_println!("[APP SERVER] Failed to connect to Steam");
+    }
+
     let mut buffer = String::with_capacity(128); // Buffer should be large enough to hold a serialized SteamCommand
 
     for conn in listener.incoming().filter_map(handle_error) {
@@ -103,30 +95,13 @@ pub fn app(app_id: AppId_t) -> i32 {
             }
         };
 
-        if connected_steam.as_ref().is_none() {
+        if app_manager.as_ref().is_err() {
             let response : SteamResponse<String> = SteamResponse::Error("Failed to connect to Steam".to_owned());
             send_response(&mut conn, response).expect("Failed to send response");
             continue;
         }
-
-
-        let utils = &connected_steam.as_ref().unwrap().utils;
-        match utils.get_app_id() {
-            Ok(id) => {
-                if id != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {id} != {app_id}");
-                    let response : SteamResponse<String> = SteamResponse::Error("App ID mismatch".to_owned());
-                    send_response(&mut conn, response).expect("Failed to send response");
-                    continue;
-                }
-            },
-            Err(e) => {
-                dev_println!("[APP SERVER] Error getting app ID: {e}");
-                let response : SteamResponse<String> = SteamResponse::Error("Failed to get app ID".to_owned());
-                send_response(&mut conn, response).expect("Failed to send response");
-                continue;
-            }
-        }
+        
+        let app_manager = app_manager.as_mut().unwrap();
 
         match command {
             SteamCommand::Status => {
@@ -135,7 +110,7 @@ pub fn app(app_id: AppId_t) -> i32 {
             }
             
             SteamCommand::Shutdown => {
-                connected_steam.unwrap().shutdown();
+                app_manager.disconnect();
 
                 let response = SteamResponse::Success(true);
                 send_response(&mut conn, response).expect("Failed to send response");
@@ -150,14 +125,18 @@ pub fn app(app_id: AppId_t) -> i32 {
                     continue;
                 }
                 
-                let achievements = get_achievements(app_id_param, connected_steam.as_ref().unwrap());
-                let response = SteamResponse::Success(achievements);
+                let response = match app_manager.get_achievements() {
+                    Ok(achievements) => {
+                        SteamResponse::Success(achievements)
+                    }
+                    Err(e) => {
+                        SteamResponse::Error::<Vec<AchievementInfo>>(e.to_string())
+                    }
+                };
 
                 #[cfg(debug_assertions)]
                 let response_str = serde_json::to_string(&response).unwrap();
-
                 send_response(&mut conn, response).expect("Failed to send response");
-
                 #[cfg(debug_assertions)]
                 dev_println!("Achievements: {response_str}");
             }
@@ -170,14 +149,18 @@ pub fn app(app_id: AppId_t) -> i32 {
                     continue;
                 }
 
-                let statistics = get_statistics(app_id_param, connected_steam.as_ref().unwrap());
-                let response = SteamResponse::Success(statistics);
+                let response = match app_manager.get_statistics() {
+                    Ok(achievements) => {
+                        SteamResponse::Success(achievements)
+                    }
+                    Err(e) => {
+                        SteamResponse::Error::<Vec<StatInfo>>(e.to_string())
+                    }
+                };
 
                 #[cfg(debug_assertions)]
-                let response_str = serde_json::to_string(&response).unwrap() + "\n";
-
+                let response_str = serde_json::to_string(&response).unwrap();
                 send_response(&mut conn, response).expect("Failed to send response");
-
                 #[cfg(debug_assertions)]
                 dev_println!("Statistics: {response_str}");
             }
@@ -190,17 +173,59 @@ pub fn app(app_id: AppId_t) -> i32 {
                     continue;
                 }
 
-                match set_achievement(connected_steam.as_ref().unwrap(), &achievement_id, unlocked) {
+                let response = match app_manager.set_achievement(&achievement_id, unlocked) {
                     Ok(_) => {
-                        let response = SteamResponse::Success(true);
-                        send_response(&mut conn, response).expect("Failed to send response");
+                        SteamResponse::Success(true)
                     }
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting achievement: {e}");
-                        let response = SteamResponse::Error::<bool>(e.to_string());
-                        send_response(&mut conn, response).expect("Failed to send response");
+                        SteamResponse::Error::<bool>(e.to_string())
                     }
+                };
+
+                send_response(&mut conn, response).expect("Failed to send response");
+            }
+            
+            SteamCommand::SetIntStat(app_id_param, stat_id, value) => {
+                if app_id_param != app_id {
+                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
+                    let response : SteamResponse<String> = SteamResponse::Error("App ID mismatch".to_owned());
+                    send_response(&mut conn, response).expect("Failed to send response");
+                    continue;
                 }
+                
+                let response = match app_manager.set_stat_i32(&stat_id, value) {
+                    Ok(_) => {
+                        SteamResponse::Success(true)
+                    }
+                    Err(e) => {
+                        dev_println!("[APP SERVER] Error setting int stat: {e}");
+                        SteamResponse::Error::<bool>(e.to_string())
+                    }
+                };
+
+                send_response(&mut conn, response).expect("Failed to send response");
+            }
+
+            SteamCommand::SetFloatStat(app_id_param, stat_id, value) => {
+                if app_id_param != app_id {
+                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
+                    let response : SteamResponse<String> = SteamResponse::Error("App ID mismatch".to_owned());
+                    send_response(&mut conn, response).expect("Failed to send response");
+                    continue;
+                }
+
+                let response = match app_manager.set_stat_f32(&stat_id, value) {
+                    Ok(_) => {
+                        SteamResponse::Success(true)
+                    }
+                    Err(e) => {
+                        dev_println!("[APP SERVER] Error setting float stat: {e}");
+                        SteamResponse::Error::<bool>(e.to_string())
+                    }
+                };
+
+                send_response(&mut conn, response).expect("Failed to send response");
             }
             
             _ => {

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::io::{self, Error, ErrorKind};
+use std::io::{self};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, Command};
 use std::sync::{Mutex, OnceLock};
@@ -267,6 +267,16 @@ pub fn orchestrator() -> i32 {
 
             SteamCommand::SetAchievement(app_id, unlocked, achievement_id) => {
                 let response= send_app_command(app_id, SteamCommand::SetAchievement(app_id, unlocked, achievement_id));
+                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+            }
+
+            SteamCommand::SetIntStat(app_id, stat_id, value) => {
+                let response= send_app_command(app_id, SteamCommand::SetIntStat(app_id, stat_id, value));
+                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+            }
+
+            SteamCommand::SetFloatStat(app_id, stat_id, value) => {
+                let response= send_app_command(app_id, SteamCommand::SetFloatStat(app_id, stat_id, value));
                 conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
             }
         }

@@ -148,4 +148,52 @@ impl SteamUserStats {
             Ok(stat_value)
         }
     }
+
+    pub fn set_stat_i32(&self, stat_name: &str, stat_value: i32) -> Result<i32, SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let c_stat_name =
+                std::ffi::CString::new(stat_name).map_err(|_| SteamError::UnknownError)?;
+
+            let success = (vtable.set_stat_int32)(
+                self.inner.ptr,
+                c_stat_name.as_ptr(),
+                stat_value
+            );
+
+            if success == false {
+                return Err(SteamError::UnknownError);
+            }
+
+            Ok(stat_value)
+        }
+    }
+
+    pub fn set_stat_float(&self, stat_name: &str, stat_value: f32) -> Result<f32, SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let c_stat_name =
+                std::ffi::CString::new(stat_name).map_err(|_| SteamError::UnknownError)?;
+
+            let success = (vtable.set_stat_float)(
+                self.inner.ptr,
+                c_stat_name.as_ptr(),
+                stat_value
+            );
+
+            if success == false {
+                return Err(SteamError::UnknownError);
+            }
+
+            Ok(stat_value)
+        }
+    }
 }
