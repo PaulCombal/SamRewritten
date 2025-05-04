@@ -1,8 +1,9 @@
 use std::env;
 use gtk::prelude::EditableExt;
+use crate::frontend::request::{GetAchievements, GetOwnedAppList, GetStats, LaunchApp, Request, Shutdown, StopApps};
 use crate::{dev_println, APP_ID};
 use crate::frontend::gtk_wrappers;
-use gtk::glib::{clone};
+use gtk::glib::clone;
 use gtk::prelude::{
     ApplicationExt, BoxExt, ButtonExt, Cast, CastNone, GtkWindowExt, ListItemExt, WidgetExt,
 };
@@ -11,9 +12,6 @@ use gtk::{SignalListItemFactory, gio, glib, gdk, style_context_add_provider_for_
 use std::process::{Child, Command};
 use std::sync::{Mutex, OnceLock};
 use crate::backend::app_lister::AppModel;
-use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
-use crate::frontend::ipc_process::send_global_command;
-use crate::utils::ipc_types::{SteamCommand, SteamResponse};
 use crate::utils::utils::get_executable_path;
 
 // Setup / globals / 'static
@@ -64,7 +62,7 @@ pub fn build_app() -> gtk::Application {
         }
 
         // Async message channels
-        let (m_picker_apps_sender, m_picker_apps_receiver) = async_channel::bounded::<SteamResponse<Vec<AppModel>>>(1);
+        let (m_picker_apps_sender, m_picker_apps_receiver) = async_channel::bounded::<Option<Vec<AppModel>>>(1);
 
         // Create new model
         let picker_model = gio::ListStore::new::<gtk_wrappers::GSteamAppObject>();
@@ -362,11 +360,11 @@ pub fn build_app() -> gtk::Application {
             main_picker_box.append(&w_picker_loading_box_clone);
             
             let m_picker_loading_sender = m_picker_apps_sender.clone();
-            m_picker_loading_sender.send_blocking(SteamResponse::Pending).unwrap();
+            //m_picker_loading_sender.send_blocking(SteamResponse::Pending).unwrap();
 
             gio::spawn_blocking(move || {
-                let res = send_global_command::<Vec<AppModel>>(SteamCommand::GetOwnedAppList);
-                m_picker_loading_sender.send_blocking(res).unwrap();
+                let result = GetOwnedAppList.request();
+                m_picker_loading_sender.send_blocking(result).unwrap();
             });
         });
 
@@ -375,15 +373,7 @@ pub fn build_app() -> gtk::Application {
             w_header_bar_back_button_clone2.set_visible(false);
             w_main_stack_clone3.set_visible_child_name("picker");
 
-            match send_global_command::<bool>(SteamCommand::StopApps) {
-                SteamResponse::Success(_) => {
-                    dev_println!("[CLIENT] Apps stopped");
-                },
-                SteamResponse::Error(reason) => {
-                    dev_println!("[CLIENT] Apps not stopped: {reason}");
-                },
-                SteamResponse::Pending => unimplemented!()
-            };
+            StopApps.request();
         });
 
         // TODO: connect on single click
@@ -398,59 +388,16 @@ pub fn build_app() -> gtk::Application {
             dev_println!("[CLIENT] Selected app: {}", steam_app_object.app_name());
             w_main_stack_clone2.set_visible_child_name("app");
             w_header_bar_back_button_clone.set_visible(true);
-            
-            let go_on = match send_global_command::<bool>(SteamCommand::LaunchApp(steam_app_object.app_id())) {
-                SteamResponse::Success(_) => {
-                    dev_println!("[CLIENT] App {} launched", steam_app_object.app_name());
-                    true
-                },
-                SteamResponse::Error(reason) => {
-                    dev_println!("[CLIENT] App {} not launched: {reason}", steam_app_object.app_name());
-                    w_header_bar_back_button_clone.emit_clicked();
-                    false
-                },
-                SteamResponse::Pending => unimplemented!()
-            };
 
-            if !go_on {
+            if (LaunchApp { app_id: steam_app_object.app_id() }).request().is_none() {
                 return;
-            }
+            } 
 
             // TODO: make this async
-            let achievements = match send_global_command::<Vec<AchievementInfo>>(SteamCommand::GetAchievements(steam_app_object.app_id())) {
-                SteamResponse::Success(achievements) => {
-                    dev_println!("[CLIENT] Got achievements for app {}", steam_app_object.app_name());
-                    achievements
-                },
-                SteamResponse::Error(reason) => {
-                    dev_println!("[CLIENT] Failed to get achievements for app {}: {reason}", steam_app_object.app_name());
-                    w_header_bar_back_button_clone.emit_clicked();
-                    vec![]
-                }
-                _ => {
-                    dev_println!("[CLIENT] Failed to get achievements for app {}: Pending", steam_app_object.app_name());
-                    w_header_bar_back_button_clone.emit_clicked();
-                    vec![]
-                }
-            };
+            let achievements = GetAchievements { app_id: steam_app_object.app_id() }.request();
 
             // TODO: make this async
-            let statistics = match send_global_command::<Vec<StatInfo>>(SteamCommand::GetStats(steam_app_object.app_id())) {
-                SteamResponse::Success(statistics) => {
-                    dev_println!("[CLIENT] Got statistics for app {}", steam_app_object.app_name());
-                    statistics
-                },
-                SteamResponse::Error(reason) => {
-                    dev_println!("[CLIENT] Failed to get statistics for app {}: {reason}", steam_app_object.app_name());
-                    w_header_bar_back_button_clone.emit_clicked();
-                    vec![]
-                }
-                _ => {
-                    dev_println!("[CLIENT] Failed to get statistics for app {}: Pending", steam_app_object.app_name());
-                    w_header_bar_back_button_clone.emit_clicked();
-                    vec![]
-                }
-            };
+            let stats = GetStats { app_id: steam_app_object.app_id() }.request(); 
         });
 
         glib::spawn_future_local(clone!(
@@ -461,7 +408,7 @@ pub fn build_app() -> gtk::Application {
                     picker_model_clone.remove_all();
                     dev_println!("[CLIENT] Callback from receiving apps");
                     match res {
-                        SteamResponse::Success(apps) => {
+                        Some(apps) => {
                             let vector: Vec<gtk_wrappers::GSteamAppObject> = apps
                                 .into_iter()
                                 .map(gtk_wrappers::GSteamAppObject::new)
@@ -484,8 +431,8 @@ pub fn build_app() -> gtk::Application {
                             // w_window.set_child(Some(&w_picker_scrolled_window));
                             w_spinner.stop();
                         },
-                        SteamResponse::Error(e) => {
-                            gtk::MessageDialog::new(None::<&gtk::Window>, gtk::DialogFlags::empty(), gtk::MessageType::Error, gtk::ButtonsType::Ok, &format!("Error getting applist: {}", e));
+                        None => {
+                            gtk::MessageDialog::new(None::<&gtk::Window>, gtk::DialogFlags::empty(), gtk::MessageType::Error, gtk::ButtonsType::Ok, &format!("Error getting applist"));
                             w_header_bar_refresh_button.set_sensitive(true);
                             
                             let main_picker_box_widget = w_main_stack
@@ -499,22 +446,7 @@ pub fn build_app() -> gtk::Application {
                             main_picker_box.append(&w_picker_scrolled_window);
                             
                             w_spinner.stop();
-                        },
-                        SteamResponse::Pending => {
-                            w_header_bar_refresh_button.set_sensitive(false);
-                            
-                            let main_picker_box_widget = w_main_stack
-                                .child_by_name("picker")
-                                .expect("Picker stack child not found");
-                            let main_picker_box = main_picker_box_widget
-                                .downcast_ref::<gtk::Box>()
-                                .expect("Picker stack child is not a Box");
-                            
-                            main_picker_box.remove(&w_picker_scrolled_window);
-                            main_picker_box.append(&w_picker_loading_box);
-                            
-                            w_spinner.start();
-                        }
+                        }, 
                     }
                 }
             }
@@ -532,7 +464,7 @@ pub fn build_app() -> gtk::Application {
     main_app.connect_shutdown(move |_| {
         dev_println!("[CLIENT] Application is shutting down");
         // #[cfg(not(debug_assertions))]
-        send_global_command::<bool>(SteamCommand::Shutdown);
+        Shutdown.request();
 
         // #[cfg(not(debug_assertions))]
         let globals = FRONTEND_GLOBALS

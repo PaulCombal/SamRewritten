@@ -18,6 +18,14 @@ pub enum SteamCommand {
 #[derive(Serialize, Deserialize, Debug)]
 pub enum SteamResponse<T> {
     Success(T),
-    Error(String),
-    Pending,
+    Error(String)
+}
+
+impl<T> Into<Result<T, String>> for SteamResponse<T> {
+    fn into(self) -> Result<T, String> {
+        match self {
+            SteamResponse::Success(data) => Ok(data),
+            SteamResponse::Error(error) => Err(error),
+        }
+    }
 }
