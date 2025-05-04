@@ -1,50 +1,26 @@
+use std::cell::RefCell;
 use std::env;
 use gtk::prelude::EditableExt;
-use crate::frontend::request::{GetAchievements, GetOwnedAppList, GetStats, LaunchApp, Request, Shutdown, StopApps};
+use crate::frontend::request::{GetAchievements, GetOwnedAppList, GetStats, LaunchApp, Request, StopApps};
 use crate::{dev_println, APP_ID};
 use crate::frontend::gtk_wrappers;
-use gtk::glib::clone;
+use gtk::glib::{clone, ExitCode};
 use gtk::prelude::{
     ApplicationExt, BoxExt, ButtonExt, Cast, CastNone, GtkWindowExt, ListItemExt, WidgetExt,
 };
 use gdk::prelude::*;
 use gtk::{SignalListItemFactory, gio, glib, gdk, style_context_add_provider_for_display};
-use std::process::{Child, Command};
-use std::sync::{Mutex, OnceLock};
+use std::process::Child;
 use crate::backend::app_lister::AppModel;
-use crate::utils::utils::get_executable_path;
 
-// Setup / globals / 'static
-struct FrontendGlobals {
-    pub child: Mutex<Child>,
-}
-
-pub static FRONTEND_GLOBALS: OnceLock<FrontendGlobals> = OnceLock::new();
-
-fn spawn_backend() -> Child {
-    let current_exe = get_executable_path();
-    Command::new(current_exe)
-        .arg("--orchestrator")
-        .spawn()
-        .expect("Failed to spawn sam2 orchestrator process")
-}
-
-pub fn init_global_frontend() {
-    let child = spawn_backend();
-
-    FRONTEND_GLOBALS
-        .set(FrontendGlobals {
-            child: Mutex::new(child),
-        })
-        .map_err(|e| "CANNOT SET THE GLOBALS".to_owned())
-        .unwrap();
-}
+use super::request::Shutdown;
 
 // GTK / UI
 
 // TODO: Add an empty widget when there are no apps to show
 // TODO: Show an error widget when the connection to steam failed
-pub fn build_app() -> gtk::Application {
+pub fn main_ui(orchestrator: Child) -> ExitCode {
+    let orchestrator = RefCell::new(orchestrator);
     let main_app = gtk::Application::builder().application_id(APP_ID).build();
 
     // Connect to "activate" signal of `app`
@@ -454,30 +430,18 @@ pub fn build_app() -> gtk::Application {
 
         w_window.present();
 
-        // #[cfg(not(debug_assertions))]
-        init_global_frontend();
-
         // TODO: try_connect pendant 5 secondes, et message d'erreur si échec
         // w_header_bar_refresh_button_clone.emit_clicked();
     });
 
     main_app.connect_shutdown(move |_| {
-        dev_println!("[CLIENT] Application is shutting down");
-        // #[cfg(not(debug_assertions))]
         Shutdown.request();
 
-        // #[cfg(not(debug_assertions))]
-        let globals = FRONTEND_GLOBALS
-            .get()
-            .expect("Frontend globals not initialized");
-
-        // #[cfg(not(debug_assertions))]
-        let mut child = globals.child.lock().unwrap();
-
-        // #[cfg(not(debug_assertions))]
-        child.wait().expect("Failed to wait for child");
-        dev_println!("[CLIENT] Finished shutting down");
+        match orchestrator.borrow_mut().wait() {
+            Ok(code) => dev_println!("[CLIENT] Orchestrator process exited with: {code}"),
+            Err(error) => dev_println!("[CLIENT] Failed to wait for orchestrator process: {error}"),
+        } 
     });
 
-    main_app
+    main_app.run()
 }
