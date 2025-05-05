@@ -88,6 +88,9 @@ mod imp {
 
             if let Some(url) = self.url.borrow_mut().take() {
                 if Some(url.as_str()) != self.loaded.borrow().as_deref() {
+                    self.texture.borrow_mut().take();
+                    self.loaded.borrow_mut().take();
+                    self.receiver.borrow_mut().take();
                     self.load(url.as_str());
                     self.loaded.borrow_mut().replace(url);
                 }
