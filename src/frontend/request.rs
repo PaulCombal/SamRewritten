@@ -15,12 +15,12 @@ pub trait Request: Into<SteamCommand> + Debug + Clone {
         println!("[CLIENT] Requesting {self:?}");
         let (_, socket_name) = get_orchestrator_socket_path();
         let mut stream = LocalSocketStream::connect(socket_name)
-            .inspect_err(|error| eprintln!("[CLIENT] Request Connection failed: {error}"))
+            .inspect_err(|error| eprintln!("[CLIENT] Request stream failed: {error}"))
             .ok()?;
 
         let command = self.clone().into();
         serde_json::to_writer(&mut stream, &command)
-            .inspect_err(|error| eprintln!("[CLIENT] Request Serialization failed: {error}"))
+            .inspect_err(|error| eprintln!("[CLIENT] Request serialization failed: {error}"))
             .ok()?;
 
         stream.write_all(b"\n")
