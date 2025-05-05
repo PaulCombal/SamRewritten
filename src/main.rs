@@ -6,7 +6,7 @@ mod frontend;
 use std::process::Command;
 
 use gtk::glib;
-use frontend::build_app::main_ui;
+use frontend::main_ui;
 use utils::utils::get_executable_path;
 use crate::backend::app::app;
 use crate::utils::arguments::parse_arguments;
