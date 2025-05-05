@@ -60,9 +60,9 @@ mod imp {
             obj.set_size_request(231, 87);
             obj.add_tick_callback(|widget, clock| {
                 if let Some(this) = widget.downcast_ref::<super::ShimmerImage>() {
-                    if this.imp().texture.borrow().is_none() {
+                    //if this.imp().texture.borrow().is_none() {
                         this.queue_draw();
-                    }
+                    //}
 
                     let imp = this.imp();
                     imp.current.set(clock.frame_time());
