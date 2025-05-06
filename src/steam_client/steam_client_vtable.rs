@@ -1,35 +1,11 @@
-use std::os::raw::{c_int, c_char, c_void};
+#![allow(dead_code)]
+
+use std::os::raw::{c_char, c_void};
 use crate::steam_client::steam_app_list_vtable::ISteamAppList;
 use crate::steam_client::steam_apps_vtable::ISteamApps;
 use crate::steam_client::steam_user_stats_vtable::ISteamUserStats;
 use crate::steam_client::steam_utils_vtable::ISteamUtils;
-use crate::steam_client::types::{HSteamPipe, HSteamUser};
-
-// Define SteamIPAddress_t (simplified - actual implementation may vary)
-#[allow(non_camel_case_types)]
-#[repr(C)]
-pub struct SteamIPAddress_t {
-    // Implementation depends on actual definition
-    _unused: [u8; 0],
-}
-
-// Define callback types
-#[allow(non_camel_case_types)]
-
-pub type SteamAPIWarningMessageHook_t = extern "C" fn(c_int, *const c_char);
-
-#[allow(non_camel_case_types)]
-
-pub type SteamAPI_CheckCallbackRegistered_t = extern "C" fn();
-
-// Define account type enum
-#[repr(C)]
-#[allow(non_camel_case_types)]
-pub enum EAccountType {
-    k_EAccountTypeInvalid = 0,
-    k_EAccountTypeIndividual = 1,
-    // ... other account types
-}
+use crate::steam_client::steamworks_types::{EAccountType, HSteamPipe, HSteamUser, SteamAPIWarningMessageHook_t, SteamAPI_CheckCallbackRegistered_t, SteamIPAddress_t};
 
 // Forward declarations for other interfaces
 #[repr(C)]

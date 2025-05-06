@@ -13,7 +13,8 @@ use crate::steam_client::steam_user_stats_vtable::STEAMUSERSTATS_INTERFACE_VERSI
 use crate::steam_client::steam_user_stats_wrapper::SteamUserStats;
 use crate::steam_client::steam_utils_vtable::STEAMUTILS_INTERFACE_VERSION;
 use crate::steam_client::steam_utils_wrapper::SteamUtils;
-use crate::steam_client::types::{HSteamPipe, HSteamUser, SteamCallbackMessage, SteamError, SteamFreeLastCallbackFn, SteamGetCallbackFn};
+use crate::steam_client::steamworks_types::{HSteamPipe, HSteamUser, SteamCallbackMessage, SteamFreeLastCallbackFn, SteamGetCallbackFn};
+use crate::steam_client::wrapper_error::SteamError;
 
 pub struct SteamClient<'a> {
     inner: Arc<SteamClientInner>,

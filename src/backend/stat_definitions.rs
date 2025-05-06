@@ -266,15 +266,3 @@ pub struct AchievementInfo {
     pub name: String,
     pub description: String,
 }
-
-impl AchievementInfo {
-    // Placeholder for image index functionality
-    pub fn image_index(&self) -> i32 {
-        // Would need to access underlying UI component in real implementation
-        0
-    }
-
-    pub fn set_image_index(&mut self, _value: i32) {
-        // Would need to modify underlying UI component in real implementation
-    }
-}

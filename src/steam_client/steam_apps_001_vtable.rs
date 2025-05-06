@@ -1,5 +1,7 @@
+#![allow(dead_code)]
+
 use std::os::raw::{c_char, c_int};
-use crate::steam_client::types::AppId_t;
+use crate::steam_client::steamworks_types::AppId_t;
 
 #[repr(C)]
 pub struct ISteamApps001VTable {

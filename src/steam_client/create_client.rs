@@ -1,6 +1,6 @@
 use crate::steam_client::steam_client_vtable::{ISteamClient, STEAMCLIENT_INTERFACE_VERSION};
 use crate::steam_client::steam_client_wrapper::SteamClient;
-use crate::steam_client::types::{CreateInterfaceFn, SteamFreeLastCallbackFn, SteamGetCallbackFn};
+use crate::steam_client::steamworks_types::{CreateInterfaceFn, SteamFreeLastCallbackFn, SteamGetCallbackFn};
 use libloading::{Library, Symbol};
 use std::os::raw::c_char;
 use std::path::PathBuf;

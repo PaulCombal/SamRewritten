@@ -1,36 +1,3 @@
-use std::os::raw::{c_char, c_int, c_void};
-use crate::steam_client::steam_client_vtable::ISteamClient;
-
-#[allow(non_camel_case_types)]
-pub type AppId_t = u32;
-
-#[allow(non_camel_case_types)]
-pub type DepotId_t = u32;
-
-#[allow(non_camel_case_types)]
-pub type SteamAPICall_t = u64;
-
-pub type HSteamPipe = c_int;
-pub type HSteamUser = c_int;
-
-pub type CreateInterfaceFn = unsafe extern "C" fn(*const c_char, *mut c_int) -> *mut ISteamClient;
-pub type SteamGetCallbackFn = unsafe extern "C" fn(HSteamPipe, *mut SteamCallbackMessage, *mut c_int) -> bool;
-pub type SteamFreeLastCallbackFn = unsafe extern "C" fn(*const HSteamPipe) -> c_void;
-
-#[repr(C)]
-pub struct SteamCallbackMessage {
-    pub user: HSteamPipe,
-    pub id: c_int,
-    pub param_ptr: *mut c_int,
-    pub param_size: c_int,
-}
-
-// SteamID representation (simplified)
-#[repr(C)]
-pub struct CSteamID {
-    pub m_steamid: u64,
-}
-
 #[derive(Debug)]
 pub enum SteamError {
     NullVtable,

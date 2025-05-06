@@ -1,8 +1,11 @@
+#![allow(dead_code)]
+
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
 use std::sync::Arc;
 use crate::steam_client::steam_app_list_vtable::ISteamAppList;
-use crate::steam_client::types::{AppId_t, SteamError};
+use crate::steam_client::steamworks_types::{AppId_t};
+use crate::steam_client::wrapper_error::SteamError;
 
 pub struct SteamAppList {
     inner: Arc<SteamAppListInner>,

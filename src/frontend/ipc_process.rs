@@ -1,5 +1,5 @@
 use interprocess::local_socket::{GenericFilePath, Name, ToFsName};
-use crate::steam_client::types::AppId_t;
+use crate::steam_client::steamworks_types::AppId_t;
 
 #[cfg(target_os = "linux")]
 pub fn get_app_socket_path(app_id: AppId_t) -> (String, Name<'static>)

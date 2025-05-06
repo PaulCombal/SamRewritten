@@ -2,7 +2,7 @@ use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
 use std::sync::Arc;
 use crate::steam_client::steam_apps_001_vtable::ISteamApps001;
-use crate::steam_client::types::SteamError;
+use crate::steam_client::wrapper_error::SteamError;
 
 /// Safe wrapper for ISteamApps
 pub struct SteamApps001 {
@@ -20,11 +20,11 @@ pub enum SteamApps001AppDataKeys<'a> {
 }
 
 impl<'a> SteamApps001AppDataKeys<'a> {
-    pub fn as_str(&self) -> &'static str {
+    pub fn as_string(&self) -> String {
         match self {
-            SteamApps001AppDataKeys::Name => "name\0",
-            SteamApps001AppDataKeys::SmallCapsule(language) => "small_capsule/english\0",
-            SteamApps001AppDataKeys::Logo => "logo\0"
+            SteamApps001AppDataKeys::Name => "name\0".to_string(),
+            SteamApps001AppDataKeys::SmallCapsule(language) => format!("smallcapsule/{language}\0"),
+            SteamApps001AppDataKeys::Logo => "logo\0".to_string(),
         }
     }
 }

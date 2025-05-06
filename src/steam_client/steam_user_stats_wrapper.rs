@@ -1,6 +1,7 @@
 use crate::steam_client::steam_user_stats_vtable::ISteamUserStats;
-use crate::steam_client::types::{SteamError};
 use std::sync::Arc;
+use crate::steam_client::steamworks_types::SteamAPICall_t;
+use crate::steam_client::wrapper_error::SteamError;
 
 pub struct SteamUserStats {
     inner: Arc<SteamUserStatsInner>,
@@ -194,6 +195,25 @@ impl SteamUserStats {
             }
 
             Ok(stat_value)
+        }
+    }
+
+    pub fn request_global_achievement_percentages(&self) -> Result<SteamAPICall_t, SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let res = (vtable.request_global_achievement_percentages)(
+                self.inner.ptr,
+            );
+
+            if res == 0 {
+                return Err(SteamError::UnknownError);
+            }
+
+            Ok(res)
         }
     }
 }

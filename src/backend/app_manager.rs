@@ -6,7 +6,7 @@ use crate::backend::key_value::KeyValue;
 use crate::backend::stat_definitions::{AchievementDefinition, AchievementInfo, BaseStatDefinition, FloatStatDefinition, FloatStatInfo, IntStatInfo, IntegerStatDefinition, StatDefinition, StatInfo};
 use crate::backend::types::UserStatType;
 use crate::dev_println;
-use crate::steam_client::types::{AppId_t};
+use crate::steam_client::steamworks_types::{AppId_t};
 
 pub struct AppManager<'a> {
     app_id: AppId_t,
@@ -153,6 +153,15 @@ impl<'a> AppManager<'a> {
             self.load_definitions()?;
         }
         
+        let callback_handle = self.connected_steam.user_stats.request_global_achievement_percentages()?;
+        dev_println!("[APP SERVER] Requested global achievement percentages callback: {callback_handle}");
+        
+        for _ in 0..60 {
+            self.connected_steam.run_callbacks()?;
+            std::thread::sleep(std::time::Duration::from_millis(17));
+            println!("Waiting for global achievement percentages callback...");
+        }
+        
         let mut achievement_infos: Vec<AchievementInfo> = vec![];
 
         for def in self.achievement_definitions.iter() {
@@ -276,22 +285,6 @@ impl<'a> AppManager<'a> {
             Ok(_) => Ok(()),
             Err(e) => Err(e.into()),
         }
-    }
-    
-    pub fn get_app_id(&self) -> AppId_t {
-        self.app_id
-    }
-    
-    pub fn definitions_loaded(&self) -> bool {
-        self.definitions_loaded
-    }
-    
-    pub fn get_stat_definitions(&self) -> &Vec<StatDefinition> {
-        &self.stat_definitions
-    }
-    
-    pub fn get_achievement_definitions(&self) -> &Vec<AchievementDefinition> {
-        &self.achievement_definitions
     }
     
     pub fn disconnect(&self) {

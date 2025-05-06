@@ -8,7 +8,7 @@ use crate::backend::app_manager::AppManager;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::frontend::ipc_process::get_app_socket_path;
-use crate::steam_client::types::AppId_t;
+use crate::steam_client::steamworks_types::AppId_t;
 use crate::utils::ipc_types::{SteamCommand, SteamResponse};
 
 fn handle_error(conn: io::Result<Stream>) -> Option<Stream> {

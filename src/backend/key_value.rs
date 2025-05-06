@@ -12,7 +12,6 @@ pub enum KeyValueError {
     Io(std::io::Error),
     Format(String),
     UnsupportedType(KeyValueType),
-    InvalidData,
 }
 
 impl fmt::Display for KeyValueError {
@@ -21,7 +20,6 @@ impl fmt::Display for KeyValueError {
             KeyValueError::Io(err) => write!(f, "IO error: {}", err),
             KeyValueError::Format(msg) => write!(f, "Format error: {}", msg),
             KeyValueError::UnsupportedType(typ) => write!(f, "Unsupported type: {:?}", typ),
-            KeyValueError::InvalidData => write!(f, "Invalid data"),
         }
     }
 }
@@ -81,7 +79,6 @@ pub enum KeyValueData {
     Float32(f32),
     UInt64(u64),
     Color(u32),
-    Pointer(u32),
 }
 
 #[derive(Debug, Clone)]
@@ -129,7 +126,6 @@ impl KeyValue {
             KeyValueData::Float32(f) => f.to_string(),
             KeyValueData::UInt64(u) => u.to_string(),
             KeyValueData::Color(c) => c.to_string(),
-            KeyValueData::Pointer(p) => p.to_string(),
             KeyValueData::None => default.to_string(),
         }
     }
@@ -246,7 +242,6 @@ impl KeyValue {
 
     fn read_string_internal_dynamic(input: &mut dyn Read, encoding: KeyValueEncoding, end: char) -> Result<String, KeyValueError> {
         let character_size = match encoding {
-            KeyValueEncoding::Ascii => 1,
             KeyValueEncoding::Utf8 => 1,
         };
 
@@ -269,13 +264,6 @@ impl KeyValue {
 
             let slice = &data[i..i+character_size];
             let s = match encoding {
-                KeyValueEncoding::Ascii => {
-                    if slice[0] == 0 {
-                        ""
-                    } else {
-                        std::str::from_utf8(slice).unwrap_or("")
-                    }
-                },
                 KeyValueEncoding::Utf8 => std::str::from_utf8(slice).unwrap_or(""),
             };
 
@@ -291,13 +279,8 @@ impl KeyValue {
         }
 
         match encoding {
-            KeyValueEncoding::Ascii => Ok(String::from_utf8_lossy(&data[..i]).into_owned()),
             KeyValueEncoding::Utf8 => Ok(String::from_utf8(data[..i].to_vec()).unwrap_or_default()),
         }
-    }
-
-    pub fn read_string_ascii(input: &mut dyn Read) -> Result<String, KeyValueError> {
-        Self::read_string_internal_dynamic(input, KeyValueEncoding::Ascii, '\0')
     }
 
     pub fn read_string_unicode(input: &mut dyn Read) -> Result<String, KeyValueError> {

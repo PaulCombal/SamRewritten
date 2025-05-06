@@ -1,5 +1,7 @@
+#![allow(dead_code)]
+
 use std::os::raw::{c_int, c_char};
-use crate::steam_client::types::AppId_t;
+use crate::steam_client::steamworks_types::AppId_t;
 
 // You need to be whitelisted by Valve to use this interface.
 // This is simply in the codebase for reference. 

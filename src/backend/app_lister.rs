@@ -1,12 +1,13 @@
 use std::{fs};
 use std::fs::File;
 use std::io::{BufReader};
+use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 use serde::{Deserialize, Serialize};
 use crate::dev_println;
 use crate::steam_client::steam_apps_001_wrapper::{SteamApps001, SteamApps001AppDataKeys};
 use crate::steam_client::steam_apps_wrapper::SteamApps;
-use crate::steam_client::types::AppId_t;
+use crate::steam_client::steamworks_types::AppId_t;
 
 pub struct AppLister<'a> {
     app_list_url: String,
@@ -21,10 +22,33 @@ pub struct AppModel {
     pub app_id: AppId_t,
     pub app_name: String,
     pub image_url: Option<String>,
+    pub app_type: AppModelType,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub enum AppModelType {
+    App,
+    Mod,
+    Demo,
+    Junk
+}
+
+impl FromStr for AppModelType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "app" => Ok(AppModelType::App),
+            "mod" => Ok(AppModelType::Mod),
+            "demo" => Ok(AppModelType::Demo),
+            "junk" => Ok(AppModelType::Junk),
+            _ => Err(format!("'{}' is not a valid AppModelType", s)),
+        }
+    }
 }
 
 #[derive(Deserialize)]
-struct XmlGame {
+pub struct XmlGame {
     #[serde(rename = "$text")]
     pub app_id: u32,
     #[serde(rename = "@type")]
@@ -100,19 +124,19 @@ impl<'a> AppLister<'a> {
 
     fn get_app_image_url(&self, app_id: &AppId_t) -> Option<String>
     {
-        let candidate = self.steam_apps_001.get_app_data(app_id, SteamApps001AppDataKeys::SmallCapsule(&self.current_language).as_str()).unwrap_or("".to_owned());
+        let candidate = self.steam_apps_001.get_app_data(app_id, &SteamApps001AppDataKeys::SmallCapsule(&self.current_language).as_string()).unwrap_or("".to_owned());
         if !candidate.is_empty() {
             return Some(format!("https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/{app_id}/{candidate}"));
         }
 
         if self.current_language != "english" {
-            let candidate = self.steam_apps_001.get_app_data(app_id, SteamApps001AppDataKeys::SmallCapsule("english").as_str()).unwrap_or("".to_owned());
+            let candidate = self.steam_apps_001.get_app_data(app_id, &SteamApps001AppDataKeys::SmallCapsule("english").as_string()).unwrap_or("".to_owned());
             if !candidate.is_empty() {
                 return Some(format!("https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/{app_id}/{candidate}"));
             }
         }
 
-        let candidate = self.steam_apps_001.get_app_data(app_id, SteamApps001AppDataKeys::Logo.as_str()).unwrap_or("".to_owned());
+        let candidate = self.steam_apps_001.get_app_data(app_id, &SteamApps001AppDataKeys::Logo.as_string()).unwrap_or("".to_owned());
         if !candidate.is_empty() {
             return Some(format!("https://cdn.steamstatic.com/steamcommunity/public/images/apps/{app_id}/{candidate}.jpg"));
         }
@@ -120,27 +144,16 @@ impl<'a> AppLister<'a> {
         None
     }
 
-    pub fn get_app(&self, app_id: AppId_t) -> Result<AppModel, Box<dyn std::error::Error>> {
-        let app_name = self.steam_apps_001.get_app_data(&app_id, SteamApps001AppDataKeys::Name.as_str())?;
+    pub fn get_app(&self, app_id: AppId_t, xml_game: &XmlGame) -> Result<AppModel, Box<dyn std::error::Error>> {
+        let app_name = self.steam_apps_001.get_app_data(&app_id, &SteamApps001AppDataKeys::Name.as_string())?;
         let image_url = self.get_app_image_url(&app_id);
 
         Ok(AppModel {
             app_id,
             app_name,
-            image_url
+            image_url,
+            app_type: if xml_game.app_type.as_ref().is_none() { AppModelType::App } else { AppModelType::from_str(&xml_game.app_type.as_ref().unwrap())? }
         })
-    }
-
-    pub fn get_all_apps(&self) -> Result<Vec<AppModel>, Box<dyn std::error::Error>> {
-        let xml_games = self.get_xml_games()?;
-
-        let mut models = vec![];
-        for xml_game in xml_games.games {
-            let app = self.get_app(xml_game.app_id)?;
-            models.push(app);
-        }
-
-        Ok(models)
     }
 
     pub fn get_owned_apps(&self) -> Result<Vec<AppModel>, Box<dyn std::error::Error>> {
@@ -157,7 +170,7 @@ impl<'a> AppLister<'a> {
                 continue;
             }
 
-            let app= self.get_app(app_id)?;
+            let app= self.get_app(app_id, &xml_game)?;
             models.push(app)
         }
 

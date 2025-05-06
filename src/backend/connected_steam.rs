@@ -3,8 +3,7 @@ use crate::steam_client::steam_apps_001_wrapper::SteamApps001;
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steam_client_wrapper::SteamClient;
 use crate::steam_client::steam_user_stats_wrapper::SteamUserStats;
-use crate::steam_client::steam_utils_wrapper::SteamUtils;
-use crate::steam_client::types::{HSteamPipe, HSteamUser};
+use crate::steam_client::steamworks_types::{HSteamPipe, HSteamUser};
 
 pub struct ConnectedSteam<'a> {
     pipe: HSteamPipe,
@@ -12,7 +11,6 @@ pub struct ConnectedSteam<'a> {
     pub client: SteamClient<'a>,
     pub apps_001: SteamApps001,
     pub apps: SteamApps,
-    pub utils: SteamUtils,
     pub user_stats: SteamUserStats,
 }
 
@@ -23,7 +21,6 @@ impl<'a> ConnectedSteam<'a> {
         let user = client.connect_to_global_user(pipe)?;
         let apps = client.get_isteam_apps(user, pipe)?;
         let apps_001 = client.get_isteam_apps_001(user, pipe)?;
-        let utils = client.get_isteam_utils(pipe)?;
         let user_stats = client.get_isteam_user_stats(user, pipe)?;
 
         Ok(ConnectedSteam {
@@ -32,7 +29,6 @@ impl<'a> ConnectedSteam<'a> {
             client,
             apps,
             apps_001,
-            utils,
             user_stats,
         })
     }
@@ -41,5 +37,9 @@ impl<'a> ConnectedSteam<'a> {
         self.client.release_user(self.pipe, self.user);
         self.client.release_steam_pipe(self.pipe).expect("Failed to release steam pipe");
         let _ = self.client.shutdown_if_app_pipes_closed();
+    }
+    
+    pub fn run_callbacks(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        self.client.run_callbacks(&self.pipe).map_err(|e| e.into())
     }
 }

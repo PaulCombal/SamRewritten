@@ -2,7 +2,6 @@ use std::convert::TryFrom;
 
 pub enum KeyValueEncoding {
     Utf8,
-    Ascii,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
