@@ -1,4 +1,5 @@
 use gtk::glib;
+use gtk::glib::subclass::types::ObjectSubclassIsExt;
 
 glib::wrapper! {
     pub struct ShimmerImage(ObjectSubclass<imp::ShimmerImage>)
@@ -10,6 +11,13 @@ impl ShimmerImage {
         glib::Object::builder()
             .property("url", None::<String>)
             .build()
+    }
+
+    pub fn reset(&self) {
+        self.imp().url.borrow_mut().take();
+        self.imp().texture.borrow_mut().take();
+        self.imp().receiver.borrow_mut().take();
+        self.imp().loaded.borrow_mut().take();
     }
 }
 
@@ -39,6 +47,7 @@ mod imp {
         pub current: Cell<i64>,
         #[property(get, set)]
         pub url: RefCell<Option<String>>,
+        #[property(get, set)]
         pub loaded: RefCell<Option<String>>,
         pub receiver: RefCell<Option<Receiver<Texture>>>,
         pub texture: RefCell<Option<Texture>>,
@@ -60,6 +69,9 @@ mod imp {
             obj.set_size_request(231, 87);
             obj.add_tick_callback(|widget, clock| {
                 if let Some(this) = widget.downcast_ref::<super::ShimmerImage>() {
+                    //Enabling this will cause some of the images to retain their old texture
+                    //even if the url property changes, but only if the widget was rendered before
+                    //and then jumps into view while it's contents are still cached.
                     //if this.imp().texture.borrow().is_none() {
                         this.queue_draw();
                     //}
@@ -156,7 +168,7 @@ mod imp {
 
             spawn_blocking(move || {
                 if !exists(path.as_path()).unwrap_or_default() {
-                    //Download and store to the path
+                    //Download and store to path
                     let response = match Client::new().get(url.as_str()).send()
                         .and_then(|response| response.error_for_status())
                         .and_then(|response| response.bytes()) {

@@ -13,6 +13,7 @@ impl GSteamAppObject {
             .property("app_id", app.app_id)
             .property("app_name", app.app_name)
             .property("image_url", app.image_url)
+            .property("app_type", format!("{:?}", app.app_type))
             .build()
     }
 }
@@ -36,6 +37,9 @@ mod imp {
 
         #[property(get, set)]
         image_url: RefCell<Option<String>>,
+
+        #[property(get, set)]
+        app_type: RefCell<String>
     }
 
     // The central trait for subclassing a GObject
