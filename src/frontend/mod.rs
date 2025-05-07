@@ -2,12 +2,14 @@ pub mod ipc_process;
 mod request;
 mod shimmer_image;
 mod steam_app;
+mod achievement;
 
 use crate::{APP_ID, dev_println};
 use crate::frontend::request::GetOwnedAppList;
 use std::cell::{Cell, RefCell};
 use std::process::Child;
 use std::rc::Rc;
+use achievement::GAchievementObject;
 use gtk::pango::WrapMode;
 use request::{GetAchievements, GetStats, LaunchApp, Request, Shutdown, StopApp};
 use shimmer_image::ShimmerImage;
@@ -17,7 +19,7 @@ use gtk::gio::spawn_blocking;
 use gtk::glib::{clone, ExitCode, MainContext};
 use gtk::prelude::{EditableExt, GObjectPropertyExpressionExt, ToggleButtonExt};
 use gtk::prelude::{ApplicationExt, BoxExt, ButtonExt, Cast, GtkWindowExt, ListItemExt, WidgetExt};
-use gtk::{Align, FilterListModel, Frame, Paned, SearchEntry, Separator, StringFilter, StringFilterMatchMode, ToggleButton, Widget};
+use gtk::{Align, FilterListModel, Frame, ListBox, Paned, SearchEntry, SelectionMode, Separator, StringFilter, StringFilterMatchMode, Switch, ToggleButton, Widget};
 use gtk::{
     glib, gdk, gio::ListStore, Application, ApplicationWindow, Box, Button, HeaderBar, Image,
     Label, ListItem, ListView, NoSelection, Orientation, PolicyType, ScrolledWindow,
@@ -115,21 +117,113 @@ fn activate(application: &Application) {
     app_sidebar.append(&app_achievement_count_box);
     app_sidebar.append(&app_stats_count_box);
 
+    let app_achievements_model = ListStore::new::<GAchievementObject>();
+    let app_achievement_string_filter = StringFilter::builder()
+        .expression(&GAchievementObject::this_expression("description"))
+        .match_mode(StringFilterMatchMode::Substring)
+        .ignore_case(true)
+        .build();
+    let app_achievement_filter_model = FilterListModel::builder()
+        .model(&app_achievements_model)
+        .filter(&app_achievement_string_filter)
+        .build();
+    let app_achievements_list = ListBox::builder()
+        .show_separators(true)
+        .build(); 
+    app_achievements_list.set_selection_mode(SelectionMode::None);
+    app_achievements_list.bind_model(Some(&app_achievement_filter_model), |item| {
+        let achievement = item.downcast_ref::<GAchievementObject>()
+            .expect("Needs to be a GSteamAppObject");
+
+        let normal_icon = ShimmerImage::new();
+        normal_icon.set_url(achievement.icon_normal().as_str());
+        normal_icon.set_size_request(32, 32);
+        let locked_icon = ShimmerImage::new();
+        locked_icon.set_size_request(32, 32);
+        locked_icon.set_url(achievement.icon_locked().as_str());
+        let icon_stack = Stack::builder()
+            .transition_type(StackTransitionType::RotateLeftRight)
+            .build();
+        icon_stack.add_named(&normal_icon, Some("normal"));
+        icon_stack.add_named(&locked_icon, Some("locked"));
+        icon_stack.set_visible_child_name(if achievement.is_achieved() { "normal" } else { "locked" });
+        let icon_box = Box::builder()
+            .orientation(Orientation::Vertical)
+            .halign(Align::Start)
+            .margin_end(8) 
+            .build();
+        icon_box.append(&icon_stack);
+
+        let switch = Switch::builder()
+            .active(achievement.is_achieved())
+            .valign(Align::Center)
+            .build();
+        switch.connect_state_notify(clone!(#[weak] icon_stack, move |switch| {
+            if switch.is_active() {
+                icon_stack.set_visible_child_name("normal");
+            } else {
+                icon_stack.set_visible_child_name("locked");
+            }
+        }));
+
+        let switch_box = Box::builder()
+            .orientation(Orientation::Vertical)
+            .halign(Align::End)
+            .build();
+        switch_box.append(&switch);
+        let spacer = Box::builder()
+            .orientation(Orientation::Horizontal)
+            .hexpand(true)
+            .build();
+        let name_label = Label::builder()
+            .label(achievement.name())
+            .halign(Align::Start)
+            .build();
+        let description_label = Label::builder()
+            .label(achievement.description())
+            .halign(Align::Start)
+            .build();
+        let label_box = Box::builder()
+            .orientation(Orientation::Vertical)
+            .build();
+        label_box.append(&name_label);
+        label_box.append(&description_label);
+        let achievement_box = Box::builder()
+            .orientation(Orientation::Horizontal)
+            .margin_top(8)
+            .margin_bottom(8)
+            .margin_start(8)
+            .margin_end(8)
+            .build();
+        achievement_box.append(&icon_box);
+        achievement_box.append(&label_box);
+        achievement_box.append(&spacer);
+        achievement_box.append(&switch_box);
+        achievement_box.into()
+    });
+
     let app_achievements_frame = Frame::builder()
-        .label("Achievements")
+        .child(&app_achievements_list)
+        .build();
+    let app_achievements_spacer = Box::builder()
+        .orientation(Orientation::Vertical)
+        .vexpand(true)
+        .build();
+    let app_achievement_box = Box::builder()
+        .orientation(Orientation::Vertical)
         .margin_top(20)
         .margin_start(20)
-        .height_request(2000)
         .margin_end(20)
         .margin_bottom(20)
         .build();
+    app_achievement_box.append(&app_achievements_frame);
+    app_achievement_box.append(&app_achievements_spacer);
     let app_achievements_scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(PolicyType::Never)
-        .child(&app_achievements_frame)
+        .child(&app_achievement_box)
         .build(); 
 
     let app_stats_frame = Frame::builder()
-        .label("Stats")
         .margin_top(20)
         .margin_start(20)
         .margin_end(20)
@@ -187,7 +281,7 @@ fn activate(application: &Application) {
     list_spinner_box.append(&list_spinner_label);
 
     let header_bar = HeaderBar::builder().show_title_buttons(true).build();
-    let search_entry = SearchEntry::builder().placeholder_text("App name or App ID..").build();
+    let search_entry = SearchEntry::builder().placeholder_text("App name").build();
     let back_button = Button::builder().icon_name("go-previous").sensitive(false).build();
     let refresh_button = Button::builder().icon_name("view-refresh").sensitive(false).build();
     header_bar.pack_start(&back_button);
@@ -235,6 +329,7 @@ fn activate(application: &Application) {
 
     list_view.connect_activate(clone!(
         #[strong] app_id,
+        #[weak] app_achievements_model,
         #[weak] app_achievement_count_value,
         #[weak] app_stats_count_value,
         #[weak] app_type_value,
@@ -242,10 +337,11 @@ fn activate(application: &Application) {
         #[weak] list_stack, move |list_view, position| {
         let Some(model) = list_view.model() else { return };
         let Some(item) = model.item(position).and_downcast::<GSteamAppObject>() else { return };
-        app_type_value.set_label("Loading...");
-        app_achievement_count_value.set_label("Loading...");
-        app_stats_count_value.set_label("Loading...");
+        app_type_value.set_label("...");
+        app_achievement_count_value.set_label("...");
+        app_stats_count_value.set_label("...");
         app_stack.set_visible_child_name("loading");
+        app_achievements_model.remove_all();
         app_id.set(Some(item.app_id())); 
 
         let app_type_copy = item.app_type();
@@ -258,15 +354,17 @@ fn activate(application: &Application) {
                 .unwrap_or_default()
                 .iter().filter(|a| a.is_achieved)
                 .count();
-
             (achievements, stats, completed_achievements)
         });
         MainContext::default().spawn_local(clone!(async move {
             let Ok((Some(achievements), Some(stats), completed)) = handle.await else {
                 return app_stack.set_visible_child_name("failed");
             };
-            app_type_value.set_label(&format!("{app_type_copy}"));
+
             app_achievement_count_value.set_label(&format!("{completed}/{}", achievements.len()));
+            achievements.into_iter().map(GAchievementObject::new)
+                .for_each(|achievement| app_achievements_model.append(&achievement));
+            app_type_value.set_label(&format!("{app_type_copy}"));
             app_stats_count_value.set_label(&format!("{}", stats.len()));
             app_stack.set_visible_child_name("achievements");
         }));
@@ -342,14 +440,18 @@ fn activate(application: &Application) {
     ));
 
     list_stack.connect_visible_child_notify(clone!(
-        #[weak] back_button, #[weak] refresh_button, move |stack| {
+        #[weak] back_button, #[weak] search_entry, #[weak] refresh_button, move |stack| {
             if stack.visible_child_name().as_deref() == Some("loading") {
                 back_button.set_sensitive(false);
                 refresh_button.set_sensitive(false);
             } else if stack.visible_child_name().as_deref() == Some("app") {
+                search_entry.set_text("");
+                search_entry.set_placeholder_text(Some("Achievement name..."));
                 back_button.set_sensitive(true);
                 refresh_button.set_sensitive(false);
             } else {
+                search_entry.set_text("");
+                search_entry.set_placeholder_text(Some("App name..."));
                 back_button.set_sensitive(false);
                 refresh_button.set_sensitive(true);
             }
@@ -357,9 +459,13 @@ fn activate(application: &Application) {
     ));
 
     search_entry.connect_search_changed(clone!(
-        #[weak] list_string_filter, move |entry| {
+        #[weak] list_string_filter, #[weak] list_stack, move |entry| {
             let text = Some(entry.text()).filter(|s| !s.is_empty());
-            list_string_filter.set_search(text.as_deref()); 
+            if list_stack.visible_child_name().as_deref() == Some("app") {
+                app_achievement_string_filter.set_search(text.as_deref());
+            } else {
+                list_string_filter.set_search(text.as_deref()); 
+            }
         }
     ));
 

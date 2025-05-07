@@ -129,8 +129,8 @@ impl<'a> AppManager<'a> {
                                 id,
                                 name,
                                 description,
-                                icon_normal: bit.1.get("display").get("icon").as_string(""),
-                                icon_locked: bit.1.get("display").get("icon_gray").as_string(""),
+                                icon_normal: format!("https://cdn.steamstatic.com/steamcommunity/public/images/apps/{}/{}", self.app_id, bit.1.get("display").get("icon").as_string("")),
+                                icon_locked: format!("https://cdn.steamstatic.com/steamcommunity/public/images/apps/{}/{}", self.app_id, bit.1.get("display").get("icon_gray").as_string("")),
                                 is_hidden: bit.1.get("display").get("hidden").as_bool(false),
                                 permission: bit.1.get("permission").as_i32(0),
                             })

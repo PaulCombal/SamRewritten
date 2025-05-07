@@ -43,6 +43,10 @@ mod imp {
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::ShimmerImage)]
     pub struct ShimmerImage {
+        #[property(get, set)]
+        pub image_width: Cell<i32>,
+        #[property(get, set)]
+        pub image_height: Cell<i32>,
         pub start: Cell<i64>,
         pub current: Cell<i64>,
         #[property(get, set)]
@@ -65,7 +69,6 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
-
             obj.set_size_request(231, 87);
             obj.add_tick_callback(|widget, clock| {
                 if let Some(this) = widget.downcast_ref::<super::ShimmerImage>() {
@@ -84,7 +87,7 @@ mod imp {
                 }
                 glib::ControlFlow::Continue
             });
-        }
+        } 
     }
 
     impl WidgetImpl for ShimmerImage {
