@@ -7,9 +7,11 @@ mod achievement;
 use crate::{APP_ID, dev_println};
 use crate::frontend::request::GetOwnedAppList;
 use std::cell::{Cell, RefCell};
+use std::io::Cursor;
 use std::process::Child;
 use std::rc::Rc;
 use achievement::GAchievementObject;
+use gtk::gdk_pixbuf::Pixbuf;
 use gtk::pango::WrapMode;
 use request::{GetAchievements, GetStats, LaunchApp, Request, SetAchievement, Shutdown, StopApp};
 use shimmer_image::ShimmerImage;
@@ -19,7 +21,7 @@ use gtk::gio::spawn_blocking;
 use gtk::glib::{clone, ExitCode, MainContext};
 use gtk::prelude::{EditableExt, GObjectPropertyExpressionExt, ToggleButtonExt};
 use gtk::prelude::{ApplicationExt, BoxExt, ButtonExt, Cast, GtkWindowExt, ListItemExt, WidgetExt};
-use gtk::{Align, FilterListModel, Frame, ListBox, Paned, SearchEntry, SelectionMode, Separator, StringFilter, StringFilterMatchMode, Switch, ToggleButton, Widget};
+use gtk::{AboutDialog, Align, FilterListModel, Frame, License, ListBox, Paned, SearchEntry, SelectionMode, Separator, StringFilter, StringFilterMatchMode, Switch, ToggleButton, Widget};
 use gtk::{
     glib, gdk, gio::ListStore, Application, ApplicationWindow, Box, Button, HeaderBar, Image,
     Label, ListItem, ListView, NoSelection, Orientation, PolicyType, ScrolledWindow,
@@ -306,9 +308,28 @@ fn activate(application: &Application) {
     let search_entry = SearchEntry::builder().placeholder_text("App name").build();
     let back_button = Button::builder().icon_name("go-previous").sensitive(false).build();
     let refresh_button = Button::builder().icon_name("view-refresh").sensitive(false).build();
+    let context_menu_button = Button::builder().icon_name("open-menu-symbolic").build();
     header_bar.pack_start(&back_button);
     header_bar.pack_start(&search_entry);
-    header_bar.pack_end(&refresh_button); 
+    header_bar.pack_end(&context_menu_button);
+    header_bar.pack_end(&refresh_button);
+
+    let image_bytes = include_bytes!("..\\..\\assets\\icon_256.png");
+    let logo_pixbuf = Pixbuf::from_read(Cursor::new(image_bytes)).expect("Failed to load logo");
+    let logo = Image::from_pixbuf(Some(&logo_pixbuf)).paintable().expect("Failed to create logo image");
+
+    let about_dialog = AboutDialog::builder()
+        .version(env!("CARGO_PKG_VERSION"))
+        .license_type(License::Gpl30)
+        .program_name("SamRewritten 2")
+        .authors(env!("CARGO_PKG_AUTHORS").split(':').collect::<Vec<_>>())
+        .comments(env!("CARGO_PKG_DESCRIPTION"))
+        .logo(&logo)
+        .build(); 
+
+    context_menu_button.connect_clicked(clone!(#[weak] about_dialog, move |_| {
+        about_dialog.show();
+    }));
 
     let list_scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(PolicyType::Never)
