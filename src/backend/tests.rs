@@ -77,7 +77,7 @@ mod tests {
         #[cfg(target_os = "linux")]
         let bin_file = PathBuf::from(home + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_730.bin");
         #[cfg(target_os = "windows")]
-        let program_files = env::var("ProgramFiles(x86)")?;
+        let program_files = env::var("ProgramFiles(x86)").expect("Failed to get Program Files directory");
         #[cfg(target_os = "windows")]
         let bin_file = PathBuf::from(program_files + "\\Steam\\appcache\\stats\\UserGameStatsSchema_480.bin");
         

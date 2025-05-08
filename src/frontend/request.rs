@@ -123,7 +123,7 @@ impl Request for GetStats {
 }
 
 impl Request for SetAchievement {
-    type Response = ();
+    type Response = bool;
 }
 
 impl Request for SetIntStat {

@@ -11,7 +11,7 @@ use std::process::Child;
 use std::rc::Rc;
 use achievement::GAchievementObject;
 use gtk::pango::WrapMode;
-use request::{GetAchievements, GetStats, LaunchApp, Request, Shutdown, StopApp};
+use request::{GetAchievements, GetStats, LaunchApp, Request, SetAchievement, Shutdown, StopApp};
 use shimmer_image::ShimmerImage;
 use steam_app::GSteamAppObject;
 use gdk::prelude::*;
@@ -131,7 +131,9 @@ fn activate(application: &Application) {
         .show_separators(true)
         .build(); 
     app_achievements_list.set_selection_mode(SelectionMode::None);
-    app_achievements_list.bind_model(Some(&app_achievement_filter_model), |item| {
+
+    let app_id_clone = app_id.clone();
+    app_achievements_list.bind_model(Some(&app_achievement_filter_model), move |item| {
         let achievement = item.downcast_ref::<GAchievementObject>()
             .expect("Needs to be a GSteamAppObject");
 
@@ -158,12 +160,32 @@ fn activate(application: &Application) {
             .active(achievement.is_achieved())
             .valign(Align::Center)
             .build();
+
+        let app_id = app_id_clone.get().unwrap_or_default();
+        let achievement_id = achievement.id().clone();
         switch.connect_state_notify(clone!(#[weak] icon_stack, move |switch| {
             if switch.is_active() {
                 icon_stack.set_visible_child_name("normal");
             } else {
                 icon_stack.set_visible_child_name("locked");
             }
+            if !switch.is_sensitive() { return }
+            switch.set_sensitive(false); 
+            let unlocked = switch.is_active();
+            let achievement_id = achievement_id.clone();
+            let handle = spawn_blocking(move || {
+                SetAchievement {
+                    app_id,
+                    achievement_id,
+                    unlocked
+                }.request()
+            });
+            MainContext::default().spawn_local(clone!(#[weak] switch, async move {
+                if Some(Some(true)) != handle.await.ok() {
+                    switch.set_active(!switch.is_active());
+                }
+                switch.set_sensitive(true);
+            })); 
         }));
 
         let switch_box = Box::builder()
