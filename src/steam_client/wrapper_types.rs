@@ -24,3 +24,7 @@ impl std::fmt::Display for SteamError {
 }
 
 impl std::error::Error for SteamError {}
+
+pub enum SteamCallbackId {
+    GlobalAchievementPercentagesReady = 1110,
+}

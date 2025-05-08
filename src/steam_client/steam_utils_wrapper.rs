@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::dev_println;
 use crate::steam_client::steam_utils_vtable::ISteamUtils;
 use crate::steam_client::steamworks_types::{AppId_t, GlobalAchievementPercentagesReady_t, SteamAPICall_t};
-use crate::steam_client::wrapper_error::SteamError;
+use crate::steam_client::wrapper_types::{SteamCallbackId, SteamError};
 
 pub struct SteamUtils {
     inner: Arc<SteamUtilsInner>,
@@ -47,7 +47,7 @@ impl SteamUtils {
         }
     }
     
-    pub fn get_api_call_result<T>(&self, api_call_handle: SteamAPICall_t) -> Result<T, SteamError> {
+    pub fn get_api_call_result<T>(&self, api_call_handle: SteamAPICall_t, callback_id: SteamCallbackId) -> Result<T, SteamError> {
         unsafe {
             let vtable = (*self.inner.ptr).vtable.as_ref().ok_or(SteamError::NullVtable)?;
             
@@ -58,7 +58,7 @@ impl SteamUtils {
                 api_call_handle,
                 &mut result as *mut T as *mut c_void,
                 size_of::<GlobalAchievementPercentagesReady_t>() as c_int,
-                1110,
+                callback_id as c_int,
                 &mut b_failed,
             );
 

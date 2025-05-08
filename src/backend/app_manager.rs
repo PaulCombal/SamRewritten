@@ -7,6 +7,7 @@ use crate::backend::stat_definitions::{AchievementDefinition, AchievementInfo, B
 use crate::backend::types::UserStatType;
 use crate::dev_println;
 use crate::steam_client::steamworks_types::{AppId_t, EResult, GlobalAchievementPercentagesReady_t};
+use crate::steam_client::wrapper_types::SteamCallbackId;
 
 pub struct AppManager {
     app_id: AppId_t,
@@ -159,7 +160,11 @@ impl<'a> AppManager {
         // Try for 10 seconds at 60 fps
         for _ in 0..600 {
             if self.connected_steam.utils.is_api_call_completed(callback_handle)? {
-                let result = self.connected_steam.utils.get_api_call_result::<GlobalAchievementPercentagesReady_t>(callback_handle)?;
+                let result = self.connected_steam.utils
+                    .get_api_call_result::<GlobalAchievementPercentagesReady_t>(
+                        callback_handle,
+                        SteamCallbackId::GlobalAchievementPercentagesReady
+                    )?;
                 global_stats_fetched = result.m_eResult;
                 dev_println!("[APP SERVER] Global achievement percentages callback result: {result:?}");
                 break;

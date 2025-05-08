@@ -12,4 +12,4 @@ pub mod steam_utils_vtable;
 pub mod steam_utils_wrapper;
 pub mod steam_user_stats_vtable;
 pub mod steam_user_stats_wrapper;
-pub mod wrapper_error;
+pub mod wrapper_types;

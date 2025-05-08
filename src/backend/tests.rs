@@ -1,10 +1,13 @@
 #[cfg(test)]
 mod tests {
+    use std::env;
     use std::io::{BufRead, BufReader, Write};
+    use std::path::PathBuf;
     use std::sync::{Mutex, OnceLock};
     use interprocess::local_socket::prelude::LocalSocketStream;
     use interprocess::local_socket::traits::Stream;
     use crate::backend::app_manager::AppManager;
+    use crate::backend::key_value::KeyValue;
     use crate::frontend::ipc_process::get_orchestrator_socket_path;
     use crate::utils::ipc_types::{SteamCommand};
 
@@ -65,5 +68,20 @@ mod tests {
         let mut app_manager = AppManager::new_connected(206690).expect("Failed to create app manager");
         let achievements = app_manager.get_achievements().expect("Failed to get achievements");
         println!("{achievements:?}")
+    }
+    
+    #[test]
+    fn keyval() {
+        #[cfg(target_os = "linux")]
+        let home = env::var("HOME").expect("Failed to get home directory");
+        #[cfg(target_os = "linux")]
+        let bin_file = PathBuf::from(home + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_730.bin");
+        #[cfg(target_os = "windows")]
+        let program_files = env::var("ProgramFiles(x86)")?;
+        #[cfg(target_os = "windows")]
+        let bin_file = PathBuf::from(program_files + "\\Steam\\appcache\\stats\\UserGameStatsSchema_480.bin");
+        
+        let kv = KeyValue::load_as_binary(bin_file).expect("Failed to load key value");
+        println!("{kv:?}");
     }
 }

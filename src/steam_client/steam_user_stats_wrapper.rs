@@ -1,7 +1,7 @@
 use crate::steam_client::steam_user_stats_vtable::ISteamUserStats;
 use std::sync::Arc;
 use crate::steam_client::steamworks_types::SteamAPICall_t;
-use crate::steam_client::wrapper_error::SteamError;
+use crate::steam_client::wrapper_types::SteamError;
 
 pub struct SteamUserStats {
     inner: Arc<SteamUserStatsInner>,

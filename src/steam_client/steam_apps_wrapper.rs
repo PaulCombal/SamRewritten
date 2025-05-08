@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::steam_client::steam_apps_vtable::ISteamApps;
-use crate::steam_client::wrapper_error::SteamError;
+use crate::steam_client::wrapper_types::SteamError;
 
 pub struct SteamApps {
     inner: Arc<SteamAppsInner>,

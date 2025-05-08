@@ -2,7 +2,7 @@ use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
 use std::sync::Arc;
 use crate::steam_client::steam_apps_001_vtable::ISteamApps001;
-use crate::steam_client::wrapper_error::SteamError;
+use crate::steam_client::wrapper_types::SteamError;
 
 /// Safe wrapper for ISteamApps
 pub struct SteamApps001 {

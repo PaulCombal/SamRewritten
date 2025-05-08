@@ -84,7 +84,7 @@ pub fn orchestrator() -> i32 {
         x => x.expect("Failed to creare"),
     };
 
-    let connected_steam = match ConnectedSteam::new() {
+    let mut connected_steam = match ConnectedSteam::new() {
         Ok(c) => Some(c),
         Err(e) => {
             dev_println!("[ORCHESTRATOR] Error connecting to Steam: {e}");
@@ -105,14 +105,6 @@ pub fn orchestrator() -> i32 {
 
         print!("[ORCHESTRATOR] Received: {buffer}");
 
-        if connected_steam.as_ref().is_none() {
-            let response : SteamResponse<String> = SteamResponse::Error("Failed to connect to Steam".to_owned());
-            let response = serde_json::to_string(&response).unwrap() + "\n";
-            conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
-            conn.get_mut().flush().expect("failed to flush");
-            continue;
-        }
-
         let command: SteamCommand = match serde_json::from_str(&buffer) {
             Ok(c) => c,
             Err(e) => {
@@ -121,6 +113,22 @@ pub fn orchestrator() -> i32 {
                 continue;
             }
         };
+
+        buffer.clear();
+
+        if connected_steam.as_ref().is_none() {
+            connected_steam = match ConnectedSteam::new() {
+                Ok(c) => Some(c),
+                Err(e) => {
+                    dev_println!("[ORCHESTRATOR] Error connecting to Steam: {e}");
+                    let response : SteamResponse<String> = SteamResponse::Error("Failed to connect to Steam".to_owned());
+                    let response = serde_json::to_string(&response).unwrap() + "\n";
+                    conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                    conn.get_mut().flush().expect("failed to flush");
+                    continue;
+                }
+            };
+        }
 
         match command {
             SteamCommand::GetOwnedAppList => {
@@ -280,8 +288,6 @@ pub fn orchestrator() -> i32 {
                 conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
             }
         }
-
-        buffer.clear();
     }
 
     dev_println!("[ORCHESTRATOR] Exiting");
