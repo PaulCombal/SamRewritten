@@ -6,17 +6,17 @@ use crate::backend::key_value::KeyValue;
 use crate::backend::stat_definitions::{AchievementDefinition, AchievementInfo, BaseStatDefinition, FloatStatDefinition, FloatStatInfo, IntStatInfo, IntegerStatDefinition, StatDefinition, StatInfo};
 use crate::backend::types::UserStatType;
 use crate::dev_println;
-use crate::steam_client::steamworks_types::{AppId_t};
+use crate::steam_client::steamworks_types::{AppId_t, EResult, GlobalAchievementPercentagesReady_t};
 
-pub struct AppManager<'a> {
+pub struct AppManager {
     app_id: AppId_t,
-    connected_steam: ConnectedSteam<'a>,
+    connected_steam: ConnectedSteam,
     definitions_loaded: bool,
     achievement_definitions: Vec<AchievementDefinition>,
     stat_definitions: Vec<StatDefinition>,
 }
 
-impl<'a> AppManager<'a> {
+impl<'a> AppManager {
     pub fn new_connected(app_id: AppId_t) -> Result<Self, Box<dyn std::error::Error>> {
         unsafe {
             env::set_var("SteamAppId", app_id.to_string());
@@ -154,12 +154,18 @@ impl<'a> AppManager<'a> {
         }
         
         let callback_handle = self.connected_steam.user_stats.request_global_achievement_percentages()?;
-        dev_println!("[APP SERVER] Requested global achievement percentages callback: {callback_handle}");
-        
-        for _ in 0..60 {
-            self.connected_steam.run_callbacks()?;
+        let mut global_stats_fetched = EResult::k_EResultFail;
+
+        // Try for 10 seconds at 60 fps
+        for _ in 0..600 {
+            if self.connected_steam.utils.is_api_call_completed(callback_handle)? {
+                let result = self.connected_steam.utils.get_api_call_result::<GlobalAchievementPercentagesReady_t>(callback_handle)?;
+                global_stats_fetched = result.m_eResult;
+                dev_println!("[APP SERVER] Global achievement percentages callback result: {result:?}");
+                break;
+            }
+
             std::thread::sleep(std::time::Duration::from_millis(17));
-            println!("Waiting for global achievement percentages callback...");
         }
         
         let mut achievement_infos: Vec<AchievementInfo> = vec![];
@@ -172,6 +178,16 @@ impl<'a> AppManager<'a> {
             let def_id = &def.id;
             match self.connected_steam.user_stats.get_achievement_and_unlock_time(def_id) {
                 Ok((is_achieved, unlock_time)) => {
+                    let global_achieved_percent = if global_stats_fetched == EResult::k_EResultFail { None } else {
+                        match self.connected_steam.user_stats.get_achievement_achieved_percent(def_id) {
+                            Ok(percent) => { Some(percent) },
+                            Err(_) => {
+                                dev_println!("[APP SERVER] Failed to get achievement percent for achievement: {def_id}");
+                                None
+                            }
+                        }
+                    };
+
                     achievement_infos.push(AchievementInfo {
                         id: def_id.to_string(),
                         is_achieved,
@@ -180,7 +196,8 @@ impl<'a> AppManager<'a> {
                         icon_locked: if def.icon_locked.is_empty() { def.clone().icon_normal } else { def.clone().icon_locked },
                         permission: def.clone().permission,
                         name: def.clone().name,
-                        description: def.clone().description
+                        description: def.clone().description,
+                        global_achieved_percent
                     });
                 },
                 Err(_) => {

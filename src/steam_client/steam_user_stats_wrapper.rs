@@ -216,4 +216,29 @@ impl SteamUserStats {
             Ok(res)
         }
     }
+    
+    pub fn get_achievement_achieved_percent(&self, achievement_name: &str) -> Result<f32, SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let c_achievement_name =
+                std::ffi::CString::new(achievement_name).map_err(|_| SteamError::UnknownError)?;
+            let mut achieved_percent = 0f32;
+
+            let success = (vtable.get_achievement_achieved_percent)(
+                self.inner.ptr,
+                c_achievement_name.as_ptr(),
+                &mut achieved_percent,
+            );
+
+            if !success {
+                return Err(SteamError::UnknownError);
+            }
+
+            Ok(achieved_percent)
+        }
+    }
 }

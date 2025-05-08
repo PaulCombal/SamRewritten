@@ -4,8 +4,9 @@ mod tests {
     use std::sync::{Mutex, OnceLock};
     use interprocess::local_socket::prelude::LocalSocketStream;
     use interprocess::local_socket::traits::Stream;
+    use crate::backend::app_manager::AppManager;
     use crate::frontend::ipc_process::get_orchestrator_socket_path;
-    use crate::utils::ipc_types::{SteamCommand, SteamResponse};
+    use crate::utils::ipc_types::{SteamCommand};
 
     pub fn send_global_command(command: SteamCommand) -> String {
         static BUFFER: OnceLock<Mutex<String>> = OnceLock::new();
@@ -22,7 +23,6 @@ mod tests {
 
         let message = serde_json::to_string(&command).expect("Failed to serialize command") + "\n";
         conn.get_mut().write_all(message.as_bytes()).expect("Failed to send command from client");
-        // conn.get_mut().write_all(b"Hello from client!\n").expect("Failed to send command hello");
 
         conn.read_line(&mut buffer).expect("Failed to read line from client");
 
@@ -57,5 +57,13 @@ mod tests {
     fn shutdown() {
         let res = send_global_command(SteamCommand::Shutdown);
         println!("Shutdown: {res}");
+    }
+    
+    #[test]
+    fn get_achievements_with_callback() {
+        // let connected_steam = ConnectedSteam::new().expect("Failed to create connected steam");
+        let mut app_manager = AppManager::new_connected(206690).expect("Failed to create app manager");
+        let achievements = app_manager.get_achievements().expect("Failed to get achievements");
+        println!("{achievements:?}")
     }
 }

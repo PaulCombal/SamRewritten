@@ -152,6 +152,8 @@ impl<'a> AppLister<'a> {
         if !candidate.is_empty() {
             return Some(format!("https://cdn.steamstatic.com/steamcommunity/public/images/apps/{app_id}/{candidate}.jpg"));
         }
+        
+        dev_println!("[ORCHESTRATOR] Failed to find image for app {}", app_id);
 
         None
     }

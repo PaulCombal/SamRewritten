@@ -73,7 +73,7 @@ pub fn new_steam_client_interface(
     }
 }
 
-pub fn create_steam_client() -> Result<SteamClient<'static>, Box<dyn std::error::Error>> {
+pub fn create_steam_client() -> Result<SteamClient, Box<dyn std::error::Error>> {
     if STEAM_CLIENT_LIB.get().is_none() {
         let steamclient_so = load_steamclient_library()?;
         match STEAM_CLIENT_LIB.set(steamclient_so) {

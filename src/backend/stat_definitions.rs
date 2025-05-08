@@ -265,4 +265,5 @@ pub struct AchievementInfo {
     pub icon_locked: String,
     pub name: String,
     pub description: String,
+    pub global_achieved_percent: Option<f32>,
 }
