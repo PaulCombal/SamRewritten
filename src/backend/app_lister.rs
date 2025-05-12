@@ -24,6 +24,8 @@ pub struct AppModel {
     pub app_name: String,
     pub image_url: Option<String>,
     pub app_type: AppModelType,
+    pub developer: String,
+    pub metacritic_score: Option<u8>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -160,13 +162,20 @@ impl<'a> AppLister<'a> {
 
     pub fn get_app(&self, app_id: AppId_t, xml_game: &XmlGame) -> Result<AppModel, Box<dyn std::error::Error>> {
         let app_name = self.steam_apps_001.get_app_data(&app_id, &SteamApps001AppDataKeys::Name.as_string())?;
+        let developer = self.steam_apps_001.get_app_data(&app_id, &SteamApps001AppDataKeys::Developer.as_string()).unwrap_or("Unknown".to_string());
+        let metacritic_score: Option<u8> = self.steam_apps_001
+            .get_app_data(&app_id, &SteamApps001AppDataKeys::MetacriticScore.as_string())
+            .ok()
+            .and_then(|s| s.parse().ok());
         let image_url = self.get_app_image_url(&app_id);
 
         Ok(AppModel {
             app_id,
             app_name,
             image_url,
-            app_type: if xml_game.app_type.as_ref().is_none() { AppModelType::App } else { AppModelType::from_str(&xml_game.app_type.as_ref().unwrap())? }
+            app_type: if xml_game.app_type.as_ref().is_none() { AppModelType::App } else { AppModelType::from_str(&xml_game.app_type.as_ref().unwrap())? },
+            developer,
+            metacritic_score,
         })
     }
 

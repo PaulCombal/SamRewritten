@@ -7,8 +7,10 @@ mod tests {
     use interprocess::local_socket::prelude::LocalSocketStream;
     use interprocess::local_socket::traits::Stream;
     use crate::backend::app_manager::AppManager;
+    use crate::backend::connected_steam::ConnectedSteam;
     use crate::backend::key_value::KeyValue;
     use crate::frontend::ipc_process::get_orchestrator_socket_path;
+    use crate::steam_client::steam_apps_001_wrapper::SteamApps001AppDataKeys;
     use crate::utils::ipc_types::{SteamCommand};
 
     pub fn send_global_command(command: SteamCommand) -> String {
@@ -68,6 +70,49 @@ mod tests {
         let mut app_manager = AppManager::new_connected(206690).expect("Failed to create app manager");
         let achievements = app_manager.get_achievements().expect("Failed to get achievements");
         println!("{achievements:?}")
+    }
+
+    #[test]
+    fn brute_force_app001_keys() {
+        // Find others on your own with the Steam command app_info_print
+        
+        let connected_steam = ConnectedSteam::new().expect("Failed to create connected steam");
+        let try_force = |key: &str| {
+            let null_terminated_key = format!("{key}\0");
+            println!("{key}:\t {}", connected_steam.apps_001.get_app_data(&220, &null_terminated_key).unwrap_or("Failure".to_string()));
+        };
+
+        try_force(&SteamApps001AppDataKeys::Name.as_string());
+        try_force(&SteamApps001AppDataKeys::Logo.as_string());
+        try_force(&SteamApps001AppDataKeys::SmallCapsule("english").as_string());
+        try_force("subscribed");
+
+        try_force("metascore");
+        try_force("metascore/score");
+        try_force("metascorescore");
+        try_force("metascorerating");
+        try_force("metascore/rating");
+        try_force("metascore_rating");
+        try_force("metascore_rating");
+
+        try_force("metacritic");
+        try_force("metacritic/score");
+        try_force("metacritic/url");
+        try_force("metacriticurl/english");
+        try_force("metacritic/url/english");
+        try_force("metacriticscore");
+        try_force("metacritic_score");
+        try_force("metacriticrating");
+        try_force("metacritic/rating");
+        try_force("metacritic_rating");
+        try_force("metacritic_rating");
+
+        try_force("developer");
+        try_force("developer/english");
+        try_force("extended/developer");
+        try_force("state");
+        try_force("homepage");
+        try_force("clienticon");
     }
     
     #[test]

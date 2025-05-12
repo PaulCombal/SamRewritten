@@ -13,18 +13,23 @@ struct SteamApps001Inner {
     ptr: *mut ISteamApps001,
 }
 
+#[allow(dead_code)]
 pub enum SteamApps001AppDataKeys<'a> {
     Name,
     Logo,
     SmallCapsule(&'a str),
+    MetacriticScore,
+    Developer
 }
 
 impl<'a> SteamApps001AppDataKeys<'a> {
     pub fn as_string(&self) -> String {
         match self {
             SteamApps001AppDataKeys::Name => "name\0".to_string(),
-            SteamApps001AppDataKeys::SmallCapsule(language) => format!("smallcapsule/{language}\0"),
+            SteamApps001AppDataKeys::SmallCapsule(language) => format!("small_capsule/{language}\0"),
             SteamApps001AppDataKeys::Logo => "logo\0".to_string(),
+            SteamApps001AppDataKeys::MetacriticScore => "metacritic_score\0".to_string(),
+            SteamApps001AppDataKeys::Developer => "developer\0".to_string(),
         }
     }
 }

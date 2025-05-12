@@ -314,7 +314,10 @@ fn activate(application: &Application) {
     header_bar.pack_end(&context_menu_button);
     header_bar.pack_end(&refresh_button);
 
+    #[cfg(target_os = "windows")]
     let image_bytes = include_bytes!("..\\..\\assets\\icon_256.png");
+    #[cfg(target_os = "linux")]
+    let image_bytes = include_bytes!("../../assets/icon_256.png");
     let logo_pixbuf = Pixbuf::from_read(Cursor::new(image_bytes)).expect("Failed to load logo");
     let logo = Image::from_pixbuf(Some(&logo_pixbuf)).paintable().expect("Failed to create logo image");
 
