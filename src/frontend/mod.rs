@@ -12,7 +12,7 @@ use std::process::Child;
 use std::rc::Rc;
 use achievement::GAchievementObject;
 use gtk::gdk_pixbuf::Pixbuf;
-use gtk::pango::WrapMode;
+use gtk::pango::{EllipsizeMode, WrapMode};
 use request::{GetAchievements, GetStats, LaunchApp, Request, SetAchievement, Shutdown, StopApp};
 use shimmer_image::ShimmerImage;
 use steam_app::GSteamAppObject;
@@ -65,11 +65,33 @@ fn activate(application: &Application) {
     let app_type_value = Label::builder().halign(Align::End).build();
     let app_type_box = Box::builder()
         .orientation(Orientation::Horizontal)
-        .margin_top(20)
+        .margin_top(10)
         .build();
     app_type_box.append(&app_type_label);
     app_type_box.append(&app_type_spacer);
     app_type_box.append(&app_type_value);
+
+    let app_developer_label = Label::builder().label("Developer:").halign(Align::Start).build();
+    let app_developer_spacer = Box::builder().hexpand(true).build();
+    let app_developer_value = Label::builder().halign(Align::End).ellipsize(EllipsizeMode::End).build();
+    let app_developer_box = Box::builder()
+        .orientation(Orientation::Horizontal)
+        .margin_top(20)
+        .build();
+    app_developer_box.append(&app_developer_label);
+    app_developer_box.append(&app_developer_spacer);
+    app_developer_box.append(&app_developer_value);
+
+    let app_metacritic_label = Label::builder().label("Metacritic:").halign(Align::Start).build();
+    let app_metacritic_spacer = Box::builder().hexpand(true).build();
+    let app_metacritic_value = Label::builder().halign(Align::End).build();
+    let app_metacritic_box = Box::builder()
+        .orientation(Orientation::Horizontal)
+        .margin_top(10)
+        .build();
+    app_metacritic_box.append(&app_metacritic_label);
+    app_metacritic_box.append(&app_metacritic_spacer);
+    app_metacritic_box.append(&app_metacritic_value);
 
     let app_loading_failed_label = Label::builder()
         .label("Failed to load app.")
@@ -115,9 +137,11 @@ fn activate(application: &Application) {
     app_sidebar.append(&app_shimmer_image);
     app_sidebar.append(&app_label);
     app_sidebar.append(&app_sidebar_separator);
-    app_sidebar.append(&app_type_box);
+    app_sidebar.append(&app_developer_box);
+    app_sidebar.append(&app_metacritic_box);
     app_sidebar.append(&app_achievement_count_box);
     app_sidebar.append(&app_stats_count_box);
+    app_sidebar.append(&app_type_box);
 
     let app_achievements_model = ListStore::new::<GAchievementObject>();
     let app_achievement_string_filter = StringFilter::builder()
@@ -322,15 +346,16 @@ fn activate(application: &Application) {
     let logo = Image::from_pixbuf(Some(&logo_pixbuf)).paintable().expect("Failed to create logo image");
 
     let about_dialog = AboutDialog::builder()
-        .version(env!("CARGO_PKG_VERSION"))
+        .hide_on_close(true)
         .license_type(License::Gpl30)
+        .version(env!("CARGO_PKG_VERSION"))
         .program_name("SamRewritten 2")
         .authors(env!("CARGO_PKG_AUTHORS").split(':').collect::<Vec<_>>())
         .comments(env!("CARGO_PKG_DESCRIPTION"))
         .logo(&logo)
         .build(); 
 
-    context_menu_button.connect_clicked(clone!(#[weak] about_dialog, move |_| {
+    context_menu_button.connect_clicked(clone!(#[strong] about_dialog, move |_| {
         about_dialog.show();
     }));
 
@@ -379,42 +404,53 @@ fn activate(application: &Application) {
         #[weak] app_achievement_count_value,
         #[weak] app_stats_count_value,
         #[weak] app_type_value,
+        #[weak] app_developer_value,
+        #[weak] app_metacritic_value,
+        #[weak] app_metacritic_box,
         #[weak] app_stack,
         #[weak] list_stack, move |list_view, position| {
         let Some(model) = list_view.model() else { return };
         let Some(item) = model.item(position).and_downcast::<GSteamAppObject>() else { return };
         app_type_value.set_label("...");
+        app_developer_value.set_label("...");
         app_achievement_count_value.set_label("...");
         app_stats_count_value.set_label("...");
         app_stack.set_visible_child_name("loading");
         app_achievements_model.remove_all();
-        app_id.set(Some(item.app_id())); 
+        app_id.set(Some(item.app_id()));
+        app_metacritic_box.set_visible(false);
+        
 
         let app_type_copy = item.app_type();
         let app_id_copy = item.app_id();
+        let app_developer_copy = item.developer();
+        let app_metacritic_copy = item.metacritic_score();
         let handle = spawn_blocking(move || {
             LaunchApp { app_id: app_id_copy }.request();
             let achievements = GetAchievements { app_id: app_id_copy }.request();
-            let stats = GetStats { app_id: app_id_copy }.request();
-            let completed_achievements = achievements.as_deref()
-                .unwrap_or_default()
-                .iter().filter(|a| a.is_achieved)
-                .count();
-            (achievements, stats, completed_achievements)
+            let stats = GetStats { app_id: app_id_copy }.request(); 
+            (achievements, stats)
         });
         MainContext::default().spawn_local(clone!(async move {
-            let Ok((Some(achievements), Some(stats), completed)) = handle.await else {
+            let Ok((Some(achievements), Some(stats))) = handle.await else {
                 return app_stack.set_visible_child_name("failed");
             };
 
-            app_achievement_count_value.set_label(&format!("{completed}/{}", achievements.len()));
+            app_achievement_count_value.set_label(&format!("{}", achievements.len()));
             achievements.into_iter().map(GAchievementObject::new)
                 .for_each(|achievement| app_achievements_model.append(&achievement));
             app_type_value.set_label(&format!("{app_type_copy}"));
+            app_developer_value.set_label(&app_developer_copy);
+            app_metacritic_value.set_label(&format!("{app_metacritic_copy}"));
             app_stats_count_value.set_label(&format!("{}", stats.len()));
             app_stack.set_visible_child_name("achievements");
+
+            if app_metacritic_copy != u8::MAX {
+                app_metacritic_box.set_visible(true);
+            }
         }));
 
+        
         if let Some(url) = item.image_url() { app_shimmer_image.set_url(url.as_str()); }
         else { app_shimmer_image.reset(); }
         app_label.set_markup(&format!("<span font_desc=\"Bold 16\">{}</span>", item.app_name()));

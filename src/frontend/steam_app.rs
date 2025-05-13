@@ -12,7 +12,9 @@ impl GSteamAppObject {
         Object::builder()
             .property("app_id", app.app_id)
             .property("app_name", app.app_name)
+            .property("developer", app.developer) 
             .property("image_url", app.image_url)
+            .property("metacritic_score", app.metacritic_score.unwrap_or(u8::MAX))
             .property("app_type", format!("{:?}", app.app_type))
             .build()
     }
@@ -34,6 +36,12 @@ mod imp {
 
         #[property(get, set)]
         app_name: RefCell<String>,
+
+        #[property(get, set)]
+        developer: RefCell<String>,
+
+        #[property(get, set)]
+        metacritic_score: Cell<u8>,
 
         #[property(get, set)]
         image_url: RefCell<Option<String>>,
