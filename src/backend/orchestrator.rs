@@ -117,6 +117,13 @@ pub fn orchestrator() -> i32 {
         buffer.clear();
 
         if connected_steam.as_ref().is_none() {
+            if command == SteamCommand::Shutdown {
+                let response = SteamResponse::Success(true);
+                let response = serde_json::to_string(&response).unwrap() + "\n";
+                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                break;
+            }
+
             connected_steam = match ConnectedSteam::new() {
                 Ok(c) => Some(c),
                 Err(e) => {

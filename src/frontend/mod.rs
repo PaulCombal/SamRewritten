@@ -300,7 +300,7 @@ fn activate(application: &Application) {
     //Creating application list view
     let list_spinner = Spinner::builder().margin_end(5).spinning(true).build();
     let list_spinner_label = Label::builder().label("Loading...").build();
-    let list_spinner_box = Box::builder().halign(gtk::Align::Center).build();
+    let list_spinner_box = Box::builder().halign(Align::Center).build();
     list_spinner_box.append(&list_spinner);
     list_spinner_box.append(&list_spinner_label);
 

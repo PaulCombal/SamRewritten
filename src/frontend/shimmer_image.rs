@@ -35,6 +35,7 @@ mod imp {
     use std::env::temp_dir;
     use std::fs::{exists, write};
     use std::sync::mpsc::{sync_channel, Receiver, TryRecvError};
+    use crate::dev_println;
 
     const GRADIENT_WIDTH: f32 = 0.8;
     const BASE_COLOR: RGBA = RGBA::new(0.7, 0.7, 0.7, 1.0);
@@ -164,7 +165,7 @@ mod imp {
         fn load(&self, url: &str) {
             let mut path = temp_dir();
             let url = url.to_string();
-            println!("[CLIENT] Loading URL: {url}");
+            dev_println!("[CLIENT] Loading URL: {url}");
             let (sender, receiver) = sync_channel::<Texture>(0);
             self.receiver.borrow_mut().replace(receiver);
             path.push(format!("{}.jpg", base64_encode(url.as_bytes())));
