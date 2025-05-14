@@ -12,7 +12,7 @@ pub struct ISteamUtilsVTable {
     pub get_ip_country: unsafe extern "C" fn(*mut ISteamUtils) -> *const c_char,
     pub get_image_size: unsafe extern "C" fn(*mut ISteamUtils, c_int, *mut u32, *mut u32) -> bool,
     pub get_image_rgba: unsafe extern "C" fn(*mut ISteamUtils, c_int, *mut c_char, c_int) -> bool,
-    pub get_cserip_port: unsafe extern "C" fn(*mut ISteamUtils, *mut u32, *mut u16) -> bool, // Deprecated
+    #[deprecated] pub get_cserip_port: unsafe extern "C" fn(*mut ISteamUtils, *mut u32, *mut u16) -> bool,
     pub get_current_battery_power: unsafe extern "C" fn(*mut ISteamUtils) -> u8,
     pub get_app_id: unsafe extern "C" fn(*mut ISteamUtils) -> u32,
     pub set_overlay_notification_position: unsafe extern "C" fn(*mut ISteamUtils, ENotificationPosition),
@@ -26,7 +26,7 @@ pub struct ISteamUtilsVTable {
         c_int,
         *mut bool
     ) -> bool,
-    pub run_frame: unsafe extern "C" fn(*mut ISteamUtils), // Deprecated
+    #[deprecated] pub run_frame: unsafe extern "C" fn(*mut ISteamUtils),
     pub get_ipc_call_count: unsafe extern "C" fn(*mut ISteamUtils) -> u32,
     pub set_warning_message_hook: unsafe extern "C" fn(*mut ISteamUtils, SteamAPIWarningMessageHook_t),
     pub is_overlay_enabled: unsafe extern "C" fn(*mut ISteamUtils) -> bool,

@@ -73,6 +73,13 @@ mod tests {
     }
 
     #[test]
+    fn get_stats_no_message() {
+        let mut app_manager = AppManager::new_connected(480).expect("Failed to create app manager");
+        let stats = app_manager.get_statistics().expect("Failed to get stats");
+        println!("{stats:?}")
+    }
+
+    #[test]
     fn brute_force_app001_keys() {
         // Find others on your own with the Steam command app_info_print
         
