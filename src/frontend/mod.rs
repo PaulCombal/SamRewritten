@@ -17,11 +17,11 @@ use request::{GetAchievements, GetStats, LaunchApp, Request, SetAchievement, Shu
 use shimmer_image::ShimmerImage;
 use steam_app::GSteamAppObject;
 use gdk::prelude::*;
-use gtk::gio::spawn_blocking;
+use gtk::gio::{spawn_blocking, SimpleAction};
 use gtk::glib::{clone, ExitCode, MainContext};
 use gtk::prelude::{EditableExt, GObjectPropertyExpressionExt, ToggleButtonExt};
 use gtk::prelude::{ApplicationExt, BoxExt, ButtonExt, Cast, GtkWindowExt, ListItemExt, WidgetExt};
-use gtk::{AboutDialog, Align, FilterListModel, Frame, License, ListBox, Paned, SearchEntry, SelectionMode, Separator, StringFilter, StringFilterMatchMode, Switch, ToggleButton, Widget};
+use gtk::{gio, AboutDialog, Align, FilterListModel, Frame, License, ListBox, MenuButton, Paned, PopoverMenu, PositionType, SearchEntry, SelectionMode, Separator, StringFilter, StringFilterMatchMode, Switch, ToggleButton, Widget};
 use gtk::{
     glib, gdk, gio::ListStore, Application, ApplicationWindow, Box, Button, HeaderBar, Image,
     Label, ListItem, ListView, NoSelection, Orientation, PolicyType, ScrolledWindow,
@@ -331,33 +331,35 @@ fn activate(application: &Application) {
     let header_bar = HeaderBar::builder().show_title_buttons(true).build();
     let search_entry = SearchEntry::builder().placeholder_text("App name").build();
     let back_button = Button::builder().icon_name("go-previous").sensitive(false).build();
-    let refresh_button = Button::builder().icon_name("view-refresh").sensitive(false).build();
-    let context_menu_button = Button::builder().icon_name("open-menu-symbolic").build();
+    let context_menu_button = MenuButton::builder().icon_name("open-menu-symbolic").build();
+
+    let context_menu_model = gio::Menu::new();
+    // Let's remember we can add sections, but for now I don't see the use case
+    // let section = gio::Menu::new();
+    // section.append(Some("Sub Item A"), Some("app.subitemA"));
+    // menu.append_section(Some("Section"), &section);
+    context_menu_model.append(Some("Refresh app list"), Some("app.refresh_app_list"));
+    context_menu_model.append(Some("Refresh achievements list"), Some("app.refresh_achievements_list"));
+    context_menu_model.append(Some("About"), Some("app.about"));
+    context_menu_model.append(Some("Quit"), Some("app.quit"));
+
+    let context_menu_popover = PopoverMenu::builder()
+        .position(PositionType::Bottom)
+        .has_arrow(true)
+        .menu_model(&context_menu_model)
+        .build();
+    context_menu_button.set_popover(Some(&context_menu_popover));
     header_bar.pack_start(&back_button);
     header_bar.pack_start(&search_entry);
     header_bar.pack_end(&context_menu_button);
-    header_bar.pack_end(&refresh_button);
 
+    // TODO: See if the forward slash syntax works on both?
     #[cfg(target_os = "windows")]
     let image_bytes = include_bytes!("..\\..\\assets\\icon_256.png");
     #[cfg(target_os = "linux")]
     let image_bytes = include_bytes!("../../assets/icon_256.png");
     let logo_pixbuf = Pixbuf::from_read(Cursor::new(image_bytes)).expect("Failed to load logo");
     let logo = Image::from_pixbuf(Some(&logo_pixbuf)).paintable().expect("Failed to create logo image");
-
-    let about_dialog = AboutDialog::builder()
-        .hide_on_close(true)
-        .license_type(License::Gpl30)
-        .version(env!("CARGO_PKG_VERSION"))
-        .program_name("SamRewritten 2")
-        .authors(env!("CARGO_PKG_AUTHORS").split(':').collect::<Vec<_>>())
-        .comments(env!("CARGO_PKG_DESCRIPTION"))
-        .logo(&logo)
-        .build(); 
-
-    context_menu_button.connect_clicked(clone!(#[strong] about_dialog, move |_| {
-        about_dialog.show();
-    }));
 
     let list_scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(PolicyType::Never)
@@ -396,7 +398,19 @@ fn activate(application: &Application) {
         .default_height(600)
         .child(&list_stack)
         .build();
-    window.set_titlebar(Some(&header_bar)); 
+    window.set_titlebar(Some(&header_bar));
+
+    let about_dialog = AboutDialog::builder()
+        .modal(true)
+        .transient_for(&window)
+        .hide_on_close(true)
+        .license_type(License::Gpl30)
+        .version(env!("CARGO_PKG_VERSION"))
+        .program_name("SamRewritten 2")
+        .authors(env!("CARGO_PKG_AUTHORS").split(':').collect::<Vec<_>>())
+        .comments(env!("CARGO_PKG_DESCRIPTION"))
+        .logo(&logo)
+        .build();
 
     list_view.connect_activate(clone!(
         #[strong] app_id,
@@ -484,62 +498,6 @@ fn activate(application: &Application) {
         })); 
     }));
 
-    refresh_button.connect_clicked(clone!(
-        #[strong] list_view,
-        #[strong] list_store,
-        #[weak] list_scrolled_window,
-        #[weak] list_stack,
-        move |button| {
-            button.set_sensitive(false);
-            list_stack.set_visible_child_name("loading");
-            let apps = spawn_blocking(move || GetOwnedAppList.request()); 
-            MainContext::default().spawn_local(clone!(
-                #[weak] list_view,
-                #[weak] list_scrolled_window,
-                #[weak] list_store,
-                #[weak] list_stack,
-                async move {
-                    if let Some(apps) = apps.await.ok().flatten() {
-                        if apps.is_empty() {
-                            let label = Label::new(Some("No apps found."));
-                            list_scrolled_window.set_child(Some(&label));
-                            list_stack.set_visible_child_name("list");
-                        } else {
-                            list_store.remove_all();
-                            apps.into_iter().map(GSteamAppObject::new)
-                                .for_each(|app| list_store.append(&app));
-                            list_scrolled_window.set_child(Some(&list_view));
-                            list_stack.set_visible_child_name("list");
-                        }
-                    } else {
-                        let label = Label::new(Some("Failed to load apps."));
-                        list_scrolled_window.set_child(Some(&label));
-                        list_stack.set_visible_child_name("list");
-                    }
-                }
-            ));
-        }
-    ));
-
-    list_stack.connect_visible_child_notify(clone!(
-        #[weak] back_button, #[weak] search_entry, #[weak] refresh_button, move |stack| {
-            if stack.visible_child_name().as_deref() == Some("loading") {
-                back_button.set_sensitive(false);
-                refresh_button.set_sensitive(false);
-            } else if stack.visible_child_name().as_deref() == Some("app") {
-                search_entry.set_text("");
-                search_entry.set_placeholder_text(Some("Achievement name..."));
-                back_button.set_sensitive(true);
-                refresh_button.set_sensitive(false);
-            } else {
-                search_entry.set_text("");
-                search_entry.set_placeholder_text(Some("App name..."));
-                back_button.set_sensitive(false);
-                refresh_button.set_sensitive(true);
-            }
-        }
-    ));
-
     search_entry.connect_search_changed(clone!(
         #[weak] list_string_filter, #[weak] list_stack, move |entry| {
             let text = Some(entry.text()).filter(|s| !s.is_empty());
@@ -574,9 +532,88 @@ fn activate(application: &Application) {
         }
     ));
 
+    // App actions
+
+    let action_refresh_app_list = SimpleAction::new("refresh_app_list", None);
+    action_refresh_app_list.connect_activate(clone!(
+        #[strong] list_view,
+        #[strong] list_store,
+        #[weak] list_scrolled_window,
+        #[weak] list_stack,
+        move |_,_| {
+            list_stack.set_visible_child_name("loading");
+            let apps = spawn_blocking(move || GetOwnedAppList.request());
+            MainContext::default().spawn_local(clone!(
+                #[weak] list_view,
+                #[weak] list_scrolled_window,
+                #[weak] list_store,
+                #[weak] list_stack,
+                async move {
+                    if let Some(apps) = apps.await.ok().flatten() {
+                        if apps.is_empty() {
+                            let label = Label::new(Some("No apps found."));
+                            list_scrolled_window.set_child(Some(&label));
+                            list_stack.set_visible_child_name("list");
+                        } else {
+                            list_store.remove_all();
+                            apps.into_iter().map(GSteamAppObject::new)
+                                .for_each(|app| list_store.append(&app));
+                            list_scrolled_window.set_child(Some(&list_view));
+                            list_stack.set_visible_child_name("list");
+                        }
+                    } else {
+                        let label = Label::new(Some("Failed to load apps."));
+                        list_scrolled_window.set_child(Some(&label));
+                        list_stack.set_visible_child_name("list");
+                    }
+                }
+            ));
+        }
+    ));
+
+    let action_refresh_achievements_list = SimpleAction::new("refresh_achievements_list", None);
+    action_refresh_achievements_list.connect_activate(|_, _| {
+        println!("must refresh_achievements_list");
+    });
+
+    let action_show_about_dialog = SimpleAction::new("about", None);
+    action_show_about_dialog.connect_activate(clone!(#[strong] about_dialog, move |_,_| {
+         about_dialog.show();
+    }));
+
+    let action_quit = SimpleAction::new("quit", None);
+    action_quit.connect_activate(clone!(#[strong] application, move |_,_| {
+         application.quit();
+    }));
+
+    application.add_action(&action_refresh_app_list);
+    application.add_action(&action_refresh_achievements_list);
+    application.add_action(&action_show_about_dialog);
+    application.add_action(&action_quit);
+
+    list_stack.connect_visible_child_notify(clone!(
+        #[weak] back_button, #[weak] search_entry, #[weak] action_refresh_app_list, move |stack| {
+            if stack.visible_child_name().as_deref() == Some("loading") {
+                back_button.set_sensitive(false);
+                action_refresh_app_list.set_enabled(false);
+            } else if stack.visible_child_name().as_deref() == Some("app") {
+                search_entry.set_text("");
+                search_entry.set_placeholder_text(Some("Achievement name..."));
+                back_button.set_sensitive(true);
+                action_refresh_app_list.set_enabled(false);
+            } else {
+                search_entry.set_text("");
+                search_entry.set_placeholder_text(Some("App name..."));
+                back_button.set_sensitive(false);
+                action_refresh_app_list.set_enabled(true);
+            }
+        }
+    ));
+
     app_stack.set_visible_child_name("loading");
     list_stack.set_visible_child_name("loading");
-    refresh_button.emit_clicked();
+    action_refresh_app_list.activate(None);
+    action_refresh_app_list.set_enabled(false);
     window.present();
 }
 
@@ -591,7 +628,7 @@ fn shutdown(orchestrator: &RefCell<Child>) {
 
 pub fn main_ui(orchestrator: Child) -> ExitCode {
     let orchestrator = RefCell::new(orchestrator);
-    let main_app = gtk::Application::builder().application_id(APP_ID).build();
+    let main_app = Application::builder().application_id(APP_ID).build();
 
     main_app.connect_activate(activate);
     main_app.connect_shutdown(move |_| shutdown(&orchestrator));
