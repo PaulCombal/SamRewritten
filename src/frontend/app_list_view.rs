@@ -133,6 +133,7 @@ pub fn create_main_ui(application: &Application) {
                 return app_stack.set_visible_child_name("failed");
             };
 
+            let achievement_len = achievements.len();
             app_stats_count_value.set_label(&format!("{}", stats.len()));
             app_achievement_count_value.set_label(&format!("{}", achievements.len()));
             achievements.into_iter().map(GAchievementObject::new)
@@ -142,7 +143,12 @@ pub fn create_main_ui(application: &Application) {
             app_type_value.set_label(&format!("{app_type_copy}"));
             app_developer_value.set_label(&app_developer_copy);
             app_metacritic_value.set_label(&format!("{app_metacritic_copy}"));
-            app_stack.set_visible_child_name("achievements");
+
+            if achievement_len > 0 {
+                app_stack.set_visible_child_name("achievements");
+            } else {
+                app_stack.set_visible_child_name("empty");
+            }
 
             if app_metacritic_copy != u8::MAX {
                 app_metacritic_box.set_visible(true);

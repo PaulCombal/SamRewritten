@@ -79,6 +79,12 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
         .valign(Align::Center)
         .build();
 
+    let app_no_entries_value = Label::builder()
+        .label("No entries found.")
+        .halign(Align::Center)
+        .valign(Align::Center)
+        .build();
+
     let app_label = Label::builder()
         .margin_top(20)
         .wrap(true)
@@ -177,6 +183,7 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     app_stack.add_named(&app_achievements_scrolled_window, Some("achievements"));
     app_stack.add_named(&app_stat_scrolled_window, Some("stats"));
     app_stack.add_named(&app_loading_failed_label, Some("failed"));
+    app_stack.add_named(&app_no_entries_value, Some("empty"));
     app_stack.add_named(&app_spinner_box, Some("loading"));
 
     app_stack.connect_visible_child_name_notify(clone!(
@@ -202,14 +209,22 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     ));
 
     app_achievements_button.connect_clicked(clone!(
-        #[weak] app_stack, move |_| {
-            app_stack.set_visible_child_name("achievements");
+        #[weak] app_stack, #[weak] app_achievements_model, move |_| {
+            if app_achievements_model.n_items() == 0 {
+                app_stack.set_visible_child_name("empty");
+            } else {
+                app_stack.set_visible_child_name("achievements");
+            }
         }
     ));
 
     app_stats_button.connect_clicked(clone!(
-        #[weak] app_stack, move |_| {
-            app_stack.set_visible_child_name("stats");
+        #[weak] app_stack, #[weak] app_stat_model, move |_| {
+            if app_stat_model.n_items() == 0 {
+                app_stack.set_visible_child_name("empty");
+            } else {
+                app_stack.set_visible_child_name("stats");
+            }
         }
     ));
 
