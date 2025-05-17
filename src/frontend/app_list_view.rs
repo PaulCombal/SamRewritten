@@ -13,13 +13,16 @@ use crate::frontend::shimmer_image::ShimmerImage;
 use crate::frontend::steam_app::GSteamAppObject;
 use crate::frontend::ui_components::{create_about_dialog, create_context_menu_button, load_logo};
 
+use super::stat::GStatObject;
+
 pub fn create_main_ui(application: &Application) {
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
 
     // Create the UI components for the app view
     let (app_stack, app_shimmer_image, app_label, _app_achievements_button, _app_stats_button,
         app_achievement_count_value, app_stats_count_value, app_type_value, app_developer_value,
-        app_metacritic_value, app_metacritic_box, app_sidebar, app_achievements_model, app_achievement_string_filter) = create_app_view(app_id.clone());
+        app_metacritic_value, app_metacritic_box, app_sidebar, app_achievements_model, app_achievement_string_filter,
+        app_stat_model, app_stat_string_filter) = create_app_view(app_id.clone());
 
     // Creating application list view
     let list_spinner = Spinner::builder().margin_end(5).spinning(true).build();
@@ -94,6 +97,7 @@ pub fn create_main_ui(application: &Application) {
     list_view.connect_activate(clone!(
         #[strong] app_id,
         #[weak] app_achievements_model,
+        #[weak] app_stat_model,
         #[weak] app_achievement_count_value,
         #[weak] app_stats_count_value,
         #[weak] app_type_value,
@@ -110,6 +114,7 @@ pub fn create_main_ui(application: &Application) {
         app_stats_count_value.set_label("...");
         app_stack.set_visible_child_name("loading");
         app_achievements_model.remove_all();
+        app_stat_model.remove_all();
         app_id.set(Some(item.app_id()));
         app_metacritic_box.set_visible(false);
 
@@ -128,13 +133,15 @@ pub fn create_main_ui(application: &Application) {
                 return app_stack.set_visible_child_name("failed");
             };
 
+            app_stats_count_value.set_label(&format!("{}", stats.len()));
             app_achievement_count_value.set_label(&format!("{}", achievements.len()));
             achievements.into_iter().map(GAchievementObject::new)
                 .for_each(|achievement| app_achievements_model.append(&achievement));
+            stats.into_iter().map(GStatObject::new)
+                .for_each(|stat| app_stat_model.append(&stat)); 
             app_type_value.set_label(&format!("{app_type_copy}"));
             app_developer_value.set_label(&app_developer_copy);
             app_metacritic_value.set_label(&format!("{app_metacritic_copy}"));
-            app_stats_count_value.set_label(&format!("{}", stats.len()));
             app_stack.set_visible_child_name("achievements");
 
             if app_metacritic_copy != u8::MAX {
@@ -178,10 +185,11 @@ pub fn create_main_ui(application: &Application) {
 
     // Search entry setup
     search_entry.connect_search_changed(clone!(
-        #[weak] list_string_filter, #[weak] list_stack, #[weak] app_achievement_string_filter, move |entry| {
+        #[weak] list_string_filter, #[weak] list_stack, #[weak] app_stat_string_filter, #[weak] app_achievement_string_filter, move |entry| {
             let text = Some(entry.text()).filter(|s| !s.is_empty());
             if list_stack.visible_child_name().as_deref() == Some("app") {
                 app_achievement_string_filter.set_search(text.as_deref());
+                app_stat_string_filter.set_search(text.as_deref());
             } else {
                 list_string_filter.set_search(text.as_deref());
             }

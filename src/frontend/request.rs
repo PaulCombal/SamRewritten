@@ -3,7 +3,7 @@ use std::io::{BufRead, BufReader, Write};
 use interprocess::local_socket::traits::Stream;
 use serde::de::DeserializeOwned;
 use crate::backend::app_lister::AppModel;
-use crate::backend::stat_definitions::AchievementInfo;
+use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::utils::ipc_types::{SteamCommand, SteamResponse};
 use super::ipc_process::get_orchestrator_socket_path;
 use interprocess::local_socket::prelude::LocalSocketStream;
@@ -119,7 +119,7 @@ impl Request for GetAchievements {
 }
 
 impl Request for GetStats {
-    type Response = Vec<String>;
+    type Response = Vec<StatInfo>;
 }
 
 impl Request for SetAchievement {

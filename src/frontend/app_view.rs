@@ -9,7 +9,9 @@ use crate::frontend::shimmer_image::ShimmerImage;
 use gtk::glib;
 use gtk::glib::clone;
 
-pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, Label, ToggleButton, ToggleButton, Label, Label, Label, Label, Label, Box, Box, ListStore, StringFilter) {
+use super::stat_view::create_stats_view;
+
+pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, Label, ToggleButton, ToggleButton, Label, Label, Label, Label, Label, Box, Box, ListStore, StringFilter, ListStore, StringFilter) {
     let app_spinner = Spinner::builder().spinning(true).margin_end(5).build();
     let app_spinner_label = Label::builder().label("Loading...").build();
     let app_spinner_box = Box::builder().halign(Align::Center).build();
@@ -125,6 +127,7 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     app_sidebar.append(&app_type_box);
 
     let (app_achievements_list, app_achievements_model, app_achievement_string_filter) = create_achievements_view(app_id.clone());
+    let (app_stat_list, app_stat_model, app_stat_string_filter) = create_stats_view(app_id.clone());
 
     let app_achievements_frame = Frame::builder()
         .child(&app_achievements_list)
@@ -147,24 +150,34 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
         .child(&app_achievement_box)
         .build();
 
-    let app_stats_frame = Frame::builder()
+    let app_stat_frame = Frame::builder()
+        .child(&app_stat_list)
+        .build();
+    let app_stat_spacer = Box::builder()
+        .orientation(Orientation::Vertical)
+        .vexpand(true)
+        .build();
+    let app_stat_box = Box::builder()
+        .orientation(Orientation::Vertical)
         .margin_top(20)
         .margin_start(20)
         .margin_end(20)
         .margin_bottom(20)
         .build();
-    let app_stats_scrolled_window = ScrolledWindow::builder()
+    app_stat_box.append(&app_stat_frame);
+    app_stat_box.append(&app_stat_spacer);
+    let app_stat_scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(PolicyType::Never)
-        .child(&app_stats_frame)
+        .child(&app_stat_box)
         .build();
 
     let app_stack = Stack::builder()
         .transition_type(StackTransitionType::SlideLeftRight)
         .build();
     app_stack.add_named(&app_achievements_scrolled_window, Some("achievements"));
+    app_stack.add_named(&app_stat_scrolled_window, Some("stats"));
     app_stack.add_named(&app_loading_failed_label, Some("failed"));
     app_stack.add_named(&app_spinner_box, Some("loading"));
-    app_stack.add_named(&app_stats_scrolled_window, Some("stats"));
 
     app_stack.connect_visible_child_name_notify(clone!(
         #[weak] app_achievements_button, #[weak] app_stats_button, move |stack| {
@@ -216,5 +229,7 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
         app_sidebar,
         app_achievements_model,
         app_achievement_string_filter,
+        app_stat_model,
+        app_stat_string_filter,
     )
 }

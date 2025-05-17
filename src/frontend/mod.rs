@@ -9,6 +9,8 @@ mod achievement_view;
 mod app_list_view;
 mod ui_components;
 mod application_actions;
+mod stat;
+mod stat_view;
 
 use crate::{APP_ID, dev_println};
 use std::cell::RefCell;
