@@ -5,6 +5,7 @@ use std::time::Duration;
 
 use gtk::gio::{spawn_blocking, ListStore};
 use gtk::glib::object::Cast;
+use gtk::pango::EllipsizeMode;
 use gtk::prelude::{AdjustmentExt, BoxExt, GObjectPropertyExpressionExt};
 use gtk::{Adjustment, Align, Box, FilterListModel, Label, ListBox, Orientation, SelectionMode, SpinButton, StringFilter, StringFilterMatchMode};
 
@@ -93,6 +94,7 @@ pub fn create_stats_view(app_id: Rc<Cell<Option<u32>>>) -> (ListBox, ListStore, 
             .build();
         let name_label = Label::builder()
             .label(stat.display_name())
+            .ellipsize(EllipsizeMode::End)
             .halign(Align::Start)
             .build(); 
         

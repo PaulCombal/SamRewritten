@@ -2,6 +2,7 @@ use std::cell::Cell;
 use std::rc::Rc;
 use gtk::gio::{spawn_blocking, ListStore};
 use gtk::glib::{clone, MainContext};
+use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;
 use gtk::{glib, Align, Box, FilterListModel, Label, ListBox, Orientation, SelectionMode, Stack, StackTransitionType, StringFilter, StringFilterMatchMode, Switch};
 use crate::frontend::achievement::GAchievementObject;
@@ -91,10 +92,12 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListBox, List
             .build();
         let name_label = Label::builder()
             .label(achievement.name())
+            .ellipsize(EllipsizeMode::End)
             .halign(Align::Start)
             .build();
         let description_label = Label::builder()
             .label(achievement.description())
+            .ellipsize(EllipsizeMode::End)
             .halign(Align::Start)
             .build();
         let label_box = Box::builder()
