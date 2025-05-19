@@ -278,33 +278,41 @@ impl<'a> AppManager {
         Ok(statistics_info)
     }
 
-    pub fn set_achievement(&self, achievement_id: &str, unlock: bool) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn set_achievement(&self, achievement_id: &str, unlock: bool) -> Result<bool, Box<dyn std::error::Error>> {
         if unlock {
             match self.connected_steam.user_stats.set_achievement(achievement_id) {
-                Ok(_) => Ok(()),
+                Ok(_) => {
+                    self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
+                },
                 Err(e) => Err(e.into()),
             }
         }
         else {
             match self.connected_steam.user_stats.clear_achievement(achievement_id) {
-                Ok(_) => Ok(()),
+                Ok(_) => {
+                    self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
+                },
                 Err(e) => Err(e.into()),
             }
         }
     }
 
-    pub fn set_stat_i32(&self, stat_name: &str, stat_value: i32) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn set_stat_i32(&self, stat_name: &str, stat_value: i32) -> Result<bool, Box<dyn std::error::Error>> {
         // TODO: Check if we can circumvent increment_only by using a loop
         // I remember that increment_only only allows to increment by 1, but I can't find any trace
         match self.connected_steam.user_stats.set_stat_i32(stat_name, stat_value) {
-            Ok(_) => Ok(()),
+            Ok(_) => {
+                self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
+            },
             Err(e) => Err(e.into()),
         }
     }
 
-    pub fn set_stat_f32(&self, stat_name: &str, stat_value: f32) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn set_stat_f32(&self, stat_name: &str, stat_value: f32) -> Result<bool, Box<dyn std::error::Error>> {
         match self.connected_steam.user_stats.set_stat_float(stat_name, stat_value) {
-            Ok(_) => Ok(()),
+            Ok(_) => {
+                self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
+            },
             Err(e) => Err(e.into()),
         }
     }

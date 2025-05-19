@@ -217,6 +217,21 @@ impl SteamUserStats {
         }
     }
     
+    pub fn store_stats(&self) -> Result<bool, SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let res = (vtable.store_stats)(
+                self.inner.ptr,
+            );
+
+            Ok(res)
+        }
+    }
+    
     pub fn get_achievement_achieved_percent(&self, achievement_name: &str) -> Result<f32, SteamError> {
         unsafe {
             let vtable = (*self.inner.ptr)
