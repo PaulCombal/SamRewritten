@@ -24,4 +24,12 @@ pub fn setup_app_actions(
     application.add_action(refresh_achievements_list_action);
     application.add_action(&action_show_about_dialog);
     application.add_action(&action_quit);
+    application.set_accels_for_action("app.refresh_app_list", &["F5"]);
+    application.set_accels_for_action("app.refresh_achievements_list", &["F5"]);
+}
+
+pub fn set_app_action_enabled(application: &Application, action_name: &str, enabled: bool) {
+    if let Some(action) = application.lookup_action(action_name) {
+        action.downcast_ref::<SimpleAction>().unwrap().set_enabled(enabled);
+    }
 }

@@ -12,7 +12,7 @@ use crate::backend::app::app;
 use crate::utils::arguments::parse_arguments;
 use crate::backend::orchestrator::orchestrator;
 
-const APP_ID: &str = "org.paul_combal.sam_rewritten";
+const APP_ID: &str = "org.sam_authors.sam_rewritten";
 
 fn main() -> glib::ExitCode {
     let arguments = parse_arguments();
