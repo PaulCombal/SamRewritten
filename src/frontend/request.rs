@@ -127,11 +127,11 @@ impl Request for SetAchievement {
 }
 
 impl Request for SetIntStat {
-    type Response = ();
+    type Response = bool;
 }
 
 impl Request for SetFloatStat {
-    type Response = ();
+    type Response = bool;
 }
 
 impl Into<SteamCommand> for GetOwnedAppList {
