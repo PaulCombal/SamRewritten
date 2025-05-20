@@ -195,8 +195,8 @@ pub fn app(app_id: AppId_t) -> i32 {
                 }
                 
                 let response = match app_manager.set_stat_i32(&stat_id, value) {
-                    Ok(_) => {
-                        SteamResponse::Success(true)
+                    Ok(result) => {
+                        SteamResponse::Success(result)
                     }
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting int stat: {e}");
@@ -216,8 +216,8 @@ pub fn app(app_id: AppId_t) -> i32 {
                 }
 
                 let response = match app_manager.set_stat_f32(&stat_id, value) {
-                    Ok(_) => {
-                        SteamResponse::Success(true)
+                    Ok(result) => {
+                        SteamResponse::Success(result)
                     }
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting float stat: {e}");

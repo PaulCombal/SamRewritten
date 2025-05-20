@@ -232,6 +232,23 @@ impl SteamUserStats {
         }
     }
     
+    #[cfg(test)]
+    pub fn reset_all_stats(&self, achievements_too: bool) -> Result<bool, SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let success = (vtable.reset_all_stats)(
+                self.inner.ptr,
+                achievements_too
+            );
+
+            Ok(success)
+        }
+    }
+    
     pub fn get_achievement_achieved_percent(&self, achievement_name: &str) -> Result<f32, SteamError> {
         unsafe {
             let vtable = (*self.inner.ptr)

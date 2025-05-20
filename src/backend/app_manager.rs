@@ -298,8 +298,6 @@ impl<'a> AppManager {
     }
 
     pub fn set_stat_i32(&self, stat_name: &str, stat_value: i32) -> Result<bool, Box<dyn std::error::Error>> {
-        // TODO: Check if we can circumvent increment_only by using a loop
-        // I remember that increment_only only allows to increment by 1, but I can't find any trace
         match self.connected_steam.user_stats.set_stat_i32(stat_name, stat_value) {
             Ok(_) => {
                 self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
@@ -319,6 +317,16 @@ impl<'a> AppManager {
     
     pub fn disconnect(&self) {
         self.connected_steam.shutdown();
+    }
+    
+    #[cfg(test)]
+    pub fn reset_all_stats(&self, achievements_too: bool) -> Result<bool, Box<dyn std::error::Error>> {
+        match self.connected_steam.user_stats.reset_all_stats(achievements_too) {
+            Ok(_) => {
+                self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
+            },
+            Err(e) => Err(e.into()),
+        }
     }
 
     fn get_localized_string(kv: &KeyValue, language: &str, default_value: &str) -> String {

@@ -3,9 +3,13 @@
 - Show the icon 'next most achieved' next to the next most achieved achievement, maybe other icons like 'rare' too when achievement has a low global achievement achieved percent
 - Show global achievement achieved percent
 - Grey out controls where the achievements/stats do not have correct permissions (cf stat_definition.rs. Achievements and stats have a protected flag. If this flag is on, it will not be possible to edit their value, probably because they are managed server-side).
-- Test increment only stats
 - Fix achievement lookup bug (Searching achievements by name doesn't bring expected results)
 - Finish the context menu (Refresh the app list/refresh the achievement entries should show when the context is relevant)
+- For increment_only stats, do not allow setting lower values than current (Indicate that it is increment only? With a tooltip?)
+
+[APP SERVER] Received: {"SetIntStat":[480,"NumGames",6]}
+[CLIENT] Response deserialization failed: invalid type: boolean `true`, expected unit at line 1 column 15
+- Investigate the above issue
 
 ### Medium priority
 
