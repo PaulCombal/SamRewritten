@@ -4,7 +4,7 @@
 - Show global achievement achieved percent
 - Grey out controls where the achievements/stats do not have correct permissions (cf stat_definition.rs. Achievements and stats have a protected flag. If this flag is on, it will not be possible to edit their value, probably because they are managed server-side).
 - Fix achievement lookup bug (Searching achievements by name doesn't bring expected results)
-- For increment_only stats, do not allow setting lower values than current (Indicate that it is increment only? With a tooltip?)
+- Improve the "big buttons" look from the app list
 
 At the very end:
 - Add license banner headers. Respect banner headers from Gibbed's Steam Achievement Manager when needed
@@ -15,6 +15,7 @@ At the very end:
 
 ### Medium priority
 
+- Optimize the stats page, as I'm fairly confident the timeout solution is a "hack" more than a correct solution
 - Optimize image loading by accessing steam local banner images
 - Github action to generate Windows build artifacts
 

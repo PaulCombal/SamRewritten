@@ -14,6 +14,7 @@ impl GStatObject {
                 .property("display-name", info.display_name)
                 .property("original-value", info.original_value as f64)
                 .property("current-value", info.float_value as f64)
+                .property("is-increment-only", info.is_increment_only)
                 .property("is-integer", false)
                 .build(),
             StatInfo::Integer(info) => Object::builder()
@@ -21,6 +22,7 @@ impl GStatObject {
                 .property("display-name", info.display_name)
                 .property("original-value", info.original_value as f64)
                 .property("current-value", info.int_value as f64)
+                .property("is-increment-only", info.is_increment_only)
                 .property("is-integer", true)
                 .build(),
         } 
@@ -50,7 +52,10 @@ mod imp {
         current_value: Cell<f64>,
 
         #[property(get, set)]
-        is_integer: Cell<bool>
+        is_integer: Cell<bool>,
+
+        #[property(get, set)]
+        is_increment_only: Cell<bool>,
     }
 
     #[glib::object_subclass]
