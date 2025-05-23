@@ -18,6 +18,7 @@ impl GAchievementObject {
             .property("unlock_time", info.unlock_time.map(|time| format!("{time:#?}")))
             .property("icon_normal", info.icon_normal)
             .property("icon_locked", info.icon_locked) 
+            // .property("permission", info.permission) 
             .build()
     }
 }
