@@ -10,13 +10,14 @@ glib::wrapper! {
 impl GAchievementObject {
     pub fn new(info: AchievementInfo) -> Self {
         Object::builder()
+            .property("search-text", format!("{} {}", info.name, info.description))
             .property("id", info.id)
             .property("name", info.name)
             .property("description", info.description)
             .property("is_achieved", info.is_achieved)
             .property("unlock_time", info.unlock_time.map(|time| format!("{time:#?}")))
             .property("icon_normal", info.icon_normal)
-            .property("icon_locked", info.icon_locked)
+            .property("icon_locked", info.icon_locked) 
             .build()
     }
 }
@@ -39,6 +40,9 @@ mod imp {
 
         #[property(get, set)]
         description: RefCell<String>,
+
+        #[property(get, set)]
+        search_text: RefCell<String>,
 
         #[property(get, set)]
         is_achieved: Cell<bool>,

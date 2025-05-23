@@ -12,7 +12,7 @@ use crate::frontend::shimmer_image::ShimmerImage;
 pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListBox, ListStore, StringFilter) {
     let app_achievements_model = ListStore::new::<GAchievementObject>();
     let app_achievement_string_filter = StringFilter::builder()
-        .expression(&GAchievementObject::this_expression("description"))
+        .expression(&GAchievementObject::this_expression("search-text"))
         .match_mode(StringFilterMatchMode::Substring)
         .ignore_case(true)
         .build();
