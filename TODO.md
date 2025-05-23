@@ -3,8 +3,7 @@
 - Show the icon 'next most achieved' next to the next most achieved achievement, maybe other icons like 'rare' too when achievement has a low global achievement achieved percent
 - Show global achievement achieved percent
 - Grey out controls where the achievements/stats do not have correct permissions (cf stat_definition.rs. Achievements and stats have a protected flag. If this flag is on, it will not be possible to edit their value, probably because they are managed server-side).
-- Fix achievement lookup bug (Searching achievements by name doesn't bring expected results)
-- Improve the "big buttons" look from the app list
+- Add an entry "Launch appId X" when only numbers are typed inside the app search bar
 
 At the very end:
 - Add license banner headers. Respect banner headers from Gibbed's Steam Achievement Manager when needed
@@ -15,6 +14,7 @@ At the very end:
 
 ### Medium priority
 
+- Support for multiple simultaneous instances (launch in new window button)
 - Optimize the stats page, as I'm fairly confident the timeout solution is a "hack" more than a correct solution
 - Optimize image loading by accessing steam local banner images
 - Github action to generate Windows build artifacts

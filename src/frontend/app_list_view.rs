@@ -77,6 +77,7 @@ pub fn create_main_ui(application: &Application) {
     let list_selection_model = NoSelection::new(Option::<ListStore>::None);
     list_selection_model.set_model(Some(&list_filter_model));
     let list_view = ListView::builder()
+        .single_click_activate(true)
         .orientation(Orientation::Vertical)
         .model(&list_selection_model)
         .factory(&list_factory)
@@ -172,32 +173,35 @@ pub fn create_main_ui(application: &Application) {
     );
 
     // List factory setup
-    list_factory.connect_setup(clone!(#[weak] list_view, move |_, list_item| {
+    list_factory.connect_setup(move |_, list_item| {
         let image = ShimmerImage::new();
         let label = Label::builder().margin_start(20).build();
         let spacer = Box::builder().orientation(Orientation::Horizontal).hexpand(true).build();
         let icon = Image::builder().icon_name("pan-end").margin_end(20).build();
-        let entry = Box::builder().orientation(Orientation::Horizontal).margin_top(4).margin_bottom(4).build();
-        let button = Button::builder().child(&entry).margin_start(4).margin_end(4).margin_top(4).build();
+        let entry = Box::builder().orientation(Orientation::Horizontal)
+            .margin_top(4)
+            .margin_bottom(4)
+            .margin_start(8)
+            .margin_end(8)
+            .build();
         entry.append(&image);
         entry.append(&label);
         entry.append(&spacer);
         entry.append(&icon);
 
-        let list_item = list_item.downcast_ref::<ListItem>()
+        let list_item = list_item
+            .downcast_ref::<ListItem>()
             .expect("Needs to be a ListItem");
-        list_item.set_child(Some(&button));
-        list_item.property_expression("item")
+        list_item.set_child(Some(&entry));
+        list_item
+            .property_expression("item")
             .chain_property::<GSteamAppObject>("app_name")
             .bind(&label, "label", Widget::NONE);
-        list_item.property_expression("item")
+        list_item
+            .property_expression("item")
             .chain_property::<GSteamAppObject>("image_url")
             .bind(&image, "url", Widget::NONE);
-
-        button.connect_clicked(clone!(#[weak] list_item, #[weak] list_view, move |_| {
-            list_view.emit_by_name::<()>("activate", &[&list_item.position()]);
-        }));
-    }));
+    });
 
     // Search entry setup
     search_entry.connect_search_changed(clone!(

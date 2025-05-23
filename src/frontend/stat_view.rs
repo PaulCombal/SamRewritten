@@ -99,7 +99,7 @@ pub fn create_stats_view(app_id: Rc<Cell<Option<u32>>>) -> (ListBox, ListStore, 
             let tx_ui_update_clone = tx_ui_update.clone();
 
             spawn_blocking(move || {
-                while let Ok(new) = receiver.recv_timeout(Duration::from_millis(800)) {
+                while let Ok(new) = receiver.recv_timeout(Duration::from_millis(500)) {
                     value = new;
                 }
                 let res = if integer_stat {
