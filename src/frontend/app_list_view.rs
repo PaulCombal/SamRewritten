@@ -201,14 +201,11 @@ pub fn create_main_ui(application: &Application) {
 
     // Search entry setup
     search_entry.connect_search_changed(clone!(
-        #[weak] list_string_filter, #[weak] list_stack, #[weak] app_stat_string_filter, #[weak] app_achievement_string_filter, move |entry| {
+        #[weak] list_string_filter, #[weak] app_stat_string_filter, #[weak] app_achievement_string_filter, move |entry| {
             let text = Some(entry.text()).filter(|s| !s.is_empty());
-            if list_stack.visible_child_name().as_deref() == Some("app") {
-                app_achievement_string_filter.set_search(text.as_deref());
-                app_stat_string_filter.set_search(text.as_deref());
-            } else {
-                list_string_filter.set_search(text.as_deref());
-            }
+            app_achievement_string_filter.set_search(text.as_deref());
+            app_stat_string_filter.set_search(text.as_deref());
+            list_string_filter.set_search(text.as_deref());
         }
     ));
 
@@ -320,7 +317,7 @@ pub fn create_main_ui(application: &Application) {
                 action_refresh_app_list.set_enabled(false);
             } else if stack.visible_child_name().as_deref() == Some("app") {
                 search_entry.set_text("");
-                search_entry.set_placeholder_text(Some("Achievement name..."));
+                search_entry.set_placeholder_text(Some("App attribute..."));
                 back_button.set_sensitive(true);
                 action_refresh_app_list.set_enabled(false);
             } else {
