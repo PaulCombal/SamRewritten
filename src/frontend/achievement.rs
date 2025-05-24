@@ -14,11 +14,11 @@ impl GAchievementObject {
             .property("id", info.id)
             .property("name", info.name)
             .property("description", info.description)
-            .property("is_achieved", info.is_achieved)
-            .property("unlock_time", info.unlock_time.map(|time| format!("{time:#?}")))
-            .property("icon_normal", info.icon_normal)
-            .property("icon_locked", info.icon_locked) 
-            // .property("permission", info.permission) 
+            .property("is-achieved", info.is_achieved)
+            .property("unlock-time", info.unlock_time.map(|time| format!("{time:#?}")))
+            .property("icon-normal", info.icon_normal)
+            .property("icon-locked", info.icon_locked)
+            .property("permission", info.permission) 
             .build()
     }
 }
@@ -56,6 +56,9 @@ mod imp {
 
         #[property(get, set)]
         icon_locked: RefCell<String>,
+
+        #[property(get, set)]
+        permission: RefCell<i32>,
     }
 
     #[glib::object_subclass]

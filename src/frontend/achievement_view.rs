@@ -50,14 +50,24 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
             .build();
         icon_box.append(&icon_stack);
 
+        let protected_icon = gtk::Image::from_icon_name("go-up-symbolic");
+        protected_icon.set_margin_end(8);
+        protected_icon.set_tooltip_text(Some("This achievement is protected."));
+
+        // TODO
+        // let next_most_achieved_icon = gtk::Image::from_icon_name("go-up-symbolic");
+        // protected_icon.set_margin_end(8);
+        // protected_icon.set_tooltip_text(Some("This achievement is protected."));
+
         let switch = Switch::builder()
             .valign(Align::Center)
             .build();
 
         let switch_box = Box::builder()
-            .orientation(Orientation::Vertical)
-            .halign(Align::End)
+            .orientation(Orientation::Horizontal)
+            .valign(Align::Start)
             .build();
+        switch_box.append(&protected_icon);
         switch_box.append(&switch);
 
         let spacer = Box::builder()
@@ -106,24 +116,31 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
 
         list_item
             .property_expression("item")
-            .chain_property::<GAchievementObject>("icon_normal")
+            .chain_property::<GAchievementObject>("icon-normal")
             .bind(&normal_icon, "url", Widget::NONE);
 
         list_item
             .property_expression("item")
-            .chain_property::<GAchievementObject>("icon_locked")
+            .chain_property::<GAchievementObject>("icon-locked")
             .bind(&locked_icon, "url", Widget::NONE);
 
         list_item
             .property_expression("item")
-            .chain_property::<GAchievementObject>("is_achieved")
+            .chain_property::<GAchievementObject>("is-achieved")
             .bind(&switch, "active", Widget::NONE);
         
         // Custom expressions
         let is_achieved_expr = list_item
             .property_expression("item")
-            .chain_property::<GAchievementObject>("is_achieved");
-        let rust_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+            .chain_property::<GAchievementObject>("is-achieved");
+        let permission_expr = list_item
+            .property_expression("item")
+            .chain_property::<GAchievementObject>("permission");
+        let permission_expr_2 = list_item
+            .property_expression("item")
+            .chain_property::<GAchievementObject>("permission");
+
+        let achieved_visible_icon_closure = glib::RustClosure::new(|values: &[glib::Value]| {
             let is_achieved = values.get(1)
                 .and_then(|val| val.get::<bool>().ok())
                 .unwrap_or(false);
@@ -131,11 +148,34 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
             Some(child_name.to_value())
         });
 
+        let permission_sensitive_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+            let permission = values.get(1)
+                .and_then(|val| val.get::<i32>().ok())
+                .unwrap_or(0);
+            let is_sensitive = (permission & 2) == 0;
+            Some(is_sensitive.to_value())
+        });
+        let permission_protected_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+            let permission = values.get(1)
+                .and_then(|val| val.get::<i32>().ok())
+                .unwrap_or(0);
+            let is_protected = (permission & 2) != 0;
+            Some(is_protected.to_value())
+        });
+
         let visible_child_expr = ClosureExpression::new::<String>(
-            &[is_achieved_expr], rust_closure
+            &[is_achieved_expr], achieved_visible_icon_closure
+        );
+        let permission_sensitive_expr = ClosureExpression::new::<bool>(
+            &[permission_expr], permission_sensitive_closure
+        );
+        let permission_protected_expr = ClosureExpression::new::<bool>(
+            &[permission_expr_2], permission_protected_closure
         );
 
         visible_child_expr.bind(&icon_stack, "visible-child-name", Widget::NONE);
+        permission_sensitive_expr.bind(&switch, "sensitive", Widget::NONE);
+        permission_protected_expr.bind(&protected_icon, "visible", Widget::NONE);
     });
 
     achievements_list_factory.connect_bind(move |_, list_item| unsafe {
