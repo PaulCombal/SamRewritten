@@ -133,8 +133,8 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     app_sidebar.append(&app_type_box);
 
     let (app_achievements_list, app_achievements_model, app_achievement_string_filter) = create_achievements_view(app_id.clone());
-    let (app_stat_list, app_stat_model, app_stat_string_filter) = create_stats_view(app_id.clone());
-
+    let (app_stat_list, app_stat_model, app_stat_string_filter) = create_stats_view();
+    
     let app_achievements_frame = Frame::builder()
         .child(&app_achievements_list)
         .build();

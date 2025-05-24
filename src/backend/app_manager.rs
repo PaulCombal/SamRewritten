@@ -81,7 +81,8 @@ impl<'a> AppManager {
                         base: BaseStatDefinition {
                             id: stat.get("name").as_string(""),
                             display_name: name,
-                            permission: stat.get("permission").as_i32(0)
+                            permission: stat.get("permission").as_i32(0),
+                            app_id: self.app_id,
                         },
                         min_value: stat.get("min").as_i32(i32::MIN),
                         max_value: stat.get("max").as_i32(i32::MAX),
@@ -100,7 +101,8 @@ impl<'a> AppManager {
                         base: BaseStatDefinition {
                             id: stat.get("name").as_string(""),
                             display_name: name,
-                            permission: stat.get("permission").as_i32(0)
+                            permission: stat.get("permission").as_i32(0),
+                            app_id: self.app_id,
                         },
                         min_value: stat.get("min").as_f32(f32::MIN),
                         max_value: stat.get("max").as_f32(f32::MAX),
@@ -128,6 +130,7 @@ impl<'a> AppManager {
 
                             achievement_definitions.push(AchievementDefinition {
                                 id,
+                                app_id: self.app_id,
                                 name,
                                 description,
                                 icon_normal: format!("https://cdn.steamstatic.com/steamcommunity/public/images/apps/{}/{}", self.app_id, bit.1.get("display").get("icon").as_string("")),
@@ -241,6 +244,7 @@ impl<'a> AppManager {
 
                     statistics_info.push(StatInfo::Float(FloatStatInfo {
                         id: definition.base.id.clone(),
+                        app_id: definition.base.app_id,
                         display_name: definition.base.display_name.clone(),
                         float_value: stat_value,
                         original_value: stat_value,
@@ -265,6 +269,7 @@ impl<'a> AppManager {
 
                     statistics_info.push(StatInfo::Integer(IntStatInfo {
                         id: definition.base.id.clone(),
+                        app_id: definition.base.app_id,
                         display_name: definition.base.display_name.clone(),
                         int_value: stat_value,
                         original_value: stat_value,

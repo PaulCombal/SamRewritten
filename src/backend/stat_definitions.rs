@@ -79,6 +79,7 @@ pub enum StatDefinition {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BaseStatDefinition {
     pub id: String,
+    pub app_id: u32,
     pub display_name: String,
     pub permission: i32,
 }
@@ -151,6 +152,7 @@ impl StatInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FloatStatInfo {
     pub id: String,
+    pub app_id: u32,
     pub display_name: String,
     pub is_increment_only: bool,
     pub permission: i32,
@@ -193,6 +195,7 @@ impl FloatStatInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IntStatInfo {
     pub id: String,
+    pub app_id: u32,
     pub display_name: String,
     pub is_increment_only: bool,
     pub permission: i32,
@@ -236,6 +239,7 @@ impl IntStatInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AchievementDefinition {
     pub id: String,
+    pub app_id: u32,
     pub name: String,
     pub description: String,
     pub icon_normal: String,

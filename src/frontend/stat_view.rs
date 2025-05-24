@@ -1,137 +1,47 @@
-use std::cell::{Cell, RefCell};
-use std::rc::Rc;
+use std::cell::RefCell;
 use std::sync::mpsc::channel;
 use std::time::Duration;
 
-use gtk::gio::{spawn_blocking, ListStore};
-use gtk::glib::object::Cast;
-use gtk::glib::clone;
-use gtk::pango::EllipsizeMode;
-use gtk::prelude::{AdjustmentExt, BoxExt, GObjectPropertyExpressionExt, WidgetExt};
-use gtk::{glib, Adjustment, Align, Box, FilterListModel, Label, ListBox, Orientation, SelectionMode, SpinButton, StringFilter, StringFilterMatchMode};
-
 use super::request::{Request, SetFloatStat, SetIntStat};
 use super::stat::GStatObject;
+use gtk::gio::{spawn_blocking, ListStore};
+use gtk::glib::object::Cast;
+use gtk::pango::EllipsizeMode;
+use gtk::prelude::{BoxExt, GObjectPropertyExpressionExt, ListItemExt, ObjectExt, ToValue, WidgetExt};
+use gtk::{glib, Adjustment, Align, Box, ClosureExpression, FilterListModel, Label, ListItem, ListView, NoSelection, Orientation, SignalListItemFactory, SpinButton, StringFilter, StringFilterMatchMode, Widget};
 
-pub fn create_stats_view(app_id: Rc<Cell<Option<u32>>>) -> (ListBox, ListStore, StringFilter) {
-    let app_stat_model = ListStore::new::<GStatObject>();
-    let app_stat_string_filter = StringFilter::builder()
+pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
+    let stats_list_factory = SignalListItemFactory::new();
+    let app_stats_model = ListStore::new::<GStatObject>();
+
+    let app_stats_string_filter = StringFilter::builder()
         .expression(&GStatObject::this_expression("display-name"))
         .match_mode(StringFilterMatchMode::Substring)
         .ignore_case(true)
         .build();
-    let app_stat_filter_model = FilterListModel::builder()
-        .model(&app_stat_model)
-        .filter(&app_stat_string_filter)
+    let app_stats_filter_model = FilterListModel::builder()
+        .model(&app_stats_model)
+        .filter(&app_stats_string_filter)
         .build();
-    let app_stat_list = ListBox::builder()
-        .show_separators(true)
-        .build();
-    let app_id_clone = app_id.clone();
-    
-    app_stat_list.set_selection_mode(SelectionMode::None);
-    app_stat_list.bind_model(Some(&app_stat_filter_model), move |item| {
-        let sender = RefCell::new(channel().0);
-        let stat = item.downcast_ref::<GStatObject>()
-            .expect("Needs to be a GStatObject"); 
+    let app_stats_selection_model = NoSelection::new(Option::<ListStore>::None);
+    app_stats_selection_model.set_model(Some(&app_stats_filter_model));
 
+    let app_stats_list_view = ListView::builder()
+        .orientation(Orientation::Vertical)
+        .model(&app_stats_selection_model)
+        .factory(&stats_list_factory)
+        .build();
+
+    stats_list_factory.connect_setup(move |_, list_item| {
         let adjustment = Adjustment::builder()
-            .lower(0f64)
+            .lower(i32::MIN as f64)
             .upper(i32::MAX as f64)
             .page_size(0.0)
             .build();
 
-        if stat.is_integer() {
-            adjustment.set_step_increment(1.0);
-            adjustment.set_value(stat.current_value());
-        } else {
-            adjustment.set_step_increment(0.01);
-            adjustment.set_value(stat.current_value());
-        }
-        
-        if stat.is_increment_only() {
-            adjustment.set_lower(stat.current_value());
-        }
-
         let spin_button = SpinButton::builder()
-            .digits(if stat.is_integer() { 0 } else { 2 })
             .adjustment(&adjustment)
             .build();
-
-        let app_id = app_id_clone.get().unwrap_or_default();
-        let stat_id = stat.id().clone();
-        let integer_stat = stat.is_integer();
-        let increment_only_stat = stat.is_increment_only();
-        let stat_original_value = stat.original_value();
-        
-        let (tx_ui_update, rx_ui_update) = channel::<(bool, f64)>();
-        let adjustment_clone_for_ui = adjustment.clone();
-        let spin_button_clone = spin_button.clone();
-
-        // TODO: This feels highly unoptimized: a timeout task is ran every 30ms for each stat entry
-        // All of this to update a few controls. This stems from the fact that I did not manage
-        // to move the spinbutton or adjustment accross threads.
-        glib::timeout_add_local(
-            Duration::from_millis(30),
-            clone!(#[strong] adjustment_clone_for_ui, move || {
-                // println!("Running timeout task");
-                while let Ok((success, value)) = rx_ui_update.try_recv() {
-                    if success {
-                        adjustment_clone_for_ui.set_lower(value);
-                    }
-                    else {
-                        spin_button_clone.set_value(value);
-                    }
-                }
-                glib::ControlFlow::Continue
-            }),
-        );
-
-
-        spin_button.connect_value_changed(move |button| {
-            if sender.borrow_mut().send(button.value()).is_ok() { return }
-            let (new_sender, receiver) = channel();
-            *sender.borrow_mut() = new_sender;
-            let mut value = button.value();
-            let stat_id = stat_id.clone();
-
-            // Clone the sender for the UI update channel to move into the spawn_blocking closure
-            let tx_ui_update_clone = tx_ui_update.clone();
-
-            spawn_blocking(move || {
-                while let Ok(new) = receiver.recv_timeout(Duration::from_millis(500)) {
-                    value = new;
-                }
-                let res = if integer_stat {
-                    SetIntStat {
-                        app_id,
-                        stat_id,
-                        value: value as i32
-                    }.request()
-                } else {
-                    SetFloatStat {
-                        app_id,
-                        stat_id,
-                        value: value as f32
-                    }.request()
-                };
-
-                match res {
-                    Some(success) if success => {
-                        if increment_only_stat {
-                            if tx_ui_update_clone.send((true, value)).is_err() {
-                                eprintln!("Failed to send value to main thread for UI update. Channel might be closed.");
-                            }
-                        }
-                    },
-                    _ => {
-                        if tx_ui_update_clone.send((false, stat_original_value)).is_err() {
-                            eprintln!("Failed to send value to main thread for UI update. Channel might be closed.");
-                        }
-                    }
-                }
-            });
-        });
 
         let button_box = Box::builder()
             .orientation(Orientation::Vertical)
@@ -143,11 +53,10 @@ pub fn create_stats_view(app_id: Rc<Cell<Option<u32>>>) -> (ListBox, ListStore, 
             .hexpand(true)
             .build();
         let name_label = Label::builder()
-            .label(stat.display_name())
             .ellipsize(EllipsizeMode::End)
             .halign(Align::Start)
             .build();
-        
+
         let stat_box = Box::builder()
             .orientation(Orientation::Horizontal)
             .margin_top(8)
@@ -157,17 +66,185 @@ pub fn create_stats_view(app_id: Rc<Cell<Option<u32>>>) -> (ListBox, ListStore, 
             .build();
         stat_box.append(&name_label);
         stat_box.append(&spacer);
-        
-        if stat.is_increment_only() {
-            let icon_increment_only = gtk::Image::from_icon_name("go-up-symbolic");
-            icon_increment_only.set_margin_end(8);
-            icon_increment_only.set_tooltip_text(Some("Increment only"));
-            stat_box.append(&icon_increment_only);
-        }
-        
+
+        let icon_increment_only = gtk::Image::from_icon_name("go-up-symbolic");
+        icon_increment_only.set_margin_end(8);
+        icon_increment_only.set_tooltip_text(Some("Increment only"));
+        stat_box.append(&icon_increment_only);
+
         stat_box.append(&button_box);
-        stat_box.into()
+        list_item.set_child(Some(&stat_box));
+
+        // Expression bindings
+        list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("display-name")
+            .bind(&name_label, "label", Widget::NONE);
+
+        list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("current-value")
+            .bind(&adjustment, "value", Widget::NONE);
+
+        list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("is-increment-only")
+            .bind(&icon_increment_only, "visible", Widget::NONE);
+
+        // Custom expressions
+        let is_integer_expr = list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("is-integer");
+
+        let is_integer_expr_2 = list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("is-integer");
+
+        let is_increment_only_expr = list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("is-increment-only");
+
+        let original_value_expr = list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("original-value");
+
+        let adjustment_step_increment_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+            let is_integer = values.get(1)
+                .and_then(|val| val.get::<bool>().ok())
+                .unwrap_or(false);
+            let step_increment = if is_integer { 1.0 } else { 0.01 };
+            Some(step_increment.to_value())
+        });
+
+        let adjustment_lower_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+            let original_value = values.get(1)
+                .and_then(|val| val.get::<f64>().ok())
+                .unwrap_or(0f64);
+            let is_increment_only = values.get(2)
+                .and_then(|val| val.get::<bool>().ok())
+                .unwrap_or(false);
+
+            let lower = if is_increment_only { original_value } else { i32::MIN as f64 };
+            Some(lower.to_value())
+        });
+
+        let spin_button_digits_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+            let is_integer = values.get(1)
+                .and_then(|val| val.get::<bool>().ok())
+                .unwrap_or(false);
+            let digits : u32 = if is_integer { 0 } else { 2 };
+            Some(digits.to_value())
+        });
+
+        let adjustment_step_increment_expression = ClosureExpression::new::<f64>(
+            &[is_integer_expr], adjustment_step_increment_closure
+        );
+        adjustment_step_increment_expression.bind(&adjustment, "step-increment", Widget::NONE);
+
+        let adjustment_lower_expression = ClosureExpression::new::<f64>(
+            &[original_value_expr, is_increment_only_expr], adjustment_lower_closure
+        );
+        adjustment_lower_expression.bind(&adjustment, "lower", Widget::NONE);
+
+        let spin_button_digits_expression = ClosureExpression::new::<u32>(
+            &[is_integer_expr_2], spin_button_digits_closure
+        );
+        spin_button_digits_expression.bind(&spin_button, "digits", Widget::NONE);
     });
 
-    (app_stat_list, app_stat_model, app_stat_string_filter)
+    stats_list_factory.connect_bind(move |_, list_item| unsafe {
+        let list_item = list_item
+            .downcast_ref::<ListItem>()
+            .expect("Needs to be a ListItem");
+        let stat_object = list_item.item()
+            .and_then(|item| item.downcast::<GStatObject>().ok())
+            .expect("Item should be a GStatObject");
+
+        let spin_button = list_item.child()
+            .and_then(|child| child.downcast::<Box>().ok())
+            .and_then(|stat_box| stat_box.last_child()) // This gets button_box
+            .and_then(|button_box| button_box.downcast::<Box>().ok())
+            .and_then(|button_box| button_box.last_child()) // This gets spin_button
+            .and_then(|spin_button_widget| spin_button_widget.downcast::<SpinButton>().ok())
+            .expect("Could not find SpinButton widget");
+
+        // Disconnect previous handler if it exists
+        if let Some(handler_id) = list_item.steal_data::<glib::SignalHandlerId>("spin-button-value-changed-handler") {
+            spin_button.disconnect(handler_id);
+        }
+
+        let sender = RefCell::new(channel::<f64>().0);
+
+        spin_button.connect_value_changed(move |button| {
+            if sender.borrow_mut().send(button.value()).is_ok() { return }
+            let (new_sender, receiver) = channel();
+            *sender.borrow_mut() = new_sender;
+            let mut value = button.value();
+            let integer_stat = stat_object.is_integer();
+            let stat_id = stat_object.id().clone();
+            let stat_object_clone = stat_object.clone();
+            let app_id = stat_object.app_id().clone();
+
+            glib::spawn_future_local(async move {
+                let join_handle = spawn_blocking(move || {
+                    while let Ok(new) = receiver.recv_timeout(Duration::from_millis(500)) {
+                        // value = new; is not used, there can be floating point math imprecisions
+                        value = (new * 100.0).round() / 100.0;
+                    }
+
+                    let res = if integer_stat {
+                        SetIntStat {
+                            app_id,
+                            stat_id,
+                            value: value as i32
+                        }.request()
+                    } else {
+                        SetFloatStat {
+                            app_id,
+                            stat_id,
+                            value: value as f32
+                        }.request()
+                    };
+
+                    match res {
+                        Some(success) if success => {
+                            (true, value)
+                        },
+                        _ => {
+                            (false, value)
+                        }
+                    }
+                });
+
+                let (success, debounced_value) = join_handle.await.expect("spawn_blocking task panicked");
+
+                if success {
+                    stat_object_clone.set_original_value(debounced_value);
+                } else {
+                    stat_object_clone.set_current_value(stat_object_clone.original_value());
+                }
+            });
+        });
+    });
+
+    stats_list_factory.connect_unbind(move |_, list_item| unsafe {
+        let list_item = list_item
+            .downcast_ref::<ListItem>()
+            .expect("Needs to be a ListItem");
+
+        let spin_button = list_item.child()
+            .and_then(|child| child.downcast::<Box>().ok())
+            .and_then(|stat_box| stat_box.last_child()) // This gets button_box
+            .and_then(|button_box| button_box.downcast::<Box>().ok())
+            .and_then(|button_box| button_box.last_child()) // This gets spin_button
+            .and_then(|spin_button_widget| spin_button_widget.downcast::<SpinButton>().ok())
+            .expect("Could not find SpinButton widget");
+
+        // Disconnect previous handler if it exists
+        if let Some(handler_id) = list_item.steal_data::<glib::SignalHandlerId>("spin-button-value-changed-handler") {
+            spin_button.disconnect(handler_id);
+        }
+    });
+
+    (app_stats_list_view, app_stats_model, app_stats_string_filter)
 }

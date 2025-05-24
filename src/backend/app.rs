@@ -133,12 +133,8 @@ pub fn app(app_id: AppId_t) -> i32 {
                         SteamResponse::Error::<Vec<AchievementInfo>>(e.to_string())
                     }
                 };
-
-                #[cfg(debug_assertions)]
-                let response_str = serde_json::to_string(&response).unwrap();
+                
                 send_response(&mut conn, response).expect("Failed to send response");
-                #[cfg(debug_assertions)]
-                dev_println!("Achievements: {response_str}");
             }
 
             SteamCommand::GetStats(app_id_param) => {

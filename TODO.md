@@ -15,7 +15,7 @@ At the very end:
 ### Medium priority
 
 - Support for multiple simultaneous instances (launch in new window button)
-- Optimize the stats page, as I'm fairly confident the timeout solution is a "hack" more than a correct solution
+- Add a context menu entry for the App view: Reset stats & achievements (steamuserstats.reset_all_stats)
 - Optimize image loading by accessing steam local banner images
 - Github action to generate Windows build artifacts
 
@@ -32,6 +32,20 @@ At the very end:
 - Is there no padding around spinboxes on other builds too?
 - Is the spinner not always spinning always on my machine?
 - Context menu "Refresh ach & statsF5" → add a gap between label and accel
+
+In connect_bind closures, instead of calling unsafe steal_data, store the SignalHandlerId in the listItem
+```rust
+let handler_id = spin_button.connect_value_changed(|spin_button| {
+println!("SpinButton value changed: {}", spin_button.value());
+});
+list_item.set_data("spin-button-value-changed-handler", handler_id);
+
+...
+
+spin_button.disconnect(handler_id);
+
+```
+
 
 ### Help needed
 

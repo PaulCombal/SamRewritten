@@ -11,6 +11,7 @@ impl GStatObject {
         match info {
             StatInfo::Float(info) => Object::builder()
                 .property("id", info.id)
+                .property("app-id", info.app_id)
                 .property("display-name", info.display_name)
                 .property("original-value", info.original_value as f64)
                 .property("current-value", info.float_value as f64)
@@ -19,6 +20,7 @@ impl GStatObject {
                 .build(),
             StatInfo::Integer(info) => Object::builder()
                 .property("id", info.id)
+                .property("app-id", info.app_id)
                 .property("display-name", info.display_name)
                 .property("original-value", info.original_value as f64)
                 .property("current-value", info.int_value as f64)
@@ -56,6 +58,9 @@ mod imp {
 
         #[property(get, set)]
         is_increment_only: Cell<bool>,
+
+        #[property(get, set)]
+        app_id: Cell<u32>,
     }
 
     #[glib::object_subclass]
