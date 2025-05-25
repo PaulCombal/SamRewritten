@@ -1,7 +1,6 @@
 ### High priority (must finish before release)
 
-- Show the icon 'next most achieved' next to the next most achieved achievement, maybe other icons like 'rare' too when achievement has a low global achievement achieved percent
-- Show global achievement achieved percent
+- Rounded corners around stats and achievements lists
 - Add an entry "Launch appId X" when only numbers are typed inside the app search bar
 
 At the very end:
@@ -27,7 +26,6 @@ At the very end:
 
 ### Nices to have
 
-- Rounded corners around stats and achievements lists
 - Is there no padding around spinboxes on other builds too?
 - Is the spinner not always spinning always on my machine?
 - Context menu "Refresh ach & statsF5" → add a gap between label and accel
