@@ -1,0 +1,9 @@
+# No AppImage build until this gets merged: https://github.com/StratusFearMe21/cargo-appimage/pull/36
+# Snaps cannot be built inside docker containers since they require systemd
+
+services:
+  rust-gtk-appimage:
+    image: ghcr.io/13hannes11/gtk4-rs-docker:latest-appimage
+    volumes:
+      - ../:/mnt:z
+    command: /bin/bash -c "cargo appimage"
