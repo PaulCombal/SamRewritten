@@ -50,7 +50,7 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
             .build();
         icon_box.append(&icon_stack);
 
-        let protected_icon = gtk::Image::from_icon_name("go-up-symbolic");
+        let protected_icon = gtk::Image::from_icon_name("action-unavailable-symbolic");
         protected_icon.set_margin_end(8);
         protected_icon.set_tooltip_text(Some("This achievement is protected."));
 

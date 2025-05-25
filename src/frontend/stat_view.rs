@@ -72,6 +72,11 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
         icon_increment_only.set_tooltip_text(Some("Increment only"));
         stat_box.append(&icon_increment_only);
 
+        let protected_icon = gtk::Image::from_icon_name("action-unavailable-symbolic");
+        protected_icon.set_margin_end(8);
+        protected_icon.set_tooltip_text(Some("This statistic is protected."));
+        stat_box.append(&protected_icon);
+
         stat_box.append(&button_box);
         list_item.set_child(Some(&stat_box));
 
@@ -108,6 +113,14 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
             .property_expression("item")
             .chain_property::<GStatObject>("original-value");
 
+        let permission_expr = list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("permission");
+        
+        let permission_expr_2 = list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("permission");
+
         let adjustment_step_increment_closure = glib::RustClosure::new(|values: &[glib::Value]| {
             let is_integer = values.get(1)
                 .and_then(|val| val.get::<bool>().ok())
@@ -136,6 +149,22 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
             Some(digits.to_value())
         });
 
+        let permission_sensitive_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+            let permission = values.get(1)
+                .and_then(|val| val.get::<i32>().ok())
+                .unwrap_or(0);
+            let is_sensitive = (permission & 2) == 0;
+            Some(is_sensitive.to_value())
+        });
+        
+        let permission_protected_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+            let permission = values.get(1)
+                .and_then(|val| val.get::<i32>().ok())
+                .unwrap_or(0);
+            let is_protected = (permission & 2) != 0;
+            Some(is_protected.to_value())
+        });
+
         let adjustment_step_increment_expression = ClosureExpression::new::<f64>(
             &[is_integer_expr], adjustment_step_increment_closure
         );
@@ -150,6 +179,16 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
             &[is_integer_expr_2], spin_button_digits_closure
         );
         spin_button_digits_expression.bind(&spin_button, "digits", Widget::NONE);
+
+        let permission_sensitive_expr = ClosureExpression::new::<bool>(
+            &[permission_expr], permission_sensitive_closure
+        );
+        permission_sensitive_expr.bind(&spin_button, "sensitive", Widget::NONE);
+        
+        let permission_protected_expr = ClosureExpression::new::<bool>(
+            &[permission_expr_2], permission_protected_closure
+        );
+        permission_protected_expr.bind(&protected_icon, "visible", Widget::NONE);
     });
 
     stats_list_factory.connect_bind(move |_, list_item| unsafe {

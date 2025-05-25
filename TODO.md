@@ -2,7 +2,6 @@
 
 - Show the icon 'next most achieved' next to the next most achieved achievement, maybe other icons like 'rare' too when achievement has a low global achievement achieved percent
 - Show global achievement achieved percent
-- Grey out controls where the achievements/stats do not have correct permissions (cf stat_definition.rs. Achievements and stats have a protected flag. If this flag is on, it will not be possible to edit their value, probably because they are managed server-side).
 - Add an entry "Launch appId X" when only numbers are typed inside the app search bar
 
 At the very end:
