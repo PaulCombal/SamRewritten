@@ -79,6 +79,7 @@ pub fn create_main_ui(application: &Application) {
     let list_view = ListView::builder()
         .single_click_activate(true)
         .orientation(Orientation::Vertical)
+        .show_separators(true)
         .model(&list_selection_model)
         .factory(&list_factory)
         .build();
