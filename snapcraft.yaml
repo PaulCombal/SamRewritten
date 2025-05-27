@@ -1,0 +1,27 @@
+name: samrewritten
+version: '1.0'
+summary: A Steam achievements and stats manager
+description: Unlock achievements and stats on Steam, and much more!
+confinement: devmode
+base: core24
+parts:
+  samrewritten:
+    plugin: rust
+    source: .
+    build-environment:
+      - RUSTUP_TOOLCHAIN: stable
+    build-packages:
+      - libpango1.0-dev
+      - libcairo2-dev
+      - libglib2.0-dev
+      - libssl-dev
+      - pkg-config
+
+apps:
+  samrewritten:
+    command: bin/samrewritten
+    extensions: [gnome]
+    plugs:
+      - network
+      - wayland
+      - x11
