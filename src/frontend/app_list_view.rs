@@ -5,6 +5,7 @@ use gtk::glib;
 use gtk::glib::{clone, MainContext};
 use gtk::prelude::*;
 use gtk::{Align, Application, ApplicationWindow, Box, Button, FilterListModel, HeaderBar, Image, Label, ListItem, ListView, NoSelection, Orientation, Paned, PolicyType, ScrolledWindow, SearchEntry, SignalListItemFactory, Spinner, Stack, StackTransitionType, StringFilter, StringFilterMatchMode, Widget};
+use crate::backend::app_lister::{AppModel, AppModelType};
 use crate::frontend::achievement::GAchievementObject;
 use crate::frontend::application_actions::{set_app_action_enabled, setup_app_actions};
 use crate::frontend::app_view::create_app_view;
@@ -16,6 +17,7 @@ use crate::frontend::ui_components::{create_about_dialog, create_context_menu_bu
 use super::stat::GStatObject;
 
 pub fn create_main_ui(application: &Application) {
+    let launch_app_by_id_visible = Rc::new(Cell::new(false));
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
 
     // Create the UI components for the app view
@@ -203,14 +205,26 @@ pub fn create_main_ui(application: &Application) {
             .chain_property::<GSteamAppObject>("image_url")
             .bind(&image, "url", Widget::NONE);
     });
-
     // Search entry setup
     search_entry.connect_search_changed(clone!(
-        #[weak] list_string_filter, #[weak] app_stat_string_filter, #[weak] app_achievement_string_filter, move |entry| {
+        #[weak] list_string_filter, #[weak] app_stat_string_filter, #[weak] app_achievement_string_filter, #[weak] list_store, move |entry| {
             let text = Some(entry.text()).filter(|s| !s.is_empty());
             app_achievement_string_filter.set_search(text.as_deref());
             app_stat_string_filter.set_search(text.as_deref());
             list_string_filter.set_search(text.as_deref());
+
+            if launch_app_by_id_visible.take() { list_store.remove(0) }
+            if let Some(app_id) = text.map(|t| t.parse::<u32>().ok()).flatten() {
+                launch_app_by_id_visible.set(true);
+                list_store.insert(0, &GSteamAppObject::new(AppModel {
+                    app_id,
+                    app_name: format!("{app_id}"),
+                    app_type: AppModelType::App,
+                    developer: "Unknown".to_string(),
+                    image_url: None,
+                    metacritic_score: None
+                }));
+            }
         }
     ));
 
