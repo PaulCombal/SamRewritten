@@ -218,7 +218,7 @@ pub fn create_main_ui(application: &Application) {
                 launch_app_by_id_visible.set(true);
                 list_store.insert(0, &GSteamAppObject::new(AppModel {
                     app_id,
-                    app_name: format!("{app_id}"),
+                    app_name: format!("App {app_id}"),
                     app_type: AppModelType::App,
                     developer: "Unknown".to_string(),
                     image_url: None,

@@ -1,17 +1,20 @@
 ### High priority (must finish before release)
 
-- Rounded corners around stats and achievements lists
-- Add an entry "Launch appId X" when only numbers are typed inside the app search bar
+- Put apps.xml somewhere more meaningful
+- Give user feedback when a search returns no result
 
 At the very end:
 - Add license banner headers. Respect banner headers from Gibbed's Steam Achievement Manager when needed
 - Populate the About dialog, do a better logo
-- Github action for snapcraft releases
 - Write a Readme and documentation
 - Share on Reddit
 
+At the very very end (open-source repo required):
+- Github action for snapcraft releases
+
 ### Medium priority
 
+- Find out why this looks like crap on Linux. Find out if builds will also look like crap on other Linux machines.
 - Support for multiple simultaneous instances (launch in new window button)
 - Add a context menu entry for the App view: Reset stats & achievements (steamuserstats.reset_all_stats)
 - Optimize image loading by accessing steam local banner images
@@ -25,10 +28,6 @@ At the very end:
 - Improve error handling (handle .expects, .unwraps, etc)
 
 ### Nices to have
-
-- Is there no padding around spinboxes on other builds too?
-- Is the spinner not always spinning always on my machine?
-- Context menu "Refresh ach & statsF5" → add a gap between label and accel
 
 In connect_bind closures, instead of calling unsafe steal_data, store the SignalHandlerId in the listItem
 ```rust

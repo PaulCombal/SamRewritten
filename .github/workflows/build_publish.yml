@@ -13,23 +13,31 @@ jobs:
       - uses: actions/checkout@v4
 #      - name: Build binaries in "${{ matrix.BUILD_TARGET }}" mode
 #        run: cargo build --profile ${{ matrix.BUILD_TARGET }}
-      - name: Install Snapcraft
-        uses: samuelmeuli/action-snapcraft@v3
-      - name: Prepare snap folder
-        run: |
-          ls -la
-          mkdir -p ~/samrewritten
-          cp package/snapcraft.yaml ~/samrewritten/
-          cd ~/samrewritten
-          sudo adduser $USER lxd
-          echo We are in the following folder
-          pwd
-          echo groups
-          groups
-          sudo snapcraft
-          # Below is for testing only
-          sudo snap install --devmode --dangerous *.snap
-          snap list
+#      - name: Install Snapcraft
+#        uses: samuelmeuli/action-snapcraft@v3
+#      - name: Prepare snap folder
+#        run: |
+#          ls -la
+#          mkdir -p ~/samrewritten
+#          cp package/snapcraft.yaml ~/samrewritten/
+#          cd ~/samrewritten
+#          sudo adduser $USER lxd
+#          echo We are in the following folder
+#          pwd
+#          echo groups
+#          groups
+#          sudo snapcraft
+#          # Below is for testing only
+#          sudo snap install --devmode --dangerous *.snap
+#          snap list
+      - uses: snapcore/action-build@v1
+        id: snapcraft
+        with:
+          path: package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snap
+          path: ${{ steps.snapcraft.outputs.snap }}
       
 
 #      - name: Upload release artifact
