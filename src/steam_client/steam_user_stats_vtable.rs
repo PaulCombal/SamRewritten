@@ -5,10 +5,24 @@ use crate::steam_client::steamworks_types::{SteamAPICall_t, CSteamID, ELeaderboa
 
 #[repr(C)]
 pub struct ISteamUserStatsVTable {
-    pub get_stat_int32: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, *mut c_int) -> bool,
+    #[cfg(target_os = "windows")]
     pub get_stat_float: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, *mut c_float) -> bool,
-    pub set_stat_int32: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, c_int) -> bool,
+    #[cfg(target_os = "windows")]
+    pub get_stat_int32: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, *mut c_int) -> bool,
+    #[cfg(target_os = "windows")]
     pub set_stat_float: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, c_float) -> bool,
+    #[cfg(target_os = "windows")]
+    pub set_stat_int32: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, c_int) -> bool,
+
+    #[cfg(not(target_os = "windows"))]
+    pub get_stat_int32: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, *mut c_int) -> bool,
+    #[cfg(not(target_os = "windows"))]
+    pub get_stat_float: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, *mut c_float) -> bool,
+    #[cfg(not(target_os = "windows"))]
+    pub set_stat_int32: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, c_int) -> bool,
+    #[cfg(not(target_os = "windows"))]
+    pub set_stat_float: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, c_float) -> bool,
+
     pub update_avg_rate_stat: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, c_float, f64) -> bool,
     pub get_achievement: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char, *mut bool) -> bool,
     pub set_achievement: unsafe extern "C" fn(*mut ISteamUserStats, *const c_char) -> bool,
