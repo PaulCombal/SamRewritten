@@ -1,9 +1,10 @@
 name: samrewritten
 version: '1.0'
-summary: A Steam achievements and stats manager
+summary: SamRewritten
 description: Unlock achievements and stats on Steam, and much more!
 confinement: devmode
 base: core24
+license: GPL-3.0
 parts:
   samrewritten:
     plugin: rust
@@ -16,12 +17,29 @@ parts:
       - libglib2.0-dev
       - libssl-dev
       - pkg-config
+    stage-packages:
+      - glib-networking
+#      - libdrm-common
+#      - libdrm2
 
 apps:
   samrewritten:
+    environment:
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy # remove when this is in stable https://github.com/canonical/snapcraft-desktop-integration/pull/27
     command: bin/samrewritten
     extensions: [gnome]
     plugs:
       - network
       - wayland
       - x11
+#      - home
+
+#layout:
+#  /usr/share/libdrm/amdgpu.ids:
+#    symlink: $SNAP/usr/share/libdrm/amdgpu.ids
+#  /usr/share/libdrm:
+#    bind: $SNAP/gnome-platform/usr/share/libdrm
+#  /usr/share/libdrm:
+#    bind: $SNAP/usr/share/libdrm
+
+#/usr/share/libdrm/amdgpu.ids: No such file or directory

@@ -6,3 +6,12 @@ macro_rules! dev_println {
         }
     };
 }
+
+#[macro_export]
+macro_rules! dev_print {
+    ($($arg:tt)*) => {
+        if cfg!(debug_assertions) {
+            print!($($arg)*);
+        }
+    };
+}

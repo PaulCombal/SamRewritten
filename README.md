@@ -11,7 +11,7 @@ trademarks of their respective owners, Valve Corporation and Microsoft.*
 ![SamRewritten screenshot](/assets/screenshot1.png)
 ![SamRewritten screenshot](/assets/screenshot2.png)
 
-# Thank you
+## Thank you
 
 SamRewritten is heavily inspired by other wonderful projects such
 as [Steam Achievements Manager by Gibbed](https://github.com/gibbed/SteamAchievementManager)
@@ -21,15 +21,15 @@ to [the legacy version of this very project](https://github.com/PaulCombal/SamRe
 
 And most of all, thank you to all our awesome users and stargazers, giving us motivation to keep building.
 
-# What is SamRewritten
+## What is SamRewritten?
 
 SamRewritten is a tool that allows you to unlock, and lock again achievements on your Steam account.
 Additionally, some apps and games expose stats which can also be edited using this tool. Achievements do not have any
 financial value, however they are very desirable for bragging rights!
 
-# Installation
+## Installation
 
-Packages are available in the [releases tab](https://github.com/PaulCombal/SamRewritten/releases) for supported platforms.
+Packages are available in the [release tab](https://github.com/PaulCombal/SamRewritten/releases) for supported platforms.
 
 <!--
 Additionally, Snap users can install SamRewritten using the App store or with the following command:
@@ -38,11 +38,11 @@ snap install samrewritten
 ```
 -->
 
-# Limitations
+## Limitations
 
 On Linux, this tool is **only** compatible with **Snap installations of Steam**.
 
-# End user agreements
+## End user agreements
 
 This software serves as a Proof-of-Concept. Users are responsible of their actions using this tool.
 By using this tools, you agree that you are the only responsible to the management of your Steam account. None of the

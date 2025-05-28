@@ -6,7 +6,7 @@ use interprocess::local_socket::traits::ListenerExt;
 use serde::Serialize;
 use crate::backend::app_manager::AppManager;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
-use crate::dev_println;
+use crate::{dev_print, dev_println};
 use crate::frontend::ipc_process::get_app_socket_path;
 use crate::steam_client::steamworks_types::AppId_t;
 use crate::utils::ipc_types::{SteamCommand, SteamResponse};
@@ -74,7 +74,7 @@ pub fn app(app_id: AppId_t) -> i32 {
         let mut conn = BufReader::new(conn);
         conn.read_line(&mut buffer).expect("Failed to read line");
 
-        print!("[APP SERVER] Received: {buffer}");
+        dev_print!("[APP SERVER] Received: {buffer}");
 
         let command: SteamCommand = match serde_json::from_str(&buffer) {
             Ok(c) => {

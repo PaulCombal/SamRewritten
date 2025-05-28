@@ -3,6 +3,7 @@ mod steam_client;
 mod utils;
 mod frontend;
 
+use std::env;
 use std::process::Command;
 
 use gtk::glib;
@@ -27,6 +28,10 @@ fn main() -> glib::ExitCode {
         return glib::ExitCode::from(exit_code);
     }
 
+    dev_println!("[CLIENT] Starting client with environment variables:");
+    #[cfg(debug_assertions)]
+    env::vars().for_each(|(key, value)| println!("{}: {}", key, value));
+    
     let current_exe = get_executable_path();
     let orchestrator = Command::new(current_exe)
         .arg("--orchestrator")

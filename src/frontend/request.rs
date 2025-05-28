@@ -2,17 +2,18 @@ use std::fmt::Debug;
 use std::io::{BufRead, BufReader, Write};
 use interprocess::local_socket::traits::Stream;
 use serde::de::DeserializeOwned;
+use interprocess::local_socket::prelude::LocalSocketStream;
 use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::utils::ipc_types::{SteamCommand, SteamResponse};
 use super::ipc_process::get_orchestrator_socket_path;
-use interprocess::local_socket::prelude::LocalSocketStream;
+use crate::dev_println;
 
 pub trait Request: Into<SteamCommand> + Debug + Clone {
     type Response: DeserializeOwned;
 
     fn request(self) -> Option<Self::Response> {
-        println!("[CLIENT] Requesting {self:?}");
+        dev_println!("[CLIENT] Requesting {self:?}");
         let (_, socket_name) = get_orchestrator_socket_path();
         let mut stream = LocalSocketStream::connect(socket_name)
             .inspect_err(|error| eprintln!("[CLIENT] Request stream failed: {error}"))

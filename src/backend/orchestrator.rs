@@ -9,7 +9,7 @@ use interprocess::local_socket::prelude::LocalSocketStream;
 use interprocess::local_socket::traits::{ListenerExt, Stream};
 use crate::backend::app_lister::AppLister;
 use crate::backend::connected_steam::ConnectedSteam;
-use crate::dev_println;
+use crate::{dev_print, dev_println};
 use crate::frontend::ipc_process::{get_app_socket_path, get_orchestrator_socket_path};
 use crate::utils::ipc_types::{SteamCommand, SteamResponse};
 use crate::utils::utils::get_executable_path;
@@ -103,7 +103,7 @@ pub fn orchestrator() -> i32 {
         let mut conn = BufReader::new(conn);
         conn.read_line(&mut buffer).expect("Failed to read line");
 
-        print!("[ORCHESTRATOR] Received: {buffer}");
+        dev_print!("[ORCHESTRATOR] Received: {buffer}");
 
         let command: SteamCommand = match serde_json::from_str(&buffer) {
             Ok(c) => c,

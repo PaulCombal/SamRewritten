@@ -165,13 +165,13 @@ mod imp {
         fn load(&self, url: &str) {
             let mut path = temp_dir();
             let url = url.to_string();
-            dev_println!("[CLIENT] Loading URL: {url}");
             let (sender, receiver) = sync_channel::<Texture>(0);
             self.receiver.borrow_mut().replace(receiver);
             path.push(format!("{}.jpg", base64_encode(url.as_bytes())));
 
             spawn_blocking(move || {
                 if !exists(path.as_path()).unwrap_or_default() {
+                    dev_println!("[CLIENT] Downloading: {url}");
                     //Download and store to path
                     let response = match Client::new().get(url.as_str()).send()
                         .and_then(|response| response.error_for_status())
@@ -184,6 +184,9 @@ mod imp {
                         eprintln!("[CLIENT] Failed to write {url} to {path:?}: {error}");
                         return;
                     }
+                }
+                else {
+                    dev_println!("[CLIENT] Cached loading: {url}");   
                 }
 
                 let data = match std::fs::read(path.as_path()) {

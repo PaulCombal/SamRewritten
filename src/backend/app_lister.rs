@@ -9,6 +9,7 @@ use crate::dev_println;
 use crate::steam_client::steam_apps_001_wrapper::{SteamApps001, SteamApps001AppDataKeys};
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steamworks_types::AppId_t;
+use crate::utils::utils::get_app_cache_dir;
 
 pub struct AppLister<'a> {
     app_list_url: String,
@@ -75,15 +76,15 @@ struct XmlGames {
     pub games: Vec<XmlGame>,
 }
 impl<'a> AppLister<'a> {
-
     pub fn new(steam_apps_001: &'a SteamApps001, steam_apps: &'a SteamApps ) -> Self {
+        let cache_dir = get_app_cache_dir();
         let app_list_url = std::env::var("APP_LIST_URL").unwrap_or(String::from("https://gib.me/sam/games.xml"));
-        let app_list_local = std::env::var("APP_LIST_LOCAL").unwrap_or(String::from("./apps.xml"));
+        let app_list_local = std::env::var("APP_LIST_LOCAL").unwrap_or(String::from("/apps.xml"));
         let current_language = steam_apps.get_current_game_language();
 
         AppLister {
             app_list_url,
-            app_list_local,
+            app_list_local: cache_dir + &app_list_local,
             current_language,
             steam_apps_001,
             steam_apps,

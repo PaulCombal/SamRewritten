@@ -8,6 +8,7 @@ use crate::backend::types::UserStatType;
 use crate::dev_println;
 use crate::steam_client::steamworks_types::{AppId_t, EResult, GlobalAchievementPercentagesReady_t};
 use crate::steam_client::wrapper_types::SteamCallbackId;
+use crate::utils::utils::get_user_game_stats_schema_path;
 
 pub struct AppManager {
     app_id: AppId_t,
@@ -39,14 +40,7 @@ impl<'a> AppManager {
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs
     pub fn load_definitions(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        #[cfg(target_os = "linux")]
-        let home = env::var("HOME")?;
-        #[cfg(target_os = "linux")]
-        let bin_file = PathBuf::from(home + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_" + &self.app_id.to_string() + ".bin");
-        #[cfg(target_os = "windows")]
-        let program_files = env::var("ProgramFiles(x86)")?;
-        #[cfg(target_os = "windows")]
-        let bin_file = PathBuf::from(program_files + "\\Steam\\appcache\\stats\\UserGameStatsSchema_" + &self.app_id.to_string() + ".bin");
+        let bin_file = PathBuf::from(get_user_game_stats_schema_path(&self.app_id));
 
         let kv = KeyValue::load_as_binary(bin_file)?;
         let current_language = self.connected_steam.apps.get_current_game_language();

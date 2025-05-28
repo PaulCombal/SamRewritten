@@ -1,0 +1,57 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" version="27.1.0">
+  <diagram name="Page-1" id="Zzxdolf3dTAs2SkdFNAn">
+    <mxGraphModel dx="1197" dy="768" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-1" value="Client UI" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="291" y="140" width="169" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-3" value="Orchestrator" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="291" y="290" width="169" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-4" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="rC1RqHQAdKdIl0PhY7Ul-3" target="rC1RqHQAdKdIl0PhY7Ul-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="500" as="sourcePoint" />
+            <mxPoint x="440" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-5" value="Serves as a proxy and executes Steam API calls without&amp;nbsp;&lt;div&gt;an App Id. Strictly one instance per Client UI&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="500" y="310" width="330" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-6" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="580" y="210" as="sourcePoint" />
+            <mxPoint x="630" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-8" value="Socket connection" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="rC1RqHQAdKdIl0PhY7Ul-6">
+          <mxGeometry x="0.5" y="-2" relative="1" as="geometry">
+            <mxPoint x="-9" y="6" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-9" value="App 480 server" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="110" y="460" width="169" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-10" value="App 220 server" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="460" width="169" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-11" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="rC1RqHQAdKdIl0PhY7Ul-10" target="rC1RqHQAdKdIl0PhY7Ul-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="460" as="sourcePoint" />
+            <mxPoint x="500" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-12" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="rC1RqHQAdKdIl0PhY7Ul-9" target="rC1RqHQAdKdIl0PhY7Ul-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="460" as="sourcePoint" />
+            <mxPoint x="500" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rC1RqHQAdKdIl0PhY7Ul-13" value="Serves app functions.&amp;nbsp;&lt;div&gt;Many instances possible per orchestrator.&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="545" y="480" width="240" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
