@@ -1,8 +1,18 @@
+# Snap publishing is a nightmare. If any Snapcraft guru reads this, feel free to work your magic
+# - /usr/share/libdrm/amdgpu.ids: No such file or directory --> no animations, software rendering mode for all snaps on my AMD laptop
+# - /home/paul/snap/steam/common/.local/share/Steam/linux64/steamclient.so -- Whatever I do, I get an access denied error
+# - Desktop entry not working
+# - I had to add a slot just to display the main window, people say this means I have to get manual approval
+
+# I've already spent way too much time trying to package this as a snap, and this was a pain in the ass all the way
+# Canonical needs to flesh out this thing if they want any programmer to use their package distribution.
+# For these reasons, fuck that, I'll release as an AppImage for the time being
+
 name: samrewritten
 version: '1.0'
-summary: SamRewritten
+summary: Steam achievements manager, rewritten
 description: Unlock achievements and stats on Steam, and much more!
-confinement: devmode
+confinement: strict
 base: core24
 license: GPL-3.0
 parts:
@@ -22,6 +32,19 @@ parts:
 #      - libdrm-common
 #      - libdrm2
 
+plugs:
+  access-steam-folder:
+    interface: personal-files
+    read:
+      - $HOME/snap/steam/common/.local/share/Steam/linux64/steamclient.so
+
+slots:
+  dbus-samrewritten:
+    interface: dbus
+    bus: session
+    name: org.sam_authors.sam_rewritten
+
+
 apps:
   samrewritten:
     environment:
@@ -29,10 +52,13 @@ apps:
     command: bin/samrewritten
     extensions: [gnome]
     plugs:
+      - access-steam-folder
       - network
       - wayland
       - x11
-#      - home
+      - home
+    slots:
+      - dbus-samrewritten
 
 #layout:
 #  /usr/share/libdrm/amdgpu.ids:
