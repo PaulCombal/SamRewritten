@@ -3,15 +3,14 @@
 - Give user feedback when a search returns no result
 
 At the very end:
-- Add license banner headers. Respect banner headers from Gibbed's Steam Achievement Manager when needed
 - Populate the About dialog, do a better logo
 - Write a Readme and documentation
 - Share on Reddit
 - Desktop entry / .exe icon
 
 At the very very end:
-- Github action for snapcraft releases
 - Add screenshots to the Readme
+- Upload an AppImage
 
 ### Medium priority
 

@@ -1,0 +1,17 @@
+.*
+*.lock
+*.toml
+*.md
+*.yaml
+*.snap
+*.xml
+*.png
+assets/*
+doc/*
+package/*
+snap/*
+target/*
+LICENSE
+
+src/backend/key_value.rs
+src/backend/stat_definitions.rs
