@@ -13,21 +13,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::cell::Cell;
-use std::rc::Rc;
-use gtk::gio::{spawn_blocking, ListStore, SimpleAction};
-use gtk::glib;
-use gtk::glib::{clone, MainContext};
-use gtk::prelude::*;
-use gtk::{Align, Application, ApplicationWindow, Box, Button, FilterListModel, HeaderBar, Image, Label, ListItem, ListView, NoSelection, Orientation, Paned, PolicyType, ScrolledWindow, SearchEntry, SignalListItemFactory, Spinner, Stack, StackTransitionType, StringFilter, StringFilterMatchMode, Widget};
 use crate::backend::app_lister::{AppModel, AppModelType};
 use crate::frontend::achievement::GAchievementObject;
-use crate::frontend::application_actions::{set_app_action_enabled, setup_app_actions};
 use crate::frontend::app_view::create_app_view;
-use crate::frontend::request::{GetAchievements, GetOwnedAppList, GetStats, LaunchApp, Request, StopApp};
+use crate::frontend::application_actions::{set_app_action_enabled, setup_app_actions};
+use crate::frontend::request::{
+    GetAchievements, GetOwnedAppList, GetStats, LaunchApp, Request, StopApp,
+};
 use crate::frontend::shimmer_image::ShimmerImage;
 use crate::frontend::steam_app::GSteamAppObject;
-use crate::frontend::ui_components::{create_about_dialog, create_context_menu_button, load_logo, set_context_popover_to_app_details_context, set_context_popover_to_app_list_context};
+use crate::frontend::ui_components::{
+    create_about_dialog, create_context_menu_button, set_context_popover_to_app_details_context,
+    set_context_popover_to_app_list_context,
+};
+use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
+use gtk::glib;
+use gtk::glib::{MainContext, clone};
+use gtk::prelude::*;
+use gtk::{
+    Align, Application, ApplicationWindow, Box, Button, FilterListModel, HeaderBar, Image, Label,
+    ListItem, ListView, NoSelection, Orientation, Paned, PolicyType, ScrolledWindow, SearchEntry,
+    SignalListItemFactory, Spinner, Stack, StackTransitionType, StringFilter,
+    StringFilterMatchMode, Widget,
+};
+use std::cell::Cell;
+use std::rc::Rc;
 
 use super::stat::GStatObject;
 
@@ -36,10 +46,24 @@ pub fn create_main_ui(application: &Application) {
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
 
     // Create the UI components for the app view
-    let (app_stack, app_shimmer_image, app_label, _app_achievements_button, _app_stats_button,
-        app_achievement_count_value, app_stats_count_value, app_type_value, app_developer_value,
-        app_metacritic_value, app_metacritic_box, app_sidebar, app_achievements_model, app_achievement_string_filter,
-        app_stat_model, app_stat_string_filter) = create_app_view(app_id.clone());
+    let (
+        app_stack,
+        app_shimmer_image,
+        app_label,
+        _app_achievements_button,
+        _app_stats_button,
+        app_achievement_count_value,
+        app_stats_count_value,
+        app_type_value,
+        app_developer_value,
+        app_metacritic_value,
+        app_metacritic_box,
+        app_sidebar,
+        app_achievements_model,
+        app_achievement_string_filter,
+        app_stat_model,
+        app_stat_string_filter,
+    ) = create_app_view(app_id.clone());
 
     // Creating application list view
     let list_spinner = Spinner::builder().margin_end(5).spinning(true).build();
@@ -49,14 +73,17 @@ pub fn create_main_ui(application: &Application) {
     list_spinner_box.append(&list_spinner_label);
 
     let header_bar = HeaderBar::builder().show_title_buttons(true).build();
-    let search_entry = SearchEntry::builder().placeholder_text("App name").build();
-    let back_button = Button::builder().icon_name("go-previous").sensitive(false).build();
+    let search_entry = SearchEntry::builder()
+        .placeholder_text("App name or App Id")
+        .build();
+    let back_button = Button::builder()
+        .icon_name("go-previous")
+        .sensitive(false)
+        .build();
     let (context_menu_button, _, menu_model) = create_context_menu_button();
     header_bar.pack_start(&back_button);
     header_bar.pack_start(&search_entry);
     header_bar.pack_end(&context_menu_button);
-
-    let logo = load_logo();
 
     let list_scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(PolicyType::Never)
@@ -110,26 +137,43 @@ pub fn create_main_ui(application: &Application) {
         .build();
     window.set_titlebar(Some(&header_bar));
 
-    let about_dialog = create_about_dialog(&window, &logo);
+    let about_dialog = create_about_dialog(&window);
 
     // Connect list view activation
     list_view.connect_activate(clone!(
-        #[strong] app_id,
-        #[weak] application,
-        #[weak] menu_model,
-        #[weak] app_achievements_model,
-        #[weak] app_stat_model,
-        #[weak] app_achievement_count_value,
-        #[weak] app_stats_count_value,
-        #[weak] app_type_value,
-        #[weak] app_developer_value,
-        #[weak] app_metacritic_value,
-        #[weak] app_metacritic_box,
-        #[weak] app_stack,
-        #[weak] list_stack,
+        #[strong]
+        app_id,
+        #[weak]
+        application,
+        #[weak]
+        menu_model,
+        #[weak]
+        app_achievements_model,
+        #[weak]
+        app_stat_model,
+        #[weak]
+        app_achievement_count_value,
+        #[weak]
+        app_stats_count_value,
+        #[weak]
+        app_type_value,
+        #[weak]
+        app_developer_value,
+        #[weak]
+        app_metacritic_value,
+        #[weak]
+        app_metacritic_box,
+        #[weak]
+        app_stack,
+        #[weak]
+        list_stack,
         move |list_view, position| {
-            let Some(model) = list_view.model() else { return };
-            let Some(item) = model.item(position).and_downcast::<GSteamAppObject>() else { return };
+            let Some(model) = list_view.model() else {
+                return;
+            };
+            let Some(item) = model.item(position).and_downcast::<GSteamAppObject>() else {
+                return;
+            };
             set_app_action_enabled(&application, "refresh_achievements_list", false);
             app_type_value.set_label("...");
             app_developer_value.set_label("...");
@@ -146,9 +190,18 @@ pub fn create_main_ui(application: &Application) {
             let app_developer_copy = item.developer();
             let app_metacritic_copy = item.metacritic_score();
             let handle = spawn_blocking(move || {
-                LaunchApp { app_id: app_id_copy }.request();
-                let achievements = GetAchievements { app_id: app_id_copy }.request();
-                let stats = GetStats { app_id: app_id_copy }.request();
+                LaunchApp {
+                    app_id: app_id_copy,
+                }
+                .request();
+                let achievements = GetAchievements {
+                    app_id: app_id_copy,
+                }
+                .request();
+                let stats = GetStats {
+                    app_id: app_id_copy,
+                }
+                .request();
                 (achievements, stats)
             });
 
@@ -162,9 +215,13 @@ pub fn create_main_ui(application: &Application) {
                 let achievement_len = achievements.len();
                 app_stats_count_value.set_label(&format!("{}", stats.len()));
                 app_achievement_count_value.set_label(&format!("{}", achievements.len()));
-                achievements.into_iter().map(GAchievementObject::new)
+                achievements
+                    .into_iter()
+                    .map(GAchievementObject::new)
                     .for_each(|achievement| app_achievements_model.append(&achievement));
-                stats.into_iter().map(GStatObject::new)
+                stats
+                    .into_iter()
+                    .map(GStatObject::new)
                     .for_each(|stat| app_stat_model.append(&stat));
                 app_type_value.set_label(&format!("{app_type_copy}"));
                 app_developer_value.set_label(&app_developer_copy);
@@ -183,20 +240,30 @@ pub fn create_main_ui(application: &Application) {
                 set_app_action_enabled(&application, "refresh_achievements_list", true);
             }));
 
-            if let Some(url) = item.image_url() { app_shimmer_image.set_url(url.as_str()); }
-            else { app_shimmer_image.reset(); }
-            app_label.set_markup(&format!("<span font_desc=\"Bold 16\">{}</span>", item.app_name()));
+            if let Some(url) = item.image_url() {
+                app_shimmer_image.set_url(url.as_str());
+            } else {
+                app_shimmer_image.reset();
+            }
+            app_label.set_markup(&format!(
+                "<span font_desc=\"Bold 16\">{}</span>",
+                item.app_name()
+            ));
             list_stack.set_visible_child_name("app");
-        })
-    );
+        }
+    ));
 
     // List factory setup
     list_factory.connect_setup(move |_, list_item| {
         let image = ShimmerImage::new();
         let label = Label::builder().margin_start(20).build();
-        let spacer = Box::builder().orientation(Orientation::Horizontal).hexpand(true).build();
+        let spacer = Box::builder()
+            .orientation(Orientation::Horizontal)
+            .hexpand(true)
+            .build();
         let icon = Image::builder().icon_name("pan-end").margin_end(20).build();
-        let entry = Box::builder().orientation(Orientation::Horizontal)
+        let entry = Box::builder()
+            .orientation(Orientation::Horizontal)
             .margin_top(4)
             .margin_bottom(4)
             .margin_start(8)
@@ -222,33 +289,50 @@ pub fn create_main_ui(application: &Application) {
     });
     // Search entry setup
     search_entry.connect_search_changed(clone!(
-        #[weak] list_string_filter, #[weak] app_stat_string_filter, #[weak] app_achievement_string_filter, #[weak] list_store, move |entry| {
+        #[weak]
+        list_string_filter,
+        #[weak]
+        app_stat_string_filter,
+        #[weak]
+        app_achievement_string_filter,
+        #[weak]
+        list_store,
+        move |entry| {
             let text = Some(entry.text()).filter(|s| !s.is_empty());
             app_achievement_string_filter.set_search(text.as_deref());
             app_stat_string_filter.set_search(text.as_deref());
             list_string_filter.set_search(text.as_deref());
 
-            if launch_app_by_id_visible.take() { list_store.remove(0) }
+            if launch_app_by_id_visible.take() {
+                list_store.remove(0)
+            }
             if let Some(app_id) = text.map(|t| t.parse::<u32>().ok()).flatten() {
                 launch_app_by_id_visible.set(true);
-                list_store.insert(0, &GSteamAppObject::new(AppModel {
-                    app_id,
-                    app_name: format!("App {app_id}"),
-                    app_type: AppModelType::App,
-                    developer: "Unknown".to_string(),
-                    image_url: None,
-                    metacritic_score: None
-                }));
+                list_store.insert(
+                    0,
+                    &GSteamAppObject::new(AppModel {
+                        app_id,
+                        app_name: format!("App {app_id}"),
+                        app_type: AppModelType::App,
+                        developer: "Unknown".to_string(),
+                        image_url: None,
+                        metacritic_score: None,
+                    }),
+                );
             }
         }
     ));
 
     // Back button handler
     back_button.connect_clicked(clone!(
-        #[weak] list_stack,
-        #[weak] app_id,
-        #[weak] menu_model,
-        #[weak] application,
+        #[weak]
+        list_stack,
+        #[weak]
+        app_id,
+        #[weak]
+        menu_model,
+        #[weak]
+        application,
         move |_| {
             list_stack.set_visible_child_name("list");
             set_context_popover_to_app_list_context(&menu_model, &application);
@@ -263,18 +347,26 @@ pub fn create_main_ui(application: &Application) {
     // App actions
     let action_refresh_app_list = SimpleAction::new("refresh_app_list", None);
     action_refresh_app_list.connect_activate(clone!(
-        #[strong] list_view,
-        #[strong] list_store,
-        #[weak] list_scrolled_window,
-        #[weak] list_stack,
-        move |_,_| {
+        #[strong]
+        list_view,
+        #[strong]
+        list_store,
+        #[weak]
+        list_scrolled_window,
+        #[weak]
+        list_stack,
+        move |_, _| {
             list_stack.set_visible_child_name("loading");
             let apps = spawn_blocking(move || GetOwnedAppList.request());
             MainContext::default().spawn_local(clone!(
-                #[weak] list_view,
-                #[weak] list_scrolled_window,
-                #[weak] list_store,
-                #[weak] list_stack,
+                #[weak]
+                list_view,
+                #[weak]
+                list_scrolled_window,
+                #[weak]
+                list_store,
+                #[weak]
+                list_stack,
                 async move {
                     if let Some(apps) = apps.await.ok().flatten() {
                         if apps.is_empty() {
@@ -283,7 +375,8 @@ pub fn create_main_ui(application: &Application) {
                             list_stack.set_visible_child_name("list");
                         } else {
                             list_store.remove_all();
-                            apps.into_iter().map(GSteamAppObject::new)
+                            apps.into_iter()
+                                .map(GSteamAppObject::new)
                                 .for_each(|app| list_store.append(&app));
                             list_scrolled_window.set_child(Some(&list_view));
                             list_stack.set_visible_child_name("list");
@@ -301,13 +394,20 @@ pub fn create_main_ui(application: &Application) {
     let action_refresh_achievements_list = SimpleAction::new("refresh_achievements_list", None);
     action_refresh_achievements_list.set_enabled(false);
     action_refresh_achievements_list.connect_activate(clone!(
-        #[strong] app_id,
-        #[weak] application,
-        #[weak] app_achievements_model,
-        #[weak] app_stat_model,
-        #[weak] app_achievement_count_value,
-        #[weak] app_stats_count_value,
-        #[weak] app_stack,
+        #[strong]
+        app_id,
+        #[weak]
+        application,
+        #[weak]
+        app_achievements_model,
+        #[weak]
+        app_stat_model,
+        #[weak]
+        app_achievement_count_value,
+        #[weak]
+        app_stats_count_value,
+        #[weak]
+        app_stack,
         move |_, _| {
             app_stack.set_visible_child_name("loading");
             set_app_action_enabled(&application, "refresh_achievements_list", false);
@@ -316,8 +416,14 @@ pub fn create_main_ui(application: &Application) {
 
             let app_id_copy = app_id.get().unwrap();
             let handle = spawn_blocking(move || {
-                let achievements = GetAchievements { app_id: app_id_copy }.request();
-                let stats = GetStats { app_id: app_id_copy }.request();
+                let achievements = GetAchievements {
+                    app_id: app_id_copy,
+                }
+                .request();
+                let stats = GetStats {
+                    app_id: app_id_copy,
+                }
+                .request();
                 (achievements, stats)
             });
 
@@ -329,9 +435,13 @@ pub fn create_main_ui(application: &Application) {
                 let achievement_len = achievements.len();
                 app_stats_count_value.set_label(&format!("{}", stats.len()));
                 app_achievement_count_value.set_label(&format!("{}", achievements.len()));
-                achievements.into_iter().map(GAchievementObject::new)
+                achievements
+                    .into_iter()
+                    .map(GAchievementObject::new)
                     .for_each(|achievement| app_achievements_model.append(&achievement));
-                stats.into_iter().map(GStatObject::new)
+                stats
+                    .into_iter()
+                    .map(GStatObject::new)
                     .for_each(|stat| app_stat_model.append(&stat));
 
                 if achievement_len > 0 {
@@ -342,10 +452,17 @@ pub fn create_main_ui(application: &Application) {
 
                 set_app_action_enabled(&application, "refresh_achievements_list", true);
             }));
-        }));
+        }
+    ));
 
     list_stack.connect_visible_child_notify(clone!(
-        #[weak] back_button, #[weak] search_entry, #[weak] action_refresh_app_list, move |stack| {
+        #[weak]
+        back_button,
+        #[weak]
+        search_entry,
+        #[weak]
+        action_refresh_app_list,
+        move |stack| {
             if stack.visible_child_name().as_deref() == Some("loading") {
                 back_button.set_sensitive(false);
                 action_refresh_app_list.set_enabled(false);
@@ -372,7 +489,7 @@ pub fn create_main_ui(application: &Application) {
         application,
         &about_dialog,
         &action_refresh_app_list,
-        &action_refresh_achievements_list
+        &action_refresh_achievements_list,
     );
 
     window.present();

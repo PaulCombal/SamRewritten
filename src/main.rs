@@ -14,19 +14,19 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 mod backend;
+mod frontend;
 mod steam_client;
 mod utils;
-mod frontend;
 
 use std::env;
 use std::process::Command;
 
-use gtk::glib;
-use frontend::main_ui;
-use utils::utils::get_executable_path;
 use crate::backend::app::app;
-use crate::utils::arguments::parse_arguments;
 use crate::backend::orchestrator::orchestrator;
+use crate::utils::arguments::parse_arguments;
+use frontend::main_ui;
+use gtk::glib;
+use utils::utils::get_executable_path;
 
 const APP_ID: &str = "org.sam_authors.sam_rewritten";
 
@@ -37,7 +37,7 @@ fn main() -> glib::ExitCode {
         let exit_code = orchestrator();
         return glib::ExitCode::from(exit_code);
     }
-    
+
     if arguments.is_app > 0 {
         let exit_code = app(arguments.is_app);
         return glib::ExitCode::from(exit_code);
@@ -46,7 +46,7 @@ fn main() -> glib::ExitCode {
     dev_println!("[CLIENT] Starting client with environment variables:");
     #[cfg(debug_assertions)]
     env::vars().for_each(|(key, value)| println!("{}: {}", key, value));
-    
+
     let current_exe = get_executable_path();
     let orchestrator = Command::new(current_exe)
         .arg("--orchestrator")

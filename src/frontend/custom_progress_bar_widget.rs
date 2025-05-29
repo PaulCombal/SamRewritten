@@ -34,12 +34,12 @@ impl CustomProgressBar {
 
 mod imp {
     use glib::Properties;
+    use gtk::gdk::RGBA;
     use gtk::glib::{self};
-    use gtk::graphene::{Rect};
+    use gtk::graphene::Rect;
     use gtk::prelude::*;
     use gtk::subclass::prelude::*;
-    use std::cell::{Cell};
-    use gtk::gdk::RGBA;
+    use std::cell::Cell;
 
     // If building with Adwaita, use the platform accent color
     const BAR_COLOR: RGBA = RGBA::new(0.85, 0.85, 1.0, 1.0);
@@ -85,5 +85,4 @@ mod imp {
             snapshot.append_color(&BAR_COLOR, &progress_rect);
         }
     }
-
 }

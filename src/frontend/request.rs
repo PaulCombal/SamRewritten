@@ -13,16 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::fmt::Debug;
-use std::io::{BufRead, BufReader, Write};
-use interprocess::local_socket::traits::Stream;
-use serde::de::DeserializeOwned;
-use interprocess::local_socket::prelude::LocalSocketStream;
+use super::ipc_process::get_orchestrator_socket_path;
 use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
-use crate::utils::ipc_types::{SteamCommand, SteamResponse};
-use super::ipc_process::get_orchestrator_socket_path;
 use crate::dev_println;
+use crate::utils::ipc_types::{SteamCommand, SteamResponse};
+use interprocess::local_socket::prelude::LocalSocketStream;
+use interprocess::local_socket::traits::Stream;
+use serde::de::DeserializeOwned;
+use std::fmt::Debug;
+use std::io::{BufRead, BufReader, Write};
 
 pub trait Request: Into<SteamCommand> + Debug + Clone {
     type Response: DeserializeOwned;
@@ -39,22 +39,26 @@ pub trait Request: Into<SteamCommand> + Debug + Clone {
             .inspect_err(|error| eprintln!("[CLIENT] Request serialization failed: {error}"))
             .ok()?;
 
-        stream.write_all(b"\n")
+        stream
+            .write_all(b"\n")
             .inspect_err(|error| eprintln!("[CLIENT] Request write failed: {error}"))
             .ok()?;
 
-        stream.flush()
+        stream
+            .flush()
             .inspect_err(|error| eprintln!("[CLIENT] Request flush failed: {error}"))
             .ok()?;
 
         let mut buffer = String::new();
-        BufReader::new(stream).read_line(&mut buffer)
+        BufReader::new(stream)
+            .read_line(&mut buffer)
             .inspect_err(|error| eprintln!("[CLIENT] Response data read failed: {error}"))
             .ok()?;
 
         serde_json::from_str::<SteamResponse<Self::Response>>(buffer.as_str())
             .map(|response| Into::<Result<Self::Response, String>>::into(response))
-            .inspect_err(|error| eprintln!("[CLIENT] Response deserialization failed: {error}")).ok()?
+            .inspect_err(|error| eprintln!("[CLIENT] Response deserialization failed: {error}"))
+            .ok()?
             .inspect_err(|error| eprintln!("[CLIENT] Request failed: {error}"))
             .ok()
     }
@@ -68,12 +72,12 @@ pub struct Shutdown;
 
 #[derive(Debug, Clone)]
 pub struct LaunchApp {
-    pub app_id: u32
+    pub app_id: u32,
 }
 
 #[derive(Debug, Clone)]
 pub struct StopApp {
-    pub app_id: u32
+    pub app_id: u32,
 }
 
 #[derive(Debug, Clone)]
@@ -81,12 +85,12 @@ pub struct StopApps;
 
 #[derive(Debug, Clone)]
 pub struct GetAchievements {
-    pub app_id: u32
+    pub app_id: u32,
 }
 
 #[derive(Debug, Clone)]
 pub struct GetStats {
-    pub app_id: u32
+    pub app_id: u32,
 }
 
 #[derive(Debug, Clone)]

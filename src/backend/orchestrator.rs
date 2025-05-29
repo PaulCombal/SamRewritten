@@ -13,21 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::backend::app_lister::AppLister;
+use crate::backend::connected_steam::ConnectedSteam;
+use crate::frontend::ipc_process::{get_app_socket_path, get_orchestrator_socket_path};
+use crate::utils::ipc_types::{SteamCommand, SteamResponse};
+use crate::utils::utils::get_executable_path;
+use crate::{dev_print, dev_println};
+use interprocess::local_socket::prelude::LocalSocketStream;
+use interprocess::local_socket::traits::{ListenerExt, Stream};
+use interprocess::local_socket::{ListenerOptions, Stream as StreamEnum};
 use std::collections::HashMap;
 use std::io::{self};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, Command};
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
-use interprocess::local_socket::{ListenerOptions, Stream as StreamEnum};
-use interprocess::local_socket::prelude::LocalSocketStream;
-use interprocess::local_socket::traits::{ListenerExt, Stream};
-use crate::backend::app_lister::AppLister;
-use crate::backend::connected_steam::ConnectedSteam;
-use crate::{dev_print, dev_println};
-use crate::frontend::ipc_process::{get_app_socket_path, get_orchestrator_socket_path};
-use crate::utils::ipc_types::{SteamCommand, SteamResponse};
-use crate::utils::utils::get_executable_path;
 
 fn handle_error(conn: io::Result<StreamEnum>) -> Option<StreamEnum> {
     match conn {
@@ -46,7 +46,7 @@ fn is_app_running(app_id: u32) -> bool {
 
     match LocalSocketStream::connect(socket_name) {
         Ok(_) => true,
-        Err(_) => false
+        Err(_) => false,
     }
 }
 
@@ -63,7 +63,8 @@ fn send_app_command(app_id: u32, command: SteamCommand) -> String {
         Ok(s) => s,
         Err(e) => {
             dev_println!("[ORCHESTRATOR] Failed to connect to app socket {app_id}: {e}");
-            let response : SteamResponse<()> = SteamResponse::Error(format!("Failed to connect to app: {e}"));
+            let response: SteamResponse<()> =
+                SteamResponse::Error(format!("Failed to connect to app: {e}"));
             return serde_json::to_string(&response).unwrap() + "\n";
         }
     };
@@ -71,8 +72,11 @@ fn send_app_command(app_id: u32, command: SteamCommand) -> String {
     let mut conn = BufReader::new(stream);
 
     let message = serde_json::to_string(&command).expect("Failed to serialize command") + "\n";
-    conn.get_mut().write_all(message.as_bytes()).expect("Failed to send command from client");
-    conn.read_line(&mut buffer).expect("Failed to read line from client");
+    conn.get_mut()
+        .write_all(message.as_bytes())
+        .expect("Failed to send command from client");
+    conn.read_line(&mut buffer)
+        .expect("Failed to read line from client");
     buffer.to_owned()
 }
 
@@ -107,7 +111,7 @@ pub fn orchestrator() -> i32 {
         }
     };
 
-    let mut children_processes : HashMap<u32, Child> = HashMap::new();
+    let mut children_processes: HashMap<u32, Child> = HashMap::new();
 
     // Buffer should be large enough to hold a serialized SteamCommand
     let mut buffer = String::with_capacity(128);
@@ -135,7 +139,9 @@ pub fn orchestrator() -> i32 {
             if command == SteamCommand::Shutdown {
                 let response = SteamResponse::Success(true);
                 let response = serde_json::to_string(&response).unwrap() + "\n";
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
                 break;
             }
 
@@ -143,9 +149,12 @@ pub fn orchestrator() -> i32 {
                 Ok(c) => Some(c),
                 Err(e) => {
                     dev_println!("[ORCHESTRATOR] Error connecting to Steam: {e}");
-                    let response : SteamResponse<String> = SteamResponse::Error("Failed to connect to Steam".to_owned());
+                    let response: SteamResponse<String> =
+                        SteamResponse::Error("Failed to connect to Steam".to_owned());
                     let response = serde_json::to_string(&response).unwrap() + "\n";
-                    conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                    conn.get_mut()
+                        .write_all(response.as_bytes())
+                        .expect("failed to write");
                     conn.get_mut().flush().expect("failed to flush");
                     continue;
                 }
@@ -164,36 +173,47 @@ pub fn orchestrator() -> i32 {
                     Ok(apps) => {
                         let response = SteamResponse::Success(apps);
                         let response = serde_json::to_string(&response).unwrap() + "\n";
-                        conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                        conn.get_mut()
+                            .write_all(response.as_bytes())
+                            .expect("failed to write");
                     }
                     Err(e) => {
                         dev_println!("[ORCHESTRATOR] Error getting owned apps: {e}");
                         let response = SteamResponse::<()>::Error("Error".to_owned());
                         let response = serde_json::to_string(&response).unwrap() + "\n";
-                        conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                        conn.get_mut()
+                            .write_all(response.as_bytes())
+                            .expect("failed to write");
                         conn.get_mut().flush().expect("failed to flush");
                     }
                 };
             }
-            
+
             SteamCommand::LaunchApp(app_id) => {
                 dev_println!("[ORCHESTRATOR] LaunchApp {}", app_id);
 
                 // 1. Check if we own a process for this app
                 if children_processes.contains_key(&app_id) {
                     dev_println!("[ORCHESTRATOR] App {} is already running", app_id);
-                    let response: SteamResponse<()> = SteamResponse::Error("App is already running".to_owned());
+                    let response: SteamResponse<()> =
+                        SteamResponse::Error("App is already running".to_owned());
                     let response = serde_json::to_string(&response).unwrap() + "\n";
-                    conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                    conn.get_mut()
+                        .write_all(response.as_bytes())
+                        .expect("failed to write");
                     continue;
                 }
 
                 // 2. Check if a process is running.
                 if is_app_running(app_id) {
                     dev_println!("[ORCHESTRATOR] App {} is already running", app_id);
-                    let response: SteamResponse<()> = SteamResponse::Error("App is already running in another process".to_owned());
+                    let response: SteamResponse<()> = SteamResponse::Error(
+                        "App is already running in another process".to_owned(),
+                    );
                     let response = serde_json::to_string(&response).unwrap() + "\n";
-                    conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                    conn.get_mut()
+                        .write_all(response.as_bytes())
+                        .expect("failed to write");
                     continue;
                 }
 
@@ -203,7 +223,7 @@ pub fn orchestrator() -> i32 {
                     .arg(format!("--app={app_id}"))
                     .spawn()
                     .expect("Failed to spawn sam2 orchestrator process");
-                
+
                 // 4. Wait for the socket to allow connections
                 let (.., app_socket_name) = get_app_socket_path(app_id);
                 let start = Instant::now();
@@ -213,14 +233,19 @@ pub fn orchestrator() -> i32 {
                         Ok(..) => break,
                         Err(..) if start.elapsed() < Duration::from_secs(2) => {
                             std::thread::sleep(Duration::from_millis(500));
-                        },
+                        }
                         Err(error) => {
-                            dev_println!("[ORCHESTRATOR] Failed to connect to socket for app {app_id}: {error}");
+                            dev_println!(
+                                "[ORCHESTRATOR] Failed to connect to socket for app {app_id}: {error}"
+                            );
                             child.kill().expect("Failed to kill child process");
                             child.wait().expect("Failed to wait for child process");
-                            let response: SteamResponse<()> = SteamResponse::Error("Failed to connect to socket".to_owned());
+                            let response: SteamResponse<()> =
+                                SteamResponse::Error("Failed to connect to socket".to_owned());
                             let response = serde_json::to_string(&response).unwrap() + "\n";
-                            conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                            conn.get_mut()
+                                .write_all(response.as_bytes())
+                                .expect("failed to write");
                             continue;
                         }
                     }
@@ -230,30 +255,39 @@ pub fn orchestrator() -> i32 {
                 children_processes.insert(app_id, child);
                 let response = SteamResponse::Success(true);
                 let response = serde_json::to_string(&response).unwrap() + "\n";
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
             }
-            
+
             SteamCommand::StopApp(app_id) => {
                 dev_println!("[ORCHESTRATOR] StopApp {}", app_id);
-                if !children_processes.contains_key(&app_id) {  
+                if !children_processes.contains_key(&app_id) {
                     dev_println!("[ORCHESTRATOR] App {} is not running", app_id);
-                    let response: SteamResponse<()> = SteamResponse::Error("App is not running".to_owned());
+                    let response: SteamResponse<()> =
+                        SteamResponse::Error("App is not running".to_owned());
                     let response = serde_json::to_string(&response).unwrap() + "\n";
-                    conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                    conn.get_mut()
+                        .write_all(response.as_bytes())
+                        .expect("failed to write");
                     continue;
                 }
-                
+
                 children_processes.remove(&app_id);
-                let response= send_app_command(app_id, SteamCommand::Shutdown);
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                let response = send_app_command(app_id, SteamCommand::Shutdown);
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
             }
 
             SteamCommand::StopApps => {
                 dev_println!("[ORCHESTRATOR] StopApps");
-                
+
                 for (app_id, child) in children_processes.iter_mut() {
-                    let response= send_app_command(*app_id, SteamCommand::Shutdown);
-                    dev_println!("[ORCHESTRATOR] Sending shutdown command to app {app_id}: {response}");
+                    let response = send_app_command(*app_id, SteamCommand::Shutdown);
+                    dev_println!(
+                        "[ORCHESTRATOR] Sending shutdown command to app {app_id}: {response}"
+                    );
                     child.wait().expect("failed to wait");
                 }
 
@@ -261,53 +295,76 @@ pub fn orchestrator() -> i32 {
 
                 let response = SteamResponse::Success(true);
                 let response = serde_json::to_string(&response).unwrap() + "\n";
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
             }
-            
+
             SteamCommand::Shutdown => {
                 for (app_id, child) in children_processes.iter_mut() {
-                    let response= send_app_command(*app_id, SteamCommand::Shutdown);
-                    dev_println!("[ORCHESTRATOR] Sending shutdown command to app {app_id}: {response}");
+                    let response = send_app_command(*app_id, SteamCommand::Shutdown);
+                    dev_println!(
+                        "[ORCHESTRATOR] Sending shutdown command to app {app_id}: {response}"
+                    );
                     child.wait().expect("failed to wait");
                 }
-                
+
                 connected_steam.unwrap().shutdown();
 
                 let response = SteamResponse::Success(true);
                 let response = serde_json::to_string(&response).unwrap() + "\n";
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
                 break;
             }
-            
+
             SteamCommand::Status => {
                 let response = SteamResponse::Success(true);
                 let response = serde_json::to_string(&response).unwrap() + "\n";
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
             }
-            
+
             SteamCommand::GetAchievements(app_id) => {
-                let response= send_app_command(app_id, SteamCommand::GetAchievements(app_id));
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                let response = send_app_command(app_id, SteamCommand::GetAchievements(app_id));
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
             }
 
             SteamCommand::GetStats(app_id) => {
-                let response= send_app_command(app_id, SteamCommand::GetStats(app_id));
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                let response = send_app_command(app_id, SteamCommand::GetStats(app_id));
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
             }
 
             SteamCommand::SetAchievement(app_id, unlocked, achievement_id) => {
-                let response= send_app_command(app_id, SteamCommand::SetAchievement(app_id, unlocked, achievement_id));
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                let response = send_app_command(
+                    app_id,
+                    SteamCommand::SetAchievement(app_id, unlocked, achievement_id),
+                );
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
             }
 
             SteamCommand::SetIntStat(app_id, stat_id, value) => {
-                let response= send_app_command(app_id, SteamCommand::SetIntStat(app_id, stat_id, value));
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                let response =
+                    send_app_command(app_id, SteamCommand::SetIntStat(app_id, stat_id, value));
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
             }
 
             SteamCommand::SetFloatStat(app_id, stat_id, value) => {
-                let response= send_app_command(app_id, SteamCommand::SetFloatStat(app_id, stat_id, value));
-                conn.get_mut().write_all(response.as_bytes()).expect("failed to write");
+                let response =
+                    send_app_command(app_id, SteamCommand::SetFloatStat(app_id, stat_id, value));
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
             }
         }
     }

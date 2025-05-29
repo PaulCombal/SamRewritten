@@ -33,7 +33,7 @@ pub enum SteamCommand {
 #[derive(Serialize, Deserialize, Debug)]
 pub enum SteamResponse<T> {
     Success(T),
-    Error(String)
+    Error(String),
 }
 
 impl<T> Into<Result<T, String>> for SteamResponse<T> {

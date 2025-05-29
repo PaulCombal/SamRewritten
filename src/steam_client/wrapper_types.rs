@@ -31,7 +31,9 @@ impl std::fmt::Display for SteamError {
             SteamError::PipeCreationFailed => write!(f, "Failed to create steam pipe"),
             SteamError::PipeReleaseFailed => write!(f, "Failed to release steam pipe"),
             SteamError::UserConnectionFailed => write!(f, "Failed to connect to steam server"),
-            SteamError::InterfaceCreationFailed(name) => write!(f, "Failed to create steam interface: {}", name),
+            SteamError::InterfaceCreationFailed(name) => {
+                write!(f, "Failed to create steam interface: {}", name)
+            }
             SteamError::AppNotFound => write!(f, "App not found"),
             SteamError::UnknownError => write!(f, "Unknown Steam error"),
         }

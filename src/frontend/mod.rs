@@ -13,30 +13,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
+mod achievement;
+mod achievement_view;
+mod app_list_view;
+mod app_view;
+mod application_actions;
+mod custom_progress_bar_widget;
 pub mod ipc_process;
 mod request;
 mod shimmer_image;
-mod steam_app;
-mod achievement;
-mod app_view;
-mod achievement_view;
-mod app_list_view;
-mod ui_components;
-mod application_actions;
 mod stat;
 mod stat_view;
-mod custom_progress_bar_widget;
+mod steam_app;
+mod ui_components;
 
+use crate::frontend::request::Request;
 use crate::{APP_ID, dev_println};
-use std::cell::RefCell;
-use std::process::Child;
-use gtk::glib::ExitCode;
+use app_list_view::create_main_ui;
 use gtk::Application;
+use gtk::glib::ExitCode;
 use gtk::prelude::{ApplicationExt, ApplicationExtManual};
 use request::Shutdown;
-use app_list_view::create_main_ui;
-use crate::frontend::request::Request;
+use std::cell::RefCell;
+use std::process::Child;
 
 fn shutdown(orchestrator: &RefCell<Child>) {
     Shutdown.request();

@@ -13,27 +13,52 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::cell::Cell;
-use std::rc::Rc;
-use gtk::pango::{EllipsizeMode, WrapMode};
-use gtk::prelude::*;
-use gtk::{Align, Box, Frame, Label, Orientation, PolicyType, ScrolledWindow, Separator, Spinner, Stack, StackTransitionType, StringFilter, ToggleButton};
-use gtk::gio::ListStore;
 use crate::frontend::achievement_view::create_achievements_view;
 use crate::frontend::shimmer_image::ShimmerImage;
+use gtk::gio::ListStore;
 use gtk::glib;
 use gtk::glib::clone;
+use gtk::pango::{EllipsizeMode, WrapMode};
+use gtk::prelude::*;
+use gtk::{
+    Align, Box, Frame, Label, Orientation, PolicyType, ScrolledWindow, Separator, Spinner, Stack,
+    StackTransitionType, StringFilter, ToggleButton,
+};
+use std::cell::Cell;
+use std::rc::Rc;
 
 use super::stat_view::create_stats_view;
 
-pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, Label, ToggleButton, ToggleButton, Label, Label, Label, Label, Label, Box, Box, ListStore, StringFilter, ListStore, StringFilter) {
+pub fn create_app_view(
+    app_id: Rc<Cell<Option<u32>>>,
+) -> (
+    Stack,
+    ShimmerImage,
+    Label,
+    ToggleButton,
+    ToggleButton,
+    Label,
+    Label,
+    Label,
+    Label,
+    Label,
+    Box,
+    Box,
+    ListStore,
+    StringFilter,
+    ListStore,
+    StringFilter,
+) {
     let app_spinner = Spinner::builder().spinning(true).margin_end(5).build();
     let app_spinner_label = Label::builder().label("Loading...").build();
     let app_spinner_box = Box::builder().halign(Align::Center).build();
     app_spinner_box.append(&app_spinner);
     app_spinner_box.append(&app_spinner_label);
 
-    let app_achievement_count_label = Label::builder().label("Achievements:").halign(Align::Start).build();
+    let app_achievement_count_label = Label::builder()
+        .label("Achievements:")
+        .halign(Align::Start)
+        .build();
     let app_achievement_count_spacer = Box::builder().hexpand(true).build();
     let app_achievement_count_value = Label::builder().halign(Align::End).build();
     let app_achievement_count_box = Box::builder()
@@ -44,7 +69,10 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     app_achievement_count_box.append(&app_achievement_count_spacer);
     app_achievement_count_box.append(&app_achievement_count_value);
 
-    let app_stats_count_label = Label::builder().label("Stats:").halign(Align::Start).build();
+    let app_stats_count_label = Label::builder()
+        .label("Stats:")
+        .halign(Align::Start)
+        .build();
     let app_stats_count_spacer = Box::builder().hexpand(true).build();
     let app_stats_count_value = Label::builder().halign(Align::End).build();
     let app_stats_count_box = Box::builder()
@@ -66,9 +94,15 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     app_type_box.append(&app_type_spacer);
     app_type_box.append(&app_type_value);
 
-    let app_developer_label = Label::builder().label("Developer:").halign(Align::Start).build();
+    let app_developer_label = Label::builder()
+        .label("Developer:")
+        .halign(Align::Start)
+        .build();
     let app_developer_spacer = Box::builder().hexpand(true).build();
-    let app_developer_value = Label::builder().halign(Align::End).ellipsize(EllipsizeMode::End).build();
+    let app_developer_value = Label::builder()
+        .halign(Align::End)
+        .ellipsize(EllipsizeMode::End)
+        .build();
     let app_developer_box = Box::builder()
         .orientation(Orientation::Horizontal)
         .margin_top(20)
@@ -77,7 +111,10 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     app_developer_box.append(&app_developer_spacer);
     app_developer_box.append(&app_developer_value);
 
-    let app_metacritic_label = Label::builder().label("Metacritic:").halign(Align::Start).build();
+    let app_metacritic_label = Label::builder()
+        .label("Metacritic:")
+        .halign(Align::Start)
+        .build();
     let app_metacritic_spacer = Box::builder().hexpand(true).build();
     let app_metacritic_value = Label::builder().halign(Align::End).build();
     let app_metacritic_box = Box::builder()
@@ -111,7 +148,10 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     app_shimmer_image.set_halign(Align::Start);
 
     let app_achievements_button = ToggleButton::builder().label("Achievements").build();
-    let app_stats_button = ToggleButton::builder().label("Stats").group(&app_achievements_button).build();
+    let app_stats_button = ToggleButton::builder()
+        .label("Stats")
+        .group(&app_achievements_button)
+        .build();
     let app_button_box = Box::builder()
         .orientation(Orientation::Horizontal)
         .css_classes(["linked"].as_slice())
@@ -147,12 +187,11 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     app_sidebar.append(&app_stats_count_box);
     app_sidebar.append(&app_type_box);
 
-    let (app_achievements_list, app_achievements_model, app_achievement_string_filter) = create_achievements_view(app_id.clone());
+    let (app_achievements_list, app_achievements_model, app_achievement_string_filter) =
+        create_achievements_view(app_id.clone());
     let (app_stat_list, app_stat_model, app_stat_string_filter) = create_stats_view();
-    
-    let app_achievements_frame = Frame::builder()
-        .child(&app_achievements_list)
-        .build();
+
+    let app_achievements_frame = Frame::builder().child(&app_achievements_list).build();
     let app_achievements_spacer = Box::builder()
         .orientation(Orientation::Vertical)
         .vexpand(true)
@@ -171,9 +210,7 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
         .child(&app_achievement_box)
         .build();
 
-    let app_stat_frame = Frame::builder()
-        .child(&app_stat_list)
-        .build();
+    let app_stat_frame = Frame::builder().child(&app_stat_list).build();
     let app_stat_spacer = Box::builder()
         .orientation(Orientation::Vertical)
         .vexpand(true)
@@ -202,13 +239,17 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     app_stack.add_named(&app_spinner_box, Some("loading"));
 
     app_stack.connect_visible_child_name_notify(clone!(
-        #[weak] app_achievements_button, #[weak] app_stats_button, move |stack| {
+        #[weak]
+        app_achievements_button,
+        #[weak]
+        app_stats_button,
+        move |stack| {
             if stack.visible_child_name().as_deref() == Some("loading") {
                 app_achievements_button.set_sensitive(false);
                 app_stats_button.set_sensitive(false);
             } else if stack.visible_child_name().as_deref() == Some("failed") {
                 app_achievements_button.set_sensitive(false);
-                app_stats_button.set_sensitive(false); 
+                app_stats_button.set_sensitive(false);
             } else if stack.visible_child_name().as_deref() == Some("achievements") {
                 app_achievements_button.set_active(true);
                 app_stats_button.set_active(false);
@@ -224,7 +265,11 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     ));
 
     app_achievements_button.connect_clicked(clone!(
-        #[weak] app_stack, #[weak] app_achievements_model, move |_| {
+        #[weak]
+        app_stack,
+        #[weak]
+        app_achievements_model,
+        move |_| {
             if app_achievements_model.n_items() == 0 {
                 app_stack.set_visible_child_name("empty");
             } else {
@@ -234,7 +279,11 @@ pub fn create_app_view(app_id: Rc<Cell<Option<u32>>>) -> (Stack, ShimmerImage, L
     ));
 
     app_stats_button.connect_clicked(clone!(
-        #[weak] app_stack, #[weak] app_stat_model, move |_| {
+        #[weak]
+        app_stack,
+        #[weak]
+        app_stat_model,
+        move |_| {
             if app_stat_model.n_items() == 0 {
                 app_stack.set_visible_child_name("empty");
             } else {

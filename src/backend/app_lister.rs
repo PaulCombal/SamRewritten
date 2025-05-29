@@ -13,18 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::fmt::Display;
-use std::{fs};
-use std::fs::File;
-use std::io::{BufReader};
-use std::str::FromStr;
-use std::time::{Duration, SystemTime};
-use serde::{Deserialize, Serialize};
 use crate::dev_println;
 use crate::steam_client::steam_apps_001_wrapper::{SteamApps001, SteamApps001AppDataKeys};
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steamworks_types::AppId_t;
 use crate::utils::utils::get_app_cache_dir;
+use serde::{Deserialize, Serialize};
+use std::fmt::Display;
+use std::fs;
+use std::fs::File;
+use std::io::BufReader;
+use std::str::FromStr;
+use std::time::{Duration, SystemTime};
 
 pub struct AppLister<'a> {
     app_list_url: String,
@@ -49,7 +49,7 @@ pub enum AppModelType {
     App,
     Mod,
     Demo,
-    Junk
+    Junk,
 }
 
 impl Display for AppModelType {
@@ -82,7 +82,7 @@ pub struct XmlGame {
     #[serde(rename = "$text")]
     pub app_id: u32,
     #[serde(rename = "@type")]
-    pub app_type: Option<String>
+    pub app_type: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -91,9 +91,10 @@ struct XmlGames {
     pub games: Vec<XmlGame>,
 }
 impl<'a> AppLister<'a> {
-    pub fn new(steam_apps_001: &'a SteamApps001, steam_apps: &'a SteamApps ) -> Self {
+    pub fn new(steam_apps_001: &'a SteamApps001, steam_apps: &'a SteamApps) -> Self {
         let cache_dir = get_app_cache_dir();
-        let app_list_url = std::env::var("APP_LIST_URL").unwrap_or(String::from("https://gib.me/sam/games.xml"));
+        let app_list_url =
+            std::env::var("APP_LIST_URL").unwrap_or(String::from("https://gib.me/sam/games.xml"));
         let app_list_local = std::env::var("APP_LIST_LOCAL").unwrap_or(String::from("/apps.xml"));
         let current_language = steam_apps.get_current_game_language();
 
@@ -129,11 +130,11 @@ impl<'a> AppLister<'a> {
                 let last_update = metadata.modified()?;
                 let one_week_ago = SystemTime::now() - Duration::from_secs(7 * 24 * 60 * 60); // 7 days
                 last_update < one_week_ago
-            },
+            }
             Err(_) => true,
         };
 
-        let xml_games : XmlGames;
+        let xml_games: XmlGames;
 
         if should_update {
             let app_list_str = self.download_app_list_str()?;
@@ -141,8 +142,7 @@ impl<'a> AppLister<'a> {
             fs::write(&self.app_list_local, &app_list_str)?;
 
             dev_println!("Loaded app list from url");
-        }
-        else {
+        } else {
             dev_println!("Loading from local location");
             xml_games = self.load_app_list_file()?;
 
@@ -152,35 +152,68 @@ impl<'a> AppLister<'a> {
         Ok(xml_games)
     }
 
-    fn get_app_image_url(&self, app_id: &AppId_t) -> Option<String>
-    {
-        let candidate = self.steam_apps_001.get_app_data(app_id, &SteamApps001AppDataKeys::SmallCapsule(&self.current_language).as_string()).unwrap_or("".to_owned());
+    fn get_app_image_url(&self, app_id: &AppId_t) -> Option<String> {
+        let candidate = self
+            .steam_apps_001
+            .get_app_data(
+                app_id,
+                &SteamApps001AppDataKeys::SmallCapsule(&self.current_language).as_string(),
+            )
+            .unwrap_or("".to_owned());
         if !candidate.is_empty() {
-            return Some(format!("https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/{app_id}/{candidate}"));
+            return Some(format!(
+                "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/{app_id}/{candidate}"
+            ));
         }
 
         if self.current_language != "english" {
-            let candidate = self.steam_apps_001.get_app_data(app_id, &SteamApps001AppDataKeys::SmallCapsule("english").as_string()).unwrap_or("".to_owned());
+            let candidate = self
+                .steam_apps_001
+                .get_app_data(
+                    app_id,
+                    &SteamApps001AppDataKeys::SmallCapsule("english").as_string(),
+                )
+                .unwrap_or("".to_owned());
             if !candidate.is_empty() {
-                return Some(format!("https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/{app_id}/{candidate}"));
+                return Some(format!(
+                    "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/{app_id}/{candidate}"
+                ));
             }
         }
 
-        let candidate = self.steam_apps_001.get_app_data(app_id, &SteamApps001AppDataKeys::Logo.as_string()).unwrap_or("".to_owned());
+        let candidate = self
+            .steam_apps_001
+            .get_app_data(app_id, &SteamApps001AppDataKeys::Logo.as_string())
+            .unwrap_or("".to_owned());
         if !candidate.is_empty() {
-            return Some(format!("https://cdn.steamstatic.com/steamcommunity/public/images/apps/{app_id}/{candidate}.jpg"));
+            return Some(format!(
+                "https://cdn.steamstatic.com/steamcommunity/public/images/apps/{app_id}/{candidate}.jpg"
+            ));
         }
-        
+
         dev_println!("[ORCHESTRATOR] Failed to find image for app {}", app_id);
 
         None
     }
 
-    pub fn get_app(&self, app_id: AppId_t, xml_game: &XmlGame) -> Result<AppModel, Box<dyn std::error::Error>> {
-        let app_name = self.steam_apps_001.get_app_data(&app_id, &SteamApps001AppDataKeys::Name.as_string())?;
-        let developer = self.steam_apps_001.get_app_data(&app_id, &SteamApps001AppDataKeys::Developer.as_string()).unwrap_or("Unknown".to_string());
-        let metacritic_score: Option<u8> = self.steam_apps_001
-            .get_app_data(&app_id, &SteamApps001AppDataKeys::MetacriticScore.as_string())
+    pub fn get_app(
+        &self,
+        app_id: AppId_t,
+        xml_game: &XmlGame,
+    ) -> Result<AppModel, Box<dyn std::error::Error>> {
+        let app_name = self
+            .steam_apps_001
+            .get_app_data(&app_id, &SteamApps001AppDataKeys::Name.as_string())?;
+        let developer = self
+            .steam_apps_001
+            .get_app_data(&app_id, &SteamApps001AppDataKeys::Developer.as_string())
+            .unwrap_or("Unknown".to_string());
+        let metacritic_score: Option<u8> = self
+            .steam_apps_001
+            .get_app_data(
+                &app_id,
+                &SteamApps001AppDataKeys::MetacriticScore.as_string(),
+            )
             .ok()
             .and_then(|s| s.parse().ok());
         let image_url = self.get_app_image_url(&app_id);
@@ -189,7 +222,11 @@ impl<'a> AppLister<'a> {
             app_id,
             app_name,
             image_url,
-            app_type: if xml_game.app_type.as_ref().is_none() { AppModelType::App } else { AppModelType::from_str(&xml_game.app_type.as_ref().unwrap())? },
+            app_type: if xml_game.app_type.as_ref().is_none() {
+                AppModelType::App
+            } else {
+                AppModelType::from_str(&xml_game.app_type.as_ref().unwrap())?
+            },
             developer,
             metacritic_score,
         })
@@ -209,7 +246,7 @@ impl<'a> AppLister<'a> {
                 continue;
             }
 
-            let app= self.get_app(app_id, &xml_game)?;
+            let app = self.get_app(app_id, &xml_game)?;
             models.push(app)
         }
 

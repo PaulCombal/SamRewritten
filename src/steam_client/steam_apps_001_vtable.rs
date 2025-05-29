@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
-use std::os::raw::{c_char, c_int};
 use crate::steam_client::steamworks_types::AppId_t;
+use std::os::raw::{c_char, c_int};
 
 #[repr(C)]
 pub struct ISteamApps001VTable {
@@ -25,7 +24,7 @@ pub struct ISteamApps001VTable {
         AppId_t,
         *const c_char,
         *mut c_char,
-        c_int
+        c_int,
     ) -> c_int,
 }
 

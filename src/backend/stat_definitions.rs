@@ -20,10 +20,10 @@
  *    distribution.
  */
 
+use serde::{Deserialize, Serialize};
 use std::fmt;
-use std::time::SystemTime;
 use std::ops::{BitOr, BitOrAssign};
-use serde::{Serialize, Deserialize};
+use std::time::SystemTime;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct StatFlags {
@@ -53,7 +53,9 @@ impl BitOr for StatFlags {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        StatFlags { bits: self.bits | rhs.bits }
+        StatFlags {
+            bits: self.bits | rhs.bits,
+        }
     }
 }
 
@@ -275,7 +277,11 @@ impl fmt::Display for AchievementDefinition {
         write!(
             f,
             "{}: {}",
-            if self.name.is_empty() { self.id.clone() } else { self.name.clone() },
+            if self.name.is_empty() {
+                self.id.clone()
+            } else {
+                self.name.clone()
+            },
             self.permission
         )
     }

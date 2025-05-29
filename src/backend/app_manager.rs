@@ -13,17 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::backend::connected_steam::ConnectedSteam;
+use crate::backend::key_value::KeyValue;
+use crate::backend::stat_definitions::{
+    AchievementDefinition, AchievementInfo, BaseStatDefinition, FloatStatDefinition, FloatStatInfo,
+    IntStatInfo, IntegerStatDefinition, StatDefinition, StatInfo,
+};
+use crate::backend::types::UserStatType;
+use crate::dev_println;
+use crate::steam_client::steamworks_types::{
+    AppId_t, EResult, GlobalAchievementPercentagesReady_t,
+};
+use crate::steam_client::wrapper_types::SteamCallbackId;
+use crate::utils::utils::get_user_game_stats_schema_path;
 use std::env;
 use std::path::PathBuf;
 use std::time::UNIX_EPOCH;
-use crate::backend::connected_steam::ConnectedSteam;
-use crate::backend::key_value::KeyValue;
-use crate::backend::stat_definitions::{AchievementDefinition, AchievementInfo, BaseStatDefinition, FloatStatDefinition, FloatStatInfo, IntStatInfo, IntegerStatDefinition, StatDefinition, StatInfo};
-use crate::backend::types::UserStatType;
-use crate::dev_println;
-use crate::steam_client::steamworks_types::{AppId_t, EResult, GlobalAchievementPercentagesReady_t};
-use crate::steam_client::wrapper_types::SteamCallbackId;
-use crate::utils::utils::get_user_game_stats_schema_path;
 
 pub struct AppManager {
     app_id: AppId_t,
@@ -41,9 +46,11 @@ impl<'a> AppManager {
 
         let connected_steam = match ConnectedSteam::new() {
             Ok(c) => c,
-            Err(e) => { return Err(e); }
+            Err(e) => {
+                return Err(e);
+            }
         };
-        
+
         Ok(Self {
             app_id,
             connected_steam,
@@ -85,7 +92,11 @@ impl<'a> AppManager {
 
                 UserStatType::Integer => {
                     let id = stat.get("name").as_string("");
-                    let name = Self::get_localized_string(stat.get("display").get("name"), &current_language, &id);
+                    let name = Self::get_localized_string(
+                        stat.get("display").get("name"),
+                        &current_language,
+                        &id,
+                    );
                     stat_definitions.push(StatDefinition::Integer(IntegerStatDefinition {
                         base: BaseStatDefinition {
                             id: stat.get("name").as_string(""),
@@ -99,13 +110,16 @@ impl<'a> AppManager {
                         increment_only: stat.get("incrementonly").as_bool(false),
                         default_value: stat.get("default").as_i32(0),
                         set_by_trusted_game_server: stat.get("bSetByTrustedGS").as_bool(false),
-                    })
-                    );
+                    }));
                 }
 
                 UserStatType::Float | UserStatType::AverageRate => {
                     let id = stat.get("name").as_string("");
-                    let name = Self::get_localized_string(stat.get("display").get("name"), &current_language, &id);
+                    let name = Self::get_localized_string(
+                        stat.get("display").get("name"),
+                        &current_language,
+                        &id,
+                    );
                     stat_definitions.push(StatDefinition::Float(FloatStatDefinition {
                         base: BaseStatDefinition {
                             id: stat.get("name").as_string(""),
@@ -118,8 +132,7 @@ impl<'a> AppManager {
                         max_change: stat.get("maxchange").as_f32(0f32),
                         increment_only: stat.get("incrementonly").as_bool(false),
                         default_value: stat.get("default").as_f32(0f32),
-                    })
-                    );
+                    }));
                 }
 
                 UserStatType::Achievements | UserStatType::GroupAchievements => {
@@ -134,8 +147,16 @@ impl<'a> AppManager {
 
                         for bit in bits.1.children.iter() {
                             let id = bit.1.get("name").as_string("");
-                            let name = Self::get_localized_string(bit.1.get("display").get("name"), &current_language, &id);
-                            let description = Self::get_localized_string(bit.1.get("display").get("desc"), &current_language, "");
+                            let name = Self::get_localized_string(
+                                bit.1.get("display").get("name"),
+                                &current_language,
+                                &id,
+                            );
+                            let description = Self::get_localized_string(
+                                bit.1.get("display").get("desc"),
+                                &current_language,
+                                "",
+                            );
 
                             achievement_definitions.push(AchievementDefinition {
                                 id,
@@ -152,7 +173,7 @@ impl<'a> AppManager {
                 }
             }
         }
-        
+
         self.stat_definitions = stat_definitions;
         self.achievement_definitions = achievement_definitions;
         self.definitions_loaded = true;
@@ -165,26 +186,37 @@ impl<'a> AppManager {
         if !self.definitions_loaded {
             self.load_definitions()?;
         }
-        
-        let callback_handle = self.connected_steam.user_stats.request_global_achievement_percentages()?;
+
+        let callback_handle = self
+            .connected_steam
+            .user_stats
+            .request_global_achievement_percentages()?;
         let mut global_stats_fetched = EResult::k_EResultFail;
 
         // Try for 10 seconds at 60 fps
         for _ in 0..600 {
-            if self.connected_steam.utils.is_api_call_completed(callback_handle)? {
-                let result = self.connected_steam.utils
+            if self
+                .connected_steam
+                .utils
+                .is_api_call_completed(callback_handle)?
+            {
+                let result = self
+                    .connected_steam
+                    .utils
                     .get_api_call_result::<GlobalAchievementPercentagesReady_t>(
                         callback_handle,
-                        SteamCallbackId::GlobalAchievementPercentagesReady
+                        SteamCallbackId::GlobalAchievementPercentagesReady,
                     )?;
                 global_stats_fetched = result.m_eResult;
-                dev_println!("[APP SERVER] Global achievement percentages callback result: {result:?}");
+                dev_println!(
+                    "[APP SERVER] Global achievement percentages callback result: {result:?}"
+                );
                 break;
             }
 
             std::thread::sleep(std::time::Duration::from_millis(17));
         }
-        
+
         let mut achievement_infos: Vec<AchievementInfo> = vec![];
 
         for def in self.achievement_definitions.iter() {
@@ -193,13 +225,26 @@ impl<'a> AppManager {
             }
 
             let def_id = &def.id;
-            match self.connected_steam.user_stats.get_achievement_and_unlock_time(def_id) {
+            match self
+                .connected_steam
+                .user_stats
+                .get_achievement_and_unlock_time(def_id)
+            {
                 Ok((is_achieved, unlock_time)) => {
-                    let global_achieved_percent = if global_stats_fetched == EResult::k_EResultFail { None } else {
-                        match self.connected_steam.user_stats.get_achievement_achieved_percent(def_id) {
-                            Ok(percent) => { Some(percent) },
+                    let global_achieved_percent = if global_stats_fetched == EResult::k_EResultFail
+                    {
+                        None
+                    } else {
+                        match self
+                            .connected_steam
+                            .user_stats
+                            .get_achievement_achieved_percent(def_id)
+                        {
+                            Ok(percent) => Some(percent),
                             Err(_) => {
-                                dev_println!("[APP SERVER] Failed to get achievement percent for achievement: {def_id}");
+                                dev_println!(
+                                    "[APP SERVER] Failed to get achievement percent for achievement: {def_id}"
+                                );
                                 None
                             }
                         }
@@ -208,17 +253,28 @@ impl<'a> AppManager {
                     achievement_infos.push(AchievementInfo {
                         id: def_id.to_string(),
                         is_achieved,
-                        unlock_time: if is_achieved && unlock_time > 0 { UNIX_EPOCH.checked_add(std::time::Duration::from_secs(unlock_time as u64)) } else { None },
+                        unlock_time: if is_achieved && unlock_time > 0 {
+                            UNIX_EPOCH
+                                .checked_add(std::time::Duration::from_secs(unlock_time as u64))
+                        } else {
+                            None
+                        },
                         icon_normal: def.clone().icon_normal,
-                        icon_locked: if def.icon_locked.is_empty() { def.clone().icon_normal } else { def.clone().icon_locked },
+                        icon_locked: if def.icon_locked.is_empty() {
+                            def.clone().icon_normal
+                        } else {
+                            def.clone().icon_locked
+                        },
                         permission: def.clone().permission,
                         name: def.clone().name,
                         description: def.clone().description,
-                        global_achieved_percent
+                        global_achieved_percent,
                     });
-                },
+                }
                 Err(_) => {
-                    dev_println!("[APP SERVER] Failed to get achievement info for achievement: {def_id}");
+                    dev_println!(
+                        "[APP SERVER] Failed to get achievement info for achievement: {def_id}"
+                    );
                     continue;
                 }
             }
@@ -232,7 +288,7 @@ impl<'a> AppManager {
         if !self.definitions_loaded {
             self.load_definitions()?;
         }
-        
+
         let mut statistics_info: Vec<StatInfo> = vec![];
 
         for stat in self.stat_definitions.iter() {
@@ -242,11 +298,17 @@ impl<'a> AppManager {
                         continue;
                     }
 
-                    let stat_value = match self.connected_steam.user_stats.get_stat_float(&definition.base.id) {
+                    let stat_value = match self
+                        .connected_steam
+                        .user_stats
+                        .get_stat_float(&definition.base.id)
+                    {
                         Ok(value) => value,
                         Err(_) => {
                             let stat_id = definition.base.id.to_string();
-                            dev_println!("[APP SERVER] Failed to get float stat info for stat: {stat_id}");
+                            dev_println!(
+                                "[APP SERVER] Failed to get float stat info for stat: {stat_id}"
+                            );
                             continue;
                         }
                     };
@@ -267,11 +329,17 @@ impl<'a> AppManager {
                         continue;
                     }
 
-                    let stat_value = match self.connected_steam.user_stats.get_stat_i32(&definition.base.id) {
+                    let stat_value = match self
+                        .connected_steam
+                        .user_stats
+                        .get_stat_i32(&definition.base.id)
+                    {
                         Ok(value) => value,
                         Err(_) => {
                             let stat_id = definition.base.id.to_string();
-                            dev_println!("[APP SERVER] Failed to get int stat info for stat: {stat_id}");
+                            dev_println!(
+                                "[APP SERVER] Failed to get int stat info for stat: {stat_id}"
+                            );
                             continue;
                         }
                     };
@@ -292,53 +360,97 @@ impl<'a> AppManager {
         Ok(statistics_info)
     }
 
-    pub fn set_achievement(&self, achievement_id: &str, unlock: bool) -> Result<bool, Box<dyn std::error::Error>> {
+    pub fn set_achievement(
+        &self,
+        achievement_id: &str,
+        unlock: bool,
+    ) -> Result<bool, Box<dyn std::error::Error>> {
         if unlock {
-            match self.connected_steam.user_stats.set_achievement(achievement_id) {
-                Ok(_) => {
-                    self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
-                },
+            match self
+                .connected_steam
+                .user_stats
+                .set_achievement(achievement_id)
+            {
+                Ok(_) => self
+                    .connected_steam
+                    .user_stats
+                    .store_stats()
+                    .map_err(|e| e.into()),
                 Err(e) => Err(e.into()),
             }
-        }
-        else {
-            match self.connected_steam.user_stats.clear_achievement(achievement_id) {
-                Ok(_) => {
-                    self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
-                },
+        } else {
+            match self
+                .connected_steam
+                .user_stats
+                .clear_achievement(achievement_id)
+            {
+                Ok(_) => self
+                    .connected_steam
+                    .user_stats
+                    .store_stats()
+                    .map_err(|e| e.into()),
                 Err(e) => Err(e.into()),
             }
         }
     }
 
-    pub fn set_stat_i32(&self, stat_name: &str, stat_value: i32) -> Result<bool, Box<dyn std::error::Error>> {
-        match self.connected_steam.user_stats.set_stat_i32(stat_name, stat_value) {
-            Ok(_) => {
-                self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
-            },
+    pub fn set_stat_i32(
+        &self,
+        stat_name: &str,
+        stat_value: i32,
+    ) -> Result<bool, Box<dyn std::error::Error>> {
+        match self
+            .connected_steam
+            .user_stats
+            .set_stat_i32(stat_name, stat_value)
+        {
+            Ok(_) => self
+                .connected_steam
+                .user_stats
+                .store_stats()
+                .map_err(|e| e.into()),
             Err(e) => Err(e.into()),
         }
     }
 
-    pub fn set_stat_f32(&self, stat_name: &str, stat_value: f32) -> Result<bool, Box<dyn std::error::Error>> {
-        match self.connected_steam.user_stats.set_stat_float(stat_name, stat_value) {
-            Ok(_) => {
-                self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
-            },
+    pub fn set_stat_f32(
+        &self,
+        stat_name: &str,
+        stat_value: f32,
+    ) -> Result<bool, Box<dyn std::error::Error>> {
+        match self
+            .connected_steam
+            .user_stats
+            .set_stat_float(stat_name, stat_value)
+        {
+            Ok(_) => self
+                .connected_steam
+                .user_stats
+                .store_stats()
+                .map_err(|e| e.into()),
             Err(e) => Err(e.into()),
         }
     }
-    
+
     pub fn disconnect(&self) {
         self.connected_steam.shutdown();
     }
-    
+
     #[cfg(test)]
-    pub fn reset_all_stats(&self, achievements_too: bool) -> Result<bool, Box<dyn std::error::Error>> {
-        match self.connected_steam.user_stats.reset_all_stats(achievements_too) {
-            Ok(_) => {
-                self.connected_steam.user_stats.store_stats().map_err(|e| e.into())
-            },
+    pub fn reset_all_stats(
+        &self,
+        achievements_too: bool,
+    ) -> Result<bool, Box<dyn std::error::Error>> {
+        match self
+            .connected_steam
+            .user_stats
+            .reset_all_stats(achievements_too)
+        {
+            Ok(_) => self
+                .connected_steam
+                .user_stats
+                .store_stats()
+                .map_err(|e| e.into()),
             Err(e) => Err(e.into()),
         }
     }

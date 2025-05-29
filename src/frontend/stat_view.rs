@@ -19,11 +19,17 @@ use std::time::Duration;
 
 use super::request::{Request, SetFloatStat, SetIntStat};
 use super::stat::GStatObject;
-use gtk::gio::{spawn_blocking, ListStore};
+use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::object::Cast;
 use gtk::pango::EllipsizeMode;
-use gtk::prelude::{BoxExt, GObjectPropertyExpressionExt, ListItemExt, ObjectExt, ToValue, WidgetExt};
-use gtk::{glib, Adjustment, Align, Box, ClosureExpression, FilterListModel, Label, ListItem, ListView, NoSelection, Orientation, SignalListItemFactory, SpinButton, StringFilter, StringFilterMatchMode, Widget};
+use gtk::prelude::{
+    BoxExt, GObjectPropertyExpressionExt, ListItemExt, ObjectExt, ToValue, WidgetExt,
+};
+use gtk::{
+    Adjustment, Align, Box, ClosureExpression, FilterListModel, Label, ListItem, ListView,
+    NoSelection, Orientation, SignalListItemFactory, SpinButton, StringFilter,
+    StringFilterMatchMode, Widget, glib,
+};
 
 pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
     let stats_list_factory = SignalListItemFactory::new();
@@ -54,9 +60,7 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
             .page_size(0.0)
             .build();
 
-        let spin_button = SpinButton::builder()
-            .adjustment(&adjustment)
-            .build();
+        let spin_button = SpinButton::builder().adjustment(&adjustment).build();
 
         let button_box = Box::builder()
             .orientation(Orientation::Vertical)
@@ -131,78 +135,86 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
         let permission_expr = list_item
             .property_expression("item")
             .chain_property::<GStatObject>("permission");
-        
+
         let permission_expr_2 = list_item
             .property_expression("item")
             .chain_property::<GStatObject>("permission");
 
-        let adjustment_step_increment_closure = glib::RustClosure::new(|values: &[glib::Value]| {
-            let is_integer = values.get(1)
-                .and_then(|val| val.get::<bool>().ok())
-                .unwrap_or(false);
-            let step_increment = if is_integer { 1.0 } else { 0.01 };
-            Some(step_increment.to_value())
-        });
+        let adjustment_step_increment_closure =
+            glib::RustClosure::new(|values: &[glib::Value]| {
+                let is_integer = values
+                    .get(1)
+                    .and_then(|val| val.get::<bool>().ok())
+                    .unwrap_or(false);
+                let step_increment = if is_integer { 1.0 } else { 0.01 };
+                Some(step_increment.to_value())
+            });
 
         let adjustment_lower_closure = glib::RustClosure::new(|values: &[glib::Value]| {
-            let original_value = values.get(1)
+            let original_value = values
+                .get(1)
                 .and_then(|val| val.get::<f64>().ok())
                 .unwrap_or(0f64);
-            let is_increment_only = values.get(2)
+            let is_increment_only = values
+                .get(2)
                 .and_then(|val| val.get::<bool>().ok())
                 .unwrap_or(false);
 
-            let lower = if is_increment_only { original_value } else { i32::MIN as f64 };
+            let lower = if is_increment_only {
+                original_value
+            } else {
+                i32::MIN as f64
+            };
             Some(lower.to_value())
         });
 
         let spin_button_digits_closure = glib::RustClosure::new(|values: &[glib::Value]| {
-            let is_integer = values.get(1)
+            let is_integer = values
+                .get(1)
                 .and_then(|val| val.get::<bool>().ok())
                 .unwrap_or(false);
-            let digits : u32 = if is_integer { 0 } else { 2 };
+            let digits: u32 = if is_integer { 0 } else { 2 };
             Some(digits.to_value())
         });
 
         let permission_sensitive_closure = glib::RustClosure::new(|values: &[glib::Value]| {
-            let permission = values.get(1)
+            let permission = values
+                .get(1)
                 .and_then(|val| val.get::<i32>().ok())
                 .unwrap_or(0);
             let is_sensitive = (permission & 2) == 0;
             Some(is_sensitive.to_value())
         });
-        
+
         let permission_protected_closure = glib::RustClosure::new(|values: &[glib::Value]| {
-            let permission = values.get(1)
+            let permission = values
+                .get(1)
                 .and_then(|val| val.get::<i32>().ok())
                 .unwrap_or(0);
             let is_protected = (permission & 2) != 0;
             Some(is_protected.to_value())
         });
 
-        let adjustment_step_increment_expression = ClosureExpression::new::<f64>(
-            &[is_integer_expr], adjustment_step_increment_closure
-        );
+        let adjustment_step_increment_expression =
+            ClosureExpression::new::<f64>(&[is_integer_expr], adjustment_step_increment_closure);
         adjustment_step_increment_expression.bind(&adjustment, "step-increment", Widget::NONE);
 
         let adjustment_lower_expression = ClosureExpression::new::<f64>(
-            &[original_value_expr, is_increment_only_expr], adjustment_lower_closure
+            &[original_value_expr, is_increment_only_expr],
+            adjustment_lower_closure,
         );
         adjustment_lower_expression.bind(&adjustment, "lower", Widget::NONE);
 
-        let spin_button_digits_expression = ClosureExpression::new::<u32>(
-            &[is_integer_expr_2], spin_button_digits_closure
-        );
+        let spin_button_digits_expression =
+            ClosureExpression::new::<u32>(&[is_integer_expr_2], spin_button_digits_closure);
         spin_button_digits_expression.bind(&spin_button, "digits", Widget::NONE);
 
-        let permission_sensitive_expr = ClosureExpression::new::<bool>(
-            &[permission_expr], permission_sensitive_closure
-        );
+        let permission_sensitive_expr =
+            ClosureExpression::new::<bool>(&[permission_expr], permission_sensitive_closure);
         permission_sensitive_expr.bind(&spin_button, "sensitive", Widget::NONE);
-        
-        let permission_protected_expr = ClosureExpression::new::<bool>(
-            &[permission_expr_2], permission_protected_closure
-        );
+
+        let permission_protected_expr =
+            ClosureExpression::new::<bool>(&[permission_expr_2], permission_protected_closure);
         permission_protected_expr.bind(&protected_icon, "visible", Widget::NONE);
     });
 
@@ -210,11 +222,13 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
         let list_item = list_item
             .downcast_ref::<ListItem>()
             .expect("Needs to be a ListItem");
-        let stat_object = list_item.item()
+        let stat_object = list_item
+            .item()
             .and_then(|item| item.downcast::<GStatObject>().ok())
             .expect("Item should be a GStatObject");
 
-        let spin_button = list_item.child()
+        let spin_button = list_item
+            .child()
             .and_then(|child| child.downcast::<Box>().ok())
             .and_then(|stat_box| stat_box.last_child()) // This gets button_box
             .and_then(|button_box| button_box.downcast::<Box>().ok())
@@ -223,14 +237,18 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
             .expect("Could not find SpinButton widget");
 
         // Disconnect previous handler if it exists
-        if let Some(handler_id) = list_item.steal_data::<glib::SignalHandlerId>("spin-button-value-changed-handler") {
+        if let Some(handler_id) =
+            list_item.steal_data::<glib::SignalHandlerId>("spin-button-value-changed-handler")
+        {
             spin_button.disconnect(handler_id);
         }
 
         let sender = RefCell::new(channel::<f64>().0);
 
         spin_button.connect_value_changed(move |button| {
-            if sender.borrow_mut().send(button.value()).is_ok() { return }
+            if sender.borrow_mut().send(button.value()).is_ok() {
+                return;
+            }
             let (new_sender, receiver) = channel();
             *sender.borrow_mut() = new_sender;
             let mut value = button.value();
@@ -250,27 +268,26 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
                         SetIntStat {
                             app_id,
                             stat_id,
-                            value: value as i32
-                        }.request()
+                            value: value as i32,
+                        }
+                        .request()
                     } else {
                         SetFloatStat {
                             app_id,
                             stat_id,
-                            value: value as f32
-                        }.request()
+                            value: value as f32,
+                        }
+                        .request()
                     };
 
                     match res {
-                        Some(success) if success => {
-                            (true, value)
-                        },
-                        _ => {
-                            (false, value)
-                        }
+                        Some(success) if success => (true, value),
+                        _ => (false, value),
                     }
                 });
 
-                let (success, debounced_value) = join_handle.await.expect("spawn_blocking task panicked");
+                let (success, debounced_value) =
+                    join_handle.await.expect("spawn_blocking task panicked");
 
                 if success {
                     stat_object_clone.set_original_value(debounced_value);
@@ -286,7 +303,8 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
             .downcast_ref::<ListItem>()
             .expect("Needs to be a ListItem");
 
-        let spin_button = list_item.child()
+        let spin_button = list_item
+            .child()
             .and_then(|child| child.downcast::<Box>().ok())
             .and_then(|stat_box| stat_box.last_child()) // This gets button_box
             .and_then(|button_box| button_box.downcast::<Box>().ok())
@@ -295,10 +313,16 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
             .expect("Could not find SpinButton widget");
 
         // Disconnect previous handler if it exists
-        if let Some(handler_id) = list_item.steal_data::<glib::SignalHandlerId>("spin-button-value-changed-handler") {
+        if let Some(handler_id) =
+            list_item.steal_data::<glib::SignalHandlerId>("spin-button-value-changed-handler")
+        {
             spin_button.disconnect(handler_id);
         }
     });
 
-    (app_stats_list_view, app_stats_model, app_stats_string_filter)
+    (
+        app_stats_list_view,
+        app_stats_model,
+        app_stats_string_filter,
+    )
 }

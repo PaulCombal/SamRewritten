@@ -14,38 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
-use std::os::raw::{c_int, c_char};
 use crate::steam_client::steamworks_types::AppId_t;
+use std::os::raw::{c_char, c_int};
 
 // You need to be whitelisted by Valve to use this interface.
-// This is simply in the codebase for reference. 
+// This is simply in the codebase for reference.
 // For tinkerers around, I've read that Spacewar is a whitelisted app.
 
 #[repr(C)]
 pub struct ISteamAppListVTable {
     pub get_num_installed_apps: unsafe extern "C" fn(*mut ISteamAppList) -> u32,
-    pub get_installed_apps: unsafe extern "C" fn(
-        *mut ISteamAppList,
-        *mut AppId_t,
-        u32
-    ) -> u32,
-    pub get_app_name: unsafe extern "C" fn(
-        *mut ISteamAppList,
-        AppId_t,
-        *mut c_char,
-        c_int
-    ) -> c_int,
-    pub get_app_install_dir: unsafe extern "C" fn(
-        *mut ISteamAppList,
-        AppId_t,
-        *mut c_char,
-        c_int
-    ) -> c_int,
-    pub get_app_build_id: unsafe extern "C" fn(
-        *mut ISteamAppList,
-        AppId_t
-    ) -> c_int,
+    pub get_installed_apps: unsafe extern "C" fn(*mut ISteamAppList, *mut AppId_t, u32) -> u32,
+    pub get_app_name:
+        unsafe extern "C" fn(*mut ISteamAppList, AppId_t, *mut c_char, c_int) -> c_int,
+    pub get_app_install_dir:
+        unsafe extern "C" fn(*mut ISteamAppList, AppId_t, *mut c_char, c_int) -> c_int,
+    pub get_app_build_id: unsafe extern "C" fn(*mut ISteamAppList, AppId_t) -> c_int,
 }
 
 #[repr(C)]

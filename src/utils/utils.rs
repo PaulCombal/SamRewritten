@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::{env, fs};
 use std::path::PathBuf;
+use std::{env, fs};
 
 pub fn get_executable_path() -> PathBuf {
     env::current_exe()
@@ -58,7 +58,7 @@ pub fn get_steamclient_lib_path() -> String {
     if let Ok(home) = env::var("HOME") {
         return home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so";
     }
-    
+
     panic!("Failed to get Steam client library path");
 }
 
@@ -71,7 +71,7 @@ pub fn get_steamclient_lib_path() -> String {
     // let lib_steamclient_path = PathBuf::from(program_files + "\\Steam\\steamclient64.dll");
     // #[cfg(target_pointer_width = "32")]
     // let lib_steamclient_path = PathBuf::from(program_files + "\\Steam\\steamclient.dll");
-    
+
     // Would it be better to get inspiration from this c# code?
     // Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Valve\Steam", "InstallPath", null);
     // It would allow for multi-disk installs.
@@ -81,11 +81,17 @@ pub fn get_steamclient_lib_path() -> String {
 #[cfg(target_os = "linux")]
 pub fn get_user_game_stats_schema_path(app_id: &u32) -> String {
     if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
-        return real_home + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_" + &app_id.to_string() + ".bin";
+        return real_home
+            + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_"
+            + &app_id.to_string()
+            + ".bin";
     }
 
     if let Ok(home) = env::var("HOME") {
-        return home + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_" + &app_id.to_string() + ".bin";
+        return home
+            + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_"
+            + &app_id.to_string()
+            + ".bin";
     }
 
     panic!("Failed to get User Game Stats Schema path");

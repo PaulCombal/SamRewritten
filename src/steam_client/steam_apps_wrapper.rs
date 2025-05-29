@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::sync::Arc;
 use crate::steam_client::steam_apps_vtable::ISteamApps;
 use crate::steam_client::wrapper_types::SteamError;
+use std::sync::Arc;
 
 pub struct SteamApps {
     inner: Arc<SteamAppsInner>,
@@ -31,21 +31,26 @@ impl SteamApps {
             inner: Arc::new(SteamAppsInner { ptr }),
         }
     }
-    
+
     pub fn get_current_game_language(&self) -> String {
         unsafe {
-            let vtable = (*self.inner.ptr).vtable.as_ref().expect("Null ISteamApps vtable");
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .expect("Null ISteamApps vtable");
             let lang_ptr = (vtable.get_current_game_language)(self.inner.ptr);
             std::ffi::CStr::from_ptr(lang_ptr)
                 .to_string_lossy()
                 .into_owned()
         }
     }
-    
+
     pub fn is_subscribed_app(&self, app_id: u32) -> Result<bool, SteamError> {
         unsafe {
             // Get the vtable - return error if null
-            let vtable = (*self.inner.ptr).vtable.as_ref()
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
                 .ok_or(SteamError::NullVtable)?;
 
             // Call through the vtable

@@ -20,15 +20,14 @@
  *    distribution.
  */
 
-
+use crate::backend::types::KeyValueEncoding;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fmt;
 use std::fs::File;
 use std::io::{Read, Seek};
 use std::path::Path;
-use std::error::Error;
-use std::fmt;
 use std::sync::LazyLock;
-use crate::backend::types::KeyValueEncoding;
 
 #[derive(Debug)]
 pub enum KeyValueError {
@@ -89,7 +88,10 @@ impl TryFrom<u8> for KeyValueType {
             6 => Ok(KeyValueType::Color),
             7 => Ok(KeyValueType::UInt64),
             8 => Ok(KeyValueType::End),
-            _ => Err(KeyValueError::Format(format!("Invalid KeyValueType: {}", value))),
+            _ => Err(KeyValueError::Format(format!(
+                "Invalid KeyValueType: {}",
+                value
+            ))),
         }
     }
 }
@@ -120,7 +122,7 @@ impl KeyValue {
             children: HashMap::new(),
             valid: false,
         });
-        
+
         &INVALID
     }
 
@@ -255,7 +257,7 @@ impl KeyValue {
 
             self.children.insert(current.name.clone(), current);
         }
-        
+
         // Fuck it
         // There is no equivalent to C++ istream::peek. No sanity check this time.
         // I could check the file size and compare cursor position, but not today
@@ -263,7 +265,11 @@ impl KeyValue {
         Ok(())
     }
 
-    fn read_string_internal_dynamic(input: &mut dyn Read, encoding: KeyValueEncoding, end: char) -> Result<String, KeyValueError> {
+    fn read_string_internal_dynamic(
+        input: &mut dyn Read,
+        encoding: KeyValueEncoding,
+        end: char,
+    ) -> Result<String, KeyValueError> {
         let character_size = match encoding {
             KeyValueEncoding::Utf8 => 1,
         };
@@ -277,7 +283,7 @@ impl KeyValue {
                 data.resize(data.len() + (128 * character_size), 0);
             }
 
-            let read = input.read(&mut data[i..i+character_size])?;
+            let read = input.read(&mut data[i..i + character_size])?;
             if read != character_size {
                 return Err(KeyValueError::Io(std::io::Error::new(
                     std::io::ErrorKind::UnexpectedEof,
@@ -285,7 +291,7 @@ impl KeyValue {
                 )));
             }
 
-            let slice = &data[i..i+character_size];
+            let slice = &data[i..i + character_size];
             let s = match encoding {
                 KeyValueEncoding::Utf8 => std::str::from_utf8(slice).unwrap_or(""),
             };

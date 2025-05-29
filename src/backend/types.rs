@@ -31,7 +31,7 @@ pub enum UserStatType {
 
 impl TryFrom<u8> for UserStatType {
     type Error = String;
-    
+
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
             0 => Ok(UserStatType::Invalid),

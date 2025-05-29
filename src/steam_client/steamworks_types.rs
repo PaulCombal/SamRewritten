@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
-use std::os::raw::{c_char, c_int};
 use crate::steam_client::steam_client_vtable::ISteamClient;
+use std::os::raw::{c_char, c_int};
 
 pub type AppId_t = u32;
 pub type DepotId_t = u32;
@@ -25,7 +24,8 @@ pub type SteamAPIWarningMessageHook_t = unsafe extern "C" fn(c_int, *const c_cha
 pub type HSteamPipe = c_int;
 pub type HSteamUser = c_int;
 pub type CreateInterfaceFn = unsafe extern "C" fn(*const c_char, *mut c_int) -> *mut ISteamClient;
-pub type SteamGetCallbackFn = unsafe extern "C" fn(HSteamPipe, *mut SteamCallbackMessage, *mut c_int) -> bool;
+pub type SteamGetCallbackFn =
+    unsafe extern "C" fn(HSteamPipe, *mut SteamCallbackMessage, *mut c_int) -> bool;
 pub type SteamFreeLastCallbackFn = unsafe extern "C" fn(HSteamPipe) -> bool;
 
 #[allow(non_upper_case_globals)]
@@ -287,7 +287,7 @@ pub struct UserAchievementIconFetched_t {
 #[derive(Debug)]
 pub struct GlobalAchievementPercentagesReady_t {
     pub m_nGameID: u64,
-    pub m_eResult: EResult
+    pub m_eResult: EResult,
 }
 
 #[repr(C)]
@@ -299,7 +299,7 @@ pub struct LeaderboardUGCSet_t {
 #[repr(C)]
 pub struct GlobalStatsReceived_t {
     pub m_nGameID: u64,
-    pub m_eResult: EResult
+    pub m_eResult: EResult,
 }
 
 #[repr(C)]
@@ -322,7 +322,6 @@ pub enum EAccountType {
     k_EAccountTypeIndividual = 1,
     // ... other account types
 }
-
 
 #[repr(C)]
 pub enum ESteamAPICallFailure {

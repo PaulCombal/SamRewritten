@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::backend::stat_definitions::StatInfo;
 use glib::Object;
 use gtk::glib;
-use crate::backend::stat_definitions::StatInfo;
 
 glib::wrapper! {
     pub struct GStatObject(ObjectSubclass<imp::GStatObject>);
@@ -44,7 +44,7 @@ impl GStatObject {
                 .property("permission", info.permission)
                 .property("is-integer", true)
                 .build(),
-        } 
+        }
     }
 }
 

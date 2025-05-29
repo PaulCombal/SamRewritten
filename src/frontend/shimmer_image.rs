@@ -37,10 +37,11 @@ impl ShimmerImage {
 }
 
 mod imp {
+    use crate::dev_println;
     use glib::Properties;
-    use gtk::gdk::{Texture, RGBA};
+    use gtk::gdk::{RGBA, Texture};
     use gtk::gio::spawn_blocking;
-    use gtk::glib::{self, base64_encode, Bytes};
+    use gtk::glib::{self, Bytes, base64_encode};
     use gtk::graphene::{Point, Rect, Size};
     use gtk::gsk::{ColorStop, LinearGradientNode, RoundedRect};
     use gtk::prelude::*;
@@ -49,8 +50,7 @@ mod imp {
     use std::cell::{Cell, RefCell};
     use std::env::temp_dir;
     use std::fs::{exists, write};
-    use std::sync::mpsc::{sync_channel, Receiver, TryRecvError};
-    use crate::dev_println;
+    use std::sync::mpsc::{Receiver, TryRecvError, sync_channel};
 
     const GRADIENT_WIDTH: f32 = 0.8;
     const BASE_COLOR: RGBA = RGBA::new(0.7, 0.7, 0.7, 1.0);
@@ -92,7 +92,7 @@ mod imp {
                     //even if the url property changes, but only if the widget was rendered before
                     //and then jumps into view while it's contents are still cached.
                     //if this.imp().texture.borrow().is_none() {
-                        this.queue_draw();
+                    this.queue_draw();
                     //}
 
                     let imp = this.imp();
@@ -103,7 +103,7 @@ mod imp {
                 }
                 glib::ControlFlow::Continue
             });
-        } 
+        }
     }
 
     impl WidgetImpl for ShimmerImage {
@@ -130,10 +130,14 @@ mod imp {
             let receiver = self.receiver.borrow_mut().take();
             if let Some(receiver) = receiver {
                 match receiver.try_recv() {
-                    Ok(texture) => { self.texture.borrow_mut().replace(texture); },
-                    Err(TryRecvError::Empty) => { self.receiver.borrow_mut().replace(receiver); },
+                    Ok(texture) => {
+                        self.texture.borrow_mut().replace(texture);
+                    }
+                    Err(TryRecvError::Empty) => {
+                        self.receiver.borrow_mut().replace(receiver);
+                    }
                     Err(TryRecvError::Disconnected) => (),
-                } 
+                }
             }
 
             //convert from continuous microseconds to relative seconds
@@ -188,20 +192,24 @@ mod imp {
                 if !exists(path.as_path()).unwrap_or_default() {
                     dev_println!("[CLIENT] Downloading: {url}");
                     //Download and store to path
-                    let response = match Client::new().get(url.as_str()).send()
+                    let response = match Client::new()
+                        .get(url.as_str())
+                        .send()
                         .and_then(|response| response.error_for_status())
-                        .and_then(|response| response.bytes()) {
+                        .and_then(|response| response.bytes())
+                    {
                         Ok(response) => response,
-                        Err(error) => return eprintln!("[CLIENT] Failed to download {url}: {error}"),
+                        Err(error) => {
+                            return eprintln!("[CLIENT] Failed to download {url}: {error}");
+                        }
                     };
 
                     if let Err(error) = write(path.as_path(), response) {
                         eprintln!("[CLIENT] Failed to write {url} to {path:?}: {error}");
                         return;
                     }
-                }
-                else {
-                    dev_println!("[CLIENT] Cached loading: {url}");   
+                } else {
+                    dev_println!("[CLIENT] Cached loading: {url}");
                 }
 
                 let data = match std::fs::read(path.as_path()) {
@@ -213,7 +221,9 @@ mod imp {
                 };
 
                 match Texture::from_bytes(&Bytes::from(data.as_slice())) {
-                    Ok(texture) => { sender.send(texture).ok(); }
+                    Ok(texture) => {
+                        sender.send(texture).ok();
+                    }
                     Err(error) => {
                         eprintln!("[CLIENT] Failed to create {url} from bytes: {error}");
                     }

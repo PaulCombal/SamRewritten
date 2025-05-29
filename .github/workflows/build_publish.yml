@@ -1,35 +1,13 @@
+# See why this was canceled in snapcraft.yaml
+
 name: run-publish-linux
 run-name: Build and publish artifacts
 on: [workflow_dispatch]
 jobs:
   run-publish:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        BUILD_TARGET: [ release ] # refers to a cargo profile
-    outputs:
-      release_built: ${{ steps.set-output.outputs.release_built }}
     steps:
       - uses: actions/checkout@v4
-#      - name: Build binaries in "${{ matrix.BUILD_TARGET }}" mode
-#        run: cargo build --profile ${{ matrix.BUILD_TARGET }}
-#      - name: Install Snapcraft
-#        uses: samuelmeuli/action-snapcraft@v3
-#      - name: Prepare snap folder
-#        run: |
-#          ls -la
-#          mkdir -p ~/samrewritten
-#          cp package/snapcraft.yaml ~/samrewritten/
-#          cd ~/samrewritten
-#          sudo adduser $USER lxd
-#          echo We are in the following folder
-#          pwd
-#          echo groups
-#          groups
-#          sudo snapcraft
-#          # Below is for testing only
-#          sudo snap install --devmode --dangerous *.snap
-#          snap list
       - uses: snapcore/action-build@v1
         id: snapcraft
         with:
@@ -38,10 +16,3 @@ jobs:
         with:
           name: snap
           path: ${{ steps.snapcraft.outputs.snap }}
-      
-
-#      - name: Upload release artifact
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: samrewritten
-#          path: target/${{ matrix.BUILD_TARGET }}/samrewritten

@@ -13,20 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::cell::Cell;
-use std::cmp::Ordering;
-use std::rc::Rc;
-use gtk::gio::{spawn_blocking, ListStore};
-use gtk::pango::EllipsizeMode;
-use gtk::prelude::*;
-use gtk::{glib, Align, Box, ClosureExpression, CustomSorter, FilterListModel, Label, ListItem, ListView, NoSelection, Orientation, SignalListItemFactory, SortListModel, Stack, StackTransitionType, StringFilter, StringFilterMatchMode, Switch, Widget};
-use gtk::glib::{clone, MainContext};
 use crate::frontend::achievement::GAchievementObject;
 use crate::frontend::custom_progress_bar_widget::CustomProgressBar;
 use crate::frontend::request::{Request, SetAchievement};
 use crate::frontend::shimmer_image::ShimmerImage;
+use gtk::gio::{ListStore, spawn_blocking};
+use gtk::glib::{MainContext, clone};
+use gtk::pango::EllipsizeMode;
+use gtk::prelude::*;
+use gtk::{
+    Align, Box, ClosureExpression, CustomSorter, FilterListModel, Label, ListItem, ListView,
+    NoSelection, Orientation, SignalListItemFactory, SortListModel, Stack, StackTransitionType,
+    StringFilter, StringFilterMatchMode, Switch, Widget, glib,
+};
+use std::cell::Cell;
+use std::cmp::Ordering;
+use std::rc::Rc;
 
-pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, ListStore, StringFilter) {
+pub fn create_achievements_view(
+    app_id: Rc<Cell<Option<u32>>>,
+) -> (ListView, ListStore, StringFilter) {
     let achievements_list_factory = SignalListItemFactory::new();
     let app_achievements_model = ListStore::new::<GAchievementObject>();
 
@@ -46,7 +52,10 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
         let percent1 = achievement1.global_achieved_percent();
         let percent2 = achievement2.global_achieved_percent();
 
-        percent2.partial_cmp(&percent1).unwrap_or(Ordering::Equal).into()
+        percent2
+            .partial_cmp(&percent1)
+            .unwrap_or(Ordering::Equal)
+            .into()
     });
 
     let app_achievement_sort_model = SortListModel::builder()
@@ -110,16 +119,12 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
             .ellipsize(EllipsizeMode::End)
             .halign(Align::Start)
             .build();
-        let label_box = Box::builder()
-            .orientation(Orientation::Vertical)
-            .build();
+        let label_box = Box::builder().orientation(Orientation::Vertical).build();
         let global_percentage_progress_bar = CustomProgressBar::new();
         global_percentage_progress_bar.set_height_request(2);
         label_box.append(&name_label);
         label_box.append(&description_label);
-        let entry_box = Box::builder()
-            .orientation(Orientation::Vertical)
-            .build();
+        let entry_box = Box::builder().orientation(Orientation::Vertical).build();
         let achievement_box = Box::builder()
             .orientation(Orientation::Horizontal)
             .margin_top(8)
@@ -169,7 +174,7 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
             .property_expression("item")
             .chain_property::<GAchievementObject>("global-achieved-percent-ok")
             .bind(&global_percentage_progress_bar, "visible", Widget::NONE);
-        
+
         // Custom expressions
         let is_achieved_expr = list_item
             .property_expression("item")
@@ -182,7 +187,8 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
             .chain_property::<GAchievementObject>("permission");
 
         let achieved_visible_icon_closure = glib::RustClosure::new(|values: &[glib::Value]| {
-            let is_achieved = values.get(1)
+            let is_achieved = values
+                .get(1)
                 .and_then(|val| val.get::<bool>().ok())
                 .unwrap_or(false);
             let child_name = if is_achieved { "normal" } else { "locked" };
@@ -190,29 +196,28 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
         });
 
         let permission_sensitive_closure = glib::RustClosure::new(|values: &[glib::Value]| {
-            let permission = values.get(1)
+            let permission = values
+                .get(1)
                 .and_then(|val| val.get::<i32>().ok())
                 .unwrap_or(0);
             let is_sensitive = (permission & 2) == 0;
             Some(is_sensitive.to_value())
         });
         let permission_protected_closure = glib::RustClosure::new(|values: &[glib::Value]| {
-            let permission = values.get(1)
+            let permission = values
+                .get(1)
                 .and_then(|val| val.get::<i32>().ok())
                 .unwrap_or(0);
             let is_protected = (permission & 2) != 0;
             Some(is_protected.to_value())
         });
 
-        let visible_child_expr = ClosureExpression::new::<String>(
-            &[is_achieved_expr], achieved_visible_icon_closure
-        );
-        let permission_sensitive_expr = ClosureExpression::new::<bool>(
-            &[permission_expr], permission_sensitive_closure
-        );
-        let permission_protected_expr = ClosureExpression::new::<bool>(
-            &[permission_expr_2], permission_protected_closure
-        );
+        let visible_child_expr =
+            ClosureExpression::new::<String>(&[is_achieved_expr], achieved_visible_icon_closure);
+        let permission_sensitive_expr =
+            ClosureExpression::new::<bool>(&[permission_expr], permission_sensitive_closure);
+        let permission_protected_expr =
+            ClosureExpression::new::<bool>(&[permission_expr_2], permission_protected_closure);
 
         visible_child_expr.bind(&icon_stack, "visible-child-name", Widget::NONE);
         permission_sensitive_expr.bind(&switch, "sensitive", Widget::NONE);
@@ -223,11 +228,13 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
         let list_item = list_item
             .downcast_ref::<ListItem>()
             .expect("Needs to be a ListItem");
-        let achievement_object = list_item.item()
+        let achievement_object = list_item
+            .item()
             .and_then(|item| item.downcast::<GAchievementObject>().ok())
             .expect("Item should be a GAchievementObject");
 
-        let switch = list_item.child()
+        let switch = list_item
+            .child()
             .and_then(|child| child.downcast::<Box>().ok())
             .and_then(|hbox| hbox.first_child())
             .and_then(|box_widget| box_widget.last_child()) // Assuming switch_box is the last child
@@ -235,17 +242,21 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
             .and_then(|switch_box| switch_box.last_child()) // switch
             .and_then(|switch_widget| switch_widget.downcast::<Switch>().ok())
             .expect("achievements_list_factory::connect_bind: Could not find Switch widget");
-        
+
         // Disconnect previous handler if it exists
-        if let Some(handler_id) = list_item.steal_data::<glib::SignalHandlerId>("switch-state-notify-handler") {
+        if let Some(handler_id) =
+            list_item.steal_data::<glib::SignalHandlerId>("switch-state-notify-handler")
+        {
             switch.disconnect(handler_id);
         }
-        
+
         let app_id = app_id.get().unwrap_or_default();
         let achievement_id = achievement_object.id().clone();
-        
+
         switch.connect_state_notify(move |switch| {
-            if !switch.is_sensitive() { return }
+            if !switch.is_sensitive() {
+                return;
+            }
             switch.set_sensitive(false);
             let unlocked = switch.is_active();
             achievement_object.set_is_achieved(unlocked);
@@ -254,12 +265,15 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
                 SetAchievement {
                     app_id,
                     achievement_id,
-                    unlocked
-                }.request()
+                    unlocked,
+                }
+                .request()
             });
             MainContext::default().spawn_local(clone!(
-                #[weak] switch,
-                #[weak] achievement_object,
+                #[weak]
+                switch,
+                #[weak]
+                achievement_object,
                 async move {
                     if Some(Some(true)) != handle.await.ok() {
                         achievement_object.set_is_achieved(!unlocked);
@@ -274,7 +288,8 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
         let list_item = list_item
             .downcast_ref::<ListItem>()
             .expect("Needs to be a ListItem");
-        let switch = list_item.child()
+        let switch = list_item
+            .child()
             .and_then(|child| child.downcast::<Box>().ok())
             .and_then(|hbox| hbox.first_child())
             .and_then(|box_widget| box_widget.last_child()) // Assuming switch_box is the last child
@@ -284,10 +299,16 @@ pub fn create_achievements_view(app_id: Rc<Cell<Option<u32>>>) -> (ListView, Lis
             .expect("achievements_list_factory::connect_unbind: Could not find Switch widget");
 
         // Disconnect handler when item is unbound
-        if let Some(handler_id) = list_item.steal_data::<glib::SignalHandlerId>("switch-state-notify-handler") {
+        if let Some(handler_id) =
+            list_item.steal_data::<glib::SignalHandlerId>("switch-state-notify-handler")
+        {
             switch.disconnect(handler_id);
         }
     });
 
-    (app_achievements_list_view, app_achievements_model, app_achievement_string_filter)
+    (
+        app_achievements_list_view,
+        app_achievements_model,
+        app_achievement_string_filter,
+    )
 }

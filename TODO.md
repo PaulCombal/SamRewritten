@@ -20,7 +20,6 @@ At the very end:
 
 - Add a feature to build with the Adwaita theme
 - Show achievement progression when available
-- Rust fmt the whole thing
 - Improve error handling (handle .expects, .unwraps, etc)
 
 ### Nices to have

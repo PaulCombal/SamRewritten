@@ -15,7 +15,9 @@
 
 use crate::steam_client::steam_client_vtable::{ISteamClient, STEAMCLIENT_INTERFACE_VERSION};
 use crate::steam_client::steam_client_wrapper::SteamClient;
-use crate::steam_client::steamworks_types::{CreateInterfaceFn, SteamFreeLastCallbackFn, SteamGetCallbackFn};
+use crate::steam_client::steamworks_types::{
+    CreateInterfaceFn, SteamFreeLastCallbackFn, SteamGetCallbackFn,
+};
 use crate::utils::utils::get_steamclient_lib_path;
 use libloading::{Library, Symbol};
 use std::os::raw::c_char;
@@ -35,7 +37,9 @@ pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>>
 
 #[cfg(target_os = "windows")]
 pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>> {
-    use libloading::os::windows::{self, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS};
+    use libloading::os::windows::{
+        self, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR,
+    };
 
     unsafe {
         // let program_files = std::env::var("ProgramFiles(x86)")?;
@@ -46,8 +50,9 @@ pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>>
         let lib_steamclient_path = PathBuf::from(get_steamclient_lib_path());
         Ok(windows::Library::load_with_flags(
             lib_steamclient_path,
-            LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
-        )?.into())
+            LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS,
+        )?
+        .into())
     }
 }
 
@@ -63,8 +68,10 @@ pub fn new_steam_client_interface(
 > {
     unsafe {
         let create_interface: Symbol<CreateInterfaceFn> = steamclient_so.get(b"CreateInterface")?;
-        let steam_get_callback: Symbol<SteamGetCallbackFn> = steamclient_so.get(b"Steam_BGetCallback")?;
-        let steam_free_last_callback: Symbol<SteamFreeLastCallbackFn> = steamclient_so.get(b"Steam_FreeLastCallback")?; 
+        let steam_get_callback: Symbol<SteamGetCallbackFn> =
+            steamclient_so.get(b"Steam_BGetCallback")?;
+        let steam_free_last_callback: Symbol<SteamFreeLastCallbackFn> =
+            steamclient_so.get(b"Steam_FreeLastCallback")?;
 
         let mut return_code = 1;
         let client = create_interface(
@@ -98,7 +105,8 @@ pub fn create_steam_client() -> Result<SteamClient, Box<dyn std::error::Error>> 
         };
     }
 
-    let (raw_client, callback_fn, free_callback_fn) = new_steam_client_interface(&STEAM_CLIENT_LIB.get().unwrap())?;
+    let (raw_client, callback_fn, free_callback_fn) =
+        new_steam_client_interface(&STEAM_CLIENT_LIB.get().unwrap())?;
     let client = unsafe { SteamClient::from_raw(raw_client, callback_fn, free_callback_fn) };
 
     Ok(client)

@@ -27,7 +27,7 @@ impl GSteamAppObject {
         Object::builder()
             .property("app_id", app.app_id)
             .property("app_name", app.app_name)
-            .property("developer", app.developer) 
+            .property("developer", app.developer)
             .property("image_url", app.image_url)
             .property("metacritic_score", app.metacritic_score.unwrap_or(u8::MAX))
             .property("app_type", format!("{:?}", app.app_type))
@@ -62,7 +62,7 @@ mod imp {
         image_url: RefCell<Option<String>>,
 
         #[property(get, set)]
-        app_type: RefCell<String>
+        app_type: RefCell<String>,
     }
 
     // The central trait for subclassing a GObject

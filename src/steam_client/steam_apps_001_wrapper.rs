@@ -13,11 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::steam_client::steam_apps_001_vtable::ISteamApps001;
+use crate::steam_client::wrapper_types::SteamError;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
 use std::sync::Arc;
-use crate::steam_client::steam_apps_001_vtable::ISteamApps001;
-use crate::steam_client::wrapper_types::SteamError;
 
 /// Safe wrapper for ISteamApps
 pub struct SteamApps001 {
@@ -34,14 +34,16 @@ pub enum SteamApps001AppDataKeys<'a> {
     Logo,
     SmallCapsule(&'a str),
     MetacriticScore,
-    Developer
+    Developer,
 }
 
 impl<'a> SteamApps001AppDataKeys<'a> {
     pub fn as_string(&self) -> String {
         match self {
             SteamApps001AppDataKeys::Name => "name\0".to_string(),
-            SteamApps001AppDataKeys::SmallCapsule(language) => format!("small_capsule/{language}\0"),
+            SteamApps001AppDataKeys::SmallCapsule(language) => {
+                format!("small_capsule/{language}\0")
+            }
             SteamApps001AppDataKeys::Logo => "logo\0".to_string(),
             SteamApps001AppDataKeys::MetacriticScore => "metacritic_score\0".to_string(),
             SteamApps001AppDataKeys::Developer => "developer\0".to_string(),
@@ -66,7 +68,9 @@ impl SteamApps001 {
 
         unsafe {
             // Get the vtable - return error if null
-            let vtable = (*self.inner.ptr).vtable.as_ref()
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
                 .ok_or(SteamError::NullVtable)?;
 
             // Call through the vtable
@@ -75,9 +79,9 @@ impl SteamApps001 {
                 *app_id,
                 key.as_ptr() as *const c_char,
                 buffer.as_mut_ptr() as *mut c_char,
-                buffer.len() as c_int
+                buffer.len() as c_int,
             );
-            
+
             if result == 0 {
                 return Err(SteamError::UnknownError);
             }

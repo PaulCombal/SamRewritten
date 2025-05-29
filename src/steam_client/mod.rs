@@ -13,18 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-pub mod steam_client_vtable;
-pub mod steam_client_wrapper;
-pub mod steam_apps_vtable;
-pub mod steam_apps_wrapper;
-pub mod steam_apps_001_vtable;
-pub mod steam_apps_001_wrapper;
-pub mod steamworks_types;
+pub mod create_client;
 pub mod steam_app_list_vtable;
 pub mod steam_app_list_wrapper;
-pub mod create_client;
-pub mod steam_utils_vtable;
-pub mod steam_utils_wrapper;
+pub mod steam_apps_001_vtable;
+pub mod steam_apps_001_wrapper;
+pub mod steam_apps_vtable;
+pub mod steam_apps_wrapper;
+pub mod steam_client_vtable;
+pub mod steam_client_wrapper;
 pub mod steam_user_stats_vtable;
 pub mod steam_user_stats_wrapper;
+pub mod steam_utils_vtable;
+pub mod steam_utils_wrapper;
+pub mod steamworks_types;
 pub mod wrapper_types;

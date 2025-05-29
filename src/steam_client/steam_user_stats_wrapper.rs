@@ -14,9 +14,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::steam_client::steam_user_stats_vtable::ISteamUserStats;
-use std::sync::Arc;
 use crate::steam_client::steamworks_types::SteamAPICall_t;
 use crate::steam_client::wrapper_types::SteamError;
+use std::sync::Arc;
 
 pub struct SteamUserStats {
     inner: Arc<SteamUserStatsInner>,
@@ -63,36 +63,7 @@ impl SteamUserStats {
         }
     }
 
-    pub fn set_achievement(
-        &self,
-        achievement_name: &str,
-    ) -> Result<(), SteamError> {
-        unsafe {
-            let vtable = (*self.inner.ptr)
-                .vtable
-                .as_ref()
-                .ok_or(SteamError::NullVtable)?;
-            
-            let c_achievement_name =
-                std::ffi::CString::new(achievement_name).map_err(|_| SteamError::UnknownError)?;
-
-            let success = (vtable.set_achievement)(
-                self.inner.ptr,
-                c_achievement_name.as_ptr(),
-            );
-
-            if success {
-                Ok(())
-            } else {
-                Err(SteamError::UnknownError)
-            }
-        }
-    }
-
-    pub fn clear_achievement(
-        &self,
-        achievement_name: &str,
-    ) -> Result<(), SteamError> {
+    pub fn set_achievement(&self, achievement_name: &str) -> Result<(), SteamError> {
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable
@@ -102,10 +73,7 @@ impl SteamUserStats {
             let c_achievement_name =
                 std::ffi::CString::new(achievement_name).map_err(|_| SteamError::UnknownError)?;
 
-            let success = (vtable.clear_achievement)(
-                self.inner.ptr,
-                c_achievement_name.as_ptr(),
-            );
+            let success = (vtable.set_achievement)(self.inner.ptr, c_achievement_name.as_ptr());
 
             if success {
                 Ok(())
@@ -114,28 +82,45 @@ impl SteamUserStats {
             }
         }
     }
-    
+
+    pub fn clear_achievement(&self, achievement_name: &str) -> Result<(), SteamError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamError::NullVtable)?;
+
+            let c_achievement_name =
+                std::ffi::CString::new(achievement_name).map_err(|_| SteamError::UnknownError)?;
+
+            let success = (vtable.clear_achievement)(self.inner.ptr, c_achievement_name.as_ptr());
+
+            if success {
+                Ok(())
+            } else {
+                Err(SteamError::UnknownError)
+            }
+        }
+    }
+
     pub fn get_stat_i32(&self, stat_name: &str) -> Result<i32, SteamError> {
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
                 .ok_or(SteamError::NullVtable)?;
-            
+
             let c_stat_name =
                 std::ffi::CString::new(stat_name).map_err(|_| SteamError::UnknownError)?;
             let mut stat_value = 0i32;
-            
-            let success = (vtable.get_stat_int32)(
-                self.inner.ptr,
-                c_stat_name.as_ptr(),
-                &mut stat_value
-            );
-            
-            if success == false { 
+
+            let success =
+                (vtable.get_stat_int32)(self.inner.ptr, c_stat_name.as_ptr(), &mut stat_value);
+
+            if success == false {
                 return Err(SteamError::UnknownError);
             }
-            
+
             Ok(stat_value)
         }
     }
@@ -151,11 +136,8 @@ impl SteamUserStats {
                 std::ffi::CString::new(stat_name).map_err(|_| SteamError::UnknownError)?;
             let mut stat_value = 0f32;
 
-            let success = (vtable.get_stat_float)(
-                self.inner.ptr,
-                c_stat_name.as_ptr(),
-                &mut stat_value
-            );
+            let success =
+                (vtable.get_stat_float)(self.inner.ptr, c_stat_name.as_ptr(), &mut stat_value);
 
             if success == false {
                 return Err(SteamError::UnknownError);
@@ -175,11 +157,7 @@ impl SteamUserStats {
             let c_stat_name =
                 std::ffi::CString::new(stat_name).map_err(|_| SteamError::UnknownError)?;
 
-            let success = (vtable.set_stat_int32)(
-                self.inner.ptr,
-                c_stat_name.as_ptr(),
-                stat_value
-            );
+            let success = (vtable.set_stat_int32)(self.inner.ptr, c_stat_name.as_ptr(), stat_value);
 
             if success == false {
                 return Err(SteamError::UnknownError);
@@ -199,11 +177,7 @@ impl SteamUserStats {
             let c_stat_name =
                 std::ffi::CString::new(stat_name).map_err(|_| SteamError::UnknownError)?;
 
-            let success = (vtable.set_stat_float)(
-                self.inner.ptr,
-                c_stat_name.as_ptr(),
-                stat_value
-            );
+            let success = (vtable.set_stat_float)(self.inner.ptr, c_stat_name.as_ptr(), stat_value);
 
             if success == false {
                 return Err(SteamError::UnknownError);
@@ -220,9 +194,7 @@ impl SteamUserStats {
                 .as_ref()
                 .ok_or(SteamError::NullVtable)?;
 
-            let res = (vtable.request_global_achievement_percentages)(
-                self.inner.ptr,
-            );
+            let res = (vtable.request_global_achievement_percentages)(self.inner.ptr);
 
             if res == 0 {
                 return Err(SteamError::UnknownError);
@@ -231,7 +203,7 @@ impl SteamUserStats {
             Ok(res)
         }
     }
-    
+
     pub fn store_stats(&self) -> Result<bool, SteamError> {
         unsafe {
             let vtable = (*self.inner.ptr)
@@ -239,14 +211,12 @@ impl SteamUserStats {
                 .as_ref()
                 .ok_or(SteamError::NullVtable)?;
 
-            let res = (vtable.store_stats)(
-                self.inner.ptr,
-            );
+            let res = (vtable.store_stats)(self.inner.ptr);
 
             Ok(res)
         }
     }
-    
+
     #[cfg(test)]
     pub fn reset_all_stats(&self, achievements_too: bool) -> Result<bool, SteamError> {
         unsafe {
@@ -255,16 +225,16 @@ impl SteamUserStats {
                 .as_ref()
                 .ok_or(SteamError::NullVtable)?;
 
-            let success = (vtable.reset_all_stats)(
-                self.inner.ptr,
-                achievements_too
-            );
+            let success = (vtable.reset_all_stats)(self.inner.ptr, achievements_too);
 
             Ok(success)
         }
     }
-    
-    pub fn get_achievement_achieved_percent(&self, achievement_name: &str) -> Result<f32, SteamError> {
+
+    pub fn get_achievement_achieved_percent(
+        &self,
+        achievement_name: &str,
+    ) -> Result<f32, SteamError> {
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable

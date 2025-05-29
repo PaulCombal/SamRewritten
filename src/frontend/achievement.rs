@@ -26,17 +26,20 @@ impl GAchievementObject {
     pub fn new(info: AchievementInfo) -> Self {
         let global_achieved_percent = info.global_achieved_percent.unwrap_or(0.0);
         let global_achieved_percent_ok = info.global_achieved_percent.is_some();
-        
+
         Object::builder()
             .property("search-text", format!("{} {}", info.name, info.description))
             .property("id", info.id)
             .property("name", info.name)
             .property("description", info.description)
             .property("is-achieved", info.is_achieved)
-            .property("unlock-time", info.unlock_time.map(|time| format!("{time:#?}")))
+            .property(
+                "unlock-time",
+                info.unlock_time.map(|time| format!("{time:#?}")),
+            )
             .property("icon-normal", info.icon_normal)
             .property("icon-locked", info.icon_locked)
-            .property("permission", info.permission) 
+            .property("permission", info.permission)
             .property("global-achieved-percent", global_achieved_percent)
             .property("global-achieved-percent-ok", global_achieved_percent_ok)
             .build()
@@ -82,7 +85,7 @@ mod imp {
 
         #[property(get, set)]
         global_achieved_percent: Cell<f32>,
-        
+
         #[property(get, set)]
         global_achieved_percent_ok: Cell<bool>,
     }
@@ -96,4 +99,3 @@ mod imp {
     #[glib::derived_properties]
     impl ObjectImpl for GAchievementObject {}
 }
-

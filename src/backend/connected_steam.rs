@@ -54,10 +54,12 @@ impl<'a> ConnectedSteam {
 
     pub fn shutdown(&self) {
         self.client.release_user(self.pipe, self.user);
-        self.client.release_steam_pipe(self.pipe).expect("Failed to release steam pipe");
+        self.client
+            .release_steam_pipe(self.pipe)
+            .expect("Failed to release steam pipe");
         let _ = self.client.shutdown_if_app_pipes_closed();
     }
-    
+
     // pub fn run_callbacks(&mut self) -> Result<(), Box<dyn std::error::Error>> {
     //     self.client.run_callbacks(&self.pipe).map_err(|e| e.into())
     // }
