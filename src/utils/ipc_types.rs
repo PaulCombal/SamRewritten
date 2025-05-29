@@ -28,6 +28,7 @@ pub enum SteamCommand {
     SetAchievement(u32, bool, String),
     SetIntStat(u32, String, i32),
     SetFloatStat(u32, String, f32),
+    ResetStats(u32, bool),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -174,11 +174,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                     Err(e) => SteamResponse::Error::<Vec<StatInfo>>(e.to_string()),
                 };
 
-                #[cfg(debug_assertions)]
-                let response_str = serde_json::to_string(&response).unwrap();
                 send_response(&mut conn, response).expect("Failed to send response");
-                #[cfg(debug_assertions)]
-                dev_println!("Statistics: {response_str}");
             }
 
             SteamCommand::SetAchievement(app_id_param, unlocked, achievement_id) => {
@@ -234,6 +230,26 @@ pub fn app(app_id: AppId_t) -> i32 {
                     Ok(result) => SteamResponse::Success(result),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting float stat: {e}");
+                        SteamResponse::Error::<bool>(e.to_string())
+                    }
+                };
+
+                send_response(&mut conn, response).expect("Failed to send response");
+            }
+
+            SteamCommand::ResetStats(app_id_param, achievements_too) => {
+                if app_id_param != app_id {
+                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
+                    let response: SteamResponse<String> =
+                        SteamResponse::Error("App ID mismatch".to_owned());
+                    send_response(&mut conn, response).expect("Failed to send response");
+                    continue;
+                }
+
+                let response = match app_manager.reset_all_stats(achievements_too) {
+                    Ok(result) => SteamResponse::Success(result),
+                    Err(e) => {
+                        dev_println!("[APP SERVER] Error resetting stats: {e}");
                         SteamResponse::Error::<bool>(e.to_string())
                     }
                 };

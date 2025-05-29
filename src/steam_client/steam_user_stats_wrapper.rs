@@ -217,7 +217,6 @@ impl SteamUserStats {
         }
     }
 
-    #[cfg(test)]
     pub fn reset_all_stats(&self, achievements_too: bool) -> Result<bool, SteamError> {
         unsafe {
             let vtable = (*self.inner.ptr)

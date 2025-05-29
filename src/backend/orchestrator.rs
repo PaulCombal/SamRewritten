@@ -366,6 +366,14 @@ pub fn orchestrator() -> i32 {
                     .write_all(response.as_bytes())
                     .expect("failed to write");
             }
+
+            SteamCommand::ResetStats(app_id, achievements_too) => {
+                let response =
+                    send_app_command(app_id, SteamCommand::ResetStats(app_id, achievements_too));
+                conn.get_mut()
+                    .write_all(response.as_bytes())
+                    .expect("failed to write");
+            }
         }
     }
 

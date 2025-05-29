@@ -18,7 +18,7 @@ use crate::frontend::achievement::GAchievementObject;
 use crate::frontend::app_view::create_app_view;
 use crate::frontend::application_actions::{set_app_action_enabled, setup_app_actions};
 use crate::frontend::request::{
-    GetAchievements, GetOwnedAppList, GetStats, LaunchApp, Request, StopApp,
+    GetAchievements, GetOwnedAppList, GetStats, LaunchApp, Request, ResetStats, StopApp,
 };
 use crate::frontend::shimmer_image::ShimmerImage;
 use crate::frontend::steam_app::GSteamAppObject;
@@ -238,6 +238,7 @@ pub fn create_main_ui(application: &Application) {
                 }
 
                 set_app_action_enabled(&application, "refresh_achievements_list", true);
+                set_app_action_enabled(&application, "clear_all_stats_and_achievements", true);
             }));
 
             if let Some(url) = item.image_url() {
@@ -451,6 +452,49 @@ pub fn create_main_ui(application: &Application) {
                 }
 
                 set_app_action_enabled(&application, "refresh_achievements_list", true);
+                set_app_action_enabled(&application, "clear_all_stats_and_achievements", true);
+            }));
+        }
+    ));
+
+    let action_clear_all_stats_and_achievements =
+        SimpleAction::new("clear_all_stats_and_achievements", None);
+    action_clear_all_stats_and_achievements.set_enabled(false);
+    action_clear_all_stats_and_achievements.connect_activate(clone!(
+        #[strong]
+        app_id,
+        #[weak]
+        application,
+        #[weak]
+        app_achievements_model,
+        #[weak]
+        app_stat_model,
+        #[weak]
+        action_refresh_achievements_list,
+        #[weak]
+        app_stack,
+        move |_, _| {
+            app_stack.set_visible_child_name("loading");
+            set_app_action_enabled(&application, "clear_all_stats_and_achievements", false);
+            app_achievements_model.remove_all();
+            app_stat_model.remove_all();
+
+            let app_id_copy = app_id.get().unwrap();
+            let handle = spawn_blocking(move || {
+                let success = ResetStats {
+                    app_id: app_id_copy,
+                    achievements_too: true,
+                }
+                .request();
+                success
+            });
+
+            MainContext::default().spawn_local(clone!(async move {
+                let Ok(Some(_success)) = handle.await else {
+                    return app_stack.set_visible_child_name("failed");
+                };
+
+                action_refresh_achievements_list.activate(None);
             }));
         }
     ));
@@ -490,6 +534,7 @@ pub fn create_main_ui(application: &Application) {
         &about_dialog,
         &action_refresh_app_list,
         &action_refresh_achievements_list,
+        &action_clear_all_stats_and_achievements,
     );
 
     window.present();

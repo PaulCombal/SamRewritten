@@ -94,6 +94,10 @@ pub fn set_context_popover_to_app_details_context(
         Some("Refresh achievements & stats"),
         Some("app.refresh_achievements_list"),
     );
+    menu_model.append(
+        Some("Reset everything"),
+        Some("app.clear_all_stats_and_achievements"),
+    );
     menu_model.append(Some("About"), Some("app.about"));
     menu_model.append(Some("Quit"), Some("app.quit"));
 

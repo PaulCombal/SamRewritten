@@ -436,7 +436,6 @@ impl<'a> AppManager {
         self.connected_steam.shutdown();
     }
 
-    #[cfg(test)]
     pub fn reset_all_stats(
         &self,
         achievements_too: bool,

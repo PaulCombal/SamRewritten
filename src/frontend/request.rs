@@ -114,6 +114,12 @@ pub struct SetFloatStat {
     pub value: f32,
 }
 
+#[derive(Debug, Clone)]
+pub struct ResetStats {
+    pub app_id: u32,
+    pub achievements_too: bool,
+}
+
 impl Request for GetOwnedAppList {
     type Response = Vec<AppModel>;
 }
@@ -151,6 +157,10 @@ impl Request for SetIntStat {
 }
 
 impl Request for SetFloatStat {
+    type Response = bool;
+}
+
+impl Request for ResetStats {
     type Response = bool;
 }
 
@@ -211,5 +221,11 @@ impl Into<SteamCommand> for SetIntStat {
 impl Into<SteamCommand> for SetFloatStat {
     fn into(self) -> SteamCommand {
         SteamCommand::SetFloatStat(self.app_id, self.stat_id, self.value)
+    }
+}
+
+impl Into<SteamCommand> for ResetStats {
+    fn into(self) -> SteamCommand {
+        SteamCommand::ResetStats(self.app_id, self.achievements_too)
     }
 }

@@ -12,7 +12,6 @@ At the very end:
 
 - Instead of having small bars under the achievements to represent gloable achievement percentage, can we make it the background? would it look any better?
 - Support for multiple simultaneous instances ('launch in new window' button)
-- Add a context menu entry for the App view: Reset stats & achievements (steamuserstats.reset_all_stats)
 - Optimize image loading by accessing steam local banner images
 - Github action to generate Windows build artifacts
 

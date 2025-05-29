@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::dev_println;
 use gtk::gio::SimpleAction;
 use gtk::glib;
 use gtk::glib::clone;
@@ -24,6 +25,7 @@ pub fn setup_app_actions(
     about_dialog: &AboutDialog,
     refresh_app_list_action: &SimpleAction,
     refresh_achievements_list_action: &SimpleAction,
+    reset_all_stats_and_achievements_action: &SimpleAction,
 ) {
     let action_show_about_dialog = SimpleAction::new("about", None);
     action_show_about_dialog.connect_activate(clone!(
@@ -45,6 +47,7 @@ pub fn setup_app_actions(
 
     application.add_action(refresh_app_list_action);
     application.add_action(refresh_achievements_list_action);
+    application.add_action(reset_all_stats_and_achievements_action);
     application.add_action(&action_show_about_dialog);
     application.add_action(&action_quit);
     application.set_accels_for_action("app.refresh_app_list", &["F5"]);
@@ -57,5 +60,7 @@ pub fn set_app_action_enabled(application: &Application, action_name: &str, enab
             .downcast_ref::<SimpleAction>()
             .unwrap()
             .set_enabled(enabled);
+    } else {
+        dev_println!("[CLIENT] Action not found {action_name}");
     }
 }
