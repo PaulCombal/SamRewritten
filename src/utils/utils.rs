@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::env;
+use std::{env, fs};
 use std::path::PathBuf;
 
 pub fn get_executable_path() -> PathBuf {
@@ -36,8 +36,10 @@ pub fn get_app_cache_dir() -> String {
         return ".".to_owned();
     }
 
-    // Non-snap users
-    "/tmp".to_owned()
+    // Non-snap release
+    let folder = env::var("HOME").unwrap_or("/tmp".to_owned()) + "/.cache/samrewritten";
+    fs::create_dir_all(&folder).expect("Could not create temp folder");
+    folder
 }
 
 #[inline]

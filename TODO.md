@@ -3,19 +3,15 @@
 - Give user feedback when a search returns no result
 
 At the very end:
-- Populate the About dialog, do a better logo
-- Write a Readme and documentation
 - Share on Reddit
 - Desktop entry / .exe icon
-
-At the very very end:
 - Add screenshots to the Readme
 - Upload an AppImage
 
 ### Medium priority
 
-- Insted of having small bars under the achievements to represent gloable achievement percentage, can we make it the background? would it look any better?
-- Support for multiple simultaneous instances (launch in new window button)
+- Instead of having small bars under the achievements to represent gloable achievement percentage, can we make it the background? would it look any better?
+- Support for multiple simultaneous instances ('launch in new window' button)
 - Add a context menu entry for the App view: Reset stats & achievements (steamuserstats.reset_all_stats)
 - Optimize image loading by accessing steam local banner images
 - Github action to generate Windows build artifacts

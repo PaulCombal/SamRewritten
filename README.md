@@ -1,9 +1,10 @@
 SamRewrittem
 ===
 
-![SamRewrittenLogo](/assets/icon_readme.png)
-
-A Steam Achievements Manager for Windows and Linux.
+<div style="display: flex; align-items: center;">
+  <img src="/assets/icon_256.png" alt="SamRewrittenLogo" style="margin-right: 10px;">
+  <p>A Steam Achievements Manager for Windows and Linux.</p>
+</div>
 
 *This project and its contributors are not affiliated with Valve Corporation or Microsoft. Steam and Windows are
 trademarks of their respective owners, Valve Corporation and Microsoft.*
@@ -40,7 +41,7 @@ snap install samrewritten
 
 ## Limitations
 
-On Linux, this tool is **only** compatible with **Snap installations of Steam**.
+⚠️ On Linux, this tool is **only** compatible with **Snap installations of Steam**.
 
 ## End user agreements
 
