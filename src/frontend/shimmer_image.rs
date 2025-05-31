@@ -182,53 +182,90 @@ mod imp {
 
     impl ShimmerImage {
         fn load(&self, url: &str) {
-            let mut path = temp_dir();
-            let url = url.to_string();
+            let split = url.split("://").collect::<Vec<&str>>();
+            if split.len() != 2 {
+                dev_println!("[CLIENT] Invalid URL: {url}");
+                return;
+            }
+
             let (sender, receiver) = sync_channel::<Texture>(0);
             self.receiver.borrow_mut().replace(receiver);
-            path.push(format!("{}.jpg", base64_encode(url.as_bytes())));
 
-            spawn_blocking(move || {
-                if !exists(path.as_path()).unwrap_or_default() {
-                    dev_println!("[CLIENT] Downloading: {url}");
-                    //Download and store to path
-                    let response = match Client::new()
-                        .get(url.as_str())
-                        .send()
-                        .and_then(|response| response.error_for_status())
-                        .and_then(|response| response.bytes())
-                    {
-                        Ok(response) => response,
-                        Err(error) => {
-                            return eprintln!("[CLIENT] Failed to download {url}: {error}");
+            match split[0] {
+                "https" => {
+                    let mut path = temp_dir();
+                    let url = url.to_string();
+                    path.push(format!("{}.jpg", base64_encode(url.as_bytes())));
+
+                    spawn_blocking(move || {
+                        if !exists(path.as_path()).unwrap_or_default() {
+                            dev_println!("[CLIENT] Downloading: {url}");
+                            //Download and store to path
+                            let response = match Client::new()
+                                .get(url.as_str())
+                                .send()
+                                .and_then(|response| response.error_for_status())
+                                .and_then(|response| response.bytes())
+                            {
+                                Ok(response) => response,
+                                Err(error) => {
+                                    return eprintln!("[CLIENT] Failed to download {url}: {error}");
+                                }
+                            };
+
+                            if let Err(error) = write(path.as_path(), response) {
+                                eprintln!("[CLIENT] Failed to write {url} to {path:?}: {error}");
+                                return;
+                            }
+                        } else {
+                            dev_println!("[CLIENT] Cached loading: {url}");
                         }
-                    };
 
-                    if let Err(error) = write(path.as_path(), response) {
-                        eprintln!("[CLIENT] Failed to write {url} to {path:?}: {error}");
-                        return;
-                    }
-                } else {
-                    dev_println!("[CLIENT] Cached loading: {url}");
+                        let data = match std::fs::read(path.as_path()) {
+                            Ok(data) => data,
+                            Err(error) => {
+                                eprintln!("[CLIENT] Failed to read {url} from {path:?}: {error}");
+                                return;
+                            }
+                        };
+
+                        match Texture::from_bytes(&Bytes::from(data.as_slice())) {
+                            Ok(texture) => {
+                                sender.send(texture).ok();
+                            }
+                            Err(error) => {
+                                eprintln!("[CLIENT] Failed to create {url} from bytes: {error}");
+                            }
+                        }
+                    });
                 }
+                "file" => {
+                    let file_path = split[1].to_string();
+                    spawn_blocking(move || {
+                        let data = match std::fs::read(&file_path) {
+                            Ok(data) => data,
+                            Err(error) => {
+                                eprintln!("[CLIENT] Failed to read {file_path}: {error}");
+                                return;
+                            }
+                        };
 
-                let data = match std::fs::read(path.as_path()) {
-                    Ok(data) => data,
-                    Err(error) => {
-                        eprintln!("[CLIENT] Failed to read {url} from {path:?}: {error}");
-                        return;
-                    }
-                };
-
-                match Texture::from_bytes(&Bytes::from(data.as_slice())) {
-                    Ok(texture) => {
-                        sender.send(texture).ok();
-                    }
-                    Err(error) => {
-                        eprintln!("[CLIENT] Failed to create {url} from bytes: {error}");
-                    }
+                        match Texture::from_bytes(&Bytes::from(data.as_slice())) {
+                            Ok(texture) => {
+                                sender.send(texture).ok();
+                            }
+                            Err(error) => {
+                                eprintln!(
+                                    "[CLIENT] Failed to create {file_path} from bytes: {error}"
+                                );
+                            }
+                        }
+                    });
                 }
-            });
+                _ => {
+                    dev_println!("[CLIENT] Unsupported URL scheme: {url}");
+                }
+            }
         }
     }
 }

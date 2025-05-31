@@ -12,7 +12,6 @@ At the very end:
 
 - Instead of having small bars under the achievements to represent gloable achievement percentage, can we make it the background? would it look any better?
 - Support for multiple simultaneous instances ('launch in new window' button)
-- Optimize image loading by accessing steam local banner images
 - Github action to generate Windows build artifacts
 
 ### Low priority
@@ -23,7 +22,7 @@ At the very end:
 
 ### Nices to have
 
-- In utils, instead of checking for snap variables at runtime, only compile the necessary check.
+- In utils, instead of calculating Steam install path every time, do it only once
 
 In connect_bind closures, instead of calling unsafe steal_data, store the SignalHandlerId in the listItem
 ```rust

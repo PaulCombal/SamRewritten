@@ -14,8 +14,10 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::backend::app_lister::AppModel;
+use crate::utils::utils::get_local_app_banner_file_path;
 use glib::Object;
 use gtk::glib;
+use std::path::Path;
 
 // ANCHOR: integer_object
 glib::wrapper! {
@@ -24,11 +26,19 @@ glib::wrapper! {
 
 impl GSteamAppObject {
     pub fn new(app: AppModel) -> Self {
+        // We are client code. If a local image is already present, do not use the remote one.
+        let local_path_str = get_local_app_banner_file_path(&app.app_id);
+        let image_url = if Path::new(&local_path_str).exists() {
+            Some("file://".to_string() + &local_path_str)
+        } else {
+            app.image_url
+        };
+
         Object::builder()
             .property("app_id", app.app_id)
             .property("app_name", app.app_name)
             .property("developer", app.developer)
-            .property("image_url", app.image_url)
+            .property("image_url", image_url)
             .property("metacritic_score", app.metacritic_score.unwrap_or(u8::MAX))
             .property("app_type", format!("{:?}", app.app_type))
             .build()

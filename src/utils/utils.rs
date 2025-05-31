@@ -106,3 +106,29 @@ pub fn get_user_game_stats_schema_path(app_id: &u32) -> String {
     // let bin_file = PathBuf::from(program_files + "\\Steam\\appcache\\stats\\UserGameStatsSchema_" + &self.app_id.to_string() + ".bin");
     todo!()
 }
+
+#[inline]
+#[cfg(target_os = "linux")]
+pub fn get_local_app_banner_file_path(app_id: &u32) -> String {
+    if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
+        return real_home
+            + "/snap/steam/common/.local/share/Steam/appcache/librarycache/"
+            + &app_id.to_string()
+            + "/header.jpg";
+    }
+
+    if let Ok(home) = env::var("HOME") {
+        return home
+            + "/snap/steam/common/.local/share/Steam/appcache/librarycache/"
+            + &app_id.to_string()
+            + "/header.jpg";
+    }
+
+    panic!("Failed to get User Game Stats Schema path");
+}
+
+#[inline]
+#[cfg(target_os = "windows")]
+pub fn get_local_app_banner_file_path(app_id: &u32) -> String {
+    todo!()
+}

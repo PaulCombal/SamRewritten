@@ -134,8 +134,8 @@ pub fn create_main_ui(application: &Application) {
         .default_width(800)
         .default_height(600)
         .child(&list_stack)
+        .titlebar(&header_bar)
         .build();
-    window.set_titlebar(Some(&header_bar));
 
     let about_dialog = create_about_dialog(&window);
 
