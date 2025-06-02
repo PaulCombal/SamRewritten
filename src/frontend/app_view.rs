@@ -16,7 +16,6 @@
 use crate::frontend::achievement_view::create_achievements_view;
 use crate::frontend::shimmer_image::ShimmerImage;
 use gtk::gio::ListStore;
-use gtk::glib;
 use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};
 use gtk::prelude::*;
@@ -24,6 +23,7 @@ use gtk::{
     Align, Box, Frame, Label, Orientation, PolicyType, ScrolledWindow, Separator, Spinner, Stack,
     StackTransitionType, StringFilter, ToggleButton,
 };
+use gtk::{Paned, glib};
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -48,6 +48,7 @@ pub fn create_app_view(
     StringFilter,
     ListStore,
     StringFilter,
+    Paned,
 ) {
     let app_spinner = Spinner::builder().spinning(true).margin_end(5).build();
     let app_spinner_label = Label::builder().label("Loading...").build();
@@ -292,6 +293,16 @@ pub fn create_app_view(
         }
     ));
 
+    // Create app pane with sidebar and main content
+    let app_pane = Paned::builder()
+        .orientation(Orientation::Horizontal)
+        .shrink_start_child(false)
+        .shrink_end_child(false)
+        .resize_start_child(false)
+        .start_child(&app_sidebar)
+        .end_child(&app_stack)
+        .build();
+
     // Return relevant widgets that need to be accessed from outside
     (
         app_stack,
@@ -310,5 +321,6 @@ pub fn create_app_view(
         app_achievement_string_filter,
         app_stat_model,
         app_stat_string_filter,
+        app_pane,
     )
 }

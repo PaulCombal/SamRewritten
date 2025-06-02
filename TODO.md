@@ -1,6 +1,6 @@
 ### High priority (must finish before release)
 
-- Give user feedback when a search returns no result
+- Finish the Windows implementation and build
 
 At the very end:
 - Share on Reddit

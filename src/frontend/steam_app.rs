@@ -19,7 +19,6 @@ use glib::Object;
 use gtk::glib;
 use std::path::Path;
 
-// ANCHOR: integer_object
 glib::wrapper! {
     pub struct GSteamAppObject(ObjectSubclass<imp::GSteamAppObject>);
 }
@@ -44,7 +43,6 @@ impl GSteamAppObject {
             .build()
     }
 }
-// ANCHOR_END: integer_object
 
 mod imp {
     use glib::Properties;

@@ -27,15 +27,15 @@ use crate::frontend::ui_components::{
     set_context_popover_to_app_list_context,
 };
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
-use gtk::glib;
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{
     Align, Application, ApplicationWindow, Box, Button, FilterListModel, HeaderBar, Image, Label,
-    ListItem, ListView, NoSelection, Orientation, Paned, PolicyType, ScrolledWindow, SearchEntry,
+    ListItem, ListView, NoSelection, Orientation, PolicyType, ScrolledWindow, SearchEntry,
     SignalListItemFactory, Spinner, Stack, StackTransitionType, StringFilter,
     StringFilterMatchMode, Widget,
 };
+use gtk::{IconSize, glib};
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -58,20 +58,37 @@ pub fn create_main_ui(application: &Application) {
         app_developer_value,
         app_metacritic_value,
         app_metacritic_box,
-        app_sidebar,
+        _app_sidebar,
         app_achievements_model,
         app_achievement_string_filter,
         app_stat_model,
         app_stat_string_filter,
+        app_pane,
     ) = create_app_view(app_id.clone());
 
-    // Creating application list view
+    // Loading box
     let list_spinner = Spinner::builder().margin_end(5).spinning(true).build();
     let list_spinner_label = Label::builder().label("Loading...").build();
     let list_spinner_box = Box::builder().halign(Align::Center).build();
     list_spinner_box.append(&list_spinner);
     list_spinner_box.append(&list_spinner_label);
 
+    // Empty search result box
+    let app_list_no_result_icon = Image::from_icon_name("edit-find-symbolic");
+    app_list_no_result_icon.set_icon_size(IconSize::Large);
+    let app_list_no_result_label = Label::builder()
+        .label("No results. Check for spelling mistakes or try typing an App Id")
+        .build();
+    let app_list_no_result_box = Box::builder()
+        .spacing(20)
+        .valign(Align::Center)
+        .halign(Align::Center)
+        .orientation(Orientation::Vertical)
+        .build();
+    app_list_no_result_box.append(&app_list_no_result_icon);
+    app_list_no_result_box.append(&app_list_no_result_label);
+
+    // Header bar
     let header_bar = HeaderBar::builder().show_title_buttons(true).build();
     let search_entry = SearchEntry::builder()
         .placeholder_text("App name or App Id")
@@ -90,23 +107,21 @@ pub fn create_main_ui(application: &Application) {
         .min_content_width(360)
         .build();
 
-    // Create app pane with sidebar and main content
-    let app_pane = Paned::builder()
-        .orientation(Orientation::Horizontal)
-        .shrink_start_child(false)
-        .shrink_end_child(false)
-        .resize_start_child(false)
-        .start_child(&app_sidebar)
-        .end_child(&app_stack)
+    let list_of_apps_or_no_result = Stack::builder()
+        .transition_type(StackTransitionType::Crossfade)
         .build();
+    list_of_apps_or_no_result.add_named(&list_scrolled_window, Some("list"));
+    list_of_apps_or_no_result.add_named(&app_list_no_result_box, Some("empty"));
 
+    // Main application stack component
     let list_stack = Stack::builder()
         .transition_type(StackTransitionType::SlideLeftRight)
         .build();
     list_stack.add_named(&list_spinner_box, Some("loading"));
-    list_stack.add_named(&list_scrolled_window, Some("list"));
+    list_stack.add_named(&list_of_apps_or_no_result, Some("list"));
     list_stack.add_named(&app_pane, Some("app"));
 
+    // App list models
     let list_factory = SignalListItemFactory::new();
     let list_store = ListStore::new::<GSteamAppObject>();
     let list_string_filter = StringFilter::builder()
@@ -288,6 +303,7 @@ pub fn create_main_ui(application: &Application) {
             .chain_property::<GSteamAppObject>("image_url")
             .bind(&image, "url", Widget::NONE);
     });
+
     // Search entry setup
     search_entry.connect_search_changed(clone!(
         #[weak]
@@ -300,14 +316,32 @@ pub fn create_main_ui(application: &Application) {
         list_store,
         move |entry| {
             let text = Some(entry.text()).filter(|s| !s.is_empty());
-            app_achievement_string_filter.set_search(text.as_deref());
-            app_stat_string_filter.set_search(text.as_deref());
-            list_string_filter.set_search(text.as_deref());
 
+            // This logic is needed to have flashes of "no results found"
             if launch_app_by_id_visible.take() {
-                list_store.remove(0)
+                if let Some(app_id) = text.as_ref().map(|t| t.parse::<u32>().ok()).flatten() {
+                    launch_app_by_id_visible.set(true);
+                    list_store.insert(
+                        1,
+                        &GSteamAppObject::new(AppModel {
+                            app_id,
+                            app_name: format!("App {app_id}"),
+                            app_type: AppModelType::App,
+                            developer: "Unknown".to_string(),
+                            image_url: None,
+                            metacritic_score: None,
+                        }),
+                    );
+                }
+
+                app_achievement_string_filter.set_search(text.as_deref());
+                app_stat_string_filter.set_search(text.as_deref());
+                list_string_filter.set_search(text.as_deref());
+                list_store.remove(0);
+                return;
             }
-            if let Some(app_id) = text.map(|t| t.parse::<u32>().ok()).flatten() {
+
+            if let Some(app_id) = text.clone().map(|t| t.parse::<u32>().ok()).flatten() {
                 launch_app_by_id_visible.set(true);
                 list_store.insert(
                     0,
@@ -320,6 +354,22 @@ pub fn create_main_ui(application: &Application) {
                         metacritic_score: None,
                     }),
                 );
+            }
+
+            app_achievement_string_filter.set_search(text.as_deref());
+            app_stat_string_filter.set_search(text.as_deref());
+            list_string_filter.set_search(text.as_deref());
+        }
+    ));
+
+    list_filter_model.connect_items_changed(clone!(
+        #[weak]
+        list_of_apps_or_no_result,
+        move |model, _, _, _| {
+            if model.n_items() == 0 {
+                list_of_apps_or_no_result.set_visible_child_name("empty");
+            } else {
+                list_of_apps_or_no_result.set_visible_child_name("list");
             }
         }
     ));
@@ -376,9 +426,10 @@ pub fn create_main_ui(application: &Application) {
                             list_stack.set_visible_child_name("list");
                         } else {
                             list_store.remove_all();
-                            apps.into_iter()
-                                .map(GSteamAppObject::new)
-                                .for_each(|app| list_store.append(&app));
+                            let models: Vec<GSteamAppObject> =
+                                apps.into_iter().map(GSteamAppObject::new).collect();
+
+                            list_store.extend_from_slice(&models);
                             list_scrolled_window.set_child(Some(&list_view));
                             list_stack.set_visible_child_name("list");
                         }
