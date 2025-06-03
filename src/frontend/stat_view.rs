@@ -281,7 +281,7 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
                     };
 
                     match res {
-                        Some(success) if success => (true, value),
+                        Ok(success) if success => (true, value),
                         _ => (false, value),
                     }
                 });

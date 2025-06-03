@@ -2,7 +2,7 @@
 # https://github.com/13hannes11/gtk4-rs-docker/blob/main/appimage/Dockerfile
 
 FROM fedora:36
-ARG RUST_VERSION=1.86.0
+ARG RUST_VERSION=1.87.0
 ENV RUST_VERSION=$RUST_VERSION
 
 RUN dnf install gtk4-devel gcc libadwaita-devel openssl-devel wget file desktop-file-utils appstream -y

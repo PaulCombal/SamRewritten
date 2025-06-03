@@ -30,7 +30,6 @@ mod ui_components;
 use crate::frontend::request::Request;
 use crate::{APP_ID, dev_println};
 use app_list_view::create_main_ui;
-use gtk::Application;
 use gtk::glib::ExitCode;
 use gtk::prelude::{ApplicationExt, ApplicationExtManual};
 use request::Shutdown;
@@ -38,7 +37,13 @@ use std::cell::RefCell;
 use std::process::Child;
 
 fn shutdown(orchestrator: &RefCell<Child>) {
-    Shutdown.request();
+    match Shutdown.request() {
+        Err(err) => {
+            eprintln!("[CLIENT] Failed to send shutdown message: {}", err);
+            return;
+        }
+        Ok(_) => {}
+    };
 
     match orchestrator.borrow_mut().wait() {
         Ok(code) => dev_println!("[CLIENT] Orchestrator process exited with: {code}"),
@@ -46,9 +51,14 @@ fn shutdown(orchestrator: &RefCell<Child>) {
     }
 }
 
+#[cfg(not(feature = "adwaita"))]
+pub type MainApplication = gtk::Application;
+#[cfg(feature = "adwaita")]
+pub type MainApplication = adw::Application;
+
 pub fn main_ui(orchestrator: Child) -> ExitCode {
     let orchestrator = RefCell::new(orchestrator);
-    let main_app = Application::builder().application_id(APP_ID).build();
+    let main_app = MainApplication::builder().application_id(APP_ID).build();
 
     main_app.connect_activate(create_main_ui);
     main_app.connect_shutdown(move |_| shutdown(&orchestrator));

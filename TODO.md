@@ -16,7 +16,6 @@ At the very end:
 
 ### Low priority
 
-- Add a feature to build with the Adwaita theme
 - Show achievement progression when available
 - Improve error handling (handle .expects, .unwraps, etc)
 

@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::frontend::MainApplication;
 use crate::frontend::application_actions::set_app_action_enabled;
 use gtk::gdk::Paintable;
 use gtk::gdk_pixbuf::Pixbuf;
@@ -75,7 +76,7 @@ pub fn create_context_menu_button() -> (MenuButton, PopoverMenu, gtk::gio::Menu)
 
 pub fn set_context_popover_to_app_list_context(
     menu_model: &gtk::gio::Menu,
-    application: &gtk::Application,
+    application: &MainApplication,
 ) {
     menu_model.remove_all();
     menu_model.append(Some("Refresh app list"), Some("app.refresh_app_list"));
@@ -87,7 +88,7 @@ pub fn set_context_popover_to_app_list_context(
 
 pub fn set_context_popover_to_app_details_context(
     menu_model: &gtk::gio::Menu,
-    application: &gtk::Application,
+    application: &MainApplication,
 ) {
     menu_model.remove_all();
     menu_model.append(

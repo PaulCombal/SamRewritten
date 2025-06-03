@@ -16,7 +16,7 @@
 
 use crate::steam_client::steam_app_list_vtable::ISteamAppList;
 use crate::steam_client::steamworks_types::AppId_t;
-use crate::steam_client::wrapper_types::SteamError;
+use crate::steam_client::wrapper_types::SteamClientError;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
 use std::sync::Arc;
@@ -36,14 +36,14 @@ impl SteamAppList {
         }
     }
 
-    pub fn get_app_name(&self, app_id: AppId_t) -> Result<String, SteamError> {
+    pub fn get_app_name(&self, app_id: AppId_t) -> Result<String, SteamClientError> {
         let mut buffer = vec![0u8; 256];
 
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
 
             let result = (vtable.get_app_name)(
                 self.inner.ptr,
@@ -53,13 +53,13 @@ impl SteamAppList {
             );
 
             match result {
-                -1 => Err(SteamError::AppNotFound),
+                -1 => Err(SteamClientError::AppNotFound),
                 len if len >= 0 => {
                     // Convert the null-terminated C string to a Rust string
                     let c_str = CStr::from_ptr(buffer.as_ptr() as *const c_char);
                     Ok(c_str.to_string_lossy().into_owned())
                 }
-                _ => Err(SteamError::UnknownError),
+                _ => Err(SteamClientError::UnknownError),
             }
         }
     }

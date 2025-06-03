@@ -14,14 +14,15 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
+use crate::frontend::MainApplication;
+use gtk::AboutDialog;
 use gtk::gio::SimpleAction;
 use gtk::glib;
 use gtk::glib::clone;
 use gtk::prelude::*;
-use gtk::{AboutDialog, Application};
 
 pub fn setup_app_actions(
-    application: &Application,
+    application: &MainApplication,
     about_dialog: &AboutDialog,
     refresh_app_list_action: &SimpleAction,
     refresh_achievements_list_action: &SimpleAction,
@@ -54,7 +55,7 @@ pub fn setup_app_actions(
     application.set_accels_for_action("app.refresh_achievements_list", &["F5"]);
 }
 
-pub fn set_app_action_enabled(application: &Application, action_name: &str, enabled: bool) {
+pub fn set_app_action_enabled(application: &MainApplication, action_name: &str, enabled: bool) {
     if let Some(action) = application.lookup_action(action_name) {
         action
             .downcast_ref::<SimpleAction>()

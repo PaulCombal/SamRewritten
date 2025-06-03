@@ -275,7 +275,7 @@ pub fn create_achievements_view(
                 #[weak]
                 achievement_object,
                 async move {
-                    if Some(Some(true)) != handle.await.ok() {
+                    if Some(Ok(true)) != handle.await.ok() {
                         achievement_object.set_is_achieved(!unlocked);
                     }
                     switch.set_sensitive(true);

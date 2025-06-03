@@ -17,7 +17,7 @@ use super::ipc_process::get_orchestrator_socket_path;
 use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
-use crate::utils::ipc_types::{SteamCommand, SteamResponse};
+use crate::utils::ipc_types::{SamError, SteamCommand, SteamResponse};
 use interprocess::local_socket::prelude::LocalSocketStream;
 use interprocess::local_socket::traits::Stream;
 use serde::de::DeserializeOwned;
@@ -27,40 +27,40 @@ use std::io::{BufRead, BufReader, Write};
 pub trait Request: Into<SteamCommand> + Debug + Clone {
     type Response: DeserializeOwned;
 
-    fn request(self) -> Option<Self::Response> {
+    fn request(self) -> Result<Self::Response, SamError> {
         dev_println!("[CLIENT] Requesting {self:?}");
         let (_, socket_name) = get_orchestrator_socket_path();
         let mut stream = LocalSocketStream::connect(socket_name)
             .inspect_err(|error| eprintln!("[CLIENT] Request stream failed: {error}"))
-            .ok()?;
+            .map_err(|_| SamError::SocketCommunicationFailed)?;
 
         let command = self.clone().into();
         serde_json::to_writer(&mut stream, &command)
             .inspect_err(|error| eprintln!("[CLIENT] Request serialization failed: {error}"))
-            .ok()?;
+            .map_err(|_| SamError::SocketCommunicationFailed)?;
 
         stream
             .write_all(b"\n")
             .inspect_err(|error| eprintln!("[CLIENT] Request write failed: {error}"))
-            .ok()?;
+            .map_err(|_| SamError::SocketCommunicationFailed)?;
 
         stream
             .flush()
             .inspect_err(|error| eprintln!("[CLIENT] Request flush failed: {error}"))
-            .ok()?;
+            .map_err(|_| SamError::SocketCommunicationFailed)?;
 
         let mut buffer = String::new();
         BufReader::new(stream)
             .read_line(&mut buffer)
             .inspect_err(|error| eprintln!("[CLIENT] Response data read failed: {error}"))
-            .ok()?;
+            .map_err(|_| SamError::SocketCommunicationFailed)?;
 
         serde_json::from_str::<SteamResponse<Self::Response>>(buffer.as_str())
-            .map(|response| Into::<Result<Self::Response, String>>::into(response))
-            .inspect_err(|error| eprintln!("[CLIENT] Response deserialization failed: {error}"))
-            .ok()?
-            .inspect_err(|error| eprintln!("[CLIENT] Request failed: {error}"))
-            .ok()
+            .map_err(|error| {
+                eprintln!("[CLIENT] Response deserialization failed: {error}");
+                SamError::SocketCommunicationFailed
+            })
+            .and_then(|response| response.into())
     }
 }
 

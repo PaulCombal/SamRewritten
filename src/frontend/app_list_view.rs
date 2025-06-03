@@ -13,7 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use super::stat::GStatObject;
 use crate::backend::app_lister::{AppModel, AppModelType};
+use crate::frontend::MainApplication;
 use crate::frontend::achievement::GAchievementObject;
 use crate::frontend::app_view::create_app_view;
 use crate::frontend::application_actions::{set_app_action_enabled, setup_app_actions};
@@ -26,12 +28,13 @@ use crate::frontend::ui_components::{
     create_about_dialog, create_context_menu_button, set_context_popover_to_app_details_context,
     set_context_popover_to_app_list_context,
 };
+use crate::utils::ipc_types::SamError;
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{
-    Align, Application, ApplicationWindow, Box, Button, FilterListModel, HeaderBar, Image, Label,
-    ListItem, ListView, NoSelection, Orientation, PolicyType, ScrolledWindow, SearchEntry,
+    Align, ApplicationWindow, Box, Button, FilterListModel, HeaderBar, Image, Label, ListItem,
+    ListView, NoSelection, Orientation, PolicyType, ScrolledWindow, SearchEntry,
     SignalListItemFactory, Spinner, Stack, StackTransitionType, StringFilter,
     StringFilterMatchMode, Widget,
 };
@@ -39,9 +42,7 @@ use gtk::{IconSize, glib};
 use std::cell::Cell;
 use std::rc::Rc;
 
-use super::stat::GStatObject;
-
-pub fn create_main_ui(application: &Application) {
+pub fn create_main_ui(application: &MainApplication) {
     let launch_app_by_id_visible = Rc::new(Cell::new(false));
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
 
@@ -76,9 +77,7 @@ pub fn create_main_ui(application: &Application) {
     // Empty search result box
     let app_list_no_result_icon = Image::from_icon_name("edit-find-symbolic");
     app_list_no_result_icon.set_icon_size(IconSize::Large);
-    let app_list_no_result_label = Label::builder()
-        .label("No results. Check for spelling mistakes or try typing an App Id")
-        .build();
+    let app_list_no_result_label = Label::builder().build();
     let app_list_no_result_box = Box::builder()
         .spacing(20)
         .valign(Align::Center)
@@ -205,25 +204,36 @@ pub fn create_main_ui(application: &Application) {
             let app_developer_copy = item.developer();
             let app_metacritic_copy = item.metacritic_score();
             let handle = spawn_blocking(move || {
-                LaunchApp {
+                let req = LaunchApp {
                     app_id: app_id_copy,
                 }
                 .request();
+
+                match req {
+                    Err(e) => {
+                        eprintln!("[LAUNCH APP] Failed to launch app: {}", e);
+                        return (Err(e), Err(SamError::UnknownError));
+                    }
+                    Ok(_) => {}
+                }
+
                 let achievements = GetAchievements {
                     app_id: app_id_copy,
                 }
                 .request();
+
                 let stats = GetStats {
                     app_id: app_id_copy,
                 }
                 .request();
+
                 (achievements, stats)
             });
 
             set_context_popover_to_app_details_context(&menu_model, &application);
 
             MainContext::default().spawn_local(clone!(async move {
-                let Ok((Some(achievements), Some(stats))) = handle.await else {
+                let Ok((Ok(achievements), Ok(stats))) = handle.await else {
                     return app_stack.set_visible_child_name("failed");
                 };
 
@@ -389,7 +399,7 @@ pub fn create_main_ui(application: &Application) {
             set_context_popover_to_app_list_context(&menu_model, &application);
             if let Some(app_id) = app_id.take() {
                 spawn_blocking(move || {
-                    StopApp { app_id }.request();
+                    let _ = StopApp { app_id }.request();
                 });
             }
         }
@@ -405,9 +415,16 @@ pub fn create_main_ui(application: &Application) {
         #[weak]
         list_scrolled_window,
         #[weak]
+        list_of_apps_or_no_result,
+        #[weak]
+        app_list_no_result_label,
+        #[weak]
         list_stack,
+        #[weak]
+        search_entry,
         move |_, _| {
             list_stack.set_visible_child_name("loading");
+            search_entry.set_sensitive(false);
             let apps = spawn_blocking(move || GetOwnedAppList.request());
             MainContext::default().spawn_local(clone!(
                 #[weak]
@@ -415,29 +432,52 @@ pub fn create_main_ui(application: &Application) {
                 #[weak]
                 list_scrolled_window,
                 #[weak]
+                list_of_apps_or_no_result,
+                #[weak]
+                app_list_no_result_label,
+                #[weak]
                 list_store,
                 #[weak]
                 list_stack,
+                #[weak]
+                search_entry,
                 async move {
-                    if let Some(apps) = apps.await.ok().flatten() {
-                        if apps.is_empty() {
-                            let label = Label::new(Some("No apps found."));
-                            list_scrolled_window.set_child(Some(&label));
-                            list_stack.set_visible_child_name("list");
-                        } else {
-                            list_store.remove_all();
-                            let models: Vec<GSteamAppObject> =
-                                apps.into_iter().map(GSteamAppObject::new).collect();
+                    match apps.await {
+                        Ok(Ok(app_vec)) => {
+                            search_entry.set_sensitive(true);
 
-                            list_store.extend_from_slice(&models);
+                            if app_vec.is_empty() {
+                                app_list_no_result_label.set_text("No apps found on your account. Search for App Id to get started.");
+                                list_of_apps_or_no_result.set_visible_child_name("empty");
+                                list_scrolled_window.set_child(Some(&list_view));
+                                list_stack.set_visible_child_name("list");
+                            } else {
+                                list_store.remove_all();
+                                let models: Vec<GSteamAppObject> =
+                                    app_vec.into_iter().map(GSteamAppObject::new).collect();
+                                list_store.extend_from_slice(&models);
+                                list_scrolled_window.set_child(Some(&list_view));
+                                list_stack.set_visible_child_name("list");
+                                app_list_no_result_label.set_text("No results. Check for spelling mistakes or try typing an App Id.");
+                            }
+                        },
+                        Ok(Err(sam_error)) if sam_error == SamError::AppListRetrievalFailed => {
+                            search_entry.set_sensitive(true);
+                            app_list_no_result_label.set_text("Failed to load library. Check your internet connection. Search for App Id to get started.");
+                            list_of_apps_or_no_result.set_visible_child_name("empty");
                             list_scrolled_window.set_child(Some(&list_view));
                             list_stack.set_visible_child_name("list");
+                        },
+                        Ok(Err(sam_error)) => {
+                            println!("Unknown error: {}", sam_error);
+                            let label = Label::new(Some("SamRewritten could not connect to Steam. Is it running?"));
+                            list_scrolled_window.set_child(Some(&label));
+                            list_stack.set_visible_child_name("list");
                         }
-                    } else {
-                        let label = Label::new(Some("Failed to load apps."));
-                        list_scrolled_window.set_child(Some(&label));
-                        list_stack.set_visible_child_name("list");
-                    }
+                        Err(join_error) => {
+                            eprintln!("Spawn blocking error: {:?}", join_error);
+                        }
+                    };
                 }
             ));
         }
@@ -480,7 +520,7 @@ pub fn create_main_ui(application: &Application) {
             });
 
             MainContext::default().spawn_local(clone!(async move {
-                let Ok((Some(achievements), Some(stats))) = handle.await else {
+                let Ok((Ok(achievements), Ok(stats))) = handle.await else {
                     return app_stack.set_visible_child_name("failed");
                 };
 
@@ -541,7 +581,7 @@ pub fn create_main_ui(application: &Application) {
             });
 
             MainContext::default().spawn_local(clone!(async move {
-                let Ok(Some(_success)) = handle.await else {
+                let Ok(Ok(_success)) = handle.await else {
                     return app_stack.set_visible_child_name("failed");
                 };
 

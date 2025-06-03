@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#[derive(Debug)]
-pub enum SteamError {
+#[derive(Debug, PartialEq)]
+pub enum SteamClientError {
     NullVtable,
     PipeCreationFailed,
     PipeReleaseFailed,
@@ -24,23 +24,25 @@ pub enum SteamError {
     UnknownError,
 }
 
-impl std::fmt::Display for SteamError {
+impl std::fmt::Display for SteamClientError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SteamError::NullVtable => write!(f, "Steam client vtable is null"),
-            SteamError::PipeCreationFailed => write!(f, "Failed to create steam pipe"),
-            SteamError::PipeReleaseFailed => write!(f, "Failed to release steam pipe"),
-            SteamError::UserConnectionFailed => write!(f, "Failed to connect to steam server"),
-            SteamError::InterfaceCreationFailed(name) => {
+            SteamClientError::NullVtable => write!(f, "Steam client vtable is null"),
+            SteamClientError::PipeCreationFailed => write!(f, "Failed to create steam pipe"),
+            SteamClientError::PipeReleaseFailed => write!(f, "Failed to release steam pipe"),
+            SteamClientError::UserConnectionFailed => {
+                write!(f, "Failed to connect to steam server")
+            }
+            SteamClientError::InterfaceCreationFailed(name) => {
                 write!(f, "Failed to create steam interface: {}", name)
             }
-            SteamError::AppNotFound => write!(f, "App not found"),
-            SteamError::UnknownError => write!(f, "Unknown Steam error"),
+            SteamClientError::AppNotFound => write!(f, "App not found"),
+            SteamClientError::UnknownError => write!(f, "Unknown Steam error"),
         }
     }
 }
 
-impl std::error::Error for SteamError {}
+impl std::error::Error for SteamClientError {}
 
 pub enum SteamCallbackId {
     GlobalAchievementPercentagesReady = 1110,

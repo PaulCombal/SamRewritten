@@ -14,6 +14,11 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 reqwest = { version = "0", features = ["blocking"] }
 interprocess = "2"
+adw = { version = "0", package = "libadwaita", features = ["v1_1"], optional = true }
+
+[features]
+default = []
+adwaita = ['dep:adw']
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0"

@@ -25,6 +25,7 @@ use crate::steam_client::steamworks_types::{
     AppId_t, EResult, GlobalAchievementPercentagesReady_t,
 };
 use crate::steam_client::wrapper_types::SteamCallbackId;
+use crate::utils::ipc_types::SamError;
 use crate::utils::utils::get_user_game_stats_schema_path;
 use std::env;
 use std::path::PathBuf;
@@ -61,10 +62,10 @@ impl<'a> AppManager {
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs
-    pub fn load_definitions(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn load_definitions(&mut self) -> Result<(), SamError> {
         let bin_file = PathBuf::from(get_user_game_stats_schema_path(&self.app_id));
 
-        let kv = KeyValue::load_as_binary(bin_file)?;
+        let kv = KeyValue::load_as_binary(bin_file).map_err(|_| SamError::UnknownError)?;
         let current_language = self.connected_steam.apps.get_current_game_language();
         let stats = kv.get(&self.app_id.to_string());
         let stats = stats.get("stats");
@@ -83,7 +84,8 @@ impl<'a> AppManager {
                 stat.get("type").as_i32(0)
             };
 
-            let type_ = UserStatType::try_from(raw_type as u8)?;
+            let type_ =
+                UserStatType::try_from(raw_type as u8).map_err(|_| SamError::UnknownError)?;
 
             match type_ {
                 UserStatType::Invalid => {
@@ -182,7 +184,7 @@ impl<'a> AppManager {
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs#L420
-    pub fn get_achievements(&mut self) -> Result<Vec<AchievementInfo>, Box<dyn std::error::Error>> {
+    pub fn get_achievements(&mut self) -> Result<Vec<AchievementInfo>, SamError> {
         if !self.definitions_loaded {
             self.load_definitions()?;
         }
@@ -190,7 +192,8 @@ impl<'a> AppManager {
         let callback_handle = self
             .connected_steam
             .user_stats
-            .request_global_achievement_percentages()?;
+            .request_global_achievement_percentages()
+            .map_err(|_| SamError::UnknownError)?;
         let mut global_stats_fetched = EResult::k_EResultFail;
 
         // Try for 10 seconds at 60 fps
@@ -198,7 +201,8 @@ impl<'a> AppManager {
             if self
                 .connected_steam
                 .utils
-                .is_api_call_completed(callback_handle)?
+                .is_api_call_completed(callback_handle)
+                .map_err(|_| SamError::UnknownError)?
             {
                 let result = self
                     .connected_steam
@@ -206,7 +210,8 @@ impl<'a> AppManager {
                     .get_api_call_result::<GlobalAchievementPercentagesReady_t>(
                         callback_handle,
                         SteamCallbackId::GlobalAchievementPercentagesReady,
-                    )?;
+                    )
+                    .map_err(|_| SamError::UnknownError)?;
                 global_stats_fetched = result.m_eResult;
                 dev_println!(
                     "[APP SERVER] Global achievement percentages callback result: {result:?}"
@@ -284,7 +289,7 @@ impl<'a> AppManager {
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs#L519
-    pub fn get_statistics(&mut self) -> Result<Vec<StatInfo>, Box<dyn std::error::Error>> {
+    pub fn get_statistics(&mut self) -> Result<Vec<StatInfo>, SamError> {
         if !self.definitions_loaded {
             self.load_definitions()?;
         }
@@ -360,11 +365,7 @@ impl<'a> AppManager {
         Ok(statistics_info)
     }
 
-    pub fn set_achievement(
-        &self,
-        achievement_id: &str,
-        unlock: bool,
-    ) -> Result<bool, Box<dyn std::error::Error>> {
+    pub fn set_achievement(&self, achievement_id: &str, unlock: bool) -> Result<bool, SamError> {
         if unlock {
             match self
                 .connected_steam
@@ -375,8 +376,8 @@ impl<'a> AppManager {
                     .connected_steam
                     .user_stats
                     .store_stats()
-                    .map_err(|e| e.into()),
-                Err(e) => Err(e.into()),
+                    .map_err(|_| SamError::UnknownError),
+                Err(_) => Err(SamError::UnknownError),
             }
         } else {
             match self
@@ -388,17 +389,13 @@ impl<'a> AppManager {
                     .connected_steam
                     .user_stats
                     .store_stats()
-                    .map_err(|e| e.into()),
-                Err(e) => Err(e.into()),
+                    .map_err(|_| SamError::UnknownError),
+                Err(_) => Err(SamError::UnknownError),
             }
         }
     }
 
-    pub fn set_stat_i32(
-        &self,
-        stat_name: &str,
-        stat_value: i32,
-    ) -> Result<bool, Box<dyn std::error::Error>> {
+    pub fn set_stat_i32(&self, stat_name: &str, stat_value: i32) -> Result<bool, SamError> {
         match self
             .connected_steam
             .user_stats
@@ -408,16 +405,12 @@ impl<'a> AppManager {
                 .connected_steam
                 .user_stats
                 .store_stats()
-                .map_err(|e| e.into()),
-            Err(e) => Err(e.into()),
+                .map_err(|_| SamError::UnknownError),
+            Err(_) => Err(SamError::UnknownError),
         }
     }
 
-    pub fn set_stat_f32(
-        &self,
-        stat_name: &str,
-        stat_value: f32,
-    ) -> Result<bool, Box<dyn std::error::Error>> {
+    pub fn set_stat_f32(&self, stat_name: &str, stat_value: f32) -> Result<bool, SamError> {
         match self
             .connected_steam
             .user_stats
@@ -427,8 +420,8 @@ impl<'a> AppManager {
                 .connected_steam
                 .user_stats
                 .store_stats()
-                .map_err(|e| e.into()),
-            Err(e) => Err(e.into()),
+                .map_err(|_| SamError::UnknownError),
+            Err(_) => Err(SamError::UnknownError),
         }
     }
 
@@ -436,10 +429,7 @@ impl<'a> AppManager {
         self.connected_steam.shutdown();
     }
 
-    pub fn reset_all_stats(
-        &self,
-        achievements_too: bool,
-    ) -> Result<bool, Box<dyn std::error::Error>> {
+    pub fn reset_all_stats(&self, achievements_too: bool) -> Result<bool, SamError> {
         match self
             .connected_steam
             .user_stats
@@ -449,8 +439,8 @@ impl<'a> AppManager {
                 .connected_steam
                 .user_stats
                 .store_stats()
-                .map_err(|e| e.into()),
-            Err(e) => Err(e.into()),
+                .map_err(|_| SamError::UnknownError),
+            Err(_) => Err(SamError::UnknownError),
         }
     }
 

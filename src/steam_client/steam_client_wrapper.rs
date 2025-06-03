@@ -25,7 +25,7 @@ use crate::steam_client::steam_utils_wrapper::SteamUtils;
 use crate::steam_client::steamworks_types::{
     HSteamPipe, HSteamUser, SteamFreeLastCallbackFn, SteamGetCallbackFn,
 };
-use crate::steam_client::wrapper_types::SteamError;
+use crate::steam_client::wrapper_types::SteamClientError;
 use libloading::Symbol;
 use std::os::raw::c_char;
 use std::sync::Arc;
@@ -89,32 +89,32 @@ impl<'a> SteamClient {
     //     Ok(())
     // }
 
-    pub fn create_steam_pipe(&self) -> Result<HSteamPipe, SteamError> {
+    pub fn create_steam_pipe(&self) -> Result<HSteamPipe, SteamClientError> {
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
             let pipe = (vtable.create_steam_pipe)(self.inner.ptr);
             if pipe == 0 {
-                Err(SteamError::PipeCreationFailed)
+                Err(SteamClientError::PipeCreationFailed)
             } else {
                 Ok(pipe)
             }
         }
     }
 
-    pub fn release_steam_pipe(&self, pipe: HSteamPipe) -> Result<bool, SteamError> {
+    pub fn release_steam_pipe(&self, pipe: HSteamPipe) -> Result<bool, SteamClientError> {
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
             let success = (vtable.release_steam_pipe)(self.inner.ptr, pipe);
             if success {
                 Ok(success)
             } else {
-                Err(SteamError::PipeReleaseFailed)
+                Err(SteamClientError::PipeReleaseFailed)
             }
         }
     }
@@ -129,27 +129,27 @@ impl<'a> SteamClient {
         }
     }
 
-    pub fn connect_to_global_user(&self, pipe: HSteamPipe) -> Result<HSteamUser, SteamError> {
+    pub fn connect_to_global_user(&self, pipe: HSteamPipe) -> Result<HSteamUser, SteamClientError> {
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
             let user = (vtable.connect_to_global_user)(self.inner.ptr, pipe);
             if user == 0 {
-                Err(SteamError::UserConnectionFailed)
+                Err(SteamClientError::UserConnectionFailed)
             } else {
                 Ok(user)
             }
         }
     }
 
-    pub fn shutdown_if_app_pipes_closed(&self) -> Result<bool, SteamError> {
+    pub fn shutdown_if_app_pipes_closed(&self) -> Result<bool, SteamClientError> {
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
             Ok((vtable.bshutdown_if_all_pipes_closed)(self.inner.ptr))
         }
     }
@@ -158,18 +158,20 @@ impl<'a> SteamClient {
         &self,
         user: HSteamUser,
         pipe: HSteamPipe,
-    ) -> Result<SteamApps, SteamError> {
+    ) -> Result<SteamApps, SteamClientError> {
         unsafe {
             let version = STEAMAPPS_INTERFACE_VERSION.as_ptr() as *const c_char;
 
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
             let apps_ptr = (vtable.get_isteam_apps)(self.inner.ptr, user, pipe, version);
 
             if apps_ptr.is_null() {
-                Err(SteamError::InterfaceCreationFailed("ISteamApps".to_owned()))
+                Err(SteamClientError::InterfaceCreationFailed(
+                    "ISteamApps".to_owned(),
+                ))
             } else {
                 Ok(SteamApps::from_raw(apps_ptr))
             }
@@ -180,18 +182,18 @@ impl<'a> SteamClient {
         &self,
         user: HSteamUser,
         pipe: HSteamPipe,
-    ) -> Result<SteamApps001, SteamError> {
+    ) -> Result<SteamApps001, SteamClientError> {
         unsafe {
             let version = STEAMAPPS001_INTERFACE_VERSION.as_ptr() as *const c_char;
 
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
             let apps_ptr = (vtable.get_isteam_apps)(self.inner.ptr, user, pipe, version);
 
             if apps_ptr.is_null() {
-                Err(SteamError::InterfaceCreationFailed(
+                Err(SteamClientError::InterfaceCreationFailed(
                     "ISteamApps001".to_owned(),
                 ))
             } else {
@@ -200,18 +202,18 @@ impl<'a> SteamClient {
         }
     }
 
-    pub fn get_isteam_utils(&self, pipe: HSteamPipe) -> Result<SteamUtils, SteamError> {
+    pub fn get_isteam_utils(&self, pipe: HSteamPipe) -> Result<SteamUtils, SteamClientError> {
         unsafe {
             let version = STEAMUTILS_INTERFACE_VERSION.as_ptr() as *const c_char;
 
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
             let utils_ptr = (vtable.get_isteam_utils)(self.inner.ptr, pipe, version);
 
             if utils_ptr.is_null() {
-                Err(SteamError::InterfaceCreationFailed(
+                Err(SteamClientError::InterfaceCreationFailed(
                     "ISteamUtils".to_owned(),
                 ))
             } else {
@@ -224,19 +226,19 @@ impl<'a> SteamClient {
         &self,
         user: HSteamUser,
         pipe: HSteamPipe,
-    ) -> Result<SteamUserStats, SteamError> {
+    ) -> Result<SteamUserStats, SteamClientError> {
         unsafe {
             let version = STEAMUSERSTATS_INTERFACE_VERSION.as_ptr() as *const c_char;
 
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
             let user_stats_ptr =
                 (vtable.get_isteam_user_stats)(self.inner.ptr, user, pipe, version);
 
             if user_stats_ptr.is_null() {
-                Err(SteamError::InterfaceCreationFailed(
+                Err(SteamClientError::InterfaceCreationFailed(
                     "ISteamUtils".to_owned(),
                 ))
             } else {

@@ -17,6 +17,7 @@ use crate::dev_println;
 use crate::steam_client::steam_apps_001_wrapper::{SteamApps001, SteamApps001AppDataKeys};
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steamworks_types::AppId_t;
+use crate::utils::ipc_types::SamError;
 use crate::utils::utils::get_app_cache_dir;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -107,27 +108,38 @@ impl<'a> AppLister<'a> {
         }
     }
 
-    fn download_app_list_str(&self) -> Result<String, Box<dyn std::error::Error>> {
-        let response = reqwest::blocking::get(&self.app_list_url)?.text()?;
+    fn download_app_list_str(&self) -> Result<String, SamError> {
+        dev_println!(
+            "[ORCHESTRATOR] Downloading app list from:  {}",
+            &self.app_list_url
+        );
+        let response = reqwest::blocking::get(&self.app_list_url)
+            .unwrap()
+            .text()
+            .map_err(|_| SamError::AppListRetrievalFailed)?;
         Ok(response)
     }
 
-    fn load_app_list_file(&self) -> Result<XmlGames, Box<dyn std::error::Error>> {
-        let f = File::open(&self.app_list_local)?;
+    fn load_app_list_file(&self) -> Result<XmlGames, SamError> {
+        let f = File::open(&self.app_list_local).map_err(|_| SamError::AppListRetrievalFailed)?;
         let f = BufReader::new(f);
-        let xml_data: XmlGames = quick_xml::de::from_reader(f)?;
+        let xml_data: XmlGames =
+            quick_xml::de::from_reader(f).map_err(|_| SamError::AppListRetrievalFailed)?;
         Ok(xml_data)
     }
 
-    fn load_app_list_str(&self, source: &String) -> Result<XmlGames, Box<dyn std::error::Error>> {
-        let xml_data: XmlGames = quick_xml::de::from_str(source)?;
+    fn load_app_list_str(&self, source: &String) -> Result<XmlGames, SamError> {
+        let xml_data: XmlGames =
+            quick_xml::de::from_str(source).map_err(|_| SamError::AppListRetrievalFailed)?;
         Ok(xml_data)
     }
 
-    fn get_xml_games(&self) -> Result<XmlGames, Box<dyn std::error::Error>> {
+    fn get_xml_games(&self) -> Result<XmlGames, SamError> {
         let should_update = match fs::metadata(&self.app_list_local) {
             Ok(metadata) => {
-                let last_update = metadata.modified()?;
+                let last_update = metadata
+                    .modified()
+                    .map_err(|_| SamError::AppListRetrievalFailed)?;
                 let one_week_ago = SystemTime::now() - Duration::from_secs(7 * 24 * 60 * 60); // 7 days
                 last_update < one_week_ago
             }
@@ -139,14 +151,16 @@ impl<'a> AppLister<'a> {
         if should_update {
             let app_list_str = self.download_app_list_str()?;
             xml_games = self.load_app_list_str(&app_list_str)?;
-            fs::write(&self.app_list_local, &app_list_str)?;
 
-            dev_println!("Loaded app list from url");
+            dev_println!(
+                "[ORCHESTRATOR] App list loaded. Saving in:  {}",
+                &self.app_list_local
+            );
+            fs::write(&self.app_list_local, &app_list_str)
+                .map_err(|_| SamError::AppListRetrievalFailed)?;
         } else {
-            dev_println!("Loading from local location");
+            dev_println!("[ORCHESTRATOR] Loading app list from local location");
             xml_games = self.load_app_list_file()?;
-
-            dev_println!("Loaded app list from file");
         }
 
         Ok(xml_games)
@@ -196,14 +210,11 @@ impl<'a> AppLister<'a> {
         None
     }
 
-    pub fn get_app(
-        &self,
-        app_id: AppId_t,
-        xml_game: &XmlGame,
-    ) -> Result<AppModel, Box<dyn std::error::Error>> {
+    pub fn get_app(&self, app_id: AppId_t, xml_game: &XmlGame) -> Result<AppModel, SamError> {
         let app_name = self
             .steam_apps_001
-            .get_app_data(&app_id, &SteamApps001AppDataKeys::Name.as_string())?;
+            .get_app_data(&app_id, &SteamApps001AppDataKeys::Name.as_string())
+            .map_err(|_| SamError::AppListRetrievalFailed)?;
         let developer = self
             .steam_apps_001
             .get_app_data(&app_id, &SteamApps001AppDataKeys::Developer.as_string())
@@ -225,14 +236,15 @@ impl<'a> AppLister<'a> {
             app_type: if xml_game.app_type.as_ref().is_none() {
                 AppModelType::App
             } else {
-                AppModelType::from_str(&xml_game.app_type.as_ref().unwrap())?
+                AppModelType::from_str(&xml_game.app_type.as_ref().unwrap())
+                    .map_err(|_| SamError::AppListRetrievalFailed)?
             },
             developer,
             metacritic_score,
         })
     }
 
-    pub fn get_owned_apps(&self) -> Result<Vec<AppModel>, Box<dyn std::error::Error>> {
+    pub fn get_owned_apps(&self) -> Result<Vec<AppModel>, SamError> {
         let xml_games = self.get_xml_games()?;
 
         // IClientUserStats::GetNumAchievedAchievements( 291550, ) = 0,

@@ -14,7 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::steam_client::steam_apps_001_vtable::ISteamApps001;
-use crate::steam_client::wrapper_types::SteamError;
+use crate::steam_client::wrapper_types::SteamClientError;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
 use std::sync::Arc;
@@ -63,7 +63,7 @@ impl SteamApps001 {
 
     /// TODO: document
     ///
-    pub fn get_app_data(&self, app_id: &u32, key: &str) -> Result<String, SteamError> {
+    pub fn get_app_data(&self, app_id: &u32, key: &str) -> Result<String, SteamClientError> {
         let mut buffer = vec![0u8; 256];
 
         unsafe {
@@ -71,7 +71,7 @@ impl SteamApps001 {
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
-                .ok_or(SteamError::NullVtable)?;
+                .ok_or(SteamClientError::NullVtable)?;
 
             // Call through the vtable
             let result = (vtable.get_app_data)(
@@ -83,7 +83,7 @@ impl SteamApps001 {
             );
 
             if result == 0 {
-                return Err(SteamError::UnknownError);
+                return Err(SteamClientError::UnknownError);
             }
 
             let c_str = CStr::from_ptr(buffer.as_ptr() as *const c_char);

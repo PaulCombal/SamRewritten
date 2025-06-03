@@ -16,6 +16,33 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub enum SamError {
+    SerializationFailed,
+    SteamConnectionFailed,
+    AppListRetrievalFailed,
+    SocketCommunicationFailed,
+    AppMismatchError,
+    UnknownError,
+}
+
+impl std::fmt::Display for SamError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SamError::SerializationFailed => write!(f, "Sam error: Serialization failed"),
+            SamError::SteamConnectionFailed => write!(f, "Sam error: SteamConnection failed"),
+            SamError::AppListRetrievalFailed => write!(f, "Sam error: App list retrieval failed"),
+            SamError::UnknownError => write!(f, "Sam error: Unknown error"),
+            SamError::SocketCommunicationFailed => {
+                write!(f, "Sam error: SocketCommunication failed")
+            }
+            SamError::AppMismatchError => write!(f, "Sam error: App mismatch"),
+        }
+    }
+}
+
+impl std::error::Error for SamError {}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum SteamCommand {
     GetOwnedAppList,
     LaunchApp(u32),
@@ -34,11 +61,11 @@ pub enum SteamCommand {
 #[derive(Serialize, Deserialize, Debug)]
 pub enum SteamResponse<T> {
     Success(T),
-    Error(String),
+    Error(SamError),
 }
 
-impl<T> Into<Result<T, String>> for SteamResponse<T> {
-    fn into(self) -> Result<T, String> {
+impl<T> Into<Result<T, SamError>> for SteamResponse<T> {
+    fn into(self) -> Result<T, SamError> {
         match self {
             SteamResponse::Success(data) => Ok(data),
             SteamResponse::Error(error) => Err(error),

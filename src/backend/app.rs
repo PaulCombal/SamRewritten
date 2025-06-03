@@ -17,7 +17,7 @@ use crate::backend::app_manager::AppManager;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::frontend::ipc_process::get_app_socket_path;
 use crate::steam_client::steamworks_types::AppId_t;
-use crate::utils::ipc_types::{SteamCommand, SteamResponse};
+use crate::utils::ipc_types::{SamError, SteamCommand, SteamResponse};
 use crate::{dev_print, dev_println};
 use interprocess::local_socket::traits::ListenerExt;
 use interprocess::local_socket::{Listener, ListenerOptions, Stream};
@@ -114,7 +114,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                 buffer.clear();
                 dev_println!("[APP SERVER] Error deserializing command: {e}");
                 let response: SteamResponse<String> =
-                    SteamResponse::Error("Failed deserialize command".to_owned());
+                    SteamResponse::Error(SamError::SerializationFailed);
                 send_response(&mut conn, response).expect("Failed to send response");
                 continue;
             }
@@ -122,7 +122,7 @@ pub fn app(app_id: AppId_t) -> i32 {
 
         if app_manager.as_ref().is_err() {
             let response: SteamResponse<String> =
-                SteamResponse::Error("Failed to connect to Steam".to_owned());
+                SteamResponse::Error(SamError::SteamConnectionFailed);
             send_response(&mut conn, response).expect("Failed to send response");
             continue;
         }
@@ -147,14 +147,14 @@ pub fn app(app_id: AppId_t) -> i32 {
                 if app_id_param != app_id {
                     dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
                     let response: SteamResponse<String> =
-                        SteamResponse::Error("App ID mismatch".to_owned());
+                        SteamResponse::Error(SamError::AppMismatchError);
                     send_response(&mut conn, response).expect("Failed to send response");
                     continue;
                 }
 
                 let response = match app_manager.get_achievements() {
                     Ok(achievements) => SteamResponse::Success(achievements),
-                    Err(e) => SteamResponse::Error::<Vec<AchievementInfo>>(e.to_string()),
+                    Err(e) => SteamResponse::Error::<Vec<AchievementInfo>>(e),
                 };
 
                 send_response(&mut conn, response).expect("Failed to send response");
@@ -164,14 +164,14 @@ pub fn app(app_id: AppId_t) -> i32 {
                 if app_id_param != app_id {
                     dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
                     let response: SteamResponse<String> =
-                        SteamResponse::Error("App ID mismatch".to_owned());
+                        SteamResponse::Error(SamError::AppMismatchError);
                     send_response(&mut conn, response).expect("Failed to send response");
                     continue;
                 }
 
                 let response = match app_manager.get_statistics() {
                     Ok(achievements) => SteamResponse::Success(achievements),
-                    Err(e) => SteamResponse::Error::<Vec<StatInfo>>(e.to_string()),
+                    Err(e) => SteamResponse::Error::<Vec<StatInfo>>(e),
                 };
 
                 send_response(&mut conn, response).expect("Failed to send response");
@@ -181,7 +181,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                 if app_id_param != app_id {
                     dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
                     let response: SteamResponse<String> =
-                        SteamResponse::Error("App ID mismatch".to_owned());
+                        SteamResponse::Error(SamError::AppMismatchError);
                     send_response(&mut conn, response).expect("Failed to send response");
                     continue;
                 }
@@ -190,7 +190,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                     Ok(_) => SteamResponse::Success(true),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting achievement: {e}");
-                        SteamResponse::Error::<bool>(e.to_string())
+                        SteamResponse::Error::<bool>(e)
                     }
                 };
 
@@ -201,7 +201,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                 if app_id_param != app_id {
                     dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
                     let response: SteamResponse<String> =
-                        SteamResponse::Error("App ID mismatch".to_owned());
+                        SteamResponse::Error(SamError::AppMismatchError);
                     send_response(&mut conn, response).expect("Failed to send response");
                     continue;
                 }
@@ -210,7 +210,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                     Ok(result) => SteamResponse::Success(result),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting int stat: {e}");
-                        SteamResponse::Error::<bool>(e.to_string())
+                        SteamResponse::Error::<bool>(e)
                     }
                 };
 
@@ -221,7 +221,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                 if app_id_param != app_id {
                     dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
                     let response: SteamResponse<String> =
-                        SteamResponse::Error("App ID mismatch".to_owned());
+                        SteamResponse::Error(SamError::AppMismatchError);
                     send_response(&mut conn, response).expect("Failed to send response");
                     continue;
                 }
@@ -230,7 +230,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                     Ok(result) => SteamResponse::Success(result),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting float stat: {e}");
-                        SteamResponse::Error::<bool>(e.to_string())
+                        SteamResponse::Error::<bool>(e)
                     }
                 };
 
@@ -241,7 +241,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                 if app_id_param != app_id {
                     dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
                     let response: SteamResponse<String> =
-                        SteamResponse::Error("App ID mismatch".to_owned());
+                        SteamResponse::Error(SamError::AppMismatchError);
                     send_response(&mut conn, response).expect("Failed to send response");
                     continue;
                 }
@@ -250,7 +250,7 @@ pub fn app(app_id: AppId_t) -> i32 {
                     Ok(result) => SteamResponse::Success(result),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error resetting stats: {e}");
-                        SteamResponse::Error::<bool>(e.to_string())
+                        SteamResponse::Error::<bool>(e)
                     }
                 };
 
@@ -259,7 +259,7 @@ pub fn app(app_id: AppId_t) -> i32 {
 
             _ => {
                 dev_println!("[APP SERVER] Received unknown command {command:?}");
-                let response = SteamResponse::<()>::Error("Unknown command".to_owned());
+                let response = SteamResponse::<()>::Error(SamError::UnknownError);
                 send_response(&mut conn, response).expect("Failed to send response");
             }
         }

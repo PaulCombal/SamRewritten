@@ -16,7 +16,7 @@
 use crate::backend::app_lister::AppLister;
 use crate::backend::connected_steam::ConnectedSteam;
 use crate::frontend::ipc_process::{get_app_socket_path, get_orchestrator_socket_path};
-use crate::utils::ipc_types::{SteamCommand, SteamResponse};
+use crate::utils::ipc_types::{SamError, SteamCommand, SteamResponse};
 use crate::utils::utils::get_executable_path;
 use crate::{dev_print, dev_println};
 use interprocess::local_socket::prelude::LocalSocketStream;
@@ -64,7 +64,7 @@ fn send_app_command(app_id: u32, command: SteamCommand) -> String {
         Err(e) => {
             dev_println!("[ORCHESTRATOR] Failed to connect to app socket {app_id}: {e}");
             let response: SteamResponse<()> =
-                SteamResponse::Error(format!("Failed to connect to app: {e}"));
+                SteamResponse::Error(SamError::SocketCommunicationFailed);
             return serde_json::to_string(&response).unwrap() + "\n";
         }
     };
@@ -150,7 +150,7 @@ pub fn orchestrator() -> i32 {
                 Err(e) => {
                     dev_println!("[ORCHESTRATOR] Error connecting to Steam: {e}");
                     let response: SteamResponse<String> =
-                        SteamResponse::Error("Failed to connect to Steam".to_owned());
+                        SteamResponse::Error(SamError::SteamConnectionFailed);
                     let response = serde_json::to_string(&response).unwrap() + "\n";
                     conn.get_mut()
                         .write_all(response.as_bytes())
@@ -179,7 +179,7 @@ pub fn orchestrator() -> i32 {
                     }
                     Err(e) => {
                         dev_println!("[ORCHESTRATOR] Error getting owned apps: {e}");
-                        let response = SteamResponse::<()>::Error("Error".to_owned());
+                        let response = SteamResponse::<()>::Error(e);
                         let response = serde_json::to_string(&response).unwrap() + "\n";
                         conn.get_mut()
                             .write_all(response.as_bytes())
@@ -195,8 +195,7 @@ pub fn orchestrator() -> i32 {
                 // 1. Check if we own a process for this app
                 if children_processes.contains_key(&app_id) {
                     dev_println!("[ORCHESTRATOR] App {} is already running", app_id);
-                    let response: SteamResponse<()> =
-                        SteamResponse::Error("App is already running".to_owned());
+                    let response: SteamResponse<()> = SteamResponse::Error(SamError::UnknownError);
                     let response = serde_json::to_string(&response).unwrap() + "\n";
                     conn.get_mut()
                         .write_all(response.as_bytes())
@@ -207,9 +206,7 @@ pub fn orchestrator() -> i32 {
                 // 2. Check if a process is running.
                 if is_app_running(app_id) {
                     dev_println!("[ORCHESTRATOR] App {} is already running", app_id);
-                    let response: SteamResponse<()> = SteamResponse::Error(
-                        "App is already running in another process".to_owned(),
-                    );
+                    let response: SteamResponse<()> = SteamResponse::Error(SamError::UnknownError);
                     let response = serde_json::to_string(&response).unwrap() + "\n";
                     conn.get_mut()
                         .write_all(response.as_bytes())
@@ -241,7 +238,7 @@ pub fn orchestrator() -> i32 {
                             child.kill().expect("Failed to kill child process");
                             child.wait().expect("Failed to wait for child process");
                             let response: SteamResponse<()> =
-                                SteamResponse::Error("Failed to connect to socket".to_owned());
+                                SteamResponse::Error(SamError::SocketCommunicationFailed);
                             let response = serde_json::to_string(&response).unwrap() + "\n";
                             conn.get_mut()
                                 .write_all(response.as_bytes())
@@ -264,8 +261,7 @@ pub fn orchestrator() -> i32 {
                 dev_println!("[ORCHESTRATOR] StopApp {}", app_id);
                 if !children_processes.contains_key(&app_id) {
                     dev_println!("[ORCHESTRATOR] App {} is not running", app_id);
-                    let response: SteamResponse<()> =
-                        SteamResponse::Error("App is not running".to_owned());
+                    let response: SteamResponse<()> = SteamResponse::Error(SamError::UnknownError);
                     let response = serde_json::to_string(&response).unwrap() + "\n";
                     conn.get_mut()
                         .write_all(response.as_bytes())
