@@ -1,8 +1,8 @@
 [package]
 name = "SamRewritten"
 version = "0.1.0"
-description = "Steam Achievement Manager v2"
-authors = ["Paul (abonnementspaul -@- gmail.com)", "Phillip ( p@posteco.de )"]
+description = "Steam Achievement Manager Rewritten"
+authors = ["Paul <abonnementspaul -@- gmail.com>", "Phillip <phillip.mendel -@- posteco.de>"]
 edition = "2024"
 
 [dependencies]

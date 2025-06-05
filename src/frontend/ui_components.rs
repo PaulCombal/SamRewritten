@@ -29,7 +29,7 @@ pub fn create_about_dialog(window: &ApplicationWindow) -> AboutDialog {
         .license_type(License::Gpl30)
         .version(env!("CARGO_PKG_VERSION"))
         .program_name("SamRewritten")
-        .authors(env!("CARGO_PKG_AUTHORS").split(':').collect::<Vec<_>>())
+        .authors(env!("CARGO_PKG_AUTHORS").replace(" -@- ", "@").split(':').collect::<Vec<_>>())
         .comments(env!("CARGO_PKG_DESCRIPTION"))
         .logo(&logo)
         .build()
