@@ -14,7 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use std::path::PathBuf;
-use std::{env, fs};
+use std::env;
 
 pub fn get_executable_path() -> PathBuf {
     env::current_exe()
@@ -27,6 +27,7 @@ pub fn get_executable_path() -> PathBuf {
 #[inline]
 #[cfg(target_os = "linux")]
 pub fn get_app_cache_dir() -> String {
+    use std::fs;
     if let Ok(snap_name) = env::var("SNAP_NAME") {
         if snap_name == "samrewritten" {
             return env::var("SNAP_USER_COMMON").unwrap_or(String::from("/tmp"));
@@ -45,7 +46,9 @@ pub fn get_app_cache_dir() -> String {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_app_cache_dir() -> String {
-    todo!()
+    std::env::temp_dir().to_str()
+        .expect("Failed to convert temp dir to string")
+        .to_owned()
 }
 
 #[inline]
@@ -65,16 +68,14 @@ pub fn get_steamclient_lib_path() -> String {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_steamclient_lib_path() -> String {
-    todo!()
-    // let program_files = std::env::var("ProgramFiles(x86)")?;
-    // #[cfg(target_pointer_width = "64")]
-    // let lib_steamclient_path = PathBuf::from(program_files + "\\Steam\\steamclient64.dll");
-    // #[cfg(target_pointer_width = "32")]
-    // let lib_steamclient_path = PathBuf::from(program_files + "\\Steam\\steamclient.dll");
+    use winreg::enums::HKEY_CURRENT_USER;
+    use winreg::RegKey;
 
-    // Would it be better to get inspiration from this c# code?
-    // Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Valve\Steam", "InstallPath", null);
-    // It would allow for multi-disk installs.
+    RegKey::predef(HKEY_CURRENT_USER)
+        .open_subkey("SOFTWARE\\Valve\\Steam")
+        .expect("Failed to open Steam registry key")
+        .get_value::<String, &'static str>("SteamPath")
+        .expect("Failed to get Steam install path from registry") + "\\steamclient64.dll"
 }
 
 #[inline]
@@ -100,11 +101,15 @@ pub fn get_user_game_stats_schema_path(app_id: &u32) -> String {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_user_game_stats_schema_path(app_id: &u32) -> String {
-    // #[cfg(target_os = "windows")]
-    // let program_files = env::var("ProgramFiles(x86)")?;
-    // #[cfg(target_os = "windows")]
-    // let bin_file = PathBuf::from(program_files + "\\Steam\\appcache\\stats\\UserGameStatsSchema_" + &self.app_id.to_string() + ".bin");
-    todo!()
+    use winreg::enums::HKEY_CURRENT_USER;
+    use winreg::RegKey;
+
+    RegKey::predef(HKEY_CURRENT_USER)
+        .open_subkey("SOFTWARE\\Valve\\Steam")
+        .expect("Failed to open Steam registry key")
+        .get_value::<String, &'static str>("SteamPath")
+        .expect("Failed to get Steam install path from registry") +&
+        format!("/appcache/stats/UserGameStatsSchema_{app_id}.bin")
 }
 
 #[inline]
@@ -130,5 +135,12 @@ pub fn get_local_app_banner_file_path(app_id: &u32) -> String {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_local_app_banner_file_path(app_id: &u32) -> String {
-    todo!()
+    use winreg::enums::HKEY_CURRENT_USER;
+    use winreg::RegKey;
+
+    RegKey::predef(HKEY_CURRENT_USER)
+        .open_subkey("SOFTWARE\\Valve\\Steam")
+        .expect("Failed to open Steam registry key")
+        .get_value::<String, &'static str>("SteamPath")
+        .expect("Failed to get Steam install path from registry") + &format!("\\appcache\\librarycache\\{app_id}\\main_header.jpg")
 }

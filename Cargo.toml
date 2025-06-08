@@ -2,7 +2,7 @@
 name = "SamRewritten"
 version = "0.1.0"
 description = "Steam Achievement Manager Rewritten"
-authors = ["Paul <abonnementspaul -@- gmail.com>", "Phillip <phillip.mendel -@- posteco.de>"]
+authors = ["Paul <abonnementspaul -@- gmail.com>", "Phillip <phillip.mendel -@- posteo.de>"]
 edition = "2024"
 
 [dependencies]
@@ -19,6 +19,9 @@ adw = { version = "0", package = "libadwaita", features = ["v1_1"], optional = t
 [features]
 default = []
 adwaita = ['dep:adw']
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55.0"
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0"
