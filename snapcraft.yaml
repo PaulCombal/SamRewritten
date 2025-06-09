@@ -4,7 +4,7 @@
 # - Desktop entry not working
 # - I had to add a slot just to display the main window, people say this means I have to get manual approval
 
-# I've already spent way too much time trying to package this as a snap, and this was a pain in the ass all the way
+# I've already spent way too much time trying to package this as a snap, and this was a pain in the ass all the way.
 # Canonical needs to flesh out this thing if they want any programmer to use their package distribution.
 # For these reasons, fuck that, I'll release as an AppImage for the time being
 

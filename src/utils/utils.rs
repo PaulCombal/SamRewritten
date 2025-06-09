@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::path::PathBuf;
 use std::env;
+use std::path::PathBuf;
 
 pub fn get_executable_path() -> PathBuf {
     env::current_exe()
@@ -46,7 +46,8 @@ pub fn get_app_cache_dir() -> String {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_app_cache_dir() -> String {
-    std::env::temp_dir().to_str()
+    std::env::temp_dir()
+        .to_str()
         .expect("Failed to convert temp dir to string")
         .to_owned()
 }
@@ -68,14 +69,15 @@ pub fn get_steamclient_lib_path() -> String {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_steamclient_lib_path() -> String {
-    use winreg::enums::HKEY_CURRENT_USER;
     use winreg::RegKey;
+    use winreg::enums::HKEY_CURRENT_USER;
 
     RegKey::predef(HKEY_CURRENT_USER)
         .open_subkey("SOFTWARE\\Valve\\Steam")
         .expect("Failed to open Steam registry key")
         .get_value::<String, &'static str>("SteamPath")
-        .expect("Failed to get Steam install path from registry") + "\\steamclient64.dll"
+        .expect("Failed to get Steam install path from registry")
+        + "\\steamclient64.dll"
 }
 
 #[inline]
@@ -101,15 +103,15 @@ pub fn get_user_game_stats_schema_path(app_id: &u32) -> String {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_user_game_stats_schema_path(app_id: &u32) -> String {
-    use winreg::enums::HKEY_CURRENT_USER;
     use winreg::RegKey;
+    use winreg::enums::HKEY_CURRENT_USER;
 
     RegKey::predef(HKEY_CURRENT_USER)
         .open_subkey("SOFTWARE\\Valve\\Steam")
         .expect("Failed to open Steam registry key")
         .get_value::<String, &'static str>("SteamPath")
-        .expect("Failed to get Steam install path from registry") +&
-        format!("/appcache/stats/UserGameStatsSchema_{app_id}.bin")
+        .expect("Failed to get Steam install path from registry")
+        + &format!("/appcache/stats/UserGameStatsSchema_{app_id}.bin")
 }
 
 #[inline]
@@ -135,12 +137,13 @@ pub fn get_local_app_banner_file_path(app_id: &u32) -> String {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_local_app_banner_file_path(app_id: &u32) -> String {
-    use winreg::enums::HKEY_CURRENT_USER;
     use winreg::RegKey;
+    use winreg::enums::HKEY_CURRENT_USER;
 
     RegKey::predef(HKEY_CURRENT_USER)
         .open_subkey("SOFTWARE\\Valve\\Steam")
         .expect("Failed to open Steam registry key")
         .get_value::<String, &'static str>("SteamPath")
-        .expect("Failed to get Steam install path from registry") + &format!("\\appcache\\librarycache\\{app_id}\\main_header.jpg")
+        .expect("Failed to get Steam install path from registry")
+        + &format!("\\appcache\\librarycache\\{app_id}\\main_header.jpg")
 }

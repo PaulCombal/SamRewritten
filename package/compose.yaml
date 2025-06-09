@@ -7,4 +7,13 @@ services:
     volumes:
       - ../:/mnt:z
 #    command: /bin/bash -c "cargo appimage"
+#    command: /bin/bash -c "appimage --features adwaita"
     command: tail -f /dev/null
+
+  rust-gtk-win:
+    build:
+      dockerfile: ./win.Dockerfile
+    volumes:
+      - ../:/mnt:z
+    command: tail -f /dev/null
+#    command: cargo build --target x86_64-pc-windows-gnu

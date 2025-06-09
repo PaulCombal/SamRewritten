@@ -29,17 +29,18 @@ pub fn create_about_dialog(window: &ApplicationWindow) -> AboutDialog {
         .license_type(License::Gpl30)
         .version(env!("CARGO_PKG_VERSION"))
         .program_name("SamRewritten")
-        .authors(env!("CARGO_PKG_AUTHORS").replace(" -@- ", "@").split(':').collect::<Vec<_>>())
+        .authors(
+            env!("CARGO_PKG_AUTHORS")
+                .replace(" -@- ", "@")
+                .split(':')
+                .collect::<Vec<_>>(),
+        )
         .comments(env!("CARGO_PKG_DESCRIPTION"))
         .logo(&logo)
         .build()
 }
 
 pub fn load_logo() -> Paintable {
-    // TODO: See if the forward slash syntax works on both?
-    #[cfg(target_os = "windows")]
-    let image_bytes = include_bytes!("..\\..\\assets\\icon_256.png");
-    #[cfg(target_os = "linux")]
     let image_bytes = include_bytes!("../../assets/icon_256.png");
 
     let logo_pixbuf = Pixbuf::from_read(Cursor::new(image_bytes)).expect("Failed to load logo");
