@@ -1,0 +1,17 @@
+name: build-publish-snap
+run-name: Build and publish artifacts
+on: [workflow_dispatch]
+jobs:
+# See why this was canceled in snapcraft.yaml
+  run-publish-snapcraft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+#      - uses: snapcore/action-build@v1
+#        id: snapcraft
+#        with:
+#          path: package
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: snap
+#          path: ${{ steps.snapcraft.outputs.snap }}

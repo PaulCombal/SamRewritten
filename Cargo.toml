@@ -26,6 +26,9 @@ winreg = "0.55.0"
 [target.'cfg(windows)'.build-dependencies]
 winres = "0"
 
+[profile.release]
+windows_subsystem = "windows"
+
 [[bin]]
 name = "samrewritten"
 path = "src/main.rs"
