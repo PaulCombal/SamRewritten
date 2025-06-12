@@ -1,0 +1,127 @@
+name: build-publish-windows
+run-name: Build and publish artifacts
+on: [workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  build_windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          rustup update stable
+          rustup target add x86_64-pc-windows-msvc
+
+      - name: Install NSIS
+        run: |
+          iwr -useb get.scoop.sh -outfile 'install.ps1'
+          .\install.ps1 -RunAsAdmin
+          scoop update
+          scoop bucket add extras
+          scoop install nsis
+
+      - name: Print NSIS version
+        run: makensis -VERSION
+
+      - name: Download GTK Dependencies Zip
+        run: |
+          $zipUrl = "https://github.com/wingtk/gvsbuild/releases/download/2025.5.0/GTK4_Gvsbuild_2025.5.0_x64.zip"
+          $downloadPath = "C:\temp\gtk_dependencies.zip"
+          $extractPath = "C:\gtk"
+          
+          Write-Host "Ensuring C:\temp directory exists..."
+          New-Item -ItemType Directory -Force -Path "C:\temp"
+          
+          Write-Host "Downloading GTK dependencies from $zipUrl to $downloadPath..."
+          Invoke-WebRequest -Uri $zipUrl -OutFile $downloadPath
+          
+          Write-Host "Ensuring extraction directory $extractPath exists..."
+          New-Item -ItemType Directory -Force -Path $extractPath
+          
+          Write-Host "Extracting $downloadPath to $extractPath..."
+          Expand-Archive -Path $downloadPath -DestinationPath $extractPath -Force
+          
+          Write-Host "Cleaning up temporary zip file..."
+          Remove-Item -Path $downloadPath -Force
+          
+          Write-Host "GTK dependencies downloaded and extracted successfully to C:\gtk!"
+
+      - name: Configure environment
+        run: |
+          echo "PATH=C:\gtk\bin;$env:CARGO_HOME\bin;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "LIB=C:\gtk\lib;$env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "INCLUDE=C:\gtk\include;C:\gtk\include\cairo;C:\gtk\include\glib-2.0;C:\gtk\include\gobject-introspection-1.0;C:\gtk\lib\glib-2.0\include;$env:INCLUDE" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Build GTK-RS application
+        run: cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Create release archive
+        run: |
+          $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
+          New-Item -ItemType Directory -Path "$ARCHIVE_NAME"
+          Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/"
+          
+          $sourceFolder = "C:\gtk\bin"
+          $destinationFolder = "./$ARCHIVE_NAME/bin"
+          New-Item -ItemType Directory -Path $destinationFolder
+          
+          Get-ChildItem -Path $sourceFolder -Filter "*.dll" -File | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination $destinationFolder -Force
+            Write-Host "Copied: $($_.Name) to $destinationFolder"
+          }
+          
+          Copy-Item -Path C:\gtk\bin\gdbus.exe -Destination $destinationFolder -Force
+          
+          @"
+          @echo off
+          setlocal
+          set "BIN_PATH=%~dp0bin"
+          set "PATH=%BIN_PATH%;%PATH%"
+          %~dp0samrewritten.exe
+          endlocal
+          "@ | Set-Content -Path "$ARCHIVE_NAME/launch.bat"
+          
+          @"
+          Welcome to the SamRewritten README.
+          
+          Use this software at your own risk. SamRewritten authors are not responsible for your actions.
+          
+          If any issue occurs, feel free to report it on the SamRewritten GitHub.
+          "@ | Set-Content -Path "$ARCHIVE_NAME/README.txt"
+        shell: pwsh
+
+      - name: Make installer
+        run: makensis package/windows_installer.nsi
+
+# This just doesn't work and I'm not invested in Windows enough. To fix!
+#      - name: Upload zip artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: "SamRewritten-${{ github.ref_name }}-windows-x86_64-zip"
+#          path: "SamRewritten-windows-x86_64/"
+
+      - name: Create Release
+        id: create_release # Assign an ID to this step to access its outputs
+        uses: softprops/action-gh-release@v2
+        with:
+          # The tag name for the release. github.ref_name automatically extracts the tag name (e.g., v1.0.0 from refs/tags/v1.0.0)
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          # The release body (notes). You can specify a string or use a file (body_path).
+          # For auto-generating release notes based on PRs, you might use other actions like 'release-drafter'.
+          body: |
+            ## Release Notes for ${{ github.ref_name }}
+
+            This release includes:
+            - Latest features and bug fixes.
+            - Built on ${{ github.sha }}
+
+          draft: true
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            package/InstallerOutput.exe

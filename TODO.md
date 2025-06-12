@@ -4,7 +4,7 @@
   background? would it look any better?
 - Support for multiple simultaneous instances ('launch in new window' button)
 - Above point could be resolved using anonymous pipes? (removing interprocess crate in the process)
-- GitHub action to generate Windows build artifacts
+- In utils, if the registry key isn't found still return a string, don't panic.
 
 ### Low priority
 
