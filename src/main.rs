@@ -13,7 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#![windows_subsystem = "windows"]
+#![cfg_attr(
+    all(target_os = "windows", not(debug_assertions),),
+    windows_subsystem = "windows"
+)]
 
 mod backend;
 mod frontend;
@@ -25,6 +28,7 @@ use std::process::Command;
 use crate::backend::app::app;
 use crate::backend::orchestrator::orchestrator;
 use crate::utils::arguments::parse_arguments;
+use crate::utils::bidir_child::BidirChild;
 use frontend::main_ui;
 use gtk::glib;
 use utils::utils::get_executable_path;
@@ -35,20 +39,22 @@ fn main() -> glib::ExitCode {
     let arguments = parse_arguments();
 
     if arguments.is_orchestrator {
-        let exit_code = orchestrator();
+        let mut tx = arguments.tx.unwrap();
+        let mut rx = arguments.rx.unwrap();
+        let exit_code = orchestrator(&mut tx, &mut rx);
         return glib::ExitCode::from(exit_code);
     }
 
     if arguments.is_app > 0 {
-        let exit_code = app(arguments.is_app);
+        let mut tx = arguments.tx.unwrap();
+        let mut rx = arguments.rx.unwrap();
+        let exit_code = app(arguments.is_app, &mut tx, &mut rx);
         return glib::ExitCode::from(exit_code);
     }
 
     let current_exe = get_executable_path();
-    let orchestrator = Command::new(current_exe)
-        .arg("--orchestrator")
-        .spawn()
-        .expect("Failed to spawn sam2 orchestrator process");
+    let orchestrator = BidirChild::new(Command::new(current_exe).arg("--orchestrator"))
+        .expect("Failed to spawn orchestrator process");
 
     main_ui(orchestrator)
 }

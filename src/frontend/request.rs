@@ -13,54 +13,66 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use super::ipc_process::get_orchestrator_socket_path;
 use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
-use crate::utils::ipc_types::{SamError, SteamCommand, SteamResponse};
-use interprocess::local_socket::prelude::LocalSocketStream;
-use interprocess::local_socket::traits::Stream;
+use crate::frontend::DEFAULT_PROCESS;
+use crate::utils::ipc_types::{SamError, SamSerializable, SteamCommand, SteamResponse};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{Read, Write};
 
 pub trait Request: Into<SteamCommand> + Debug + Clone {
     type Response: DeserializeOwned;
 
     fn request(self) -> Result<Self::Response, SamError> {
-        dev_println!("[CLIENT] Requesting {self:?}");
-        let (_, socket_name) = get_orchestrator_socket_path();
-        let mut stream = LocalSocketStream::connect(socket_name)
-            .inspect_err(|error| eprintln!("[CLIENT] Request stream failed: {error}"))
-            .map_err(|_| SamError::SocketCommunicationFailed)?;
+        let mut guard = DEFAULT_PROCESS.write().unwrap();
+        if let Some(ref mut bidir) = *guard {
+            let command: SteamCommand = self.clone().into();
 
-        let command = self.clone().into();
-        serde_json::to_writer(&mut stream, &command)
-            .inspect_err(|error| eprintln!("[CLIENT] Request serialization failed: {error}"))
-            .map_err(|_| SamError::SocketCommunicationFailed)?;
+            dev_println!("[CLIENT] Sending command: {:?}", command);
 
-        stream
-            .write_all(b"\n")
-            .inspect_err(|error| eprintln!("[CLIENT] Request write failed: {error}"))
-            .map_err(|_| SamError::SocketCommunicationFailed)?;
+            let command = command.sam_serialize();
 
-        stream
-            .flush()
-            .inspect_err(|error| eprintln!("[CLIENT] Request flush failed: {error}"))
-            .map_err(|_| SamError::SocketCommunicationFailed)?;
+            bidir.tx.write_all(&command).unwrap();
 
-        let mut buffer = String::new();
-        BufReader::new(stream)
-            .read_line(&mut buffer)
-            .inspect_err(|error| eprintln!("[CLIENT] Response data read failed: {error}"))
-            .map_err(|_| SamError::SocketCommunicationFailed)?;
+            // Skill issue
+            // let response: SteamResponse<Self::Response> = SteamResponse::from_recver(&mut bidir.rx).expect("Send command failed");
 
-        serde_json::from_str::<SteamResponse<Self::Response>>(buffer.as_str())
-            .map_err(|error| {
-                eprintln!("[CLIENT] Response deserialization failed: {error}");
-                SamError::SocketCommunicationFailed
-            })
-            .and_then(|response| response.into())
+            let mut buffer_len = [0u8; size_of::<usize>()];
+
+            match bidir.rx.read_exact(&mut buffer_len) {
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("[CLIENT] Error reading length from pipe: {e}");
+                    // Does this actually happen? We should kill the child or something instead
+                    return Err(SamError::SocketCommunicationFailed);
+                }
+            }
+
+            let data_length = usize::from_le_bytes(buffer_len);
+            let mut buffer = vec![0u8; data_length];
+
+            match bidir.rx.read_exact(&mut buffer) {
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("[CLIENT] Error reading message from pipe: {e}");
+                    return Err(SamError::SocketCommunicationFailed);
+                }
+            };
+
+            let message = String::from_utf8_lossy(&buffer);
+
+            serde_json::from_str::<SteamResponse<Self::Response>>(&message)
+                .map_err(|error| {
+                    eprintln!("[CLIENT] Response deserialization failed: {error}");
+                    SamError::SocketCommunicationFailed
+                })
+                .and_then(|response| response.into())
+        } else {
+            eprintln!("[CLIENT] No orchestrator process to shutdown");
+            Err(SamError::SocketCommunicationFailed)
+        }
     }
 }
 

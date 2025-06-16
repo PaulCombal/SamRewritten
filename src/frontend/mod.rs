@@ -19,7 +19,6 @@ mod app_list_view;
 mod app_view;
 mod application_actions;
 mod custom_progress_bar_widget;
-pub mod ipc_process;
 mod request;
 mod shimmer_image;
 mod stat;
@@ -27,16 +26,18 @@ mod stat_view;
 mod steam_app;
 mod ui_components;
 
+use crate::APP_ID;
 use crate::frontend::request::Request;
-use crate::{APP_ID, dev_println};
+use crate::utils::bidir_child::BidirChild;
 use app_list_view::create_main_ui;
 use gtk::glib::ExitCode;
 use gtk::prelude::{ApplicationExt, ApplicationExtManual};
 use request::Shutdown;
-use std::cell::RefCell;
-use std::process::Child;
+use std::sync::RwLock;
 
-fn shutdown(orchestrator: &RefCell<Child>) {
+static DEFAULT_PROCESS: RwLock<Option<BidirChild>> = RwLock::new(None);
+
+fn shutdown() {
     match Shutdown.request() {
         Err(err) => {
             eprintln!("[CLIENT] Failed to send shutdown message: {}", err);
@@ -45,9 +46,14 @@ fn shutdown(orchestrator: &RefCell<Child>) {
         Ok(_) => {}
     };
 
-    match orchestrator.borrow_mut().wait() {
-        Ok(code) => dev_println!("[CLIENT] Orchestrator process exited with: {code}"),
-        Err(error) => dev_println!("[CLIENT] Failed to wait for orchestrator process: {error}"),
+    let mut guard = DEFAULT_PROCESS.write().unwrap();
+    if let Some(ref mut bidir) = *guard {
+        bidir
+            .child
+            .wait()
+            .expect("[CLIENT] Failed to wait on orchestrator to shutdown");
+    } else {
+        panic!("[CLIENT] No orchestrator process to shutdown");
     }
 }
 
@@ -56,11 +62,15 @@ pub type MainApplication = gtk::Application;
 #[cfg(feature = "adwaita")]
 pub type MainApplication = adw::Application;
 
-pub fn main_ui(orchestrator: Child) -> ExitCode {
-    let orchestrator = RefCell::new(orchestrator);
+pub fn main_ui(orchestrator: BidirChild) -> ExitCode {
+    {
+        let mut guard = DEFAULT_PROCESS.write().unwrap();
+        *guard = Some(orchestrator);
+    }
+
     let main_app = MainApplication::builder().application_id(APP_ID).build();
 
     main_app.connect_activate(create_main_ui);
-    main_app.connect_shutdown(move |_| shutdown(&orchestrator));
+    main_app.connect_shutdown(move |_| shutdown());
     main_app.run()
 }

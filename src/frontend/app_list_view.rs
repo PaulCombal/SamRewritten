@@ -469,7 +469,7 @@ pub fn create_main_ui(application: &MainApplication) {
                             list_stack.set_visible_child_name("list");
                         },
                         Ok(Err(sam_error)) => {
-                            println!("Unknown error: {}", sam_error);
+                            eprintln!("[CLIENT] Unknown error: {}", sam_error);
                             let label = Label::new(Some("SamRewritten could not connect to Steam. Is it running?"));
                             list_scrolled_window.set_child(Some(&label));
                             list_stack.set_visible_child_name("list");

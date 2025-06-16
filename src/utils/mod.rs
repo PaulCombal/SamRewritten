@@ -14,6 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 pub mod arguments;
+pub mod bidir_child;
 pub mod dev_println;
 pub mod ipc_types;
 pub mod utils;

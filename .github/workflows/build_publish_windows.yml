@@ -97,7 +97,7 @@ jobs:
       - name: Make installer
         run: makensis package/windows_installer.nsi
 
-# This just doesn't work and I'm not invested in Windows enough. To fix!
+# This is very messy and not release-ready. To fix!
 #      - name: Upload zip artifact
 #        uses: actions/upload-artifact@v4
 #        with:

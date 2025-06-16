@@ -3,7 +3,6 @@
 - Instead of having small bars under the achievements to represent gloable achievement percentage, can we make it the
   background? would it look any better?
 - Support for multiple simultaneous instances ('launch in new window' button)
-- Above point could be resolved using anonymous pipes? (removing interprocess crate in the process)
 - In utils, if the registry key isn't found still return a string, don't panic.
 
 ### Low priority
