@@ -4,7 +4,7 @@
 !define APP_PUBLISHER "Sam Authors"
 !define APP_EXE "samrewritten.exe"
 
-Outfile "InstallerOutput.exe"
+Outfile "SamRewritten-installer.exe"
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 
 ; Request application privileges

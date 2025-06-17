@@ -1,4 +1,4 @@
-name: build-publish-windows
+name: build-publish-all
 run-name: Build and publish artifacts
 on: [workflow_dispatch]
 permissions:
@@ -97,12 +97,71 @@ jobs:
       - name: Make installer
         run: makensis package/windows_installer.nsi
 
-# This is very messy and not release-ready. To fix!
-#      - name: Upload zip artifact
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: "SamRewritten-${{ github.ref_name }}-windows-x86_64-zip"
-#          path: "SamRewritten-windows-x86_64/"
+      # This is very messy and not release-ready. To fix!
+      #      - name: Upload zip artifact
+      #        uses: actions/upload-artifact@v4
+      #        with:
+      #          name: "SamRewritten-${{ github.ref_name }}-windows-x86_64-zip"
+      #          path: "SamRewritten-windows-x86_64/"
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-artifact
+          path: package/SamRewritten-installer.exe
+          retention-days: 1
+
+  build_appimage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker builder
+        run: docker build -t samrewritten-builder -f package/appimage.Dockerfile .
+
+      - name: Build GTK AppImage version
+        run: docker run --rm -v ./:/mnt:z samrewritten-builder sh -c "cargo appimage"
+
+      - name: Add permissions
+        run: sudo chmod 777 target/appimage
+
+      - name: Rename GTK AppImage
+        run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-gtk.AppImage
+
+      - name: Build Adwaita AppImage version
+        run: docker run --rm -v ./:/mnt:z samrewritten-builder sh -c "cargo appimage --features adwaita"
+
+      - name: Rename Adwaita AppImage
+        run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-adw.AppImage
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifact
+          path: target/appimage
+          retention-days: 1
+
+  create_release:
+    runs-on: ubuntu-latest
+    needs: [ build_windows, build_appimage ] # This job depends on both build jobs
+    steps:
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-artifact
+          path: ./release_artifacts/windows
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-artifact
+          path: ./release_artifacts/linux
+
+      - name: List artifacts
+        run: |
+          ls -la ./release_artifacts
+          ls -la ./release_artifacts/linux
+          ls -la ./release_artifacts/windows
 
       - name: Create Release
         id: create_release # Assign an ID to this step to access its outputs
@@ -124,4 +183,6 @@ jobs:
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            package/InstallerOutput.exe
+            release_artifacts/windows/SamRewritten-installer.exe
+            release_artifacts/linux/samrewritten-gtk.AppImage
+            release_artifacts/linux/samrewritten-adw.AppImage
