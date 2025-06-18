@@ -1,16 +1,29 @@
 SamRewrittem
 ===
 
-<div style="display: flex; align-items: center;">
-  <img src="/assets/icon_256.png" alt="SamRewrittenLogo" style="margin-right: 10px;">
-  <p>A Steam Achievements Manager for Windows and Linux.</p>
-</div>
+<p align=center>
+    <img src="/assets/icon_256.png" alt="SamRewrittenLogo">
+</p>
 
-*This project and its contributors are not affiliated with Valve Corporation or Microsoft. Steam and Windows are
-trademarks of their respective owners, Valve Corporation and Microsoft.*
+<p align=center>
+    <img src="/assets/screenshot1.png" alt="SamRewritten screenshot">
+</p>
 
-![SamRewritten screenshot](/assets/screenshot1.png)
-![SamRewritten screenshot](/assets/screenshot2.png)
+<p align=center>
+    <img src="/assets/screenshot2.png" alt="SamRewritten screenshot">
+</p>
+
+<p align="center">A Steam Achievements Manager for Windows and Linux.</p>
+<p align="center">
+    <a href="https://github.com/PaulCombal/SamRewritten/releases">DOWNLOAD</a>
+</p>
+
+<p align=center>
+    <em>
+        This project and its contributors are not affiliated with Valve Corporation or Microsoft.
+        Steam and Windows are trademarks of their respective owners, Valve Corporation and Microsoft.
+    </em>
+</p>
 
 ## Thank you
 
