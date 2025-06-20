@@ -16,9 +16,9 @@
 use crate::backend::app_lister::AppLister;
 use crate::backend::connected_steam::ConnectedSteam;
 use crate::dev_println;
+use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_types::{SamError, SamSerializable, SteamCommand, SteamResponse};
-use crate::utils::utils::get_executable_path;
 use interprocess::unnamed_pipe::{Recver, Sender};
 use std::collections::HashMap;
 use std::io::Read;
@@ -65,7 +65,7 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> i32 {
         let message =
             SteamCommand::from_recver(parent_rx).expect("[ORCHESTRATOR] No message from pipe");
 
-        println!("[ORCHESTRATOR] Received message: {message:?}");
+        dev_println!("[ORCHESTRATOR] Received message: {message:?}");
 
         if connected_steam.as_ref().is_none() {
             if message == SteamCommand::Shutdown {

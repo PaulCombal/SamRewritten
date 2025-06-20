@@ -45,6 +45,12 @@ financial value, however they are very desirable for bragging rights!
 
 Packages are available in the [release tab](https://github.com/PaulCombal/SamRewritten/releases) for supported platforms.
 
+On Linux, Fuse is required to launch AppImages. You might need to install it:
+
+```shell
+sudo apt install libfuse2 # Ubuntu/Debian
+```
+
 <!--
 Additionally, Snap users can install SamRewritten using the App store or with the following command:
 ```bash
@@ -54,7 +60,11 @@ snap install samrewritten
 
 ## Limitations
 
-⚠️ On Linux, this tool is **only** compatible with **Snap installations of Steam**.
+⚠️ On Linux, this tool is **only** compatible with:
+* Snap installations of Steam
+* Ubuntu/Debian multiarch installations with apt
+
+If you wish to see your distribution supported, please open an issue.
 
 ## End user agreements
 

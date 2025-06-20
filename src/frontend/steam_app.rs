@@ -14,7 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::backend::app_lister::AppModel;
-use crate::utils::utils::get_local_app_banner_file_path;
+use crate::utils::app_paths::get_local_app_banner_file_path;
 use glib::Object;
 use gtk::glib;
 use std::path::Path;
@@ -26,9 +26,13 @@ glib::wrapper! {
 impl GSteamAppObject {
     pub fn new(app: AppModel) -> Self {
         // We are client code. If a local image is already present, do not use the remote one.
-        let local_path_str = get_local_app_banner_file_path(&app.app_id);
-        let image_url = if Path::new(&local_path_str).exists() {
-            Some("file://".to_string() + &local_path_str)
+        let local_banner_path = get_local_app_banner_file_path(&app.app_id);
+        let image_url = if let Ok(path) = local_banner_path {
+            if Path::new(&path).exists() {
+                Some("file://".to_string() + &path)
+            } else {
+                app.image_url
+            }
         } else {
             app.image_url
         };

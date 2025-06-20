@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::utils::ipc_types::SamError;
 use std::env;
 use std::path::PathBuf;
 
@@ -54,96 +55,129 @@ pub fn get_app_cache_dir() -> String {
 
 #[inline]
 #[cfg(target_os = "linux")]
-pub fn get_steamclient_lib_path() -> String {
+pub fn get_steamclient_lib_path() -> Result<String, SamError> {
+    use std::path::Path;
+
     if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
-        return real_home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so";
+        return Ok(real_home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so");
     }
 
-    if let Ok(home) = env::var("HOME") {
-        return home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so";
+    let home = env::var("HOME").expect("Failed to get home dir");
+
+    let snap_path = home.clone() + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so";
+    if Path::new(&snap_path).exists() {
+        return Ok(snap_path);
     }
 
-    panic!("Failed to get Steam client library path");
+    let debian_path = home + "/.steam/debian-installation/linux64/steamclient.so";
+    if Path::new(&debian_path).exists() {
+        return Ok(debian_path);
+    }
+
+    Err(SamError::UnknownError)
 }
 
 #[inline]
 #[cfg(target_os = "windows")]
-pub fn get_steamclient_lib_path() -> String {
+pub fn get_steamclient_lib_path() -> Result<String, SamError> {
     use winreg::RegKey;
     use winreg::enums::HKEY_CURRENT_USER;
 
-    RegKey::predef(HKEY_CURRENT_USER)
+    let subkey = RegKey::predef(HKEY_CURRENT_USER)
         .open_subkey("SOFTWARE\\Valve\\Steam")
-        .expect("Failed to open Steam registry key")
+        .map_err(|_| SamError::UnknownError)?;
+
+    let value = subkey
         .get_value::<String, &'static str>("SteamPath")
-        .expect("Failed to get Steam install path from registry")
-        + "\\steamclient64.dll"
+        .map_err(|_| SamError::UnknownError)?;
+
+    Ok(value + "/steamclient64.dll")
 }
 
 #[inline]
 #[cfg(target_os = "linux")]
-pub fn get_user_game_stats_schema_path(app_id: &u32) -> String {
+pub fn get_user_game_stats_schema_path(app_id: &u32) -> Result<String, SamError> {
+    use std::path::Path;
+
     if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
-        return real_home
+        return Ok(real_home
             + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_"
             + &app_id.to_string()
-            + ".bin";
+            + ".bin");
     }
 
-    if let Ok(home) = env::var("HOME") {
-        return home
-            + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_"
-            + &app_id.to_string()
-            + ".bin";
+    let home = env::var("HOME").expect("Failed to get home dir");
+    let install_dirs = [
+        home.clone() + "/snap/steam/common/.local/share/Steam",
+        home + "/.steam/debian-installation",
+    ];
+
+    for install_dir in install_dirs {
+        if Path::new(&install_dir).exists() {
+            return Ok(install_dir + &format!("/appcache/stats/UserGameStatsSchema_{app_id}.bin"));
+        }
     }
 
-    panic!("Failed to get User Game Stats Schema path");
+    Err(SamError::UnknownError)
 }
 
 #[inline]
 #[cfg(target_os = "windows")]
-pub fn get_user_game_stats_schema_path(app_id: &u32) -> String {
+pub fn get_user_game_stats_schema_path(app_id: &u32) -> Result<String, SamError> {
     use winreg::RegKey;
     use winreg::enums::HKEY_CURRENT_USER;
 
-    RegKey::predef(HKEY_CURRENT_USER)
+    let subkey = RegKey::predef(HKEY_CURRENT_USER)
         .open_subkey("SOFTWARE\\Valve\\Steam")
-        .expect("Failed to open Steam registry key")
+        .map_err(|_| SamError::UnknownError)?;
+
+    let value = subkey
         .get_value::<String, &'static str>("SteamPath")
-        .expect("Failed to get Steam install path from registry")
-        + &format!("/appcache/stats/UserGameStatsSchema_{app_id}.bin")
+        .map_err(|_| SamError::UnknownError)?;
+
+    Ok(value + &format!("/appcache/stats/UserGameStatsSchema_{app_id}.bin"))
 }
 
 #[inline]
 #[cfg(target_os = "linux")]
-pub fn get_local_app_banner_file_path(app_id: &u32) -> String {
+pub fn get_local_app_banner_file_path(app_id: &u32) -> Result<String, SamError> {
+    use std::path::Path;
+
     if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
-        return real_home
+        return Ok(real_home
             + "/snap/steam/common/.local/share/Steam/appcache/librarycache/"
             + &app_id.to_string()
-            + "/header.jpg";
+            + "/header.jpg");
     }
 
-    if let Ok(home) = env::var("HOME") {
-        return home
-            + "/snap/steam/common/.local/share/Steam/appcache/librarycache/"
-            + &app_id.to_string()
-            + "/header.jpg";
+    let home = env::var("HOME").expect("Failed to get home dir");
+    let install_dirs = [
+        home.clone() + "/snap/steam/common/.local/share/Steam",
+        home + "/.steam/debian-installation",
+    ];
+
+    for install_dir in install_dirs {
+        if Path::new(&install_dir).exists() {
+            return Ok(install_dir + &format!("/appcache/librarycache/{app_id}/header.jpg"));
+        }
     }
 
-    panic!("Failed to get User Game Stats Schema path");
+    Err(SamError::UnknownError)
 }
 
 #[inline]
 #[cfg(target_os = "windows")]
-pub fn get_local_app_banner_file_path(app_id: &u32) -> String {
+pub fn get_local_app_banner_file_path(app_id: &u32) -> Result<String, SamError> {
     use winreg::RegKey;
     use winreg::enums::HKEY_CURRENT_USER;
 
-    RegKey::predef(HKEY_CURRENT_USER)
+    let subkey = RegKey::predef(HKEY_CURRENT_USER)
         .open_subkey("SOFTWARE\\Valve\\Steam")
-        .expect("Failed to open Steam registry key")
+        .map_err(|_| SamError::UnknownError)?;
+
+    let value = subkey
         .get_value::<String, &'static str>("SteamPath")
-        .expect("Failed to get Steam install path from registry")
-        + &format!("\\appcache\\librarycache\\{app_id}\\main_header.jpg")
+        .map_err(|_| SamError::UnknownError)?;
+
+    Ok(value + &format!("/appcache/librarycache/{app_id}/header.jpg"))
 }

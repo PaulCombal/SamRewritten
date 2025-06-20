@@ -22,11 +22,11 @@ use crate::backend::stat_definitions::{
 use crate::backend::types::UserStatType;
 use crate::dev_println;
 use crate::steam_client::steamworks_types::{
-    AppId_t, EResult, GlobalAchievementPercentagesReady_t,
+    AppId_t, EResult, GlobalAchievementPercentagesReady_t, UserStatsReceived_t,
 };
 use crate::steam_client::wrapper_types::SteamCallbackId;
+use crate::utils::app_paths::get_user_game_stats_schema_path;
 use crate::utils::ipc_types::SamError;
-use crate::utils::utils::get_user_game_stats_schema_path;
 use std::env;
 use std::path::PathBuf;
 use std::time::UNIX_EPOCH;
@@ -35,6 +35,7 @@ pub struct AppManager {
     app_id: AppId_t,
     connected_steam: ConnectedSteam,
     definitions_loaded: bool,
+    user_stats_received: bool,
     achievement_definitions: Vec<AchievementDefinition>,
     stat_definitions: Vec<StatDefinition>,
 }
@@ -56,14 +57,69 @@ impl<'a> AppManager {
             app_id,
             connected_steam,
             definitions_loaded: false,
+            user_stats_received: false,
             achievement_definitions: vec![],
             stat_definitions: vec![],
         })
     }
 
+    fn request_current_stats(&mut self) -> Result<(), SamError> {
+        if self.user_stats_received {
+            return Ok(());
+        }
+
+        let steam_id = self
+            .connected_steam
+            .user
+            .get_steam_id()
+            .map_err(|_| SamError::UnknownError)?;
+        dev_println!(
+            "[APP SERVER] Requesting current stats for current user: {:?}",
+            steam_id
+        );
+        let callback_handle = self
+            .connected_steam
+            .user_stats
+            .request_user_stats(steam_id)
+            .map_err(|_| SamError::UnknownError)?;
+
+        // Try for 10 seconds at 60 fps
+        for _ in 0..600 {
+            if self
+                .connected_steam
+                .utils
+                .is_api_call_completed(callback_handle)
+                .map_err(|_| SamError::UnknownError)?
+            {
+                let result = self
+                    .connected_steam
+                    .utils
+                    .get_api_call_result::<UserStatsReceived_t>(
+                        callback_handle,
+                        SteamCallbackId::UserStatsReceived,
+                    )
+                    .map_err(|_| SamError::UnknownError)?;
+
+                dev_println!("[APP SERVER] User stats received callback result: {result:?}");
+
+                if result.m_eResult == EResult::k_EResultOK {
+                    self.user_stats_received = true;
+                }
+
+                break;
+            }
+
+            std::thread::sleep(std::time::Duration::from_millis(17));
+        }
+
+        Ok(())
+    }
+
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs
     pub fn load_definitions(&mut self) -> Result<(), SamError> {
-        let bin_file = PathBuf::from(get_user_game_stats_schema_path(&self.app_id));
+        self.request_current_stats()?;
+        let schema_path = get_user_game_stats_schema_path(&self.app_id)?;
+        let bin_file = PathBuf::from(schema_path);
 
         let kv = KeyValue::load_as_binary(bin_file).map_err(|_| SamError::UnknownError)?;
         let current_language = self.connected_steam.apps.get_current_game_language();
@@ -185,10 +241,6 @@ impl<'a> AppManager {
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs#L420
     pub fn get_achievements(&mut self) -> Result<Vec<AchievementInfo>, SamError> {
-        if !self.definitions_loaded {
-            self.load_definitions()?;
-        }
-
         let callback_handle = self
             .connected_steam
             .user_stats
@@ -223,6 +275,10 @@ impl<'a> AppManager {
         }
 
         let mut achievement_infos: Vec<AchievementInfo> = vec![];
+
+        if !self.definitions_loaded {
+            self.load_definitions()?;
+        }
 
         for def in self.achievement_definitions.iter() {
             if def.id.is_empty() {
@@ -290,11 +346,11 @@ impl<'a> AppManager {
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs#L519
     pub fn get_statistics(&mut self) -> Result<Vec<StatInfo>, SamError> {
+        let mut statistics_info: Vec<StatInfo> = vec![];
+
         if !self.definitions_loaded {
             self.load_definitions()?;
         }
-
-        let mut statistics_info: Vec<StatInfo> = vec![];
 
         for stat in self.stat_definitions.iter() {
             match stat {

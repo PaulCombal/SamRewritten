@@ -20,6 +20,8 @@ use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steam_client_vtable::ISteamClient;
 use crate::steam_client::steam_user_stats_vtable::STEAMUSERSTATS_INTERFACE_VERSION;
 use crate::steam_client::steam_user_stats_wrapper::SteamUserStats;
+use crate::steam_client::steam_user_vtable::STEAMUSER_INTERFACE_VERSION;
+use crate::steam_client::steam_user_wrapper::SteamUser;
 use crate::steam_client::steam_utils_vtable::STEAMUTILS_INTERFACE_VERSION;
 use crate::steam_client::steam_utils_wrapper::SteamUtils;
 use crate::steam_client::steamworks_types::{
@@ -32,9 +34,6 @@ use std::sync::Arc;
 
 pub struct SteamClient {
     inner: Arc<SteamClientInner>,
-    // callback_fn: Symbol<'a, SteamGetCallbackFn>,
-    // free_callback_fn: Symbol<'a, SteamFreeLastCallbackFn>,
-    // running_callback: bool
 }
 
 struct SteamClientInner {
@@ -54,40 +53,6 @@ impl<'a> SteamClient {
             // running_callback: false
         }
     }
-
-    // pub fn run_callbacks(&mut self, pipe: &HSteamPipe) -> Result<(), SteamError> {
-    //     if self.running_callback {
-    //         dev_println!("SteamClient running_callback already called");
-    //         return Ok(());
-    //     }
-    //
-    //     dev_println!("Steam callbacking.. pipe {}", *pipe);
-    //
-    //     unsafe {
-    //         self.running_callback = true;
-    //         let mut message = std::mem::MaybeUninit::<SteamCallbackMessage>::uninit();
-    //         let mut call: c_int = -1;
-    //         let success = (&self.callback_fn)(*pipe, message.as_mut_ptr(), &mut call);
-    //         dev_println!("Steam has callbacks to be taken care of: {}", success);
-    //
-    //         if success {
-    //             let message = message.assume_init();
-    //             dev_println!("Callbacked: {message:?}");
-    //             // dev_println!("Callback call: {}", call);
-    //             let freed = (&self.free_callback_fn)(*pipe);
-    //             dev_println!("Callback freed: {}", freed);
-    //
-    //             if message.id == 1110 {
-    //                 dev_println!("received global achievement percentages");
-    //                 return Err(SteamError::AppNotFound);
-    //             }
-    //         }
-    //     }
-    //
-    //     self.running_callback = false;
-    //     dev_println!("Steam callback done");
-    //     Ok(())
-    // }
 
     pub fn create_steam_pipe(&self) -> Result<HSteamPipe, SteamClientError> {
         unsafe {
@@ -243,6 +208,30 @@ impl<'a> SteamClient {
                 ))
             } else {
                 Ok(SteamUserStats::from_raw(user_stats_ptr))
+            }
+        }
+    }
+
+    pub fn get_isteam_user(
+        &self,
+        user: HSteamUser,
+        pipe: HSteamPipe,
+    ) -> Result<SteamUser, SteamClientError> {
+        unsafe {
+            let version = STEAMUSER_INTERFACE_VERSION.as_ptr() as *const c_char;
+
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+            let user_ptr = (vtable.get_isteam_user)(self.inner.ptr, user, pipe, version);
+
+            if user_ptr.is_null() {
+                Err(SteamClientError::InterfaceCreationFailed(
+                    "ISteamUser".to_owned(),
+                ))
+            } else {
+                Ok(SteamUser::from_raw(user_ptr))
             }
         }
     }

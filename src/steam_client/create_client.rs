@@ -18,7 +18,7 @@ use crate::steam_client::steam_client_wrapper::SteamClient;
 use crate::steam_client::steamworks_types::{
     CreateInterfaceFn, SteamFreeLastCallbackFn, SteamGetCallbackFn,
 };
-use crate::utils::utils::get_steamclient_lib_path;
+use crate::utils::app_paths::get_steamclient_lib_path;
 use libloading::{Library, Symbol};
 use std::os::raw::c_char;
 use std::path::PathBuf;
@@ -29,7 +29,8 @@ static STEAM_CLIENT_LIB: OnceLock<Library> = OnceLock::new(); // Make the lifeti
 #[cfg(target_os = "linux")]
 pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>> {
     unsafe {
-        let lib_steamclient_path = PathBuf::from(get_steamclient_lib_path());
+        let steamclient_lib_path = get_steamclient_lib_path()?;
+        let lib_steamclient_path = PathBuf::from(steamclient_lib_path);
         let lib_steamclient = Library::new(lib_steamclient_path)?;
         Ok(lib_steamclient)
     }
@@ -42,12 +43,8 @@ pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>>
     };
 
     unsafe {
-        // let program_files = std::env::var("ProgramFiles(x86)")?;
-        // #[cfg(target_pointer_width = "64")]
-        // let lib_steamclient_path = PathBuf::from(program_files + "\\Steam\\steamclient64.dll");
-        // #[cfg(target_pointer_width = "32")]
-        // let lib_steamclient_path = PathBuf::from(program_files + "\\Steam\\steamclient.dll");
-        let lib_steamclient_path = PathBuf::from(get_steamclient_lib_path());
+        let steamclient_lib_path = get_steamclient_lib_path()?;
+        let lib_steamclient_path = PathBuf::from(steamclient_lib_path);
         Ok(windows::Library::load_with_flags(
             lib_steamclient_path,
             LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS,

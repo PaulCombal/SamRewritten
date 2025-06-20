@@ -1,4 +1,3 @@
-#![allow(non_camel_case_types, non_snake_case, dead_code)]
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2025 Paul <abonnementspaul (at) gmail.com>
 //
@@ -13,9 +12,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
+#![allow(non_camel_case_types, non_snake_case, dead_code)]
 
 use crate::steam_client::steam_client_vtable::ISteamClient;
-use std::os::raw::{c_char, c_int};
+use std::os::raw::{c_char, c_int, c_uint};
 
 pub type AppId_t = u32;
 pub type DepotId_t = u32;
@@ -220,6 +220,7 @@ pub struct LeaderboardEntry_t {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct UserStatsReceived_t {
     pub m_nGameID: u64,
     pub m_eResult: EResult,
@@ -297,6 +298,7 @@ pub struct LeaderboardUGCSet_t {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct GlobalStatsReceived_t {
     pub m_nGameID: u64,
     pub m_eResult: EResult,
@@ -312,6 +314,7 @@ pub struct SteamCallbackMessage {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct CSteamID {
     pub m_steamid: u64,
 }
@@ -398,4 +401,49 @@ pub enum ECheckFileSignature {
     FileNotFound = 2,
     NoSignaturesFoundForThisApp = 3,
     NoSignaturesFoundForThisFile = 4,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum EGameIDType {
+    App = 0,
+    GameMod = 1,
+    Shortcut = 2,
+    P2P = 3,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union CGameID {
+    m_ulGameID: u64,
+    m_gameID: GameID_t,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct GameID_t {
+    pub m_nAppID: c_uint,
+    pub m_nType: EGameIDType,
+    #[cfg(not(target_endian = "big"))]
+    pub m_nModID: u32,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone)] // `Copy` and `Clone` are often necessary for structs containing unions.
+pub union SteamNetworkingIdentityUnion {
+    pub m_steamID64: u64,
+    pub m_PSNID: u64,
+    pub m_szGenericString: [c_char; 32],  // k_cchMaxGenericString
+    pub m_szXboxPairwiseID: [c_char; 33], // k_cchMaxXboxPairwiseID
+    pub m_genericBytes: [u8; 32],         // k_cbMaxGenericBytes
+    pub m_szUnknownRawString: [c_char; 128], // k_cchMaxString
+    // pub m_ip: SteamNetworkingIPAddr, // Not today
+    pub m_reserved: [u32; 32], // Pad structure
+}
+
+#[repr(C)]
+pub struct SteamNetworkingIdentity {
+    pub m_eType: c_int,
+    pub m_cbSize: i32,
+    pub data: SteamNetworkingIdentityUnion,
 }

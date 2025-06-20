@@ -1,25 +1,47 @@
-; Example NSIS script
+; Example NSIS script - Prettier Version
+Name SamRewritten
 !define APP_NAME "SamRewritten"
 !define APP_VERSION "1.0.0"
 !define APP_PUBLISHER "Sam Authors"
 !define APP_EXE "samrewritten.exe"
 
+; --- Installer Configuration ---
 Outfile "SamRewritten-installer.exe"
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
+RequestExecutionLevel admin ; Request application privileges
 
-; Request application privileges
-RequestExecutionLevel admin
+; --- User Interface Enhancements ---
+; Modern UI Welcome and Finish pages
+!include "MUI2.nsh"
+; !define MUI_WELCOMEFINISH_BMPS ".\installer_welcome.bmp" ; Optional: path to a custom welcome bitmap (164x314 pixels)
+; !define MUI_UNWELCOMEFINISH_BMPS ".\installer_uninstall.bmp" ; Optional: path to a custom uninstall bitmap
+; !define MUI_ABORTWARNING ; Show a warning if the user tries to cancel
+!define MUI_FINISHPAGE_RUN "$INSTDIR\${APP_EXE}"
+!define MUI_FINISHPAGE_RUN_TEXT "Run SamRewritten now"
 
-Page directory
-Page instfiles
+; Installer pages
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
 
+; Uninstaller pages
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
+
+; Language selection (optional, but good for a "prettier" installer)
+!insertmacro MUI_LANGUAGE "English"
+
+; --- Installer Sections ---
 Section "Install"
   SetOutPath $INSTDIR
 
   ; Add your files here
   File "..\SamRewritten-windows-x86_64\${APP_EXE}"
   File "..\SamRewritten-windows-x86_64\README.txt"
-  File "..\SamRewritten-windows-x86_64\bin\*.*"
+  File /a "..\SamRewritten-windows-x86_64\bin\*.*" ; /a includes all files and subdirectories
 
   ; Create start menu shortcut
   CreateDirectory "$SMPROGRAMS\${APP_NAME}"
@@ -29,8 +51,17 @@ Section "Install"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
+; --- "Launch now" Checkbox ---
+Function .onInstSuccess
+  ; Add a checkbox to launch the application
+  ; !insertmacro MUI_FINISHPAGE_RUN "$INSTDIR\${APP_EXE}"
+  ; !insertmacro MUI_FINISHPAGE_RUN_TEXT "Launch ${APP_NAME} now"
+FunctionEnd
+
+; --- Uninstaller Section ---
 Section "Uninstall"
   Delete "$INSTDIR\*.*"
+  RMDir /r "$INSTDIR\bin"
   RMDir "$INSTDIR"
 
   ; Remove start menu shortcut

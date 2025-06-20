@@ -24,6 +24,8 @@ pub mod steam_client_vtable;
 pub mod steam_client_wrapper;
 pub mod steam_user_stats_vtable;
 pub mod steam_user_stats_wrapper;
+pub mod steam_user_vtable;
+pub mod steam_user_wrapper;
 pub mod steam_utils_vtable;
 pub mod steam_utils_wrapper;
 pub mod steamworks_types;

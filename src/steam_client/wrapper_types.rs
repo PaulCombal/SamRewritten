@@ -44,6 +44,9 @@ impl std::fmt::Display for SteamClientError {
 
 impl std::error::Error for SteamClientError {}
 
+#[allow(dead_code)]
 pub enum SteamCallbackId {
+    UserStatsReceived = 1101,
     GlobalAchievementPercentagesReady = 1110,
+    GlobalStatsReceived = 1112,
 }

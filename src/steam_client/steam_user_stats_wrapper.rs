@@ -14,7 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::steam_client::steam_user_stats_vtable::ISteamUserStats;
-use crate::steam_client::steamworks_types::SteamAPICall_t;
+use crate::steam_client::steamworks_types::{CSteamID, SteamAPICall_t};
 use crate::steam_client::wrapper_types::SteamClientError;
 use std::sync::Arc;
 
@@ -201,6 +201,26 @@ impl SteamUserStats {
                 .ok_or(SteamClientError::NullVtable)?;
 
             let res = (vtable.request_global_achievement_percentages)(self.inner.ptr);
+
+            if res == 0 {
+                return Err(SteamClientError::UnknownError);
+            }
+
+            Ok(res)
+        }
+    }
+
+    pub fn request_user_stats(
+        &self,
+        steam_id: CSteamID,
+    ) -> Result<SteamAPICall_t, SteamClientError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+
+            let res = (vtable.request_user_stats)(self.inner.ptr, steam_id);
 
             if res == 0 {
                 return Err(SteamClientError::UnknownError);

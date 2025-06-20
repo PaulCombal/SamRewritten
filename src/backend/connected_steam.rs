@@ -18,49 +18,49 @@ use crate::steam_client::steam_apps_001_wrapper::SteamApps001;
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steam_client_wrapper::SteamClient;
 use crate::steam_client::steam_user_stats_wrapper::SteamUserStats;
+use crate::steam_client::steam_user_wrapper::SteamUser;
 use crate::steam_client::steam_utils_wrapper::SteamUtils;
 use crate::steam_client::steamworks_types::{HSteamPipe, HSteamUser};
 
 pub struct ConnectedSteam {
-    pipe: HSteamPipe,
-    user: HSteamUser,
+    h_pipe: HSteamPipe,
+    h_user: HSteamUser,
     pub client: SteamClient,
     pub apps_001: SteamApps001,
     pub apps: SteamApps,
     pub user_stats: SteamUserStats,
     pub utils: SteamUtils,
+    pub user: SteamUser,
 }
 
 impl<'a> ConnectedSteam {
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let client = create_steam_client()?;
-        let pipe = client.create_steam_pipe()?;
-        let user = client.connect_to_global_user(pipe)?;
-        let apps = client.get_isteam_apps(user, pipe)?;
-        let utils = client.get_isteam_utils(pipe)?;
-        let apps_001 = client.get_isteam_apps_001(user, pipe)?;
-        let user_stats = client.get_isteam_user_stats(user, pipe)?;
+        let h_pipe = client.create_steam_pipe()?;
+        let h_user = client.connect_to_global_user(h_pipe)?;
+        let apps = client.get_isteam_apps(h_user, h_pipe)?;
+        let utils = client.get_isteam_utils(h_pipe)?;
+        let apps_001 = client.get_isteam_apps_001(h_user, h_pipe)?;
+        let user_stats = client.get_isteam_user_stats(h_user, h_pipe)?;
+        let user = client.get_isteam_user(h_user, h_pipe)?;
 
         Ok(ConnectedSteam {
-            pipe,
-            user,
+            h_pipe,
+            h_user,
             client,
             apps,
             apps_001,
             user_stats,
             utils,
+            user,
         })
     }
 
     pub fn shutdown(&self) {
-        self.client.release_user(self.pipe, self.user);
+        self.client.release_user(self.h_pipe, self.h_user);
         self.client
-            .release_steam_pipe(self.pipe)
+            .release_steam_pipe(self.h_pipe)
             .expect("Failed to release steam pipe");
         let _ = self.client.shutdown_if_app_pipes_closed();
     }
-
-    // pub fn run_callbacks(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-    //     self.client.run_callbacks(&self.pipe).map_err(|e| e.into())
-    // }
 }

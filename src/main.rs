@@ -31,7 +31,7 @@ use crate::utils::arguments::parse_arguments;
 use crate::utils::bidir_child::BidirChild;
 use frontend::main_ui;
 use gtk::glib;
-use utils::utils::get_executable_path;
+use utils::app_paths::get_executable_path;
 
 const APP_ID: &str = "org.sam_authors.sam_rewritten";
 

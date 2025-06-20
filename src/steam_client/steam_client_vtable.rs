@@ -17,6 +17,7 @@
 use crate::steam_client::steam_app_list_vtable::ISteamAppList;
 use crate::steam_client::steam_apps_vtable::ISteamApps;
 use crate::steam_client::steam_user_stats_vtable::ISteamUserStats;
+use crate::steam_client::steam_user_vtable::ISteamUser;
 use crate::steam_client::steam_utils_vtable::ISteamUtils;
 use crate::steam_client::steamworks_types::{
     EAccountType, HSteamPipe, HSteamUser, SteamAPI_CheckCallbackRegistered_t,
@@ -24,12 +25,9 @@ use crate::steam_client::steamworks_types::{
 };
 use std::os::raw::{c_char, c_void};
 
-// Forward declarations for other interfaces
-#[repr(C)]
-pub struct ISteamUser;
+// Forward declaration...
 #[repr(C)]
 pub struct ISteamGameServer;
-// ... other interface forward declarations
 
 // The complete vtable structure
 #[repr(C)]
