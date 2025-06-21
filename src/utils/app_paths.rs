@@ -63,15 +63,18 @@ pub fn get_steamclient_lib_path() -> Result<String, SamError> {
     }
 
     let home = env::var("HOME").expect("Failed to get home dir");
+    let lib_paths = [
+        home.clone() + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so",
+        home.clone() + "/.steam/debian-installation/linux64/steamclient.so",
+        home.clone() + "/.steam/sdk64/steamclient.so",
+        home.clone() + "/.steam/steam/linux64/steamclient.so",
+        home + "/.steam/root/linux64/steamclient.so",
+    ];
 
-    let snap_path = home.clone() + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so";
-    if Path::new(&snap_path).exists() {
-        return Ok(snap_path);
-    }
-
-    let debian_path = home + "/.steam/debian-installation/linux64/steamclient.so";
-    if Path::new(&debian_path).exists() {
-        return Ok(debian_path);
+    for lib_path in lib_paths {
+        if Path::new(&lib_path).exists() {
+            return Ok(lib_path);
+        }
     }
 
     Err(SamError::UnknownError)
@@ -109,7 +112,9 @@ pub fn get_user_game_stats_schema_path(app_id: &u32) -> Result<String, SamError>
     let home = env::var("HOME").expect("Failed to get home dir");
     let install_dirs = [
         home.clone() + "/snap/steam/common/.local/share/Steam",
-        home + "/.steam/debian-installation",
+        home.clone() + "/.steam/debian-installation",
+        home.clone() + "/.steam/steam",
+        home + "/.steam/root",
     ];
 
     for install_dir in install_dirs {
@@ -153,7 +158,9 @@ pub fn get_local_app_banner_file_path(app_id: &u32) -> Result<String, SamError> 
     let home = env::var("HOME").expect("Failed to get home dir");
     let install_dirs = [
         home.clone() + "/snap/steam/common/.local/share/Steam",
-        home + "/.steam/debian-installation",
+        home.clone() + "/.steam/debian-installation",
+        home.clone() + "/.steam/steam",
+        home + "/.steam/root",
     ];
 
     for install_dir in install_dirs {
