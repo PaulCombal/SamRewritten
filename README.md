@@ -43,13 +43,40 @@ financial value, however they are very desirable for bragging rights!
 
 ## Installation
 
-Packages are available in the [release tab](https://github.com/PaulCombal/SamRewritten/releases) for supported platforms.
+Downloads are available in the [release tab](https://github.com/PaulCombal/SamRewritten/releases) for Windows (installer) and Linux (AppImage).
 
-On Linux, Fuse is required to launch AppImages. You might need to install it:
+<details>
+<summary>Click here to see detailed instructions for Windows</summary>
+The supported way to run SamRewritten on Windows is by using the installer. 
+You can download the installer at the Releases page.
+This is the only thing you need to download; the other files are not meant to provide this program for Windows.
+After running the installer and completing the installation, SamRewritten should appear and can be searched for via the start menu.
 
+If the installation does not complete as intended, feel free to report it by opening an issue and providing as much details
+as possible, including your version of Windows.
+</details>
+
+<details>
+<summary>Click here to see detailed instructions for Linux</summary>
+If your Linux distribution doesn't provide a way to install SamRewritten, you can use AppImages.
+AppImages are self-contained executables designed to run independently of your Linux distribution.
+AppImages for SamRewritten are available to download at the Releases page.
+To run an AppImage, make sure you have the permission to execute it first. This can usually be confirmed by right-clicking 
+the file, navigating to the permissions settings, and making sure the permission to run the file box is checked.
+You should then be able to double-click the AppImage file to start SamRewritten.
+
+If SamRewritten doesn't start, you can troubleshoot the issue by starting the AppImage via a terminal and examine the output.
+To do so, open a terminal via your file manager in the same folder than your AppImage download and type the name of the file 
+to start it (eg: `./SamRewritten-gtk.AppImage`).
+
+If the message in the console mentions Fuse or libfuse, you might need to install it and try again:
 ```shell
-sudo apt install libfuse2 # Ubuntu/Debian
+sudo apt install libfuse2 # Example for Ubuntu/Debian
 ```
+
+If the error persists, feel free to open an issue including your Linux distribution and its version, as well as the
+console output that appeared after typing the name of the AppImage in your terminal. 
+</details>
 
 <!--
 Additionally, Snap users can install SamRewritten using the App store or with the following command:

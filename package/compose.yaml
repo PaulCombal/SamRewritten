@@ -9,3 +9,10 @@ services:
 #    command: /bin/bash -c "cargo appimage"
 #    command: /bin/bash -c "appimage --features adwaita"
     command: tail -f /dev/null
+
+  rust-gtk-archlinux:
+    build:
+      dockerfile: ./arch.Dockerfile
+    volumes:
+      - ../:/mnt:z
+    command: tail -f /dev/null

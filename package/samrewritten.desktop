@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=SamRewritten
+Exec=/usr/bin/samrewritten
+Terminal=false
+Type=Application
+Icon=samrewritten
+Comment=Steam Achievement Manager
+Categories=Game;
+StartupWMClass=samrewritten;

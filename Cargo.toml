@@ -2,8 +2,12 @@
 name = "SamRewritten"
 version = "0.1.0"
 description = "Steam Achievement Manager Rewritten"
-authors = ["Paul <abonnementspaul -@- gmail.com>", "Phillip <phillip.mendel -@- posteo.de>"]
 edition = "2024"
+authors = [
+    "Paul <abonnementspaul -@- gmail.com>",
+    "Phillip <phillip.mendel -@- posteo.de>",
+    "All SamRewritten contributors <https://github.com/PaulCombal/SamRewritten>"
+]
 
 [dependencies]
 # bincode = "2" // To replace serde_json ?
@@ -21,7 +25,7 @@ default = []
 adwaita = ['dep:adw']
 
 [target.'cfg(windows)'.dependencies]
-winreg = "0.55.0"
+winreg = "0"
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0"
