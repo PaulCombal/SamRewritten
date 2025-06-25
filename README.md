@@ -47,6 +47,7 @@ Downloads are available in the [release tab](https://github.com/PaulCombal/SamRe
 
 <details>
 <summary>Click here to see detailed instructions for Windows</summary>
+
 The supported way to run SamRewritten on Windows is by using the installer. 
 You can download the installer at the Releases page.
 This is the only thing you need to download; the other files are not meant to provide this program for Windows.
@@ -58,6 +59,7 @@ as possible, including your version of Windows.
 
 <details>
 <summary>Click here to see detailed instructions for Linux</summary>
+
 If your Linux distribution doesn't provide a way to install SamRewritten, you can use AppImages.
 AppImages are self-contained executables designed to run independently of your Linux distribution.
 AppImages for SamRewritten are available to download at the Releases page.
@@ -77,6 +79,9 @@ sudo apt install libfuse2 # Example for Ubuntu/Debian
 If the error persists, feel free to open an issue including your Linux distribution and its version, as well as the
 console output that appeared after typing the name of the AppImage in your terminal. 
 </details>
+
+> [!NOTE]
+> For Arch linux and derivatives, we are working on getting access to the AUR PKGBUILD for samrewritten-git. It is in the works.
 
 <!--
 Additionally, Snap users can install SamRewritten using the App store or with the following command:

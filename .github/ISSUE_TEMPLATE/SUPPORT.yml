@@ -1,0 +1,30 @@
+name: "❓ Support request"
+description: Get support for how to use SamRewritten
+title: "❓ [SUPPORT] - <title>"
+labels: [
+  "documentation"
+]
+body:
+  - type: checkboxes
+    id: i_have_read
+    attributes:
+      label: "I have read the detailed instructions for my platform"
+      description: Read the detailed instructions for your platform in the README (the front page of this repository) first.
+      options:
+        - label: I have read the detailed instructions on the main page (on the README)
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: Please enter an explicit description of your issue
+      placeholder: How do I...
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: "Other & screenshots"
+      description: Other observations or remarks..
+    validations:
+      required: false
