@@ -1,6 +1,6 @@
 # Maintainer: Needed!
 
-pkgname=samrewritten
+pkgname=samrewritten-git
 pkgver=r68.dacac70
 pkgrel=1
 pkgdesc="Unlock achievements and stats on Steam, and more!"
@@ -39,7 +39,7 @@ pkgver() {
 package() {
   cd "${srcdir}/SamRewritten"
 
-  install -Dm755 "target/release/${pkgname}" "$pkgdir/usr/bin/${pkgname}"
+  install -Dm755 "target/release/samrewritten" "$pkgdir/usr/bin/samrewritten"
   install -Dm644 "assets/icon_64.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/samrewritten.png"
   install -Dm644 "assets/icon_256.png" "$pkgdir/usr/share/icons/hicolor/256x256/apps/samrewritten.png"
   install -Dm644 "package/samrewritten.desktop" "$pkgdir/usr/share/applications/samrewritten.desktop"
