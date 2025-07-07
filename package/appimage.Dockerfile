@@ -18,7 +18,7 @@ ENV APPIMAGE_VERSION=continuous
 ENV APPIMAGE_EXTRACT_AND_RUN=1
 
 #RUN cargo install cargo-appimage
-RUN cargo install --git https://github.com/mateolafalce/cargo-appimage.git
+RUN cargo install --git https://github.com/PaulCombal/cargo-appimage.git
 
 RUN wget https://github.com/AppImage/AppImageKit/releases/download/$APPIMAGE_VERSION/appimagetool-x86_64.AppImage
 RUN chmod +x appimagetool-x86_64.AppImage
