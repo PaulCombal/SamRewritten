@@ -81,7 +81,9 @@ console output that appeared after typing the name of the AppImage in your termi
 </details>
 
 > [!NOTE]
-> For Arch linux and derivatives, we are working on getting access to the AUR PKGBUILD for samrewritten-git. It is in the works.
+> For Arch linux and derivatives, you can install SamRewritten with yay:
+>
+> `yay -S samrewritten-git`
 
 <!--
 Additionally, Snap users can install SamRewritten using the App store or with the following command:
