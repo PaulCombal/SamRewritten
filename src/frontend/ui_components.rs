@@ -17,7 +17,10 @@ use crate::frontend::MainApplication;
 use crate::frontend::application_actions::set_app_action_enabled;
 use gtk::gdk::Paintable;
 use gtk::gdk_pixbuf::Pixbuf;
-use gtk::{AboutDialog, ApplicationWindow, Image, License, MenuButton, PopoverMenu, PositionType};
+use gtk::{
+    AboutDialog, ApplicationWindow, Image, License, MenuButton, PopoverMenu, PositionType,
+    gdk_pixbuf,
+};
 use std::io::Cursor;
 
 pub fn create_about_dialog(window: &ApplicationWindow) -> AboutDialog {
@@ -43,10 +46,21 @@ pub fn create_about_dialog(window: &ApplicationWindow) -> AboutDialog {
 pub fn load_logo() -> Paintable {
     let image_bytes = include_bytes!("../../assets/icon_256.png");
 
-    let logo_pixbuf = Pixbuf::from_read(Cursor::new(image_bytes)).expect("Failed to load logo");
-    Image::from_pixbuf(Some(&logo_pixbuf))
-        .paintable()
-        .expect("Failed to create logo image")
+    if let Ok(logo_pixbuf) = Pixbuf::from_read(Cursor::new(image_bytes)) {
+        Image::from_pixbuf(Some(&logo_pixbuf))
+            .paintable()
+            .expect("Failed to create logo image")
+    } else {
+        eprintln!("[CLIENT] Failed to load logo. Using a gray square.");
+
+        let pixbuf = Pixbuf::new(gdk_pixbuf::Colorspace::Rgb, true, 8, 1, 1)
+            .expect("Failed to create minimal pixbuf fallback");
+        pixbuf.fill(0x808080FF);
+
+        Image::from_pixbuf(Some(&pixbuf))
+            .paintable()
+            .expect("Failed to create logo image")
+    }
 }
 
 pub fn create_context_menu_button() -> (MenuButton, PopoverMenu, gtk::gio::Menu) {

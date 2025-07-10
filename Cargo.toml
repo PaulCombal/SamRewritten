@@ -6,7 +6,7 @@ edition = "2024"
 authors = [
     "Paul <abonnementspaul -@- gmail.com>",
     "Phillip <phillip.mendel -@- posteo.de>",
-    "All SamRewritten contributors <https://github.com/PaulCombal/SamRewritten>"
+    "All SamRewritten contributors"
 ]
 
 [dependencies]
