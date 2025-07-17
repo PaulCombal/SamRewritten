@@ -15,6 +15,7 @@
 
 use crate::backend::app_lister::AppLister;
 use crate::backend::connected_steam::ConnectedSteam;
+use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
@@ -135,6 +136,14 @@ fn process_command(
         SteamCommand::LaunchApp(app_id) => {
             dev_println!("[ORCHESTRATOR] LaunchApp {}", app_id);
 
+            #[cfg(debug_assertions)]
+            if app_id == 0 {
+                let response = SteamResponse::<bool>::Success(true).sam_serialize();
+                tx.write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+                return true;
+            }
+
             // 1. Check if we own a process for this app
             if children_processes.contains_key(&app_id) {
                 eprintln!("[ORCHESTRATOR] App {} is already running", app_id);
@@ -158,6 +167,14 @@ fn process_command(
         }
 
         SteamCommand::StopApp(app_id) => {
+            #[cfg(debug_assertions)]
+            if app_id == 0 {
+                let response = SteamResponse::<bool>::Success(true).sam_serialize();
+                tx.write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+                return true;
+            }
+
             if !children_processes.contains_key(&app_id) {
                 eprintln!("[ORCHESTRATOR] App {} is not running", app_id);
                 let response: SteamResponse<()> = SteamResponse::Error(SamError::UnknownError);
@@ -170,6 +187,12 @@ fn process_command(
             let mut bidir_opt = children_processes.remove(&app_id);
             let bidir = bidir_opt.as_mut().unwrap();
             let response = send_app_command(bidir, SteamCommand::Shutdown);
+
+            bidir
+                .child
+                .wait()
+                .expect("[ORCHESTRATOR] Failed to wait child process]");
+
             tx.write_all(&response)
                 .expect("[ORCHESTRATOR] Failed to send response");
         }
@@ -221,6 +244,31 @@ fn process_command(
         }
 
         SteamCommand::GetAchievements(app_id) => {
+            #[cfg(debug_assertions)]
+            if app_id == 0 {
+                let mut ach_infos = vec![];
+                for i in 1..1000 {
+                    let ach_info = AchievementInfo {
+                        id: format!("DEV_ACH_{i}"),
+                        is_achieved: (i % 2) == 0,
+                        name: format!("Development achievement {i}"),
+                        global_achieved_percent: None,
+                        permission: 0,
+                        description: "Description".to_string(),
+                        icon_locked: "".to_string(),
+                        icon_normal: "".to_string(),
+                        unlock_time: None,
+                    };
+                    ach_infos.push(ach_info);
+                }
+
+                let response =
+                    SteamResponse::<Vec<AchievementInfo>>::Success(ach_infos).sam_serialize();
+                tx.write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+                return true;
+            }
+
             if let Some(bidir) = children_processes.get_mut(&app_id) {
                 let response = send_app_command(bidir, SteamCommand::GetAchievements(app_id));
                 tx.write_all(&response)
@@ -234,6 +282,14 @@ fn process_command(
         }
 
         SteamCommand::GetStats(app_id) => {
+            #[cfg(debug_assertions)]
+            if app_id == 0 {
+                let response = SteamResponse::<Vec<StatInfo>>::Success(vec![]).sam_serialize();
+                tx.write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+                return true;
+            }
+
             if let Some(bidir) = children_processes.get_mut(&app_id) {
                 let response = send_app_command(bidir, SteamCommand::GetStats(app_id));
                 tx.write_all(&response)
@@ -247,6 +303,14 @@ fn process_command(
         }
 
         SteamCommand::SetAchievement(app_id, unlocked, achievement_id) => {
+            #[cfg(debug_assertions)]
+            if app_id == 0 {
+                let response = SteamResponse::<bool>::Success(true).sam_serialize();
+                tx.write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+                return true;
+            }
+
             if let Some(bidir) = children_processes.get_mut(&app_id) {
                 let response = send_app_command(
                     bidir,

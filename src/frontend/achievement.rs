@@ -42,6 +42,7 @@ impl GAchievementObject {
             .property("permission", info.permission)
             .property("global-achieved-percent", global_achieved_percent)
             .property("global-achieved-percent-ok", global_achieved_percent_ok)
+            .property("time-until-unlock", "...".to_string())
             .build()
     }
 }
@@ -88,6 +89,9 @@ mod imp {
 
         #[property(get, set)]
         global_achieved_percent_ok: Cell<bool>,
+
+        #[property(get, set)]
+        time_until_unlock: RefCell<String>,
     }
 
     #[glib::object_subclass]

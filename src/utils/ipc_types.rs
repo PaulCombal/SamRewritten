@@ -32,7 +32,7 @@ impl std::fmt::Display for SamError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SamError::SerializationFailed => write!(f, "Sam error: Serialization failed"),
-            SamError::SteamConnectionFailed => write!(f, "Sam error: SteamConnection failed"),
+            SamError::SteamConnectionFailed => write!(f, "Sam error: Steam connection failed"),
             SamError::AppListRetrievalFailed => write!(f, "Sam error: App list retrieval failed"),
             SamError::UnknownError => write!(f, "Sam error: Unknown error"),
             SamError::SocketCommunicationFailed => {

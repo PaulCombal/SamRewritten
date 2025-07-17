@@ -92,6 +92,12 @@ snap install samrewritten
 ```
 -->
 
+## Features
+
+* Lock and unlock select achievements with a single click
+* Edit statistics instantly
+* Schedule achievement unlocking over a set period of time
+
 ## Limitations
 
 ⚠️ On Linux, this tool is **only** compatible with:
@@ -100,6 +106,9 @@ snap install samrewritten
 * Distribution installations that use the Steam runtime (Gentoo, Arch, `~/.steam/root` exists)
 
 If you wish to see your distribution supported, please open an issue.
+
+> [!TIP]  
+> Flatpak support poses a considerable challenge. If you or someone you know with knowledge of Flatpak internals can offer to help, please don't hold back and reach out!
 
 ## End user agreements
 

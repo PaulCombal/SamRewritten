@@ -14,6 +14,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 mod achievement;
+mod achievement_automatic_view;
+mod achievement_manual_view;
 mod achievement_view;
 mod app_list_view;
 mod app_view;

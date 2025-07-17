@@ -14,20 +14,6 @@
 
 - In utils, instead of calculating Steam install path every time, do it only once
 
-In connect_bind closures, instead of calling unsafe steal_data, store the SignalHandlerId in the listItem
-
-```rust
-let handler_id = spin_button.connect_value_changed( | spin_button| {
-println ! ("SpinButton value changed: {}", spin_button.value());
-});
-list_item.set_data("spin-button-value-changed-handler", handler_id);
-
-...
-
-spin_button.disconnect(handler_id);
-
-```
-
 ### Help needed
 
 - Support for Flatpak installs of Steam

@@ -98,7 +98,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> i
                 }
 
                 let response = match app_manager.get_statistics() {
-                    Ok(achievements) => SteamResponse::Success(achievements),
+                    Ok(statistics) => SteamResponse::Success(statistics),
                     Err(e) => SteamResponse::Error::<Vec<StatInfo>>(e),
                 };
                 let response = response.sam_serialize();

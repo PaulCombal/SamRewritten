@@ -13,14 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use std::cell::RefCell;
-use std::sync::mpsc::channel;
-use std::time::Duration;
-
 use super::request::{Request, SetFloatStat, SetIntStat};
 use super::stat::GStatObject;
 use gtk::gio::{ListStore, spawn_blocking};
+use gtk::glib::SignalHandlerId;
 use gtk::glib::object::Cast;
+use gtk::glib::translate::FromGlib;
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::{
     BoxExt, GObjectPropertyExpressionExt, ListItemExt, ObjectExt, ToValue, WidgetExt,
@@ -30,6 +28,10 @@ use gtk::{
     NoSelection, Orientation, SignalListItemFactory, SpinButton, StringFilter,
     StringFilterMatchMode, Widget, glib,
 };
+use std::cell::RefCell;
+use std::ffi::c_ulong;
+use std::sync::mpsc::channel;
+use std::time::Duration;
 
 pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
     let stats_list_factory = SignalListItemFactory::new();
@@ -236,16 +238,9 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
             .and_then(|spin_button_widget| spin_button_widget.downcast::<SpinButton>().ok())
             .expect("Could not find SpinButton widget");
 
-        // Disconnect previous handler if it exists
-        if let Some(handler_id) =
-            list_item.steal_data::<glib::SignalHandlerId>("spin-button-value-changed-handler")
-        {
-            spin_button.disconnect(handler_id);
-        }
-
         let sender = RefCell::new(channel::<f64>().0);
 
-        spin_button.connect_value_changed(move |button| {
+        let handler_id = spin_button.connect_value_changed(move |button| {
             if sender.borrow_mut().send(button.value()).is_ok() {
                 return;
             }
@@ -296,6 +291,8 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
                 }
             });
         });
+
+        spin_button.set_data("handler", handler_id.as_raw());
     });
 
     stats_list_factory.connect_unbind(move |_, list_item| unsafe {
@@ -313,10 +310,12 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
             .expect("Could not find SpinButton widget");
 
         // Disconnect previous handler if it exists
-        if let Some(handler_id) =
-            list_item.steal_data::<glib::SignalHandlerId>("spin-button-value-changed-handler")
-        {
-            spin_button.disconnect(handler_id);
+        if let Some(handler_id) = spin_button.data("handler") {
+            let ulong: c_ulong = *handler_id.as_ptr();
+            let signal_handler = SignalHandlerId::from_glib(ulong);
+            spin_button.disconnect(signal_handler);
+        } else {
+            println!("[CLIENT] Stat spinbox unbind failed");
         }
     });
 

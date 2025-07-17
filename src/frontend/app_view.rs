@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use super::stat_view::create_stats_view;
+use crate::frontend::MainApplication;
 use crate::frontend::achievement_view::create_achievements_view;
 use crate::frontend::shimmer_image::ShimmerImage;
 use gtk::gio::ListStore;
@@ -20,17 +22,19 @@ use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};
 use gtk::prelude::*;
 use gtk::{
-    Align, Box, Frame, Label, Orientation, PolicyType, ScrolledWindow, Separator, Spinner, Stack,
-    StackTransitionType, StringFilter, ToggleButton,
+    Adjustment, Align, Box, Button, Frame, Label, Orientation, PolicyType, ScrolledWindow,
+    Separator, SpinButton, Spinner, Stack, StackTransitionType, StringFilter, ToggleButton,
 };
 use gtk::{Paned, glib};
 use std::cell::Cell;
 use std::rc::Rc;
-
-use super::stat_view::create_stats_view;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 
 pub fn create_app_view(
     app_id: Rc<Cell<Option<u32>>>,
+    app_unlocked_achievements_count: Rc<Cell<usize>>,
+    application: &MainApplication,
 ) -> (
     Stack,
     ShimmerImage,
@@ -49,6 +53,11 @@ pub fn create_app_view(
     ListStore,
     StringFilter,
     Paned,
+    Adjustment,
+    SpinButton,
+    Button,
+    Arc<AtomicBool>,
+    Stack,
 ) {
     let app_spinner = Spinner::builder().spinning(true).margin_end(5).build();
     let app_spinner_label = Label::builder().label("Loading...").build();
@@ -188,11 +197,24 @@ pub fn create_app_view(
     app_sidebar.append(&app_stats_count_box);
     app_sidebar.append(&app_type_box);
 
-    let (app_achievements_list, app_achievements_model, app_achievement_string_filter) =
-        create_achievements_view(app_id.clone());
+    let (
+        app_achievements_stack,
+        app_achievements_model,
+        app_achievement_string_filter,
+        achievements_manual_adjustement,
+        achievements_manual_spinbox,
+        achievements_manual_start,
+        cancel_timed_unlock,
+    ) = create_achievements_view(
+        app_id.clone(),
+        app_unlocked_achievements_count,
+        application,
+        &app_achievement_count_value,
+    );
+
     let (app_stat_list, app_stat_model, app_stat_string_filter) = create_stats_view();
 
-    let app_achievements_frame = Frame::builder().child(&app_achievements_list).build();
+    let app_achievements_frame = Frame::builder().child(&app_achievements_stack).build();
     let app_achievements_spacer = Box::builder()
         .orientation(Orientation::Vertical)
         .vexpand(true)
@@ -322,5 +344,10 @@ pub fn create_app_view(
         app_stat_model,
         app_stat_string_filter,
         app_pane,
+        achievements_manual_adjustement,
+        achievements_manual_spinbox,
+        achievements_manual_start,
+        cancel_timed_unlock,
+        app_achievements_stack,
     )
 }

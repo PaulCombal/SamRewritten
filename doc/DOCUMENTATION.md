@@ -5,7 +5,7 @@
 The orchestrator part of this tool could be reused for farming account game time, or farming card drops.
 It is highly modular, and it is easy to interface with from other Rust programs using Serde.
 
-Communications are made via named sockets and work in a request-response fashion.
+Communications are made via pipes and work in a request-response fashion.
 While crates like bincode could be used for performance gains, JSON was still chosen for its ease of use and human
 readability.
 It wasn't found that this posed a significant bottleneck.
