@@ -102,10 +102,7 @@ pub fn create_achievements_view(
         &application,
     );
     let (achievements_automatic_frame, _achievements_automatic_stop) =
-        create_achievements_automatic_view(
-            &app_timed_achievement_selection_model,
-            &application,
-        );
+        create_achievements_automatic_view(&app_timed_achievement_selection_model, &application);
 
     achievement_views_stack.add_named(&achievements_manual_frame, Some("manual"));
     achievement_views_stack.add_named(&achievements_automatic_frame, Some("automatic"));

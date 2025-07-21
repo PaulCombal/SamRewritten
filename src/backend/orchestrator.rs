@@ -15,6 +15,7 @@
 
 use crate::backend::app_lister::AppLister;
 use crate::backend::connected_steam::ConnectedSteam;
+#[cfg(debug_assertions)]
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::utils::app_paths::get_executable_path;

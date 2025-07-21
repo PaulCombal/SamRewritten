@@ -26,9 +26,7 @@ use gtk::{
 };
 
 #[inline]
-fn create_header(
-    application: &MainApplication,
-) -> (ListBox, Button) {
+fn create_header(application: &MainApplication) -> (ListBox, Button) {
     let list = ListBox::builder()
         .selection_mode(SelectionMode::None)
         .build();
@@ -59,9 +57,7 @@ pub fn create_achievements_automatic_view(
     timed_filtered_model: &NoSelection,
     application: &MainApplication,
 ) -> (Frame, Button) {
-    let (header, header_achievements_stop) = create_header(
-        application,
-    );
+    let (header, header_achievements_stop) = create_header(application);
 
     let achievements_list_factory = SignalListItemFactory::new();
 
