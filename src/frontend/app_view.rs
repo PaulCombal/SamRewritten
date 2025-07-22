@@ -22,7 +22,7 @@ use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};
 use gtk::prelude::*;
 use gtk::{
-    Adjustment, Align, Box, Button, Frame, Label, Orientation, PolicyType, ScrolledWindow,
+    Adjustment, Align, Box, Button, Label, Orientation,
     Separator, SpinButton, Spinner, Stack, StackTransitionType, StringFilter, ToggleButton,
 };
 use gtk::{Paned, glib};
@@ -212,50 +212,12 @@ pub fn create_app_view(
         &app_achievement_count_value,
     );
 
-    let (app_stat_list, app_stat_model, app_stat_string_filter) = create_stats_view();
-
-    let app_achievements_frame = Frame::builder().child(&app_achievements_stack).build();
-    let app_achievements_spacer = Box::builder()
-        .orientation(Orientation::Vertical)
-        .vexpand(true)
-        .build();
-    let app_achievement_box = Box::builder()
-        .orientation(Orientation::Vertical)
-        .margin_top(20)
-        .margin_start(20)
-        .margin_end(20)
-        .margin_bottom(20)
-        .build();
-    app_achievement_box.append(&app_achievements_frame);
-    app_achievement_box.append(&app_achievements_spacer);
-    let app_achievements_scrolled_window = ScrolledWindow::builder()
-        .hscrollbar_policy(PolicyType::Never)
-        .child(&app_achievement_box)
-        .build();
-
-    let app_stat_frame = Frame::builder().child(&app_stat_list).build();
-    let app_stat_spacer = Box::builder()
-        .orientation(Orientation::Vertical)
-        .vexpand(true)
-        .build();
-    let app_stat_box = Box::builder()
-        .orientation(Orientation::Vertical)
-        .margin_top(20)
-        .margin_start(20)
-        .margin_end(20)
-        .margin_bottom(20)
-        .build();
-    app_stat_box.append(&app_stat_frame);
-    app_stat_box.append(&app_stat_spacer);
-    let app_stat_scrolled_window = ScrolledWindow::builder()
-        .hscrollbar_policy(PolicyType::Never)
-        .child(&app_stat_box)
-        .build();
+    let (app_stat_scrolled_window, app_stat_model, app_stat_string_filter) = create_stats_view();
 
     let app_stack = Stack::builder()
         .transition_type(StackTransitionType::SlideLeftRight)
         .build();
-    app_stack.add_named(&app_achievements_scrolled_window, Some("achievements"));
+    app_stack.add_named(&app_achievements_stack, Some("achievements"));
     app_stack.add_named(&app_stat_scrolled_window, Some("stats"));
     app_stack.add_named(&app_loading_failed_label, Some("failed"));
     app_stack.add_named(&app_no_entries_value, Some("empty"));

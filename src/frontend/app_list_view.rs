@@ -626,7 +626,7 @@ pub fn create_main_ui(application: &MainApplication) {
                 action_refresh_app_list.set_enabled(false);
             } else if stack.visible_child_name().as_deref() == Some("app") {
                 search_entry.set_text("");
-                search_entry.set_placeholder_text(Some("App attribute..."));
+                search_entry.set_placeholder_text(Some("Achievement or stat..."));
                 back_button.set_sensitive(true);
                 action_refresh_app_list.set_enabled(false);
             } else {

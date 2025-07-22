@@ -21,8 +21,9 @@ use gtk::glib::clone;
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;
 use gtk::{
-    Align, Box, Button, ClosureExpression, Frame, Label, ListBox, ListView, NoSelection,
-    Orientation, SelectionMode, SignalListItemFactory, Stack, StackTransitionType, Widget, glib,
+    Align, Box, Button, ClosureExpression, Frame, Label, ListBox, ListBoxRow, ListView,
+    NoSelection, Orientation, ScrolledWindow, SelectionMode, SignalListItemFactory, Stack,
+    StackTransitionType, Widget, glib,
 };
 
 #[inline]
@@ -47,7 +48,16 @@ fn create_header(application: &MainApplication) -> (ListBox, Button) {
         }
     ));
 
-    list.append(&hbox);
+    let list_box_row = ListBoxRow::builder()
+        .child(&hbox)
+        .margin_end(5)
+        .margin_start(5)
+        .margin_top(5)
+        .margin_bottom(5)
+        .activatable(false)
+        .focusable(false)
+        .build();
+    list.append(&list_box_row);
 
     (list, button_stop)
 }
@@ -65,6 +75,10 @@ pub fn create_achievements_automatic_view(
         .orientation(Orientation::Vertical)
         .model(timed_filtered_model)
         .factory(&achievements_list_factory)
+        .build();
+    let app_achievements_scrolled_window = ScrolledWindow::builder()
+        .child(&app_achievements_list_view)
+        .vexpand(true)
         .build();
 
     achievements_list_factory.connect_setup(move |_, list_item| {
@@ -175,10 +189,16 @@ pub fn create_achievements_automatic_view(
         visible_child_expr.bind(&icon_stack, "visible-child-name", Widget::NONE);
     });
 
-    let vbox = Box::new(Orientation::Vertical, 10);
+    let vbox = Box::new(Orientation::Vertical, 5);
     vbox.append(&header);
-    vbox.append(&app_achievements_list_view);
-    let app_achievements_frame = Frame::builder().child(&vbox).build();
+    vbox.append(&app_achievements_scrolled_window);
+    let app_achievements_frame = Frame::builder()
+        .margin_end(15)
+        .margin_start(15)
+        .margin_top(15)
+        .margin_bottom(15)
+        .child(&vbox)
+        .build();
 
     (app_achievements_frame, header_achievements_stop)
 }

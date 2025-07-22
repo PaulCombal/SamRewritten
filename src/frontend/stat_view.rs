@@ -24,8 +24,8 @@ use gtk::prelude::{
     BoxExt, GObjectPropertyExpressionExt, ListItemExt, ObjectExt, ToValue, WidgetExt,
 };
 use gtk::{
-    Adjustment, Align, Box, ClosureExpression, FilterListModel, Label, ListItem, ListView,
-    NoSelection, Orientation, SignalListItemFactory, SpinButton, StringFilter,
+    Adjustment, Align, Box, ClosureExpression, FilterListModel, Frame, Label, ListItem, ListView,
+    NoSelection, Orientation, ScrolledWindow, SignalListItemFactory, SpinButton, StringFilter,
     StringFilterMatchMode, Widget, glib,
 };
 use std::cell::RefCell;
@@ -33,7 +33,7 @@ use std::ffi::c_ulong;
 use std::sync::mpsc::channel;
 use std::time::Duration;
 
-pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
+pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
     let stats_list_factory = SignalListItemFactory::new();
     let app_stats_model = ListStore::new::<GStatObject>();
 
@@ -53,6 +53,10 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
         .orientation(Orientation::Vertical)
         .model(&app_stats_selection_model)
         .factory(&stats_list_factory)
+        .build();
+    let app_stats_scrolled_window = ScrolledWindow::builder()
+        .child(&app_stats_list_view)
+        .vexpand(true)
         .build();
 
     stats_list_factory.connect_setup(move |_, list_item| {
@@ -319,9 +323,13 @@ pub fn create_stats_view() -> (ListView, ListStore, StringFilter) {
         }
     });
 
-    (
-        app_stats_list_view,
-        app_stats_model,
-        app_stats_string_filter,
-    )
+    let app_stats_frame = Frame::builder()
+        .margin_end(15)
+        .margin_start(15)
+        .margin_top(15)
+        .margin_bottom(15)
+        .child(&app_stats_scrolled_window)
+        .build();
+
+    (app_stats_frame, app_stats_model, app_stats_string_filter)
 }

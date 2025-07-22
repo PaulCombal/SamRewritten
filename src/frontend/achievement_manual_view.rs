@@ -27,9 +27,9 @@ use gtk::glib::{MainContext, SignalHandlerId, clone};
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;
 use gtk::{
-    Adjustment, Align, Box, Button, ClosureExpression, Frame, Label, ListBox, ListItem, ListView,
-    NoSelection, Orientation, SelectionMode, SignalListItemFactory, SpinButton, Stack,
-    StackTransitionType, Switch, Widget, glib,
+    Adjustment, Align, Box, Button, ClosureExpression, Frame, Label, ListBox, ListBoxRow, ListItem,
+    ListView, NoSelection, Orientation, ScrolledWindow, SelectionMode, SignalListItemFactory,
+    SpinButton, Stack, StackTransitionType, Switch, Widget, glib,
 };
 use std::cell::Cell;
 use std::cmp::Ordering;
@@ -169,6 +169,8 @@ fn create_header(
 
             // Conception: ajouter à GAchievement la propriété time-before-unlock
             MainContext::default().spawn_local(clone!(
+                #[strong]
+                timed_raw_model,
                 async move {
                     let mut elapsed = 0usize;
                     let need_elapsed = (desired_minutes * 60 * 1000) as usize;
@@ -182,6 +184,7 @@ fn create_header(
                     while next_ach_to_unlock_index < achievements_to_unlock_count {
                         if cancelled_task.load(std::sync::atomic::Ordering::Relaxed) {
                             dev_println!("[CLIENT] Timed unlock task cancelled");
+                            timed_raw_model.remove_all();
                             break;
                         }
 
@@ -226,7 +229,15 @@ fn create_header(
         }
     ));
 
-    list.append(&hbox);
+    let list_box_row = ListBoxRow::builder()
+        .child(&hbox)
+        .activatable(false)
+        .margin_end(5)
+        .margin_start(5)
+        .margin_top(5)
+        .margin_bottom(5)
+        .build();
+    list.append(&list_box_row);
 
     (
         list,
@@ -268,6 +279,10 @@ pub fn create_achievements_manual_view(
         .orientation(Orientation::Vertical)
         .model(filtered_model)
         .factory(&achievements_list_factory)
+        .build();
+    let app_achievements_scrolled_window = ScrolledWindow::builder()
+        .child(&app_achievements_list_view)
+        .vexpand(true)
         .build();
 
     achievements_list_factory.connect_setup(move |_, list_item| {
@@ -564,10 +579,16 @@ pub fn create_achievements_manual_view(
         }
     });
 
-    let vbox = Box::new(Orientation::Vertical, 10);
+    let vbox = Box::new(Orientation::Vertical, 5);
     vbox.append(&header);
-    vbox.append(&app_achievements_list_view);
-    let app_achievements_frame = Frame::builder().child(&vbox).build();
+    vbox.append(&app_achievements_scrolled_window);
+    let app_achievements_frame = Frame::builder()
+        .margin_end(15)
+        .margin_start(15)
+        .margin_top(15)
+        .margin_bottom(15)
+        .child(&vbox)
+        .build();
 
     (
         app_achievements_frame,
