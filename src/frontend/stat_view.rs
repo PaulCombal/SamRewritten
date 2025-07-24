@@ -319,7 +319,7 @@ pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
             let signal_handler = SignalHandlerId::from_glib(ulong);
             spin_button.disconnect(signal_handler);
         } else {
-            println!("[CLIENT] Stat spinbox unbind failed");
+            eprintln!("[CLIENT] Stat spinbox unbind failed");
         }
     });
 

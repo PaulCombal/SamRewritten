@@ -22,8 +22,8 @@ use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};
 use gtk::prelude::*;
 use gtk::{
-    Adjustment, Align, Box, Button, Label, Orientation,
-    Separator, SpinButton, Spinner, Stack, StackTransitionType, StringFilter, ToggleButton,
+    Adjustment, Align, Box, Button, Label, Orientation, Separator, SpinButton, Spinner, Stack,
+    StackTransitionType, StringFilter, ToggleButton,
 };
 use gtk::{Paned, glib};
 use std::cell::Cell;

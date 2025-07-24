@@ -85,9 +85,9 @@ pub fn get_steamclient_lib_path() -> Result<PathBuf, SamError> {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_steamclient_lib_path() -> Result<PathBuf, SamError> {
-    use winreg::{RegKey};
-    use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
     use std::path::PathBuf;
+    use winreg::RegKey;
+    use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
 
     const REG_PATH: &str = "SOFTWARE\\Valve\\Steam";
     const VALUE_NAME: &str = "SteamPath";

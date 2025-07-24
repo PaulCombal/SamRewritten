@@ -42,7 +42,7 @@ mod imp {
     use std::cell::Cell;
 
     // If building with Adwaita, use the platform accent color
-    const BAR_COLOR: RGBA = RGBA::new(0.85, 0.85, 1.0, 1.0);
+    const BAR_COLOR: RGBA = RGBA::new(0.92, 0.92, 1.0, 1.0);
 
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::CustomProgressBar)]

@@ -33,6 +33,7 @@ impl ShimmerImage {
         self.imp().texture.borrow_mut().take();
         self.imp().receiver.borrow_mut().take();
         self.imp().loaded.borrow_mut().take();
+        self.imp().failed.set(true);
     }
 }
 
@@ -69,6 +70,7 @@ mod imp {
         pub url: RefCell<Option<String>>,
         #[property(get, set)]
         pub loaded: RefCell<Option<String>>,
+        pub failed: Cell<bool>,
         pub receiver: RefCell<Option<Receiver<Texture>>>,
         pub texture: RefCell<Option<Texture>>,
     }
@@ -85,6 +87,8 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
+            obj.reset();
+
             obj.set_size_request(231, 87);
             obj.add_tick_callback(|widget, clock| {
                 if let Some(this) = widget.downcast_ref::<super::ShimmerImage>() {
@@ -136,35 +140,39 @@ mod imp {
                     Err(TryRecvError::Empty) => {
                         self.receiver.borrow_mut().replace(receiver);
                     }
-                    Err(TryRecvError::Disconnected) => (),
+                    Err(TryRecvError::Disconnected) => {
+                        self.failed.set(true);
+                    }
                 }
             }
 
-            //convert from continuous microseconds to relative seconds
-            let progress = ((self.current.get() - self.start.get()) / 1000) as f32 / 1000.0 % 1.0;
-            let progress = ease_in_out(progress);
-            let start_pos = -GRADIENT_WIDTH + (1.0 + 2.0 * GRADIENT_WIDTH) * progress;
-            let end_pos = start_pos + GRADIENT_WIDTH;
-
-            let color_stops = vec![
-                ColorStop::new(0.0, BASE_COLOR),
-                ColorStop::new(0.3, HIGHLIGHT_COLOR),
-                ColorStop::new(0.5, HIGHLIGHT_COLOR),
-                ColorStop::new(0.7, HIGHLIGHT_COLOR),
-                ColorStop::new(1.0, BASE_COLOR),
-            ];
-
-            let gradient = LinearGradientNode::new(
-                &rect,
-                &Point::new(width * start_pos, 0.0),
-                &Point::new(width * end_pos, 0.0),
-                color_stops.as_slice(),
-            );
-
-            let texture = self.texture.borrow();
-            if let Some(texture) = &*texture {
+            if self.failed.get() {
+                // TODO: Insert an icon in the middle: insert-image-symbolic
+                snapshot.append_color(&BASE_COLOR, &rect);
+            } else if let Some(texture) = &*self.texture.borrow() {
                 snapshot.append_texture(texture, &rect);
             } else {
+                // convert from continuous microseconds to relative seconds
+                let progress =
+                    ((self.current.get() - self.start.get()) / 1000) as f32 / 1000.0 % 1.0;
+                let progress = ease_in_out(progress);
+                let start_pos = -GRADIENT_WIDTH + (1.0 + 2.0 * GRADIENT_WIDTH) * progress;
+                let end_pos = start_pos + GRADIENT_WIDTH;
+
+                let color_stops = vec![
+                    ColorStop::new(0.0, BASE_COLOR),
+                    ColorStop::new(0.3, HIGHLIGHT_COLOR),
+                    ColorStop::new(0.5, HIGHLIGHT_COLOR),
+                    ColorStop::new(0.7, HIGHLIGHT_COLOR),
+                    ColorStop::new(1.0, BASE_COLOR),
+                ];
+
+                let gradient = LinearGradientNode::new(
+                    &rect,
+                    &Point::new(width * start_pos, 0.0),
+                    &Point::new(width * end_pos, 0.0),
+                    color_stops.as_slice(),
+                );
                 snapshot.append_node(&gradient);
             }
 
@@ -182,14 +190,17 @@ mod imp {
 
     impl ShimmerImage {
         fn load(&self, url: &str) {
+            self.failed.set(false);
             let split = url.split("://").collect::<Vec<&str>>();
             if split.len() != 2 {
                 dev_println!("[CLIENT] Invalid URL: {url}");
+                self.failed.set(true);
                 return;
             }
 
             let (sender, receiver) = sync_channel::<Texture>(0);
             self.receiver.borrow_mut().replace(receiver);
+            let failed = self.failed.clone();
 
             match split[0] {
                 "https" => {
@@ -209,11 +220,13 @@ mod imp {
                             {
                                 Ok(response) => response,
                                 Err(error) => {
+                                    failed.set(true);
                                     return eprintln!("[CLIENT] Failed to download {url}: {error}");
                                 }
                             };
 
                             if let Err(error) = write(path.as_path(), response) {
+                                failed.set(true);
                                 eprintln!("[CLIENT] Failed to write {url} to {path:?}: {error}");
                                 return;
                             }
@@ -224,6 +237,7 @@ mod imp {
                         let data = match std::fs::read(path.as_path()) {
                             Ok(data) => data,
                             Err(error) => {
+                                failed.set(true);
                                 eprintln!("[CLIENT] Failed to read {url} from {path:?}: {error}");
                                 return;
                             }
@@ -234,6 +248,7 @@ mod imp {
                                 sender.send(texture).ok();
                             }
                             Err(error) => {
+                                failed.set(true);
                                 eprintln!("[CLIENT] Failed to create {url} from bytes: {error}");
                             }
                         }
@@ -242,9 +257,11 @@ mod imp {
                 "file" => {
                     let file_path = split[1].to_string();
                     spawn_blocking(move || {
+                        // std::thread::sleep(std::time::Duration::from_millis(5000));
                         let data = match std::fs::read(&file_path) {
                             Ok(data) => data,
                             Err(error) => {
+                                failed.set(true);
                                 eprintln!("[CLIENT] Failed to read {file_path}: {error}");
                                 return;
                             }
@@ -255,6 +272,7 @@ mod imp {
                                 sender.send(texture).ok();
                             }
                             Err(error) => {
+                                failed.set(true);
                                 eprintln!(
                                     "[CLIENT] Failed to create {file_path} from bytes: {error}"
                                 );
@@ -263,6 +281,7 @@ mod imp {
                     });
                 }
                 _ => {
+                    failed.set(true);
                     dev_println!("[CLIENT] Unsupported URL scheme: {url}");
                 }
             }

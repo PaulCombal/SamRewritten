@@ -28,8 +28,8 @@ use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;
 use gtk::{
     Adjustment, Align, Box, Button, ClosureExpression, Frame, Label, ListBox, ListBoxRow, ListItem,
-    ListView, NoSelection, Orientation, ScrolledWindow, SelectionMode, SignalListItemFactory,
-    SpinButton, Stack, StackTransitionType, Switch, Widget, glib,
+    ListView, NoSelection, Orientation, Overlay, ScrolledWindow, SelectionMode,
+    SignalListItemFactory, SpinButton, Stack, StackTransitionType, Switch, Widget, glib,
 };
 use std::cell::Cell;
 use std::cmp::Ordering;
@@ -331,10 +331,8 @@ pub fn create_achievements_manual_view(
             .build();
         let label_box = Box::builder().orientation(Orientation::Vertical).build();
         let global_percentage_progress_bar = CustomProgressBar::new();
-        global_percentage_progress_bar.set_height_request(2);
         label_box.append(&name_label);
         label_box.append(&description_label);
-        let entry_box = Box::builder().orientation(Orientation::Vertical).build();
         let achievement_box = Box::builder()
             .orientation(Orientation::Horizontal)
             .margin_top(8)
@@ -346,9 +344,13 @@ pub fn create_achievements_manual_view(
         achievement_box.append(&label_box);
         achievement_box.append(&spacer);
         achievement_box.append(&switch_box);
-        entry_box.append(&achievement_box);
-        entry_box.append(&global_percentage_progress_bar);
-        list_item.set_child(Some(&entry_box));
+
+        let overlay = Overlay::builder()
+            .child(&global_percentage_progress_bar)
+            .build();
+        overlay.add_overlay(&achievement_box);
+        overlay.set_measure_overlay(&achievement_box, true);
+        list_item.set_child(Some(&overlay));
 
         list_item
             .property_expression("item")
@@ -459,12 +461,12 @@ pub fn create_achievements_manual_view(
 
             let switch = list_item
                 .child()
-                .and_then(|child| child.downcast::<Box>().ok())
-                .and_then(|hbox| hbox.first_child())
-                .and_then(|box_widget| box_widget.last_child()) // Assuming switch_box is the last child
-                .and_then(|last_child| last_child.downcast::<Box>().ok()) // switch_box
-                .and_then(|switch_box| switch_box.last_child()) // switch
-                .and_then(|switch_widget| switch_widget.downcast::<Switch>().ok())
+                .and_then(|child| child.downcast::<Overlay>().ok())
+                .and_then(|overlay| overlay.last_child())
+                .and_then(|main_box| main_box.last_child())
+                .and_then(|switch_box| switch_box.downcast::<Box>().ok())
+                .and_then(|switch_box| switch_box.last_child())
+                .and_then(|switch| switch.downcast::<Switch>().ok())
                 .expect("achievements_list_factory::connect_bind: Could not find Switch widget");
 
             let app_id = app_id.get().unwrap_or_default();
@@ -561,12 +563,12 @@ pub fn create_achievements_manual_view(
 
         let switch = list_item
             .child()
-            .and_then(|child| child.downcast::<Box>().ok())
-            .and_then(|hbox| hbox.first_child())
-            .and_then(|box_widget| box_widget.last_child()) // Assuming switch_box is the last child
-            .and_then(|last_child| last_child.downcast::<Box>().ok()) // switch_box
-            .and_then(|switch_box| switch_box.last_child()) // switch
-            .and_then(|switch_widget| switch_widget.downcast::<Switch>().ok())
+            .and_then(|child| child.downcast::<Overlay>().ok())
+            .and_then(|overlay| overlay.last_child())
+            .and_then(|main_box| main_box.last_child())
+            .and_then(|switch_box| switch_box.downcast::<Box>().ok())
+            .and_then(|switch_box| switch_box.last_child())
+            .and_then(|switch| switch.downcast::<Switch>().ok())
             .expect("achievements_list_factory::connect_unbind: Could not find Switch widget");
 
         // Disconnect handler when item is unbound
@@ -575,7 +577,7 @@ pub fn create_achievements_manual_view(
             let signal_handler = SignalHandlerId::from_glib(ulong);
             switch.disconnect(signal_handler);
         } else {
-            println!("[CLIENT] Achievement switch unbind failed");
+            eprintln!("[CLIENT] Achievement switch unbind failed");
         }
     });
 

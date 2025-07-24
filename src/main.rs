@@ -27,7 +27,7 @@ use std::process::Command;
 
 use crate::backend::app::app;
 use crate::backend::orchestrator::orchestrator;
-use crate::utils::arguments::parse_arguments;
+use crate::utils::arguments::parse_cli_arguments;
 use crate::utils::bidir_child::BidirChild;
 use frontend::main_ui;
 use gtk::glib;
@@ -36,7 +36,7 @@ use utils::app_paths::get_executable_path;
 const APP_ID: &str = "org.sam_authors.sam_rewritten";
 
 fn main() -> glib::ExitCode {
-    let arguments = parse_arguments();
+    let arguments = parse_cli_arguments();
 
     if arguments.is_orchestrator {
         let mut tx = arguments.tx.unwrap();

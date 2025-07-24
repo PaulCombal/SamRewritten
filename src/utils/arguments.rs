@@ -14,23 +14,33 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
+use gtk::gio::ApplicationCommandLine;
+use gtk::prelude::ApplicationCommandLineExt;
 use interprocess::unnamed_pipe::{Recver, Sender};
+use std::cell::Cell;
 use std::env;
 #[cfg(unix)]
 use std::os::fd::FromRawFd;
 #[cfg(windows)]
 use std::os::windows::io::{FromRawHandle, RawHandle};
 use std::process::exit;
+use std::rc::Rc;
 
 #[derive(Debug)]
-pub struct Arguments {
+pub struct CliArguments {
     pub is_orchestrator: bool,
     pub is_app: u32,
     pub rx: Option<Recver>,
     pub tx: Option<Sender>,
 }
-pub fn parse_arguments() -> Arguments {
-    let mut args = Arguments {
+
+#[derive(Debug)]
+pub struct GuiArguments {
+    pub auto_open: Rc<Cell<u32>>,
+}
+
+pub fn parse_cli_arguments() -> CliArguments {
+    let mut args = CliArguments {
         is_orchestrator: false,
         is_app: 0,
         rx: None,
@@ -105,6 +115,31 @@ pub fn parse_arguments() -> Arguments {
     }
 
     dev_println!("New process launched with arguments: {:?}", args);
+
+    args
+}
+
+pub fn parse_gui_arguments(cmd_line: &ApplicationCommandLine) -> GuiArguments {
+    let arguments = cmd_line.arguments();
+    let args = GuiArguments {
+        auto_open: Rc::new(Cell::new(0)),
+    };
+
+    for arg in arguments.iter().skip(1) {
+        // Skip the first argument (program name)
+        if let Some(arg_str) = arg.to_str() {
+            if arg_str.starts_with("--auto-open=") {
+                if let Some(value_str) = arg_str.strip_prefix("--auto-open=") {
+                    if let Ok(value) = value_str.parse::<u32>() {
+                        args.auto_open.set(value);
+                        println!("Parsed --auto-open value: {}", value);
+                    } else {
+                        eprintln!("Error: Invalid value for --auto-open: {}", value_str);
+                    }
+                }
+            }
+        }
+    }
 
     args
 }

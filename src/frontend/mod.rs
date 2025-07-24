@@ -18,6 +18,7 @@ mod achievement_automatic_view;
 mod achievement_manual_view;
 mod achievement_view;
 mod app_list_view;
+mod app_list_view_callbacks;
 mod app_view;
 mod application_actions;
 mod custom_progress_bar_widget;
@@ -70,9 +71,16 @@ pub fn main_ui(orchestrator: BidirChild) -> ExitCode {
         *guard = Some(orchestrator);
     }
 
-    let main_app = MainApplication::builder().application_id(APP_ID).build();
+    let main_app = MainApplication::builder()
+        .application_id(APP_ID)
+        .flags(
+            gtk::gio::ApplicationFlags::HANDLES_COMMAND_LINE
+                | gtk::gio::ApplicationFlags::NON_UNIQUE,
+        )
+        .build();
 
-    main_app.connect_activate(create_main_ui);
+    main_app.connect_command_line(create_main_ui);
+    // main_app.connect_activate(create_main_ui);
     main_app.connect_shutdown(move |_| shutdown());
     main_app.run()
 }
