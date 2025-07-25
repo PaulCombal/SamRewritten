@@ -21,7 +21,6 @@ use crate::steam_client::steamworks_types::{
 use crate::utils::app_paths::get_steamclient_lib_path;
 use libloading::{Library, Symbol};
 use std::os::raw::c_char;
-use std::path::PathBuf;
 use std::sync::OnceLock;
 
 static STEAM_CLIENT_LIB: OnceLock<Library> = OnceLock::new(); // Make the lifetime 'static
@@ -30,8 +29,7 @@ static STEAM_CLIENT_LIB: OnceLock<Library> = OnceLock::new(); // Make the lifeti
 pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>> {
     unsafe {
         let steamclient_lib_path = get_steamclient_lib_path()?;
-        let lib_steamclient_path = PathBuf::from(steamclient_lib_path);
-        let lib_steamclient = Library::new(lib_steamclient_path)?;
+        let lib_steamclient = Library::new(steamclient_lib_path)?;
         Ok(lib_steamclient)
     }
 }
@@ -44,9 +42,8 @@ pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>>
 
     unsafe {
         let steamclient_lib_path = get_steamclient_lib_path()?;
-        let lib_steamclient_path = PathBuf::from(steamclient_lib_path);
         Ok(windows::Library::load_with_flags(
-            lib_steamclient_path,
+            steamclient_lib_path,
             LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS,
         )?
         .into())

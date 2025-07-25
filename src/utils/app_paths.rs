@@ -55,11 +55,12 @@ pub fn get_app_cache_dir() -> String {
 
 #[inline]
 #[cfg(target_os = "linux")]
-pub fn get_steamclient_lib_path() -> Result<String, SamError> {
+pub fn get_steamclient_lib_path() -> Result<PathBuf, SamError> {
     use std::path::Path;
 
     if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
-        return Ok(real_home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so");
+        let path_str = real_home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so";
+        return Ok(Path::new(&path_str).to_owned());
     }
 
     let home = env::var("HOME").expect("Failed to get home dir");
@@ -72,8 +73,9 @@ pub fn get_steamclient_lib_path() -> Result<String, SamError> {
     ];
 
     for lib_path in lib_paths {
-        if Path::new(&lib_path).exists() {
-            return Ok(lib_path);
+        let path = Path::new(&lib_path);
+        if path.exists() {
+            return Ok(path.into());
         }
     }
 
@@ -82,7 +84,7 @@ pub fn get_steamclient_lib_path() -> Result<String, SamError> {
 
 #[inline]
 #[cfg(target_os = "windows")]
-pub fn get_steamclient_lib_path() -> Result<String, SamError> {
+pub fn get_steamclient_lib_path() -> Result<PathBuf, SamError> {
     use winreg::{RegKey};
     use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
     use std::path::PathBuf;
@@ -94,7 +96,7 @@ pub fn get_steamclient_lib_path() -> Result<String, SamError> {
     if let Ok(subkey) = RegKey::predef(HKEY_CURRENT_USER).open_subkey(REG_PATH) {
         if let Ok(value) = subkey.get_value::<String, _>(VALUE_NAME) {
             let path = PathBuf::from(value).join("steamclient64.dll");
-            return Ok(path.to_string_lossy().to_string());
+            return Ok(path);
         }
     }
 
@@ -102,7 +104,7 @@ pub fn get_steamclient_lib_path() -> Result<String, SamError> {
     if let Ok(subkey) = RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey(REG_PATH) {
         if let Ok(value) = subkey.get_value::<String, _>(VALUE_NAME) {
             let path = PathBuf::from(value).join("steamclient64.dll");
-            return Ok(path.to_string_lossy().to_string());
+            return Ok(path);
         }
     }
 
