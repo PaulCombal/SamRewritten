@@ -1,8 +1,6 @@
 ### Medium priority
 
-- Instead of having small bars under the achievements to represent gloable achievement percentage, can we make it the
-  background? would it look any better?
-- Support for multiple simultaneous instances ('launch in new window' button)
+- Find a new design for the app list (imitate Steam?)
 
 ### Low priority
 
@@ -18,3 +16,4 @@
 - Support for Flatpak installs of Steam
 - Fix snapcraft packaging
 - Find a solution to this problem: https://github.com/PaulCombal/achievement-poc
+- Support for flatpak

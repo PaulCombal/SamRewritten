@@ -7,10 +7,12 @@ SamRewrittem
 
 <p align=center>
     <img src="/assets/screenshot1.png" alt="SamRewritten screenshot">
+    <em>GTK version preview</em>
 </p>
 
 <p align=center>
     <img src="/assets/screenshot2.png" alt="SamRewritten screenshot">
+    <em>Adwaita version preview</em>
 </p>
 
 <p align="center">A Steam Achievements Manager for Windows and Linux.</p>
