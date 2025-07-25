@@ -83,18 +83,30 @@ pub fn get_steamclient_lib_path() -> Result<String, SamError> {
 #[inline]
 #[cfg(target_os = "windows")]
 pub fn get_steamclient_lib_path() -> Result<String, SamError> {
-    use winreg::RegKey;
-    use winreg::enums::HKEY_CURRENT_USER;
+    use winreg::{RegKey};
+    use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
+    use std::path::PathBuf;
 
-    let subkey = RegKey::predef(HKEY_CURRENT_USER)
-        .open_subkey("SOFTWARE\\Valve\\Steam")
-        .map_err(|_| SamError::UnknownError)?;
+    const REG_PATH: &str = "SOFTWARE\\Valve\\Steam";
+    const VALUE_NAME: &str = "SteamPath";
 
-    let value = subkey
-        .get_value::<String, &'static str>("SteamPath")
-        .map_err(|_| SamError::UnknownError)?;
+    // Try HKEY_CURRENT_USER first
+    if let Ok(subkey) = RegKey::predef(HKEY_CURRENT_USER).open_subkey(REG_PATH) {
+        if let Ok(value) = subkey.get_value::<String, _>(VALUE_NAME) {
+            let path = PathBuf::from(value).join("steamclient64.dll");
+            return Ok(path.to_string_lossy().to_string());
+        }
+    }
 
-    Ok(value + "/steamclient64.dll")
+    // Fallback to HKEY_LOCAL_MACHINE
+    if let Ok(subkey) = RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey(REG_PATH) {
+        if let Ok(value) = subkey.get_value::<String, _>(VALUE_NAME) {
+            let path = PathBuf::from(value).join("steamclient64.dll");
+            return Ok(path.to_string_lossy().to_string());
+        }
+    }
+
+    Err(SamError::UnknownError)
 }
 
 #[inline]
