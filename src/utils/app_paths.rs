@@ -15,188 +15,201 @@
 
 use crate::utils::ipc_types::SamError;
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
+/// Returns the absolute path of the running executable.
 pub fn get_executable_path() -> PathBuf {
     env::current_exe()
         .expect("Failed to get current executable path")
-        .canonicalize() // Resolves symlinks to absolute path
+        .canonicalize()
         .expect("Failed to canonicalize path")
 }
 
-/// This function returns a valid directory where app data can be stored for a longer period of time.
-#[inline]
-#[cfg(target_os = "linux")]
+/// Returns a valid directory to store persistent app data (e.g. cache).
 pub fn get_app_cache_dir() -> String {
-    use std::fs;
-    if let Ok(snap_name) = env::var("SNAP_NAME") {
-        if snap_name == "samrewritten" {
-            return env::var("SNAP_USER_COMMON").unwrap_or(String::from("/tmp"));
+    #[cfg(target_os = "linux")]
+    {
+        use std::fs;
+
+        if let Ok(snap_name) = env::var("SNAP_NAME") {
+            return if snap_name == "samrewritten" {
+                env::var("SNAP_USER_COMMON").unwrap_or_else(|_| "/tmp".into())
+            } else {
+                ".".into()
+            };
         }
 
-        // Most likely a dev config
-        return ".".to_owned();
+        let folder = PathBuf::from(env::var("HOME").unwrap_or_else(|_| "/tmp".into()))
+            .join(".cache/samrewritten");
+        fs::create_dir_all(&folder).expect("Could not create cache folder");
+        folder.to_string_lossy().to_string()
     }
 
-    // Non-snap release
-    let folder = env::var("HOME").unwrap_or("/tmp".to_owned()) + "/.cache/samrewritten";
-    fs::create_dir_all(&folder).expect("Could not create temp folder");
-    folder
+    #[cfg(target_os = "windows")]
+    {
+        env::temp_dir().to_string_lossy().to_string()
+    }
 }
 
-#[inline]
-#[cfg(target_os = "windows")]
-pub fn get_app_cache_dir() -> String {
-    std::env::temp_dir()
-        .to_str()
-        .expect("Failed to convert temp dir to string")
-        .to_owned()
-}
-
-#[inline]
-#[cfg(target_os = "linux")]
+/// Tries to find the Steam client library path.
 pub fn get_steamclient_lib_path() -> Result<String, SamError> {
-    use std::path::Path;
-
-    if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
-        return Ok(real_home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so");
-    }
-
-    let home = env::var("HOME").expect("Failed to get home dir");
-    let lib_paths = [
-        home.clone() + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so",
-        home.clone() + "/.steam/debian-installation/linux64/steamclient.so",
-        home.clone() + "/.steam/sdk64/steamclient.so",
-        home.clone() + "/.steam/steam/linux64/steamclient.so",
-        home + "/.steam/root/linux64/steamclient.so",
-    ];
-
-    for lib_path in lib_paths {
-        if Path::new(&lib_path).exists() {
-            return Ok(lib_path);
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
+            return Ok(PathBuf::from(real_home)
+                .join("snap/steam/common/.local/share/Steam/linux64/steamclient.so")
+                .to_string_lossy()
+                .to_string());
         }
+
+        let home = env::var("HOME").map_err(|_| SamError::UnknownError)?;
+        let paths = [
+            ".steam/debian-installation/linux64/steamclient.so",
+            ".steam/sdk64/steamclient.so",
+            ".steam/steam/linux64/steamclient.so",
+            ".steam/root/linux64/steamclient.so",
+            "snap/steam/common/.local/share/Steam/linux64/steamclient.so",
+        ];
+
+        for rel in paths {
+            let full_path = PathBuf::from(&home).join(rel);
+            if full_path.exists() {
+                return Ok(full_path.to_string_lossy().to_string());
+            }
+        }
+
+        Err(SamError::UnknownError)
     }
 
-    Err(SamError::UnknownError)
+    #[cfg(target_os = "windows")]
+    {
+        use winreg::{enums::*, RegKey};
+        const REG_PATH: &str = "SOFTWARE\\Valve\\Steam";
+        const VALUE_NAME: &str = "SteamPath";
+
+        for hive in [HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE] {
+            if let Ok(subkey) = RegKey::predef(hive).open_subkey(REG_PATH) {
+                if let Ok(value) = subkey.get_value::<String, _>(VALUE_NAME) {
+                    return Ok(PathBuf::from(value)
+                        .join("steamclient64.dll")
+                        .to_string_lossy()
+                        .to_string());
+                }
+            }
+        }
+
+        Err(SamError::UnknownError)
+    }
 }
 
-#[inline]
-#[cfg(target_os = "windows")]
-pub fn get_steamclient_lib_path() -> Result<String, SamError> {
-    use winreg::{RegKey};
-    use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
-    use std::path::PathBuf;
-
-    const REG_PATH: &str = "SOFTWARE\\Valve\\Steam";
-    const VALUE_NAME: &str = "SteamPath";
-
-    // Try HKEY_CURRENT_USER first
-    if let Ok(subkey) = RegKey::predef(HKEY_CURRENT_USER).open_subkey(REG_PATH) {
-        if let Ok(value) = subkey.get_value::<String, _>(VALUE_NAME) {
-            let path = PathBuf::from(value).join("steamclient64.dll");
-            return Ok(path.to_string_lossy().to_string());
-        }
-    }
-
-    // Fallback to HKEY_LOCAL_MACHINE
-    if let Ok(subkey) = RegKey::predef(HKEY_LOCAL_MACHINE).open_subkey(REG_PATH) {
-        if let Ok(value) = subkey.get_value::<String, _>(VALUE_NAME) {
-            let path = PathBuf::from(value).join("steamclient64.dll");
-            return Ok(path.to_string_lossy().to_string());
-        }
-    }
-
-    Err(SamError::UnknownError)
-}
-
-#[inline]
-#[cfg(target_os = "linux")]
+/// Gets the path to the user game stats schema.
 pub fn get_user_game_stats_schema_path(app_id: &u32) -> Result<String, SamError> {
-    use std::path::Path;
+    let file_name = format!("UserGameStatsSchema_{app_id}.bin");
 
-    if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
-        return Ok(real_home
-            + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_"
-            + &app_id.to_string()
-            + ".bin");
-    }
-
-    let home = env::var("HOME").expect("Failed to get home dir");
-    let install_dirs = [
-        home.clone() + "/snap/steam/common/.local/share/Steam",
-        home.clone() + "/.steam/debian-installation",
-        home.clone() + "/.steam/steam",
-        home + "/.steam/root",
-    ];
-
-    for install_dir in install_dirs {
-        if Path::new(&install_dir).exists() {
-            return Ok(install_dir + &format!("/appcache/stats/UserGameStatsSchema_{app_id}.bin"));
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
+            return Ok(PathBuf::from(real_home)
+                .join("snap/steam/common/.local/share/Steam/appcache/stats")
+                .join(&file_name)
+                .to_string_lossy()
+                .to_string());
         }
-    }
 
-    Err(SamError::UnknownError)
-}
+        let home = env::var("HOME").map_err(|_| SamError::UnknownError)?;
+        let dirs = [
+            ".steam/debian-installation",
+            ".steam/steam",
+            ".steam/root",
+            "snap/steam/common/.local/share/Steam",
+        ];
 
-#[inline]
-#[cfg(target_os = "windows")]
-pub fn get_user_game_stats_schema_path(app_id: &u32) -> Result<String, SamError> {
-    use winreg::RegKey;
-    use winreg::enums::HKEY_CURRENT_USER;
-
-    let subkey = RegKey::predef(HKEY_CURRENT_USER)
-        .open_subkey("SOFTWARE\\Valve\\Steam")
-        .map_err(|_| SamError::UnknownError)?;
-
-    let value = subkey
-        .get_value::<String, &'static str>("SteamPath")
-        .map_err(|_| SamError::UnknownError)?;
-
-    Ok(value + &format!("/appcache/stats/UserGameStatsSchema_{app_id}.bin"))
-}
-
-#[inline]
-#[cfg(target_os = "linux")]
-pub fn get_local_app_banner_file_path(app_id: &u32) -> Result<String, SamError> {
-    use std::path::Path;
-
-    if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
-        return Ok(real_home
-            + "/snap/steam/common/.local/share/Steam/appcache/librarycache/"
-            + &app_id.to_string()
-            + "/header.jpg");
-    }
-
-    let home = env::var("HOME").expect("Failed to get home dir");
-    let install_dirs = [
-        home.clone() + "/snap/steam/common/.local/share/Steam",
-        home.clone() + "/.steam/debian-installation",
-        home.clone() + "/.steam/steam",
-        home + "/.steam/root",
-    ];
-
-    for install_dir in install_dirs {
-        if Path::new(&install_dir).exists() {
-            return Ok(install_dir + &format!("/appcache/librarycache/{app_id}/header.jpg"));
+        for dir in dirs {
+            let base = PathBuf::from(&home).join(dir);
+            if base.exists() {
+                return Ok(base
+                    .join("appcache/stats")
+                    .join(&file_name)
+                    .to_string_lossy()
+                    .to_string());
+            }
         }
+
+        Err(SamError::UnknownError)
     }
 
-    Err(SamError::UnknownError)
+    #[cfg(target_os = "windows")]
+    {
+        use winreg::{enums::HKEY_CURRENT_USER, RegKey};
+
+        let subkey = RegKey::predef(HKEY_CURRENT_USER)
+            .open_subkey("SOFTWARE\\Valve\\Steam")
+            .map_err(|_| SamError::UnknownError)?;
+
+        let path = subkey
+            .get_value::<String, _>("SteamPath")
+            .map_err(|_| SamError::UnknownError)?;
+
+        Ok(PathBuf::from(path)
+            .join("appcache/stats")
+            .join(file_name)
+            .to_string_lossy()
+            .to_string())
+    }
 }
 
-#[inline]
-#[cfg(target_os = "windows")]
+/// Returns the path to the local app banner image (header.jpg).
 pub fn get_local_app_banner_file_path(app_id: &u32) -> Result<String, SamError> {
-    use winreg::RegKey;
-    use winreg::enums::HKEY_CURRENT_USER;
+    let file_path = format!("{app_id}/header.jpg");
 
-    let subkey = RegKey::predef(HKEY_CURRENT_USER)
-        .open_subkey("SOFTWARE\\Valve\\Steam")
-        .map_err(|_| SamError::UnknownError)?;
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
+            return Ok(PathBuf::from(real_home)
+                .join("snap/steam/common/.local/share/Steam/appcache/librarycache")
+                .join(&file_path)
+                .to_string_lossy()
+                .to_string());
+        }
 
-    let value = subkey
-        .get_value::<String, &'static str>("SteamPath")
-        .map_err(|_| SamError::UnknownError)?;
+        let home = env::var("HOME").map_err(|_| SamError::UnknownError)?;
+        let dirs = [
+            ".steam/debian-installation",
+            ".steam/steam",
+            ".steam/root",
+            "snap/steam/common/.local/share/Steam",
+        ];
 
-    Ok(value + &format!("/appcache/librarycache/{app_id}/header.jpg"))
+        for dir in dirs {
+            let base = PathBuf::from(&home).join(dir);
+            if base.exists() {
+                return Ok(base
+                    .join("appcache/librarycache")
+                    .join(&file_path)
+                    .to_string_lossy()
+                    .to_string());
+            }
+        }
+
+        Err(SamError::UnknownError)
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        use winreg::{enums::HKEY_CURRENT_USER, RegKey};
+
+        let subkey = RegKey::predef(HKEY_CURRENT_USER)
+            .open_subkey("SOFTWARE\\Valve\\Steam")
+            .map_err(|_| SamError::UnknownError)?;
+
+        let path = subkey
+            .get_value::<String, _>("SteamPath")
+            .map_err(|_| SamError::UnknownError)?;
+
+        Ok(PathBuf::from(path)
+            .join("appcache/librarycache")
+            .join(&file_path)
+            .to_string_lossy()
+            .to_string())
+    }
 }
