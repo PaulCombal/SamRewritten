@@ -41,8 +41,8 @@ mod imp {
     use gtk::subclass::prelude::*;
     use std::cell::Cell;
 
-    // If building with Adwaita, use the platform accent color
-    const BAR_COLOR: RGBA = RGBA::new(0.92, 0.92, 1.0, 1.0);
+    // TODO: If building with Adwaita, use the platform accent color
+    const BAR_COLOR: RGBA = RGBA::new(0.6, 0.6, 0.9, 0.2);
 
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::CustomProgressBar)]
