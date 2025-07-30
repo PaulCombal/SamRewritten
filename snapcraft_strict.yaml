@@ -1,0 +1,52 @@
+# This will not work because it can't access anything under a .folder location.
+# Even with a custom plug, it will refuse to load the library. It works in devmode, useful for screenshots.
+
+name: samrewritten
+version: '1.0'
+summary: Steam achievements manager, rewritten
+description: Unlock achievements and stats on Steam, and much more!
+confinement: strict
+base: core24
+license: GPL-3.0
+parts:
+  samrewritten:
+    plugin: rust
+    source: .
+    build-environment:
+      - RUSTUP_TOOLCHAIN: stable
+    build-packages:
+      - libpango1.0-dev
+      - libcairo2-dev
+      - libglib2.0-dev
+      - libssl-dev
+      - pkg-config
+    stage-packages:
+      - glib-networking
+
+plugs:
+  access-steam-folder:
+    interface: personal-files
+    read:
+      - $HOME/snap/steam/common/.local/share/Steam/linux64/steamclient.so
+
+slots:
+  dbus-samrewritten:
+    interface: dbus
+    bus: session
+    name: org.sam_authors.sam_rewritten
+
+
+apps:
+  samrewritten:
+    environment:
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy # remove when this is in stable https://github.com/canonical/snapcraft-desktop-integration/pull/27
+    command: bin/samrewritten
+    extensions: [gnome]
+    plugs:
+      - access-steam-folder
+      - network
+      - wayland
+      - x11
+      - home
+    slots:
+      - dbus-samrewritten

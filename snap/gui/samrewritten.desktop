@@ -1,3 +1,9 @@
 [Desktop Entry]
 Exec=samrewritten
 Icon=${SNAP}/meta/gui/samrewritten.png
+Name=SamRewritten
+Terminal=false
+Type=Application
+Comment=Steam Achievement Manager
+Categories=Game;
+StartupWMClass=samrewritten;
