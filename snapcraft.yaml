@@ -1,15 +1,10 @@
-# - Desktop entry not working
-
-# Strict confinement does not work because:
-# - It must load files in the home directory under a hidden .folder (steamclient.so, app header images, and others)
-# - Layout don't allow us to specify folders under $HOME
-# - Using a personal-files plug doesn't work because loading a shared object is blocked by AppArmor, it also requires the user to type commands in the terminal
+# If you want to help packaging SamRewritten for Snap, please refer to the notes from previous work in the doc folder first
 
 name: samrewritten
 version: '1.0'
 summary: Steam achievements and stats manager
-description: Unlock achievements and stats on Steam, and much more!
-confinement: classic
+description: Unlock achievements and stats on your Steam account
+confinement: strict
 base: core24
 license: GPL-3.0-only
 parts:
@@ -24,17 +19,32 @@ parts:
       - libglib2.0-dev
       - libssl-dev
       - pkg-config
-      - libgtk-4-dev
     stage-packages:
-      - libgdk-pixbuf-2.0-0
-      - libgraphene-1.0-0
-      - libgtk-4-1
-      - libpango-1.0-0
-    build-attributes:
-      - enable-patchelf
+      - glib-networking
+
+plugs:
+  access-steam-folder:
+    interface: personal-files
+    read:
+      - $HOME/snap/steam/common/.local/share/Steam/linux64/steamclient.so
+
+slots:
+  dbus-samrewritten:
+    interface: dbus
+    bus: session
+    name: org.sam_authors.sam_rewritten
 
 apps:
   samrewritten:
     environment:
-      GSK_RENDERER: cairo
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy # remove when this is in stable https://github.com/canonical/snapcraft-desktop-integration/pull/27
     command: bin/samrewritten
+    extensions: [ gnome ]
+    plugs:
+      - access-steam-folder
+      - network
+      - wayland
+      - x11
+      - home
+    slots:
+      - dbus-samrewritten

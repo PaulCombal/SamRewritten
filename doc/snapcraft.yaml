@@ -1,0 +1,33 @@
+name: samrewritten
+version: '1.0'
+summary: Steam achievements and stats manager
+description: Unlock achievements and stats on Steam, and much more!
+confinement: classic
+base: core24
+license: GPL-3.0-only
+parts:
+  samrewritten:
+    plugin: rust
+    source: .
+    build-environment:
+      - RUSTUP_TOOLCHAIN: stable
+    build-packages:
+      - libpango1.0-dev
+      - libcairo2-dev
+      - libglib2.0-dev
+      - libssl-dev
+      - pkg-config
+      - libgtk-4-dev
+    stage-packages:
+      - libgdk-pixbuf-2.0-0
+      - libgraphene-1.0-0
+      - libgtk-4-1
+      - libpango-1.0-0
+    build-attributes:
+      - enable-patchelf
+
+apps:
+  samrewritten:
+    environment:
+      GSK_RENDERER: cairo
+    command: bin/samrewritten

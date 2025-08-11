@@ -14,6 +14,5 @@
 ### Help needed
 
 - Support for Flatpak installs of Steam
-- Fix snapcraft packaging
+- Snapcraft packaging
 - Find a solution to this problem: https://github.com/PaulCombal/achievement-poc
-- Support for flatpak
