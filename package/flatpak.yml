@@ -1,0 +1,33 @@
+# If you want to help packaging SamRewritten for Flatpak, please refer to the notes from previous work in the doc folder first
+
+app-id: org.samrewritten.SamRewritten
+runtime: org.gnome.Platform
+runtime-version: '48' # Use the latest stable GNOME runtime version
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+
+command: samrewritten
+
+finish-args:
+  - "--share=ipc"
+  - "--socket=fallback-x11"
+  - "--socket=wayland"
+  - "--filesystem=home"
+  - "--device=all"
+  - "--share=network"
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin
+  build-args:
+    - --share=network
+
+modules:
+  - name: samrewritten
+    buildsystem: simple
+    build-commands:
+      - cargo build
+      - install -Dm755 target/debug/samrewritten /app/bin/samrewritten
+    sources:
+      - type: dir
+        path: ../

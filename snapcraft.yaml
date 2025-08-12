@@ -32,7 +32,7 @@ slots:
   dbus-samrewritten:
     interface: dbus
     bus: session
-    name: org.sam_authors.sam_rewritten
+    name: org.samrewritten.SamRewritten
 
 apps:
   samrewritten:

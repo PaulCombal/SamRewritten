@@ -33,7 +33,7 @@ use frontend::main_ui;
 use gtk::glib;
 use utils::app_paths::get_executable_path;
 
-const APP_ID: &str = "org.sam_authors.sam_rewritten";
+const APP_ID: &str = "org.samrewritten.SamRewritten";
 
 fn main() -> glib::ExitCode {
     let arguments = parse_cli_arguments();

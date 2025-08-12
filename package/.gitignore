@@ -1,1 +1,3 @@
 *.zst
+.flatpak-builder
+build-dir
