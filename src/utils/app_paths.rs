@@ -69,6 +69,7 @@ pub fn get_steamclient_lib_path() -> Result<PathBuf, SamError> {
         home.clone() + "/.steam/debian-installation/linux64/steamclient.so",
         home.clone() + "/.steam/sdk64/steamclient.so",
         home.clone() + "/.steam/steam/linux64/steamclient.so",
+        home.clone() + "/.local/share/Steam/linux64/steamclient.so",
         home + "/.steam/root/linux64/steamclient.so",
     ];
 
@@ -128,6 +129,7 @@ pub fn get_user_game_stats_schema_path(app_id: &u32) -> Result<String, SamError>
         home.clone() + "/snap/steam/common/.local/share/Steam",
         home.clone() + "/.steam/debian-installation",
         home.clone() + "/.steam/steam",
+        home.clone() + "/.local/share/Steam",
         home + "/.steam/root",
     ];
 
@@ -174,6 +176,7 @@ pub fn get_local_app_banner_file_path(app_id: &u32) -> Result<String, SamError> 
         home.clone() + "/snap/steam/common/.local/share/Steam",
         home.clone() + "/.steam/debian-installation",
         home.clone() + "/.steam/steam",
+        home.clone() + "/.local/share/Steam",
         home + "/.steam/root",
     ];
 

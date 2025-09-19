@@ -17,14 +17,11 @@ jobs:
 
       - name: Install NSIS
         run: |
-          iwr -useb get.scoop.sh -outfile 'install.ps1'
-          .\install.ps1 -RunAsAdmin
-          scoop update
-          scoop bucket add extras
-          scoop install nsis
+          Invoke-WebRequest https://netcologne.dl.sourceforge.net/project/nsis/NSIS%203/3.11/nsis-3.11-setup.exe -OutFile C:\WINDOWS\Temp\nsis-3.11-setup.exe
+          Invoke-Expression "& C:\WINDOWS\Temp\nsis-3.11-setup.exe /S"
 
       - name: Print NSIS version
-        run: makensis -VERSION
+        run: Invoke-Expression "& ""C:\Program Files (x86)\NSIS\makensis.exe"" -VERSION"
 
       - name: Download GTK Dependencies Zip
         run: |
@@ -95,7 +92,7 @@ jobs:
         shell: pwsh
 
       - name: Make installer
-        run: makensis package/windows_installer.nsi
+        run: Invoke-Expression "& ""C:\Program Files (x86)\NSIS\makensis.exe"" package/windows_installer.nsi"
 
       # This is very messy and not release-ready. To fix!
       #      - name: Upload zip artifact

@@ -105,6 +105,7 @@ snap install samrewritten
 ⚠️ On Linux, this tool is **only** compatible with:
 * Snap installations of Steam
 * Ubuntu/Debian multiarch installations with apt
+* Ubuntu/Debian installations with the .deb file from the official Steam website
 * Distribution installations that use the Steam runtime (Gentoo, Arch, `~/.steam/root` exists)
 
 If you wish to see your distribution supported, please open an issue.
