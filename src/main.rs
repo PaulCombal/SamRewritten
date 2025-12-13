@@ -14,7 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(
-    all(target_os = "windows", not(debug_assertions),),
+    all(target_os = "windows", not(feature = "win-console")),
     windows_subsystem = "windows"
 )]
 

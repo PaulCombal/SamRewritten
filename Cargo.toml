@@ -23,6 +23,7 @@ adw = { version = "0", package = "libadwaita", features = ["v1_1"], optional = t
 [features]
 default = []
 adwaita = ['dep:adw']
+win-console = []
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0"

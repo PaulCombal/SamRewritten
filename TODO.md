@@ -1,5 +1,6 @@
 ### Medium priority
 
+- Add CLI mode for Linux and Windows
 - Find a new design for the app list (imitate Steam?)
 
 ### Low priority
