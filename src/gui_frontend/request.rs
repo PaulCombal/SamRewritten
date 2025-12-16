@@ -16,7 +16,7 @@
 use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
-use crate::frontend::DEFAULT_PROCESS;
+use crate::gui_frontend::DEFAULT_PROCESS;
 use crate::utils::ipc_types::{SamError, SamSerializable, SteamCommand, SteamResponse};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
@@ -93,9 +93,6 @@ pub struct StopApp {
 }
 
 #[derive(Debug, Clone)]
-pub struct StopApps;
-
-#[derive(Debug, Clone)]
 pub struct GetAchievements {
     pub app_id: u32,
 }
@@ -148,10 +145,6 @@ impl Request for StopApp {
     type Response = bool;
 }
 
-impl Request for StopApps {
-    type Response = bool;
-}
-
 impl Request for GetAchievements {
     type Response = Vec<AchievementInfo>;
 }
@@ -197,12 +190,6 @@ impl Into<SteamCommand> for LaunchApp {
 impl Into<SteamCommand> for StopApp {
     fn into(self) -> SteamCommand {
         SteamCommand::StopApp(self.app_id)
-    }
-}
-
-impl Into<SteamCommand> for StopApps {
-    fn into(self) -> SteamCommand {
-        SteamCommand::StopApps
     }
 }
 

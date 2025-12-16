@@ -15,12 +15,20 @@ The reason why the orchestrator doesn't execute the game functions itself is bec
 Steam will still show you as being "in game" as long as the game process you started didn't finish,
 and its zombie process waited.
 
+## CLI mode
+
+For the CLI mode, the above limitations do not apply. Every process represents a single app.
+Once the process is killed, the app is killed with it, another app cannot be started in the same process.
+An orchestrator is not needed.
+
 ## Code folders
 
 * backend
     * Orchestrator and app servers
-* frontend
-    * Client UI
+* gui_frontend
+    * GTK/ADW Client UI (not needed for CLI mode)
+* cli_frontend
+  * Clap CLI Client UI (not needed for GUI mode)
 * steam_client
     * Steamworks SDK bindings, used by the backend and orchestrator
 * utils

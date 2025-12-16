@@ -228,8 +228,6 @@ fn process_command(
                     .expect("[ORCHESTRATOR] Failed to wait child process]");
             }
 
-            connected_steam.shutdown();
-
             let response = SteamResponse::Success(true);
             let response = response.sam_serialize();
             tx.write_all(&response)

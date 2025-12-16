@@ -13,10 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::frontend::MainApplication;
-use crate::frontend::achievement::GAchievementObject;
-use crate::frontend::custom_progress_bar_widget::CustomProgressBar;
-use crate::frontend::shimmer_image::ShimmerImage;
+use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::achievement::GAchievementObject;
+use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
+use crate::gui_frontend::shimmer_image::ShimmerImage;
 use gtk::glib::clone;
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;

@@ -14,9 +14,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use super::stat_view::create_stats_view;
-use crate::frontend::MainApplication;
-use crate::frontend::achievement_view::create_achievements_view;
-use crate::frontend::shimmer_image::ShimmerImage;
+use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::achievement_view::create_achievements_view;
+use crate::gui_frontend::shimmer_image::ShimmerImage;
 use gtk::gio::ListStore;
 use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};

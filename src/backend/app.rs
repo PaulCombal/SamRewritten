@@ -55,8 +55,6 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> i
             }
 
             SteamCommand::Shutdown => {
-                app_manager.disconnect();
-
                 let response = SteamResponse::Success(true).sam_serialize();
                 parent_tx
                     .write_all(&response)

@@ -30,7 +30,7 @@ mod steam_app;
 mod ui_components;
 
 use crate::APP_ID;
-use crate::frontend::request::Request;
+use crate::gui_frontend::request::Request;
 use crate::utils::bidir_child::BidirChild;
 use app_list_view::create_main_ui;
 use gtk::glib::ExitCode;

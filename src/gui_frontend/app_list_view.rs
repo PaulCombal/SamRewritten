@@ -15,17 +15,17 @@
 
 use super::stat::GStatObject;
 use crate::backend::app_lister::{AppModel, AppModelType};
-use crate::frontend::MainApplication;
-use crate::frontend::achievement::GAchievementObject;
-use crate::frontend::app_list_view_callbacks::switch_from_app_list_to_app;
-use crate::frontend::app_view::create_app_view;
-use crate::frontend::application_actions::{set_app_action_enabled, setup_app_actions};
-use crate::frontend::request::{
+use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::achievement::GAchievementObject;
+use crate::gui_frontend::app_list_view_callbacks::switch_from_app_list_to_app;
+use crate::gui_frontend::app_view::create_app_view;
+use crate::gui_frontend::application_actions::{set_app_action_enabled, setup_app_actions};
+use crate::gui_frontend::request::{
     GetAchievements, GetOwnedAppList, GetStats, Request, ResetStats, StopApp,
 };
-use crate::frontend::shimmer_image::ShimmerImage;
-use crate::frontend::steam_app::GSteamAppObject;
-use crate::frontend::ui_components::{
+use crate::gui_frontend::shimmer_image::ShimmerImage;
+use crate::gui_frontend::steam_app::GSteamAppObject;
+use crate::gui_frontend::ui_components::{
     create_about_dialog, create_context_menu_button, set_context_popover_to_app_list_context,
 };
 use crate::utils::app_paths::get_executable_path;

@@ -113,6 +113,16 @@ If you wish to see your distribution supported, please open an issue.
 > [!TIP]  
 > Flatpak support poses a considerable challenge. If you or someone you know with knowledge of Flatpak internals can offer to help, please don't hold back and reach out!
 
+## CLI
+
+SamRewritten can also be used as a command line tool. The CLI version does not require GTK to be installed.
+For Windows users, the installer unpacks the CLI version along the other executables, in the installation folder.
+However, no shortcut is created.
+
+The CLI version of SamRewritten allows to: 
+* list apps, achievements, and stats
+* lock and unlock achievements
+
 ## End user agreements
 
 This software serves as a Proof-of-Concept. Users are responsible of their actions using this tool.

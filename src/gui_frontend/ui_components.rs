@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::frontend::MainApplication;
-use crate::frontend::application_actions::set_app_action_enabled;
+use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::application_actions::set_app_action_enabled;
 use gtk::gdk::Paintable;
 use gtk::gdk_pixbuf::Pixbuf;
 use gtk::{

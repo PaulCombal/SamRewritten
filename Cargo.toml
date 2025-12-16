@@ -10,20 +10,21 @@ authors = [
 ]
 
 [dependencies]
-# bincode = "2" // To replace serde_json ?
-libloading = "0"
-gtk = { version = "0", package = "gtk4", features = ["v4_6"] }
+gtk = { version = "0", package = "gtk4", features = ["v4_6"], optional = true }
+adw = { version = "0", package = "libadwaita", features = ["v1_1"], optional = true }
+clap = { version = "4", features = ['derive'], optional = true }
 quick-xml = { version = "0", features = ["serialize"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 reqwest = { version = "0", features = ["blocking"] }
 interprocess = "2"
-adw = { version = "0", package = "libadwaita", features = ["v1_1"], optional = true }
+libloading = "0"
 
 [features]
-default = []
-adwaita = ['dep:adw']
-win-console = []
+default = ['dep:gtk']
+adwaita = ['dep:gtk', 'dep:adw']
+cli = ['dep:clap']
+win-console = ['dep:gtk']
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0"

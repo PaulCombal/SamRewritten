@@ -14,47 +14,54 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(
-    all(target_os = "windows", not(feature = "win-console")),
+    all(target_os = "windows", not(feature = "win-console"), not(feature = "cli")),
     windows_subsystem = "windows"
 )]
 
 mod backend;
-mod frontend;
 mod steam_client;
 mod utils;
+#[cfg(not(feature = "cli"))]
+mod gui_frontend;
+#[cfg(feature = "cli")]
+mod cli_frontend;
 
-use std::process::Command;
-
-use crate::backend::app::app;
-use crate::backend::orchestrator::orchestrator;
-use crate::utils::arguments::parse_cli_arguments;
-use crate::utils::bidir_child::BidirChild;
-use frontend::main_ui;
-use gtk::glib;
-use utils::app_paths::get_executable_path;
-
+#[cfg(not(feature = "cli"))]
 const APP_ID: &str = "org.samrewritten.SamRewritten";
 
-fn main() -> glib::ExitCode {
+#[cfg(feature = "cli")]
+fn main() -> std::process::ExitCode {
+    cli_frontend::main()
+}
+
+#[cfg(not(feature = "cli"))]
+fn main() -> gtk::glib::ExitCode {
+    use std::process::Command;
+    use crate::backend::app::app;
+    use crate::backend::orchestrator::orchestrator;
+    use crate::utils::arguments::parse_cli_arguments;
+    use crate::utils::bidir_child::BidirChild;
+    use utils::app_paths::get_executable_path;
+
     let arguments = parse_cli_arguments();
 
     if arguments.is_orchestrator {
         let mut tx = arguments.tx.unwrap();
         let mut rx = arguments.rx.unwrap();
         let exit_code = orchestrator(&mut tx, &mut rx);
-        return glib::ExitCode::from(exit_code);
+        return gtk::glib::ExitCode::from(exit_code);
     }
 
     if arguments.is_app > 0 {
         let mut tx = arguments.tx.unwrap();
         let mut rx = arguments.rx.unwrap();
         let exit_code = app(arguments.is_app, &mut tx, &mut rx);
-        return glib::ExitCode::from(exit_code);
+        return gtk::glib::ExitCode::from(exit_code);
     }
 
     let current_exe = get_executable_path();
     let orchestrator = BidirChild::new(Command::new(current_exe).arg("--orchestrator"))
         .expect("Failed to spawn orchestrator process");
 
-    main_ui(orchestrator)
+    gui_frontend::main_ui(orchestrator)
 }

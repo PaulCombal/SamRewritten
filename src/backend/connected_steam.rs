@@ -64,3 +64,9 @@ impl<'a> ConnectedSteam {
         let _ = self.client.shutdown_if_app_pipes_closed();
     }
 }
+
+impl Drop for ConnectedSteam {
+    fn drop(&mut self) {
+        self.shutdown();
+    }
+}

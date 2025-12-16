@@ -13,12 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::frontend::MainApplication;
-use crate::frontend::application_actions::set_app_action_enabled;
-use crate::frontend::request::{LaunchApp, Request};
-use crate::frontend::shimmer_image::ShimmerImage;
-use crate::frontend::steam_app::GSteamAppObject;
-use crate::frontend::ui_components::set_context_popover_to_app_details_context;
+use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::application_actions::set_app_action_enabled;
+use crate::gui_frontend::request::{LaunchApp, Request};
+use crate::gui_frontend::shimmer_image::ShimmerImage;
+use crate::gui_frontend::steam_app::GSteamAppObject;
+use crate::gui_frontend::ui_components::set_context_popover_to_app_details_context;
 use gtk::gio::{Menu, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::WidgetExt;

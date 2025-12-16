@@ -14,7 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
-use crate::frontend::MainApplication;
+use crate::gui_frontend::MainApplication;
 use gtk::AboutDialog;
 use gtk::gio::SimpleAction;
 use gtk::glib;

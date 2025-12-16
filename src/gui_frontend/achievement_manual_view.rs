@@ -14,12 +14,12 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
-use crate::frontend::MainApplication;
-use crate::frontend::achievement::GAchievementObject;
-use crate::frontend::achievement_view::count_unlocked_achievements;
-use crate::frontend::custom_progress_bar_widget::CustomProgressBar;
-use crate::frontend::request::{Request, SetAchievement};
-use crate::frontend::shimmer_image::ShimmerImage;
+use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::achievement::GAchievementObject;
+use crate::gui_frontend::achievement_view::count_unlocked_achievements;
+use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
+use crate::gui_frontend::request::{Request, SetAchievement};
+use crate::gui_frontend::shimmer_image::ShimmerImage;
 use crate::utils::format::format_seconds_to_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::translate::FromGlib;

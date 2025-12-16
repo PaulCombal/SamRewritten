@@ -481,10 +481,6 @@ impl<'a> AppManager {
         }
     }
 
-    pub fn disconnect(&self) {
-        self.connected_steam.shutdown();
-    }
-
     pub fn reset_all_stats(&self, achievements_too: bool) -> Result<bool, SamError> {
         match self
             .connected_steam

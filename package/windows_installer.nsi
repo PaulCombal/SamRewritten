@@ -5,6 +5,7 @@ Name SamRewritten
 !define APP_PUBLISHER "Sam Authors"
 !define APP_EXE "samrewritten.exe"
 !define APP_EXE_CONSOLE "samrewritten-console.exe"
+!define APP_EXE_CLI "samrewritten-cli.exe"
 
 ; --- Installer Configuration ---
 Outfile "SamRewritten-installer.exe"
@@ -42,6 +43,7 @@ Section "Install"
   ; Add your files here
   File "..\SamRewritten-windows-x86_64\${APP_EXE}"
   File "..\SamRewritten-windows-x86_64\${APP_EXE_CONSOLE}"
+  File "..\SamRewritten-windows-x86_64\${APP_EXE_CLI}"
   File "..\SamRewritten-windows-x86_64\README.txt"
   File /a "..\SamRewritten-windows-x86_64\bin\*.*" ; /a includes all files and subdirectories
 

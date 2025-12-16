@@ -94,10 +94,19 @@ jobs:
       - name: Build GTK-RS application (console)
         run: cargo build --release --features win-console --target x86_64-pc-windows-msvc
 
-      - name: Create release archive
+      - name: Move console executable to release archive
         run: |
           $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
           Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-console.exe"
+        shell: pwsh
+
+      - name: Build GTK-RS application (CLI)
+        run: cargo build --release --features cli --target x86_64-pc-windows-msvc
+
+      - name: Move console executable to release archive
+        run: |
+          $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
+          Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-cli.exe"
         shell: pwsh
 
       - name: Make installer
@@ -139,6 +148,12 @@ jobs:
 
       - name: Rename Adwaita AppImage
         run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-adw.AppImage
+
+      - name: Build CLI AppImage version
+        run: docker run --rm -v ./:/mnt:z samrewritten-builder sh -c "cargo appimage --features cli"
+
+      - name: Rename CLI AppImage
+        run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-cli.AppImage
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
@@ -192,3 +207,4 @@ jobs:
             release_artifacts/windows/SamRewritten-installer.exe
             release_artifacts/linux/samrewritten-gtk.AppImage
             release_artifacts/linux/samrewritten-adw.AppImage
+            release_artifacts/linux/samrewritten-cli.AppImage

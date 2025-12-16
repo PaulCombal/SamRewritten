@@ -14,8 +14,6 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
-use gtk::gio::ApplicationCommandLine;
-use gtk::prelude::ApplicationCommandLineExt;
 use interprocess::unnamed_pipe::{Recver, Sender};
 use std::cell::Cell;
 use std::env;
@@ -119,7 +117,10 @@ pub fn parse_cli_arguments() -> CliArguments {
     args
 }
 
-pub fn parse_gui_arguments(cmd_line: &ApplicationCommandLine) -> GuiArguments {
+#[cfg(not(feature = "cli"))]
+pub fn parse_gui_arguments(cmd_line: &gtk::gio::ApplicationCommandLine) -> GuiArguments {
+    use gtk::prelude::ApplicationCommandLineExt;
+
     let arguments = cmd_line.arguments();
     let args = GuiArguments {
         auto_open: Rc::new(Cell::new(0)),
