@@ -80,7 +80,7 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> i32 {
                 break 0;
             }
 
-            connected_steam = match ConnectedSteam::new() {
+            connected_steam = match ConnectedSteam::new(false) {
                 Ok(c) => Some(c),
                 Err(e) => {
                     dev_println!("[ORCHESTRATOR] Error connecting to Steam: {e}");
@@ -111,7 +111,7 @@ fn process_command(
     connected_steam: &mut ConnectedSteam,
 ) -> bool {
     match command {
-        SteamCommand::GetOwnedAppList => {
+        SteamCommand::GetSubscribedAppList => {
             dev_println!("[ORCHESTRATOR] Received GetOwnedAppList");
             let apps_001 = &connected_steam.apps_001;
             let apps = &connected_steam.apps;

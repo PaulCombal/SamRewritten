@@ -14,7 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::backend::app_lister::AppModel;
-use crate::utils::app_paths::get_local_app_banner_file_path;
+use crate::utils::steam_locator::SteamLocator;
 use glib::Object;
 use gtk::glib;
 use std::path::Path;
@@ -26,10 +26,13 @@ glib::wrapper! {
 impl GSteamAppObject {
     pub fn new(app: AppModel) -> Self {
         // We are client code. If a local image is already present, do not use the remote one.
-        let local_banner_path = get_local_app_banner_file_path(&app.app_id);
+        let steam_locator_guard = SteamLocator::global();
+        let mut steam_locator = steam_locator_guard.write().unwrap();
+        let local_banner_path = steam_locator.get_local_app_banner_file_path(&app.app_id);
+        drop(steam_locator);
         let image_url = if let Ok(path) = local_banner_path {
             if Path::new(&path).exists() {
-                Some("file://".to_string() + &path)
+                Some(format!("file://{}", path.display()))
             } else {
                 app.image_url
             }

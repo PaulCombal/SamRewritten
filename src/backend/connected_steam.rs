@@ -34,8 +34,8 @@ pub struct ConnectedSteam {
 }
 
 impl<'a> ConnectedSteam {
-    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let client = create_steam_client()?;
+    pub fn new(silent: bool) -> Result<Self, Box<dyn std::error::Error>> {
+        let client = create_steam_client(silent)?;
         let h_pipe = client.create_steam_pipe()?;
         let h_user = client.connect_to_global_user(h_pipe)?;
         let apps = client.get_isteam_apps(h_user, h_pipe)?;

@@ -19,7 +19,11 @@ use crate::backend::connected_steam::ConnectedSteam;
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser)]
-#[clap(author, version, long_about = "Steam Achievements Manager Rewritten\nLicensed under GNU GPLv3, Copyright (c) 2025")]
+#[clap(
+    author,
+    version,
+    long_about = "Steam Achievements Manager Rewritten\nLicensed under GNU GPLv3, Copyright (c) 2025"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -108,7 +112,7 @@ pub fn main() -> std::process::ExitCode {
             };
         }
         Command::ListApps => {
-            let connected_steam = match ConnectedSteam::new() {
+            let connected_steam = match ConnectedSteam::new(false) {
                 Ok(c) => c,
                 Err(e) => {
                     eprintln!("Failed to connect to Steam: {}", e);

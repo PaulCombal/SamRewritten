@@ -167,7 +167,6 @@ fn create_header(
             timed_raw_model.extend_from_slice(&achievements_to_unlock);
             cancelled_task.store(false, std::sync::atomic::Ordering::Relaxed);
 
-            // Conception: ajouter à GAchievement la propriété time-before-unlock
             MainContext::default().spawn_local(clone!(
                 #[strong]
                 timed_raw_model,
@@ -514,36 +513,46 @@ pub fn create_achievements_manual_view(
                         #[weak]
                         header_achievements_start,
                         async move {
-                            if Ok(true) != handle.await.expect("spawn_blocking task panicked") {
-                                achievement_object.set_is_achieved(!unlocked);
-                            } else {
-                                let unlocked_achievements_count_value =
-                                    app_unlocked_achievements_count.get();
+                            let result = handle.await.expect("spawn_blocking task panicked");
 
-                                let new_unlocked_count = if unlocked {
-                                    unlocked_achievements_count_value + 1
-                                } else {
-                                    unlocked_achievements_count_value - 1
-                                };
+                            match result {
+                                Ok(_) => {
+                                    let unlocked_achievements_count_value =
+                                        app_unlocked_achievements_count.get();
 
-                                header_achievements_start
-                                    .set_sensitive(new_unlocked_count != raw_model_len as usize);
-                                app_unlocked_achievements_count.set(new_unlocked_count);
+                                    let new_unlocked_count = if unlocked {
+                                        unlocked_achievements_count_value + 1
+                                    } else {
+                                        unlocked_achievements_count_value - 1
+                                    };
 
-                                app_achievement_count_value
-                                    .set_label(&format!("{new_unlocked_count} / {raw_model_len}"));
+                                    header_achievements_start.set_sensitive(
+                                        new_unlocked_count != raw_model_len as usize,
+                                    );
+                                    app_unlocked_achievements_count.set(new_unlocked_count);
 
-                                let lower =
-                                    std::cmp::min(new_unlocked_count + 1, raw_model_len as usize);
-                                header_achievements_adjustment.set_lower(lower as f64);
+                                    app_achievement_count_value.set_label(&format!(
+                                        "{new_unlocked_count} / {raw_model_len}"
+                                    ));
 
-                                let spinbox_value =
-                                    header_achievements_spinbox.value_as_int() as usize;
-                                let spinbox_value =
-                                    std::cmp::max(spinbox_value, new_unlocked_count + 1);
-                                let spinbox_value =
-                                    std::cmp::min(spinbox_value, raw_model_len as usize);
-                                header_achievements_spinbox.set_value(spinbox_value as f64);
+                                    let lower = std::cmp::min(
+                                        new_unlocked_count + 1,
+                                        raw_model_len as usize,
+                                    );
+                                    header_achievements_adjustment.set_lower(lower as f64);
+
+                                    let spinbox_value =
+                                        header_achievements_spinbox.value_as_int() as usize;
+                                    let spinbox_value =
+                                        std::cmp::max(spinbox_value, new_unlocked_count + 1);
+                                    let spinbox_value =
+                                        std::cmp::min(spinbox_value, raw_model_len as usize);
+                                    header_achievements_spinbox.set_value(spinbox_value as f64);
+                                }
+                                Err(e) => {
+                                    eprintln!("[CLIENT] Error setting achievement: {e}");
+                                    achievement_object.set_is_achieved(!unlocked);
+                                }
                             }
 
                             switch.set_sensitive(true);

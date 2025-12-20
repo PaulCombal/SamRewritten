@@ -66,6 +66,21 @@ pub trait Request: Into<SteamCommand> + Debug + Clone {
             serde_json::from_str::<SteamResponse<Self::Response>>(&message)
                 .map_err(|error| {
                     eprintln!("[CLIENT] Response deserialization failed: {error}");
+
+                    let column = error.column();
+                    let idx = column.saturating_sub(1);
+
+                    let start = idx.saturating_sub(30);
+                    let end = (idx + 30).min(message.len());
+
+                    let extract = &message[start..end];
+
+                    eprintln!("[CLIENT] Message: {extract}");
+                    eprintln!(
+                        "[CLIENT] Response type {}",
+                        std::any::type_name::<Self::Response>()
+                    );
+
                     SamError::SocketCommunicationFailed
                 })
                 .and_then(|response| response.into())
@@ -171,7 +186,7 @@ impl Request for ResetStats {
 
 impl Into<SteamCommand> for GetOwnedAppList {
     fn into(self) -> SteamCommand {
-        SteamCommand::GetOwnedAppList
+        SteamCommand::GetSubscribedAppList
     }
 }
 
@@ -226,5 +241,37 @@ impl Into<SteamCommand> for SetFloatStat {
 impl Into<SteamCommand> for ResetStats {
     fn into(self) -> SteamCommand {
         SteamCommand::ResetStats(self.app_id, self.achievements_too)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    pub fn test_deserialization_debug() -> Result<(), SamError> {
+        let message = r#"[{"mytest": 42}]"#;
+
+        let _ = serde_json::from_str::<Vec<StatInfo>>(&message).map_err(|error| {
+            error.column();
+            eprintln!("[CLIENT] TEST Response deserialization failed: {error}");
+
+            let column = error.column();
+            let idx = column.saturating_sub(1);
+
+            let start = idx.saturating_sub(3);
+            let end = (idx + 3).min(message.len());
+
+            let extract = &message[start..end];
+
+            assert_eq!(extract, r#"est": "#);
+
+            eprintln!("Message: {message}");
+            eprintln!("Response type {}", std::any::type_name::<Vec<StatInfo>>());
+
+            SamError::SocketCommunicationFailed
+        });
+
+        Ok(())
     }
 }

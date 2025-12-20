@@ -25,10 +25,9 @@ use crate::steam_client::steamworks_types::{
     AppId_t, EResult, GlobalAchievementPercentagesReady_t, UserStatsReceived_t,
 };
 use crate::steam_client::wrapper_types::SteamCallbackId;
-use crate::utils::app_paths::get_user_game_stats_schema_path;
 use crate::utils::ipc_types::SamError;
+use crate::utils::steam_locator::SteamLocator;
 use std::env;
-use std::path::PathBuf;
 use std::time::UNIX_EPOCH;
 
 pub struct AppManager {
@@ -46,7 +45,12 @@ impl<'a> AppManager {
             env::set_var("SteamAppId", app_id.to_string());
         }
 
-        let connected_steam = match ConnectedSteam::new() {
+        #[cfg(feature = "cli")]
+        let silent = false;
+        #[cfg(not(feature = "cli"))]
+        let silent = true;
+
+        let connected_steam = match ConnectedSteam::new(silent) {
             Ok(c) => c,
             Err(e) => {
                 return Err(e);
@@ -118,8 +122,9 @@ impl<'a> AppManager {
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs
     pub fn load_definitions(&mut self) -> Result<(), SamError> {
         self.request_current_stats()?;
-        let schema_path = get_user_game_stats_schema_path(&self.app_id)?;
-        let bin_file = PathBuf::from(schema_path);
+        let steam_locator_lock = SteamLocator::global();
+        let mut steam_locator = steam_locator_lock.write().unwrap();
+        let bin_file = steam_locator.get_user_game_stats_schema(&self.app_id)?;
 
         let kv = KeyValue::load_as_binary(bin_file).map_err(|_| SamError::UnknownError)?;
         let current_language = self.connected_steam.apps.get_current_game_language();
@@ -432,7 +437,7 @@ impl<'a> AppManager {
                     .connected_steam
                     .user_stats
                     .store_stats()
-                    .map_err(|_| SamError::UnknownError),
+                    .map_err(|_| SamError::StatStoreFailed),
                 Err(_) => Err(SamError::UnknownError),
             }
         } else {
@@ -445,7 +450,7 @@ impl<'a> AppManager {
                     .connected_steam
                     .user_stats
                     .store_stats()
-                    .map_err(|_| SamError::UnknownError),
+                    .map_err(|_| SamError::StatStoreFailed),
                 Err(_) => Err(SamError::UnknownError),
             }
         }
@@ -461,7 +466,7 @@ impl<'a> AppManager {
                 .connected_steam
                 .user_stats
                 .store_stats()
-                .map_err(|_| SamError::UnknownError),
+                .map_err(|_| SamError::StatStoreFailed),
             Err(_) => Err(SamError::UnknownError),
         }
     }
@@ -476,7 +481,7 @@ impl<'a> AppManager {
                 .connected_steam
                 .user_stats
                 .store_stats()
-                .map_err(|_| SamError::UnknownError),
+                .map_err(|_| SamError::StatStoreFailed),
             Err(_) => Err(SamError::UnknownError),
         }
     }
@@ -491,7 +496,7 @@ impl<'a> AppManager {
                 .connected_steam
                 .user_stats
                 .store_stats()
-                .map_err(|_| SamError::UnknownError),
+                .map_err(|_| SamError::StatStoreFailed),
             Err(_) => Err(SamError::UnknownError),
         }
     }

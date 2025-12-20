@@ -18,7 +18,8 @@ use crate::steam_client::steam_client_wrapper::SteamClient;
 use crate::steam_client::steamworks_types::{
     CreateInterfaceFn, SteamFreeLastCallbackFn, SteamGetCallbackFn,
 };
-use crate::utils::app_paths::get_steamclient_lib_path;
+use crate::utils::ipc_types::SamError;
+use crate::utils::steam_locator::SteamLocator;
 use libloading::{Library, Symbol};
 use std::os::raw::c_char;
 use std::sync::OnceLock;
@@ -26,9 +27,13 @@ use std::sync::OnceLock;
 static STEAM_CLIENT_LIB: OnceLock<Library> = OnceLock::new(); // Make the lifetime 'static
 
 #[cfg(target_os = "linux")]
-pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>> {
+pub fn load_steamclient_library(silent: bool) -> Result<Library, Box<dyn std::error::Error>> {
     unsafe {
-        let steamclient_lib_path = get_steamclient_lib_path()?;
+        let steam_locator_lock = SteamLocator::global();
+        let mut steam_locator = steam_locator_lock.write()?;
+        let steamclient_lib_path = steam_locator
+            .get_lib_path(silent)
+            .ok_or(SamError::UnknownError)?;
         let lib_steamclient = Library::new(steamclient_lib_path)?;
         Ok(lib_steamclient)
     }
@@ -55,8 +60,8 @@ pub fn new_steam_client_interface(
 ) -> Result<
     (
         *mut ISteamClient,
-        Symbol<SteamGetCallbackFn>,
-        Symbol<SteamFreeLastCallbackFn>,
+        Symbol<'_, SteamGetCallbackFn>,
+        Symbol<'_, SteamFreeLastCallbackFn>,
     ),
     Box<dyn std::error::Error>,
 > {
@@ -90,9 +95,9 @@ pub fn new_steam_client_interface(
     }
 }
 
-pub fn create_steam_client() -> Result<SteamClient, Box<dyn std::error::Error>> {
+pub fn create_steam_client(silent: bool) -> Result<SteamClient, Box<dyn std::error::Error>> {
     if STEAM_CLIENT_LIB.get().is_none() {
-        let steamclient_so = load_steamclient_library()?;
+        let steamclient_so = load_steamclient_library(silent)?;
         match STEAM_CLIENT_LIB.set(steamclient_so) {
             Ok(_) => {}
             Err(_) => panic!("Failed to create steam client"),

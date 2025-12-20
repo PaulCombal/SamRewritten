@@ -7,10 +7,6 @@
 - Show achievement progression when available
 - Improve error handling (handle .expects, .unwraps, etc)
 
-### Nices to have
-
-- In utils, instead of calculating Steam install path every time, do it only once
-
 ### Help needed
 
 - Support for Flatpak installs of Steam

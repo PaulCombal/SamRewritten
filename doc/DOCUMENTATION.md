@@ -33,5 +33,4 @@ An orchestrator is not needed.
     * Steamworks SDK bindings, used by the backend and orchestrator
 * utils
     * Regular functions used by other modules, mostly for file path functions and IPC types.
-    * Contains app_paths.rs, which contains the logic for choosing paths for various reasons (loading steam, resources,
-      temp storage) which is what most people are looking for
+    * Contains steam_locator.rs, which contains the logic for choosing paths for various reasons (loading steam, resources, ...)

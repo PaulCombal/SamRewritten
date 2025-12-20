@@ -52,7 +52,7 @@ mod tests {
     fn brute_force_app001_keys() {
         // Find others on your own with the Steam command app_info_print
 
-        let connected_steam = ConnectedSteam::new().expect("Failed to create connected steam");
+        let connected_steam = ConnectedSteam::new(true).expect("Failed to create connected steam");
         let try_force = |key: &str| {
             let null_terminated_key = format!("{key}\0");
             println!(

@@ -24,6 +24,7 @@ pub enum SamError {
     SteamConnectionFailed,
     AppListRetrievalFailed,
     SocketCommunicationFailed,
+    StatStoreFailed,
     AppMismatchError,
     UnknownError,
 }
@@ -39,6 +40,7 @@ impl std::fmt::Display for SamError {
                 write!(f, "Sam error: SocketCommunication failed")
             }
             SamError::AppMismatchError => write!(f, "Sam error: App mismatch"),
+            SamError::StatStoreFailed => write!(f, "Sam error: Stat/ach store failed"),
         }
     }
 }
@@ -47,7 +49,7 @@ impl std::error::Error for SamError {}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum SteamCommand {
-    GetOwnedAppList,
+    GetSubscribedAppList,
     LaunchApp(u32),
     StopApp(u32),
     StopApps,

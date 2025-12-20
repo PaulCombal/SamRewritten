@@ -14,17 +14,21 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(
-    all(target_os = "windows", not(feature = "win-console"), not(feature = "cli")),
+    all(
+        target_os = "windows",
+        not(feature = "win-console"),
+        not(feature = "cli")
+    ),
     windows_subsystem = "windows"
 )]
 
 mod backend;
-mod steam_client;
-mod utils;
-#[cfg(not(feature = "cli"))]
-mod gui_frontend;
 #[cfg(feature = "cli")]
 mod cli_frontend;
+#[cfg(not(feature = "cli"))]
+mod gui_frontend;
+mod steam_client;
+mod utils;
 
 #[cfg(not(feature = "cli"))]
 const APP_ID: &str = "org.samrewritten.SamRewritten";
@@ -36,11 +40,11 @@ fn main() -> std::process::ExitCode {
 
 #[cfg(not(feature = "cli"))]
 fn main() -> gtk::glib::ExitCode {
-    use std::process::Command;
     use crate::backend::app::app;
     use crate::backend::orchestrator::orchestrator;
     use crate::utils::arguments::parse_cli_arguments;
     use crate::utils::bidir_child::BidirChild;
+    use std::process::Command;
     use utils::app_paths::get_executable_path;
 
     let arguments = parse_cli_arguments();
