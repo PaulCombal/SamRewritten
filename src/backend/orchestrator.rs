@@ -112,7 +112,7 @@ fn process_command(
 ) -> bool {
     match command {
         SteamCommand::GetSubscribedAppList => {
-            dev_println!("[ORCHESTRATOR] Received GetOwnedAppList");
+            dev_println!("[ORCHESTRATOR] Received GetSubscribedAppList");
             let apps_001 = &connected_steam.apps_001;
             let apps = &connected_steam.apps;
             let app_lister = AppLister::new(apps_001, apps);

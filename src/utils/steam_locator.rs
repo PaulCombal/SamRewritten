@@ -110,7 +110,7 @@ impl SteamLocator {
     }
 
     #[cfg(target_os = "windows")]
-    pub fn get_steamclient_lib_path() -> Option<PathBuf> {
+    pub fn get_steamclient_lib_path(_silent: bool) -> Option<PathBuf> {
         use std::path::PathBuf;
         use winreg::RegKey;
         use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};

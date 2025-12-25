@@ -21,7 +21,7 @@ use crate::gui_frontend::app_list_view_callbacks::switch_from_app_list_to_app;
 use crate::gui_frontend::app_view::create_app_view;
 use crate::gui_frontend::application_actions::{set_app_action_enabled, setup_app_actions};
 use crate::gui_frontend::request::{
-    GetAchievements, GetOwnedAppList, GetStats, Request, ResetStats, StopApp,
+    GetAchievements, GetStats, GetSubscribedAppList, Request, ResetStats, StopApp,
 };
 use crate::gui_frontend::shimmer_image::ShimmerImage;
 use crate::gui_frontend::steam_app::GSteamAppObject;
@@ -633,7 +633,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         move |_, _| {
             list_stack.set_visible_child_name("loading");
             search_entry.set_sensitive(false);
-            let apps = spawn_blocking(move || GetOwnedAppList.request());
+            let apps = spawn_blocking(move || GetSubscribedAppList.request());
             MainContext::default().spawn_local(clone!(
                 #[weak]
                 list_view,

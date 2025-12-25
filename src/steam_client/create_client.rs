@@ -40,13 +40,17 @@ pub fn load_steamclient_library(silent: bool) -> Result<Library, Box<dyn std::er
 }
 
 #[cfg(target_os = "windows")]
-pub fn load_steamclient_library() -> Result<Library, Box<dyn std::error::Error>> {
+pub fn load_steamclient_library(silent: bool) -> Result<Library, Box<dyn std::error::Error>> {
     use libloading::os::windows::{
         self, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR,
     };
 
     unsafe {
-        let steamclient_lib_path = get_steamclient_lib_path()?;
+        let steam_locator_lock = SteamLocator::global();
+        let mut steam_locator = steam_locator_lock.write()?;
+        let steamclient_lib_path = steam_locator
+            .get_lib_path(silent)
+            .ok_or(SamError::UnknownError)?;
         Ok(windows::Library::load_with_flags(
             steamclient_lib_path,
             LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS,

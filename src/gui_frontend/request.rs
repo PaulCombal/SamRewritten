@@ -92,7 +92,7 @@ pub trait Request: Into<SteamCommand> + Debug + Clone {
 }
 
 #[derive(Debug, Clone)]
-pub struct GetOwnedAppList;
+pub struct GetSubscribedAppList;
 
 #[derive(Debug, Clone)]
 pub struct Shutdown;
@@ -144,7 +144,7 @@ pub struct ResetStats {
     pub achievements_too: bool,
 }
 
-impl Request for GetOwnedAppList {
+impl Request for GetSubscribedAppList {
     type Response = Vec<AppModel>;
 }
 
@@ -184,7 +184,7 @@ impl Request for ResetStats {
     type Response = bool;
 }
 
-impl Into<SteamCommand> for GetOwnedAppList {
+impl Into<SteamCommand> for GetSubscribedAppList {
     fn into(self) -> SteamCommand {
         SteamCommand::GetSubscribedAppList
     }

@@ -79,7 +79,7 @@ fn create_header(
         .hexpand(true)
         .build();
     let button_start = Button::builder().label("Start").build();
-    let cancelled_task = Arc::new(AtomicBool::new(false));
+    let cancelled_task = Arc::new(AtomicBool::new(true));
 
     hbox.append(&label_unlock);
     hbox.append(&spin_button_achievements_count);
@@ -187,17 +187,31 @@ fn create_header(
                             break;
                         }
 
-                        let handle = spawn_blocking(move || {
-                            std::thread::sleep(refresh_rate);
-                        });
-
-                        handle.await.expect("Couldn't get handle");
+                        glib::timeout_future(refresh_rate).await;
 
                         refreshes_without_unlock += 1;
                         if refreshes_without_unlock >= refreshes_per_achievement {
                             let achievement = &achievements_to_unlock[next_ach_to_unlock_index];
                             dev_println!("[CLIENT] Timed unlock of {}", achievement.name());
                             achievement.set_is_achieved(true);
+
+                            let achievement_id = achievement.id();
+                            let result = spawn_blocking(move || {
+                                SetAchievement {
+                                    app_id: app_id_int,
+                                    achievement_id,
+                                    unlocked: true,
+                                }
+                                .request()
+                            }).await;
+
+
+                            match result {
+                                Ok(response) => {
+                                    dev_println!("[CLIENT] Achievement unlocking result: {:?}", response);
+                                }
+                                Err(e) => eprintln!("[CLIENT] Achievement unlocking failed: {:?}", e),
+                            }
 
                             next_ach_to_unlock_index += 1;
                             refreshes_without_unlock = 0;
@@ -437,6 +451,8 @@ pub fn create_achievements_manual_view(
     achievements_list_factory.connect_bind(clone!(
         #[strong]
         app_unlocked_achievements_count,
+        #[strong]
+        cancel_timed_unlock,
         #[weak]
         app_id,
         #[weak]
@@ -474,6 +490,8 @@ pub fn create_achievements_manual_view(
             let handler_id = switch.connect_state_notify(clone!(
                 #[strong]
                 app_unlocked_achievements_count,
+                #[strong]
+                cancel_timed_unlock,
                 #[weak]
                 app_achievement_count_value,
                 #[weak]
@@ -485,12 +503,20 @@ pub fn create_achievements_manual_view(
                 #[weak]
                 header_achievements_start,
                 move |switch| {
-                    let raw_model_len = raw_model.n_items();
+                    if cancel_timed_unlock.load(std::sync::atomic::Ordering::Relaxed) == false {
+                        dev_println!("[CLIENT] Not unlocking achievement after switch callback (automatic unlocking in progress): {}", achievement_object.name());
+                        return;
+                    }
                     if !switch.is_sensitive() {
+                        dev_println!("[CLIENT] Switch flipped when not sensitive.. WARNING");
                         return;
                     }
                     switch.set_sensitive(false);
+                    let raw_model_len = raw_model.n_items();
                     let unlocked = switch.is_active();
+
+                    dev_println!("[CLIENT] Setting achievement after switch callback: {} ({})", achievement_object.name(), unlocked);
+
                     achievement_object.set_is_achieved(unlocked);
                     let achievement_id = achievement_id.clone();
                     let handle = spawn_blocking(move || {
