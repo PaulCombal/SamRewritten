@@ -18,7 +18,7 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::achievement::GAchievementObject;
 use crate::gui_frontend::achievement_view::count_unlocked_achievements;
 use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
-use crate::gui_frontend::request::{Request, SetAchievement};
+use crate::gui_frontend::request::{Request, SetAchievement, UnlockAllAchievements};
 use crate::gui_frontend::shimmer_image::ShimmerImage;
 use crate::utils::format::format_seconds_to_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
@@ -144,18 +144,14 @@ fn create_header(
             dev_println!("[CLIENT] Evaluation of automatic unlocking: unlocked: {unlocked_achievements}, total: {total_achievements}, desired: {desired_achievements}");
             if desired_minutes == 0 {
                 dev_println!("[CLIENT] Unlock desired achievements immediately");
-                for achievement_to_unlock in achievements_to_unlock {
-                    let res = SetAchievement {
-                        app_id: app_id_int,
-                        achievement_id: achievement_to_unlock.id(),
-                        unlocked: true
-                    }.request();
+                let res = UnlockAllAchievements {
+                    app_id: app_id_int,
+                }.request();
 
-                    match res {
-                        Ok(_) => {}
-                        Err(e) => {
-                            eprintln!("[CLIENT] Failed to set achievement: {:?}", e);
-                        }
+                match res {
+                    Ok(_) => {}
+                    Err(e) => {
+                        eprintln!("[CLIENT] Failed to unlock all achievements: {:?}", e);
                     }
                 }
 

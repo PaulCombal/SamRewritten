@@ -456,6 +456,35 @@ impl<'a> AppManager {
         }
     }
 
+    pub fn unlock_all_achievements(&mut self) -> Result<(), SamError> {
+        let achievements = self.get_achievements()?;
+        for achievement in achievements {
+            if achievement.is_achieved {
+                continue;
+            }
+
+            if (achievement.permission & 2) != 0 {
+                continue;
+            }
+
+            match self
+                .connected_steam
+                .user_stats
+                .set_achievement(achievement.id.as_str())
+            {
+                Ok(_) => {}
+                Err(_) => return Err(SamError::UnknownError),
+            }
+        }
+
+        self.connected_steam
+            .user_stats
+            .store_stats()
+            .map_err(|_| SamError::StatStoreFailed)?;
+
+        Ok(())
+    }
+
     pub fn set_stat_i32(&self, stat_name: &str, stat_value: i32) -> Result<bool, SamError> {
         match self
             .connected_steam

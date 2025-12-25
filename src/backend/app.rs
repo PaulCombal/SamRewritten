@@ -206,6 +206,31 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> i
                     .expect("[APP SERVER] Failed to send response");
             }
 
+            SteamCommand::UnlockAllAchievements(app_id_param) => {
+                if app_id_param != app_id {
+                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
+                    let response =
+                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
+                    parent_tx
+                        .write_all(&response)
+                        .expect("[APP SERVER] Failed to send response");
+                    continue;
+                }
+
+                let response = match app_manager.unlock_all_achievements() {
+                    Ok(_) => SteamResponse::Success(()),
+                    Err(e) => {
+                        dev_println!("[APP SERVER] Error unlocking all achievements: {e}");
+                        SteamResponse::Error::<()>(e)
+                    }
+                };
+                let response = response.sam_serialize();
+
+                parent_tx
+                    .write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+            }
+
             _ => {
                 dev_println!("[APP SERVER] Received unknown command {command:?}");
                 let response = SteamResponse::<()>::Error(SamError::UnknownError).sam_serialize();

@@ -1,7 +1,6 @@
 # High priority
 
 - #24
-- Refactor unlock all
 
 ### Medium priority
 

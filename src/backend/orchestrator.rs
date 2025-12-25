@@ -325,6 +325,27 @@ fn process_command(
             }
         }
 
+        SteamCommand::UnlockAllAchievements(app_id) => {
+            #[cfg(debug_assertions)]
+            if app_id == 0 {
+                let response = SteamResponse::<bool>::Success(true).sam_serialize();
+                tx.write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+                return true;
+            }
+
+            if let Some(bidir) = children_processes.get_mut(&app_id) {
+                let response = send_app_command(bidir, SteamCommand::UnlockAllAchievements(app_id));
+                tx.write_all(&response)
+                    .expect("[ORCHESTRATOR] Failed to send response");
+            } else {
+                let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
+                let response = response.sam_serialize();
+                tx.write_all(&response)
+                    .expect("[ORCHESTRATOR] Failed to send response");
+            }
+        }
+
         SteamCommand::SetIntStat(app_id, stat_id, value) => {
             if let Some(bidir) = children_processes.get_mut(&app_id) {
                 let response =

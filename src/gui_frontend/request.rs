@@ -125,6 +125,11 @@ pub struct SetAchievement {
 }
 
 #[derive(Debug, Clone)]
+pub struct UnlockAllAchievements {
+    pub app_id: u32,
+}
+
+#[derive(Debug, Clone)]
 pub struct SetIntStat {
     pub app_id: u32,
     pub stat_id: String,
@@ -170,6 +175,10 @@ impl Request for GetStats {
 
 impl Request for SetAchievement {
     type Response = bool;
+}
+
+impl Request for UnlockAllAchievements {
+    type Response = ();
 }
 
 impl Request for SetIntStat {
@@ -223,6 +232,12 @@ impl Into<SteamCommand> for GetStats {
 impl Into<SteamCommand> for SetAchievement {
     fn into(self) -> SteamCommand {
         SteamCommand::SetAchievement(self.app_id, self.unlocked, self.achievement_id)
+    }
+}
+
+impl Into<SteamCommand> for UnlockAllAchievements {
+    fn into(self) -> SteamCommand {
+        SteamCommand::UnlockAllAchievements(self.app_id)
     }
 }
 
