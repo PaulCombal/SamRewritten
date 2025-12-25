@@ -1,3 +1,8 @@
+# High priority
+
+- #24
+- Refactor unlock all
+
 ### Medium priority
 
 - Find a new design for the app list (imitate Steam?)

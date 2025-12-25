@@ -1,5 +1,4 @@
 use crate::utils::ipc_types::SamError;
-use std::env;
 use std::path::PathBuf;
 use std::sync::{OnceLock, RwLock};
 
@@ -60,13 +59,13 @@ impl SteamLocator {
     pub fn get_steamclient_lib_path(silent: bool) -> Option<PathBuf> {
         use std::path::Path;
 
-        if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
+        if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
             let path_str =
                 real_home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so";
             return Some(Path::new(&path_str).to_owned());
         }
 
-        let home = env::var("HOME").expect("Failed to get home dir");
+        let home = std::env::var("HOME").expect("Failed to get home dir");
         let lib_paths = [
             home.clone() + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so",
             home.clone() + "/.steam/debian-installation/linux64/steamclient.so",
@@ -141,13 +140,13 @@ impl SteamLocator {
     fn get_user_game_stats_schema_prefix() -> Option<String> {
         use std::path::Path;
 
-        if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
+        if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
             let full_path = real_home
                 + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_";
             return Some(full_path);
         }
 
-        let home = env::var("HOME").expect("Failed to get home dir");
+        let home = std::env::var("HOME").expect("Failed to get home dir");
         let install_dirs = [
             home.clone() + "/snap/steam/common/.local/share/Steam",
             home.clone() + "/.steam/debian-installation",
@@ -182,12 +181,12 @@ impl SteamLocator {
     pub fn get_local_app_banner_file_prefix() -> Option<String> {
         use std::path::Path;
 
-        if let Ok(real_home) = env::var("SNAP_REAL_HOME") {
+        if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
             let prefix = real_home + "/snap/steam/common/.local/share/Steam/appcache/librarycache/";
             return Some(prefix);
         }
 
-        let home = env::var("HOME").expect("Failed to get home dir");
+        let home = std::env::var("HOME").expect("Failed to get home dir");
         let install_dirs = [
             home.clone() + "/snap/steam/common/.local/share/Steam",
             home.clone() + "/.steam/debian-installation",

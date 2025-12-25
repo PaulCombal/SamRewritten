@@ -38,13 +38,20 @@ RequestExecutionLevel admin ; Request application privileges
 
 ; --- Installer Sections ---
 Section "Install"
+  SetOutPath "$INSTDIR\share"
+  File /r /x "icon-theme.cache" "..\SamRewritten-windows-x86_64\share\*.*"
+
+  SetOutPath "$INSTDIR\lib"
+  File /r "..\SamRewritten-windows-x86_64\lib\*.*"
+
   SetOutPath $INSTDIR
 
   ; Add your files here
   File "..\SamRewritten-windows-x86_64\${APP_EXE}"
   File "..\SamRewritten-windows-x86_64\${APP_EXE_CONSOLE}"
   File "..\SamRewritten-windows-x86_64\${APP_EXE_CLI}"
-  File "..\SamRewritten-windows-x86_64\README.txt"
+  File "..\assets\README.txt"
+  File "..\LICENSE"
   File /a "..\SamRewritten-windows-x86_64\bin\*.*" ; /a includes all files and subdirectories
 
   ; Create start menu shortcut
@@ -58,6 +65,10 @@ Section "Install"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "Publisher" "${APP_PUBLISHER}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" "InstallLocation" "$INSTDIR"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+  ; Build icon cache
+  ExecWait '"$INSTDIR\gtk4-update-icon-cache.exe" -f -t "$INSTDIR\share\icons\hicolor"'
+  ExecWait '"$INSTDIR\gtk4-update-icon-cache.exe" -f -t "$INSTDIR\share\icons\Adwaita"'
 SectionEnd
 
 ; --- "Launch now" Checkbox ---
@@ -71,6 +82,8 @@ FunctionEnd
 Section "Uninstall"
   Delete "$INSTDIR\*.*"
   RMDir /r "$INSTDIR\bin"
+  RMDir /r "$INSTDIR\lib"
+  RMDir /r "$INSTDIR\share"
   RMDir "$INSTDIR"
 
   ; Remove start menu shortcut

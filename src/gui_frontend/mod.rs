@@ -80,7 +80,6 @@ pub fn main_ui(orchestrator: BidirChild) -> ExitCode {
         .build();
 
     main_app.connect_command_line(create_main_ui);
-    // main_app.connect_activate(create_main_ui);
     main_app.connect_shutdown(move |_| shutdown());
     main_app.run()
 }

@@ -1,4 +1,5 @@
 /target
 *.xml
+!*.gresource.xml
 *.snap
 icon.png

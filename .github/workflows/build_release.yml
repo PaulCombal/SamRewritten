@@ -62,33 +62,30 @@ jobs:
           New-Item -ItemType Directory -Path "$ARCHIVE_NAME"
           Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/"
           
-          $sourceFolder = "C:\gtk\bin"
-          $destinationFolder = "./$ARCHIVE_NAME/bin"
-          New-Item -ItemType Directory -Path $destinationFolder
+          $originalBinFolder = "C:\gtk\bin"
+          $originalLibFolder = "C:\gtk\lib"
+          $originalShareIconsFolder = "C:\gtk\share\icons"
           
-          Get-ChildItem -Path $sourceFolder -Filter "*.dll" -File | ForEach-Object {
-            Copy-Item -Path $_.FullName -Destination $destinationFolder -Force
-            Write-Host "Copied: $($_.Name) to $destinationFolder"
+          $tempArchiveRoot = "./$ARCHIVE_NAME"
+          $tempBinFolder = "./$ARCHIVE_NAME/bin"
+          $tempShareFolder = "./$ARCHIVE_NAME/share"
+          
+          New-Item -ItemType Directory -Path $tempBinFolder
+          New-Item -ItemType Directory -Path $tempShareFolder
+          
+          Get-ChildItem -Path $originalBinFolder -Filter "*.dll" -File | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination $tempBinFolder -Force
+            Write-Host "Copied: $($_.Name) to $tempBinFolder"
           }
           
-          Copy-Item -Path C:\gtk\bin\gdbus.exe -Destination $destinationFolder -Force
+          Copy-Item -Path C:\gtk\bin\gdbus.exe -Destination $tempBinFolder -Force
+          Copy-Item -Path C:\gtk\bin\gtk4-update-icon-cache.exe -Destination $tempBinFolder -Force
           
-          @"
-          @echo off
-          setlocal
-          set "BIN_PATH=%~dp0bin"
-          set "PATH=%BIN_PATH%;%PATH%"
-          %~dp0samrewritten.exe
-          endlocal
-          "@ | Set-Content -Path "$ARCHIVE_NAME/launch.bat"
+          Copy-Item -Path "$originalShareIconsFolder" -Destination $tempShareFolder -Recurse -Force
+          Write-Host "Copied icons to $tempShareFolder"
           
-          @"
-          Welcome to the SamRewritten README.
-          
-          Use this software at your own risk. SamRewritten authors are not responsible for your actions.
-          
-          If any issue occurs, feel free to report it on the SamRewritten GitHub.
-          "@ | Set-Content -Path "$ARCHIVE_NAME/README.txt"
+          Copy-Item -Path "$originalLibFolder" -Destination $tempArchiveRoot -Recurse -Force
+          Write-Host "Copied lib to $tempArchiveRoot"
         shell: pwsh
 
       - name: Build GTK-RS application (console)
