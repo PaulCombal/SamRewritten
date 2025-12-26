@@ -369,7 +369,14 @@ impl<'a> AppManager {
                         .user_stats
                         .get_stat_float(&definition.base.id)
                     {
-                        Ok(value) => value,
+                        Ok(value) => {
+                            if value.is_nan() {
+                                dev_println!("[APP MANAGER] Converting NAN stat float value to 0: {}", &definition.base.id);
+                                0f32
+                            } else {
+                                value
+                            }
+                        },
                         Err(_) => {
                             let stat_id = definition.base.id.to_string();
                             dev_println!(
