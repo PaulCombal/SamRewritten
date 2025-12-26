@@ -1,7 +1,3 @@
-# High priority
-
-- #24
-
 ### Medium priority
 
 - Find a new design for the app list (imitate Steam?)

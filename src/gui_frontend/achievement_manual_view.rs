@@ -20,7 +20,7 @@ use crate::gui_frontend::achievement_view::count_unlocked_achievements;
 use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
 use crate::gui_frontend::request::{Request, SetAchievement, UnlockAllAchievements};
 use crate::gui_frontend::shimmer_image::ShimmerImage;
-use crate::utils::format::format_seconds_to_mm_ss;
+use crate::utils::format::format_seconds_to_hh_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::translate::FromGlib;
 use gtk::glib::{MainContext, SignalHandlerId, clone};
@@ -224,7 +224,7 @@ fn create_header(
                                 achievements_to_unlock[i].set_time_until_unlock("OK");
                             }
                             else {
-                                let timer_str = format_seconds_to_mm_ss(remaining_seconds);
+                                let timer_str = format_seconds_to_hh_mm_ss(remaining_seconds);
                                 achievements_to_unlock[i].set_time_until_unlock(timer_str);
                             }
                         }
