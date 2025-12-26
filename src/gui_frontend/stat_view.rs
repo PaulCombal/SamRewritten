@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use super::gobjects::stat::GStatObject;
 use super::request::{Request, SetFloatStat, SetIntStat};
-use super::stat::GStatObject;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::SignalHandlerId;
 use gtk::glib::object::Cast;

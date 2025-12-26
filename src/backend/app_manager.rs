@@ -371,12 +371,15 @@ impl<'a> AppManager {
                     {
                         Ok(value) => {
                             if value.is_nan() {
-                                dev_println!("[APP MANAGER] Converting NAN stat float value to 0: {}", &definition.base.id);
+                                dev_println!(
+                                    "[APP MANAGER] Converting NAN stat float value to 0: {}",
+                                    &definition.base.id
+                                );
                                 0f32
                             } else {
                                 value
                             }
-                        },
+                        }
                         Err(_) => {
                             let stat_id = definition.base.id.to_string();
                             dev_println!(
@@ -433,7 +436,12 @@ impl<'a> AppManager {
         Ok(statistics_info)
     }
 
-    pub fn set_achievement(&self, achievement_id: &str, unlock: bool, store: bool) -> Result<bool, SamError> {
+    pub fn set_achievement(
+        &self,
+        achievement_id: &str,
+        unlock: bool,
+        store: bool,
+    ) -> Result<bool, SamError> {
         if unlock {
             match self
                 .connected_steam
@@ -449,7 +457,7 @@ impl<'a> AppManager {
                             .map_err(|_| SamError::StatStoreFailed);
                     }
                     Ok(true)
-                },
+                }
                 Err(_) => Err(SamError::UnknownError),
             }
         } else {
@@ -467,7 +475,7 @@ impl<'a> AppManager {
                             .map_err(|_| SamError::StatStoreFailed);
                     }
                     Ok(true)
-                },
+                }
                 Err(_) => Err(SamError::UnknownError),
             }
         }

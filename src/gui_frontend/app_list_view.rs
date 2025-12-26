@@ -13,21 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use super::stat::GStatObject;
 use crate::backend::app_lister::{AppModel, AppModelType};
 use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::achievement::GAchievementObject;
 use crate::gui_frontend::app_list_view_callbacks::switch_from_app_list_to_app;
 use crate::gui_frontend::app_view::create_app_view;
 use crate::gui_frontend::application_actions::{set_app_action_enabled, setup_app_actions};
+use crate::gui_frontend::gobjects::achievement::GAchievementObject;
+use crate::gui_frontend::gobjects::stat::GStatObject;
+use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{
     GetAchievements, GetStats, GetSubscribedAppList, Request, ResetStats, StopApp,
 };
-use crate::gui_frontend::shimmer_image::ShimmerImage;
-use crate::gui_frontend::steam_app::GSteamAppObject;
 use crate::gui_frontend::ui_components::{
     create_about_dialog, create_context_menu_button, set_context_popover_to_app_list_context,
 };
+use crate::gui_frontend::widgets::steam_app_card::SteamAppCard;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::arguments::parse_gui_arguments;
 use crate::utils::ipc_types::SamError;
@@ -37,10 +37,9 @@ use gtk::glib::translate::FromGlib;
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{
-    Align, ApplicationWindow, Box, Button, FilterListModel, HeaderBar, Image, Label, ListItem,
-    ListView, NoSelection, Orientation, PolicyType, ScrolledWindow, SearchEntry,
-    SignalListItemFactory, Spinner, Stack, StackTransitionType, StringFilter,
-    StringFilterMatchMode, Widget,
+    Align, ApplicationWindow, Box, Button, FilterListModel, GridView, HeaderBar, Image, Label,
+    ListItem, NoSelection, Orientation, PolicyType, ScrolledWindow, SearchEntry,
+    SignalListItemFactory, Spinner, Stack, StackTransitionType, Widget,
 };
 use gtk::{IconSize, glib};
 use std::cell::Cell;
@@ -107,7 +106,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     // Header bar
     let header_bar = HeaderBar::builder().show_title_buttons(true).build();
     let search_entry = SearchEntry::builder()
-        .placeholder_text("App name or App Id")
+        .placeholder_text("Name or AppId (Ctrl+K)")
         .build();
     let back_button = Button::builder()
         .icon_name("go-previous")
@@ -140,21 +139,59 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     // App list models
     let list_factory = SignalListItemFactory::new();
     let list_store = ListStore::new::<GSteamAppObject>();
-    let list_string_filter = StringFilter::builder()
-        .expression(&GSteamAppObject::this_expression("app_name"))
-        .match_mode(StringFilterMatchMode::Substring)
-        .ignore_case(true)
-        .build();
+
+    #[cfg(not(debug_assertions))]
+    let filter_junk_action =
+        SimpleAction::new_stateful("filter_junk_option", None, &true.to_variant());
+
+    #[cfg(debug_assertions)]
+    let filter_junk_action =
+        SimpleAction::new_stateful("filter_junk_option", None, &false.to_variant());
+
+    let search_entry_clone = search_entry.clone();
+    let filter_junk_action_clone = filter_junk_action.clone();
+    let list_custom_filter = gtk::CustomFilter::new(move |obj| {
+        let app = obj.downcast_ref::<GSteamAppObject>().unwrap();
+
+        let hide_junk = filter_junk_action_clone
+            .state()
+            .and_then(|s| s.get::<bool>())
+            .unwrap_or(false);
+
+        if hide_junk && app.app_type() == "Junk" {
+            return false;
+        }
+
+        let search_text = search_entry_clone.text().to_lowercase();
+        if search_text.is_empty() {
+            return true;
+        }
+
+        app.app_name().to_lowercase().contains(&search_text)
+    });
+
+    filter_junk_action.connect_activate(clone!(
+        #[weak]
+        list_custom_filter,
+        move |action, _| {
+            let state = action.state().unwrap();
+            let value: bool = state.get::<bool>().unwrap();
+            action.set_state(&(!value).to_variant());
+            list_custom_filter.changed(gtk::FilterChange::Different);
+        }
+    ));
+
     let list_filter_model = FilterListModel::builder()
         .model(&list_store)
-        .filter(&list_string_filter)
+        .filter(&list_custom_filter)
         .build();
     let list_selection_model = NoSelection::new(Option::<ListStore>::None);
     list_selection_model.set_model(Some(&list_filter_model));
-    let list_view = ListView::builder()
-        // .single_click_activate(true)
-        .orientation(Orientation::Vertical)
-        .show_separators(true)
+    let grid_view = GridView::builder()
+        .min_columns(2)
+        .margin_start(10)
+        .margin_end(10)
+        .css_name("unstyled-gridview")
         .model(&list_selection_model)
         .factory(&list_factory)
         .build();
@@ -171,7 +208,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     let about_dialog = create_about_dialog(&window);
 
     // Connect list view activation
-    list_view.connect_activate(clone!(
+    grid_view.connect_activate(clone!(
         #[strong]
         app_id,
         #[weak]
@@ -226,95 +263,21 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     ));
 
     list_factory.connect_setup(move |_, list_item| {
-        let image = ShimmerImage::new();
-        let label = Label::builder().margin_start(20).build();
-        let spacer = Box::builder()
-            .orientation(Orientation::Horizontal)
-            .hexpand(true)
-            .build();
-        // let icon = Image::builder().icon_name("pan-end").margin_end(20).build();
-
-        // Launch button
-        let launch_button_icon = Image::builder()
-            .icon_name("media-playback-start-symbolic")
-            .pixel_size(11)
-            .build();
-        let launch_button_label = Label::builder().label("Launch").build();
-        let launch_button_box = Box::builder()
-            .spacing(8)
-            .margin_start(10)
-            .margin_end(10)
-            .build();
-        launch_button_box.append(&launch_button_icon);
-        launch_button_box.append(&launch_button_label);
-        let launch_button = Button::builder()
-            .child(&launch_button_box)
-            .margin_top(20)
-            .margin_bottom(20)
-            .margin_end(20)
-            .margin_start(20)
-            .build();
-
-        // Manage button
-        let manage_button_icon = Image::builder()
-            .icon_name("document-edit-symbolic")
-            .pixel_size(11)
-            .build();
-        let manage_button_label = Label::builder().label("Manage").build();
-        let manage_button_box = Box::builder()
-            .spacing(8)
-            .margin_start(10)
-            .margin_end(10)
-            .build();
-        manage_button_box.append(&manage_button_icon);
-        manage_button_box.append(&manage_button_label);
-
-        let manage_button = Button::builder()
-            .child(&manage_button_box)
-            .css_classes(vec!["suggested-action"])
-            .build();
-        let manage_new_button = Button::builder().icon_name("window-new-symbolic").build();
-        manage_new_button
-            .child()
-            .unwrap()
-            .downcast::<Image>()
-            .unwrap()
-            .set_pixel_size(11);
-        let manage_button_box = Box::builder()
-            .orientation(Orientation::Horizontal)
-            .css_classes(vec!["linked"])
-            .margin_top(20)
-            .margin_bottom(20)
-            .margin_end(20)
-            .build();
-        manage_button_box.append(&manage_button);
-        manage_button_box.append(&manage_new_button);
-
-        let entry = Box::builder()
-            .orientation(Orientation::Horizontal)
-            .margin_top(4)
-            .margin_bottom(4)
-            .margin_start(8)
-            .margin_end(8)
-            .build();
-        entry.append(&image);
-        entry.append(&label);
-        entry.append(&spacer);
-        entry.append(&launch_button);
-        entry.append(&manage_button_box);
+        let entry = SteamAppCard::default();
+        entry.set_size_request(400, 150);
+        entry.set_margin_start(5);
+        entry.set_margin_end(5);
+        entry.set_margin_top(5);
+        entry.set_margin_bottom(5);
 
         let list_item = list_item
             .downcast_ref::<ListItem>()
             .expect("Needs to be a ListItem");
+        list_item.set_activatable(false);
         list_item.set_child(Some(&entry));
         list_item
             .property_expression("item")
-            .chain_property::<GSteamAppObject>("app_name")
-            .bind(&label, "label", Widget::NONE);
-        list_item
-            .property_expression("item")
-            .chain_property::<GSteamAppObject>("image_url")
-            .bind(&image, "url", Widget::NONE);
+            .bind(&entry, "app-object", Widget::NONE);
     });
 
     list_factory.connect_bind(clone!(
@@ -354,28 +317,13 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                 .expect("Item should be a GSteamAppObject");
             let app_id_to_bind = steam_app_object.app_id();
 
-            let manage_box = list_item
+            let card = list_item
                 .child()
-                .and_then(|child| child.downcast::<Box>().ok())
-                .and_then(|app_box| app_box.last_child())
-                .and_then(|button_box| button_box.downcast::<Box>().ok());
-
-            let manage_button = manage_box
-                .clone()
-                .and_then(|button_box| button_box.first_child())
-                .and_then(|manage_button| manage_button.downcast::<Button>().ok())
-                .expect("Could not find Manage button widget");
-
-            let manage_button_new_window = manage_box
-                .clone()
-                .and_then(|button_box| button_box.last_child())
-                .and_then(|manage_button| manage_button.downcast::<Button>().ok())
-                .expect("Could not find Manage new window button widget");
-
-            let launch_button = manage_box
-                .and_then(|child| child.prev_sibling())
-                .and_then(|launch_button| launch_button.downcast::<Button>().ok())
-                .expect("Could not find Launch button widget");
+                .and_then(|child| child.downcast::<SteamAppCard>().ok())
+                .expect("Child should be a SteamAppCard");
+            let manage_button = card.manage_button();
+            let manage_button_new_window = card.manage_button_new();
+            let launch_button = card.launch_button();
 
             let handler = manage_button.connect_clicked(clone!(
                 #[strong]
@@ -450,28 +398,13 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             .downcast_ref::<ListItem>()
             .expect("Needs to be a ListItem");
 
-        let manage_box = list_item
+        let card = list_item
             .child()
-            .and_then(|child| child.downcast::<Box>().ok())
-            .and_then(|app_box| app_box.last_child())
-            .and_then(|button_box| button_box.downcast::<Box>().ok());
-
-        let manage_button = manage_box
-            .clone()
-            .and_then(|button_box| button_box.first_child())
-            .and_then(|manage_button| manage_button.downcast::<Button>().ok())
-            .expect("Could not find Manage button widget");
-
-        let manage_button_new_window = manage_box
-            .clone()
-            .and_then(|button_box| button_box.last_child())
-            .and_then(|manage_button| manage_button.downcast::<Button>().ok())
-            .expect("Could not find Manage new window button widget");
-
-        let launch_button = manage_box
-            .and_then(|child| child.prev_sibling())
-            .and_then(|launch_button| launch_button.downcast::<Button>().ok())
-            .expect("Could not find Launch button widget");
+            .and_then(|child| child.downcast::<SteamAppCard>().ok())
+            .expect("Child should be a SteamAppCard");
+        let manage_button = card.manage_button();
+        let manage_button_new_window = card.manage_button_new();
+        let launch_button = card.launch_button();
 
         unsafe {
             if let Some(handler) = manage_button.data("handler") {
@@ -503,7 +436,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     // Search entry setup
     search_entry.connect_search_changed(clone!(
         #[weak]
-        list_string_filter,
+        list_custom_filter,
         #[weak]
         app_stat_string_filter,
         #[weak]
@@ -532,7 +465,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
 
                 app_achievement_string_filter.set_search(text.as_deref());
                 app_stat_string_filter.set_search(text.as_deref());
-                list_string_filter.set_search(text.as_deref());
+                list_custom_filter.changed(gtk::FilterChange::Different);
                 list_store.remove(0);
                 return;
             }
@@ -554,7 +487,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
 
             app_achievement_string_filter.set_search(text.as_deref());
             app_stat_string_filter.set_search(text.as_deref());
-            list_string_filter.set_search(text.as_deref());
+            list_custom_filter.changed(gtk::FilterChange::Different);
         }
     ));
 
@@ -617,7 +550,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     let action_refresh_app_list = SimpleAction::new("refresh_app_list", None);
     action_refresh_app_list.connect_activate(clone!(
         #[strong]
-        list_view,
+        grid_view,
         #[strong]
         list_store,
         #[weak]
@@ -636,7 +569,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             let apps = spawn_blocking(move || GetSubscribedAppList.request());
             MainContext::default().spawn_local(clone!(
                 #[weak]
-                list_view,
+                grid_view,
                 #[weak]
                 list_scrolled_window,
                 #[weak]
@@ -657,14 +590,14 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                             if app_vec.is_empty() {
                                 app_list_no_result_label.set_text("No apps found on your account. Search for App Id to get started.");
                                 list_of_apps_or_no_result.set_visible_child_name("empty");
-                                list_scrolled_window.set_child(Some(&list_view));
+                                list_scrolled_window.set_child(Some(&grid_view));
                                 list_stack.set_visible_child_name("list");
                             } else {
                                 list_store.remove_all();
                                 let models: Vec<GSteamAppObject> =
                                     app_vec.into_iter().map(GSteamAppObject::new).collect();
                                 list_store.extend_from_slice(&models);
-                                list_scrolled_window.set_child(Some(&list_view));
+                                list_scrolled_window.set_child(Some(&grid_view));
                                 list_stack.set_visible_child_name("list");
                                 app_list_no_result_label.set_text("No results. Check for spelling mistakes or try typing an App Id.");
                             }
@@ -673,7 +606,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                             search_entry.set_sensitive(true);
                             app_list_no_result_label.set_text("Failed to load library. Check your internet connection. Search for App Id to get started.");
                             list_of_apps_or_no_result.set_visible_child_name("empty");
-                            list_scrolled_window.set_child(Some(&list_view));
+                            list_scrolled_window.set_child(Some(&grid_view));
                             list_stack.set_visible_child_name("list");
                         },
                         Ok(Err(sam_error)) => {
@@ -851,7 +784,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                 action_refresh_app_list.set_enabled(false);
             } else {
                 search_entry.set_text("");
-                search_entry.set_placeholder_text(Some("App name..."));
+                search_entry.set_placeholder_text(Some("Name or AppId (Ctrl+K)"));
                 back_button.set_sensitive(false);
                 action_refresh_app_list.set_enabled(true);
 
@@ -903,8 +836,25 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         &action_refresh_app_list,
         &action_refresh_achievements_list,
         &action_clear_all_stats_and_achievements,
+        &filter_junk_action,
     );
 
+    let key_controller = gtk::EventControllerKey::new();
+    key_controller.connect_key_pressed(clone!(
+        #[weak]
+        search_entry,
+        #[upgrade_or]
+        glib::Propagation::Proceed,
+        move |_controller, key, _keycode, state| {
+            if state.contains(gtk::gdk::ModifierType::CONTROL_MASK) && key == gtk::gdk::Key::k {
+                search_entry.grab_focus();
+                return glib::Propagation::Stop;
+            }
+            glib::Propagation::Proceed
+        }
+    ));
+
+    window.add_controller(key_controller);
     window.present();
 
     0

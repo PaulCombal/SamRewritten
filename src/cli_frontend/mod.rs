@@ -169,7 +169,7 @@ pub fn main() -> std::process::ExitCode {
             }
 
             match manager.store_stats_and_achievements() {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
                     eprintln!("Failed to store stats and achievements: {e:?}");
                     return std::process::ExitCode::FAILURE;
@@ -213,7 +213,7 @@ pub fn main() -> std::process::ExitCode {
             }
 
             match manager.store_stats_and_achievements() {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
                     eprintln!("Failed to store stats and achievements: {e:?}");
                     return std::process::ExitCode::FAILURE;

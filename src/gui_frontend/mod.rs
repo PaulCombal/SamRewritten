@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-mod achievement;
 mod achievement_automatic_view;
 mod achievement_manual_view;
 mod achievement_view;
@@ -22,12 +21,11 @@ mod app_list_view_callbacks;
 mod app_view;
 mod application_actions;
 mod custom_progress_bar_widget;
+mod gobjects;
 mod request;
-mod shimmer_image;
-mod stat;
 mod stat_view;
-mod steam_app;
 mod ui_components;
+mod widgets;
 
 use crate::APP_ID;
 use crate::gui_frontend::request::Request;

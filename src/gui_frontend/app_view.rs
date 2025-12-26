@@ -16,7 +16,7 @@
 use super::stat_view::create_stats_view;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::achievement_view::create_achievements_view;
-use crate::gui_frontend::shimmer_image::ShimmerImage;
+use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use gtk::gio::ListStore;
 use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};
@@ -155,7 +155,8 @@ pub fn create_app_view(
         .build();
 
     let app_shimmer_image = ShimmerImage::new();
-    app_shimmer_image.set_halign(Align::Start);
+    app_shimmer_image.set_halign(Align::Fill);
+    app_shimmer_image.set_height_request(87);
 
     let app_achievements_button = ToggleButton::builder().label("Achievements").build();
     let app_stats_button = ToggleButton::builder()

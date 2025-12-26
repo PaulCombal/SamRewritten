@@ -345,7 +345,7 @@ fn process_command(
                     .expect("[ORCHESTRATOR] Failed to send response");
             }
         }
-        
+
         SteamCommand::StoreStatsAndAchievements(app_id) => {
             #[cfg(debug_assertions)]
             if app_id == 0 {
@@ -356,7 +356,8 @@ fn process_command(
             }
 
             if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response = send_app_command(bidir, SteamCommand::StoreStatsAndAchievements(app_id));
+                let response =
+                    send_app_command(bidir, SteamCommand::StoreStatsAndAchievements(app_id));
                 tx.write_all(&response)
                     .expect("[ORCHESTRATOR] Failed to send response");
             } else {
@@ -366,7 +367,6 @@ fn process_command(
                     .expect("[ORCHESTRATOR] Failed to send response");
             }
         }
-        
 
         SteamCommand::SetIntStat(app_id, stat_id, value) => {
             if let Some(bidir) = children_processes.get_mut(&app_id) {

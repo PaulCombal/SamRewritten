@@ -78,6 +78,9 @@ mod imp {
 
         #[property(get, set)]
         app_type: RefCell<String>,
+
+        #[property(get, set)]
+        is_selected: Cell<bool>,
     }
 
     // The central trait for subclassing a GObject

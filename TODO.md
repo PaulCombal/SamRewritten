@@ -1,6 +1,10 @@
+### High priority
+
+Selectable cards and lock/unlock all actions
+
 ### Medium priority
 
-- Find a new design for the app list (imitate Steam?)
+Refactoring of gui_frontend (ask junie?)
 
 ### Low priority
 

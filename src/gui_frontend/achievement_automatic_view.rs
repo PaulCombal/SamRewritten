@@ -14,9 +14,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::achievement::GAchievementObject;
 use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
-use crate::gui_frontend::shimmer_image::ShimmerImage;
+use crate::gui_frontend::gobjects::achievement::GAchievementObject;
+use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use gtk::glib::clone;
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;

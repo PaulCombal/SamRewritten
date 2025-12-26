@@ -21,6 +21,12 @@ glib::wrapper! {
         @extends gtk::Widget;
 }
 
+impl Default for ShimmerImage {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ShimmerImage {
     pub fn new() -> Self {
         glib::Object::builder()
@@ -60,10 +66,6 @@ mod imp {
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::ShimmerImage)]
     pub struct ShimmerImage {
-        #[property(get, set)]
-        pub image_width: Cell<i32>,
-        #[property(get, set)]
-        pub image_height: Cell<i32>,
         pub start: Cell<i64>,
         pub current: Cell<i64>,
         #[property(get, set)]
@@ -73,6 +75,7 @@ mod imp {
         pub failed: Cell<bool>,
         pub receiver: RefCell<Option<Receiver<Texture>>>,
         pub texture: RefCell<Option<Texture>>,
+        pub texture_size_ratio: Cell<f32>,
     }
 
     #[glib::object_subclass]
@@ -89,7 +92,7 @@ mod imp {
             let obj = self.obj();
             obj.reset();
 
-            obj.set_size_request(231, 87);
+            self.texture_size_ratio.set(1.0);
             obj.add_tick_callback(|widget, clock| {
                 if let Some(this) = widget.downcast_ref::<super::ShimmerImage>() {
                     //Enabling this will cause some of the images to retain their old texture
@@ -135,7 +138,15 @@ mod imp {
             if let Some(receiver) = receiver {
                 match receiver.try_recv() {
                     Ok(texture) => {
+                        let width = texture.width();
+                        let height = texture.height();
+                        let ratio = width as f32 / height as f32;
+                        self.texture_size_ratio.set(ratio);
+
                         self.texture.borrow_mut().replace(texture);
+
+                        let obj = self.obj();
+                        obj.queue_resize();
                     }
                     Err(TryRecvError::Empty) => {
                         self.receiver.borrow_mut().replace(receiver);
@@ -185,6 +196,43 @@ mod imp {
             }
 
             snapshot.pop();
+        }
+
+        fn request_mode(&self) -> gtk::SizeRequestMode {
+            // This tells GTK that height depends on width
+            gtk::SizeRequestMode::HeightForWidth
+        }
+
+        fn measure(&self, orientation: gtk::Orientation, for_size: i32) -> (i32, i32, i32, i32) {
+            let ratio = self.texture_size_ratio.get();
+            let min_width = self.obj().width_request();
+
+            if orientation == gtk::Orientation::Horizontal {
+                // How wide should we be?
+                let width = if for_size < 0 {
+                    min_width
+                } else {
+                    // Height is known, calculate Width: W = H * ratio
+                    (for_size as f32 * ratio) as i32
+                };
+                (width, width, -1, -1)
+            } else {
+                // How tall should we be?
+                if self.loaded.borrow().is_none() {
+                    // If we're not loaded, just allow any requested height
+                    let height = self.obj().height_request();
+                    return (height, height, -1, -1);
+                }
+
+                let height = if for_size < 0 {
+                    // Width is unknown, calculate height from our minimum width
+                    (min_width as f32 / ratio) as i32
+                } else {
+                    // Width is known (for_size), calculate Height: H = W / ratio
+                    (for_size as f32 / ratio) as i32
+                };
+                (height, height, -1, -1)
+            }
         }
     }
 

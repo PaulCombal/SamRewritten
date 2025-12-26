@@ -27,6 +27,7 @@ pub fn setup_app_actions(
     refresh_app_list_action: &SimpleAction,
     refresh_achievements_list_action: &SimpleAction,
     reset_all_stats_and_achievements_action: &SimpleAction,
+    filter_junk_action: &SimpleAction,
 ) {
     let action_show_about_dialog = SimpleAction::new("about", None);
     action_show_about_dialog.connect_activate(clone!(
@@ -46,6 +47,7 @@ pub fn setup_app_actions(
         }
     ));
 
+    application.add_action(filter_junk_action);
     application.add_action(refresh_app_list_action);
     application.add_action(refresh_achievements_list_action);
     application.add_action(reset_all_stats_and_achievements_action);

@@ -30,8 +30,7 @@ pub fn format_seconds_to_hh_mm_ss(total_seconds: usize) -> String {
 
     if hours > 0 {
         format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
-    }
-    else {
+    } else {
         format!("{:02}:{:02}", minutes, seconds)
     }
 }

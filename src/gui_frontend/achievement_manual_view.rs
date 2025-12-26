@@ -15,11 +15,11 @@
 
 use crate::dev_println;
 use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::achievement::GAchievementObject;
 use crate::gui_frontend::achievement_view::count_unlocked_achievements;
 use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
+use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::request::{Request, SetAchievement, StoreStatsAndAchievements};
-use crate::gui_frontend::shimmer_image::ShimmerImage;
+use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use crate::utils::format::format_seconds_to_hh_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::translate::FromGlib;

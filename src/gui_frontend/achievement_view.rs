@@ -14,9 +14,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::achievement::GAchievementObject;
 use crate::gui_frontend::achievement_automatic_view::create_achievements_automatic_view;
 use crate::gui_frontend::achievement_manual_view::create_achievements_manual_view;
+use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use gtk::gio::ListStore;
 use gtk::prelude::*;
 use gtk::{

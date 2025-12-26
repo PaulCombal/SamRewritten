@@ -122,7 +122,7 @@ pub struct SetAchievement {
     pub app_id: u32,
     pub achievement_id: String,
     pub unlocked: bool,
-    pub store: bool
+    pub store: bool,
 }
 
 #[derive(Debug, Clone)]

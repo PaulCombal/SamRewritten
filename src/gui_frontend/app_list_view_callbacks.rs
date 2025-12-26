@@ -15,10 +15,10 @@
 
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
+use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{LaunchApp, Request};
-use crate::gui_frontend::shimmer_image::ShimmerImage;
-use crate::gui_frontend::steam_app::GSteamAppObject;
 use crate::gui_frontend::ui_components::set_context_popover_to_app_details_context;
+use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use gtk::gio::{Menu, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::WidgetExt;
@@ -62,7 +62,7 @@ pub(crate) fn switch_from_app_list_to_app(
 
     app_label.set_markup(&format!(
         "<span font_desc=\"Bold 16\">{}</span>",
-        steam_app_object.app_name()
+        gtk::glib::markup_escape_text(&steam_app_object.app_name())
     ));
 
     let app_id_copy = steam_app_object.app_id();

@@ -7,8 +7,8 @@
 
 rm *.snap
 snap remove samrewritten
-snapcraft
-#snap install --devmode --dangerous *.snap
+snapcraft pack
+snap install --devmode --dangerous *.snap
 #snap install --dangerous *.snap
 #snap connect samrewritten:access-steam-folder
-snap install *.snap --classic --dangerous
+#snap install *.snap --classic --dangerous
