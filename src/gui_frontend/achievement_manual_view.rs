@@ -144,14 +144,18 @@ fn create_header(
             dev_println!("[CLIENT] Evaluation of automatic unlocking: unlocked: {unlocked_achievements}, total: {total_achievements}, desired: {desired_achievements}");
             if desired_minutes == 0 {
                 dev_println!("[CLIENT] Unlock desired achievements immediately");
-                let res = UnlockAllAchievements {
-                    app_id: app_id_int,
-                }.request();
+                for achievement_to_unlock in achievements_to_unlock {
+                    let res = SetAchievement {
+                        app_id: app_id_int,
+                        achievement_id: achievement_to_unlock.id(),
+                        unlocked: true
+                    }.request();
 
-                match res {
-                    Ok(_) => {}
-                    Err(e) => {
-                        eprintln!("[CLIENT] Failed to unlock all achievements: {:?}", e);
+                    match res {
+                        Ok(_) => {}
+                        Err(e) => {
+                            eprintln!("[CLIENT] Failed to set achievement: {:?}", e);
+                        }
                     }
                 }
 
