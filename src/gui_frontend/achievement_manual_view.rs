@@ -18,7 +18,7 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::achievement::GAchievementObject;
 use crate::gui_frontend::achievement_view::count_unlocked_achievements;
 use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
-use crate::gui_frontend::request::{Request, SetAchievement, UnlockAllAchievements};
+use crate::gui_frontend::request::{Request, SetAchievement, StoreStatsAndAchievements};
 use crate::gui_frontend::shimmer_image::ShimmerImage;
 use crate::utils::format::format_seconds_to_hh_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
@@ -148,7 +148,8 @@ fn create_header(
                     let res = SetAchievement {
                         app_id: app_id_int,
                         achievement_id: achievement_to_unlock.id(),
-                        unlocked: true
+                        unlocked: true,
+                        store: false
                     }.request();
 
                     match res {
@@ -156,6 +157,14 @@ fn create_header(
                         Err(e) => {
                             eprintln!("[CLIENT] Failed to set achievement: {:?}", e);
                         }
+                    }
+                }
+
+                let res = StoreStatsAndAchievements {app_id: app_id_int}.request();
+                match res {
+                    Ok(_) => {}
+                    Err(e) => {
+                        eprintln!("[CLIENT] Failed to store stats and achievements: {:?}", e);
                     }
                 }
 
@@ -201,6 +210,7 @@ fn create_header(
                                     app_id: app_id_int,
                                     achievement_id,
                                     unlocked: true,
+                                    store: true
                                 }
                                 .request()
                             }).await;
@@ -524,6 +534,7 @@ pub fn create_achievements_manual_view(
                             app_id,
                             achievement_id,
                             unlocked,
+                            store: true
                         }
                         .request()
                     });

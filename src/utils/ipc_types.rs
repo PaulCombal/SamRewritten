@@ -57,11 +57,12 @@ pub enum SteamCommand {
     Status, // Ask for status of the process
     GetAchievements(u32),
     GetStats(u32),
-    SetAchievement(u32, bool, String),
+    SetAchievement(u32, bool, String, bool),
     SetIntStat(u32, String, i32),
     SetFloatStat(u32, String, f32),
     ResetStats(u32, bool),
     UnlockAllAchievements(u32),
+    StoreStatsAndAchievements(u32),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

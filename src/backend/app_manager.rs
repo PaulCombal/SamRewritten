@@ -433,18 +433,23 @@ impl<'a> AppManager {
         Ok(statistics_info)
     }
 
-    pub fn set_achievement(&self, achievement_id: &str, unlock: bool) -> Result<bool, SamError> {
+    pub fn set_achievement(&self, achievement_id: &str, unlock: bool, store: bool) -> Result<bool, SamError> {
         if unlock {
             match self
                 .connected_steam
                 .user_stats
                 .set_achievement(achievement_id)
             {
-                Ok(_) => self
-                    .connected_steam
-                    .user_stats
-                    .store_stats()
-                    .map_err(|_| SamError::StatStoreFailed),
+                Ok(_) => {
+                    if store {
+                        return self
+                            .connected_steam
+                            .user_stats
+                            .store_stats()
+                            .map_err(|_| SamError::StatStoreFailed);
+                    }
+                    Ok(true)
+                },
                 Err(_) => Err(SamError::UnknownError),
             }
         } else {
@@ -453,14 +458,27 @@ impl<'a> AppManager {
                 .user_stats
                 .clear_achievement(achievement_id)
             {
-                Ok(_) => self
-                    .connected_steam
-                    .user_stats
-                    .store_stats()
-                    .map_err(|_| SamError::StatStoreFailed),
+                Ok(_) => {
+                    if store {
+                        return self
+                            .connected_steam
+                            .user_stats
+                            .store_stats()
+                            .map_err(|_| SamError::StatStoreFailed);
+                    }
+                    Ok(true)
+                },
                 Err(_) => Err(SamError::UnknownError),
             }
         }
+    }
+
+    pub fn store_stats_and_achievements(&self) -> Result<(), SamError> {
+        self.connected_steam
+            .user_stats
+            .store_stats()
+            .map_err(|_| SamError::StatStoreFailed)?;
+        Ok(())
     }
 
     pub fn unlock_all_achievements(&mut self) -> Result<(), SamError> {

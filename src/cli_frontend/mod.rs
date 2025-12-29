@@ -159,7 +159,7 @@ pub fn main() -> std::process::ExitCode {
             let mut results: Vec<AchievedResult> = vec![];
 
             for id in ids.ids {
-                match manager.set_achievement(&id, true) {
+                match manager.set_achievement(&id, true, false) {
                     Ok(_) => results.push(AchievedResult { id, success: true }),
                     Err(e) => {
                         println!("Failed to unlock achievement {}: {}", id, e);
@@ -167,6 +167,14 @@ pub fn main() -> std::process::ExitCode {
                     }
                 };
             }
+
+            match manager.store_stats_and_achievements() {
+                Ok(_) => {},
+                Err(e) => {
+                    eprintln!("Failed to store stats and achievements: {e:?}");
+                    return std::process::ExitCode::FAILURE;
+                }
+            };
 
             match serde_json::to_string_pretty(&results) {
                 Ok(output) => println!("{}", output),
@@ -195,14 +203,22 @@ pub fn main() -> std::process::ExitCode {
             let mut results: Vec<AchievedResult> = vec![];
 
             for id in ids.ids {
-                match manager.set_achievement(&id, false) {
+                match manager.set_achievement(&id, false, false) {
                     Ok(_) => results.push(AchievedResult { id, success: true }),
                     Err(e) => {
-                        println!("Failed to unlock achievement {}: {}", id, e);
+                        println!("Failed to lock achievement {}: {}", id, e);
                         results.push(AchievedResult { id, success: false });
                     }
                 };
             }
+
+            match manager.store_stats_and_achievements() {
+                Ok(_) => {},
+                Err(e) => {
+                    eprintln!("Failed to store stats and achievements: {e:?}");
+                    return std::process::ExitCode::FAILURE;
+                }
+            };
 
             match serde_json::to_string_pretty(&results) {
                 Ok(output) => println!("{}", output),

@@ -106,7 +106,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> i
                     .expect("[APP SERVER] Failed to send response");
             }
 
-            SteamCommand::SetAchievement(app_id_param, unlocked, achievement_id) => {
+            SteamCommand::SetAchievement(app_id_param, unlocked, achievement_id, store) => {
                 if app_id_param != app_id {
                     dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
                     let response =
@@ -117,7 +117,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> i
                     continue;
                 }
 
-                let response = match app_manager.set_achievement(&achievement_id, unlocked) {
+                let response = match app_manager.set_achievement(&achievement_id, unlocked, store) {
                     Ok(_) => SteamResponse::Success(true),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting achievement: {e}");
@@ -171,6 +171,31 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> i
                     Ok(result) => SteamResponse::Success(result),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting float stat: {e}");
+                        SteamResponse::Error::<bool>(e)
+                    }
+                };
+                let response = response.sam_serialize();
+
+                parent_tx
+                    .write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+            }
+
+            SteamCommand::StoreStatsAndAchievements(app_id_param) => {
+                if app_id_param != app_id {
+                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
+                    let response =
+                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
+                    parent_tx
+                        .write_all(&response)
+                        .expect("[APP SERVER] Failed to send response");
+                    continue;
+                }
+
+                let response = match app_manager.store_stats_and_achievements() {
+                    Ok(_) => SteamResponse::Success(true),
+                    Err(e) => {
+                        dev_println!("[APP SERVER] Error storing stats and achievements: {e}");
                         SteamResponse::Error::<bool>(e)
                     }
                 };

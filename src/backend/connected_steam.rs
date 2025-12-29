@@ -55,18 +55,14 @@ impl<'a> ConnectedSteam {
             user,
         })
     }
+}
 
-    pub fn shutdown(&self) {
+impl Drop for ConnectedSteam {
+    fn drop(&mut self) {
         self.client.release_user(self.h_pipe, self.h_user);
         self.client
             .release_steam_pipe(self.h_pipe)
             .expect("Failed to release steam pipe");
         let _ = self.client.shutdown_if_app_pipes_closed();
-    }
-}
-
-impl Drop for ConnectedSteam {
-    fn drop(&mut self) {
-        self.shutdown();
     }
 }
