@@ -23,6 +23,7 @@ use crate::gui_frontend::gobjects::stat::GStatObject;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{
     GetAchievements, GetStats, GetSubscribedAppList, Request, ResetStats, StopApp,
+    UnlockAllAchievements,
 };
 use crate::gui_frontend::ui_components::{
     create_about_dialog, create_context_menu_button, set_context_popover_to_app_list_context,
@@ -38,7 +39,7 @@ use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{
     Align, ApplicationWindow, Box, Button, FilterListModel, GridView, HeaderBar, Image, Label,
-    ListItem, NoSelection, Orientation, PolicyType, ScrolledWindow, SearchEntry,
+    ListItem, MultiSelection, Orientation, PolicyType, ScrolledWindow, SearchEntry,
     SignalListItemFactory, Spinner, Stack, StackTransitionType, Widget,
 };
 use gtk::{IconSize, glib};
@@ -185,7 +186,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         .model(&list_store)
         .filter(&list_custom_filter)
         .build();
-    let list_selection_model = NoSelection::new(Option::<ListStore>::None);
+    let list_selection_model = MultiSelection::new(Some(list_filter_model.clone()));
     list_selection_model.set_model(Some(&list_filter_model));
     let grid_view = GridView::builder()
         .min_columns(2)
@@ -199,7 +200,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     let window = ApplicationWindow::builder()
         .application(application)
         .title("SamRewritten")
-        .default_width(800)
+        .default_width(904) // Somehow.. min width with default theme
         .default_height(600)
         .child(&list_stack)
         .titlebar(&header_bar)
@@ -278,6 +279,9 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         list_item
             .property_expression("item")
             .bind(&entry, "app-object", Widget::NONE);
+        list_item
+            .property_expression("selected")
+            .bind(&entry, "is-selected", Widget::NONE);
     });
 
     list_factory.connect_bind(clone!(
@@ -319,7 +323,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
 
             let card = list_item
                 .child()
-                .and_then(|child| child.downcast::<SteamAppCard>().ok())
+                .and_downcast::<SteamAppCard>()
                 .expect("Child should be a SteamAppCard");
             let manage_button = card.manage_button();
             let manage_button_new_window = card.manage_button_new();
@@ -328,10 +332,12 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             let handler = manage_button.connect_clicked(clone!(
                 #[strong]
                 app_id,
+                #[weak]
+                application,
                 move |_| {
                     switch_from_app_list_to_app(
                         &steam_app_object,
-                        application.clone(),
+                        application,
                         &app_type_value,
                         &app_developer_value,
                         &app_achievement_count_value,
@@ -390,6 +396,35 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             unsafe {
                 launch_button.set_data("handler", handler.as_raw());
             }
+
+            let handler_id = card.connect_is_selected_notify(clone!(
+                #[weak]
+                list_item,
+                #[weak]
+                list_selection_model,
+                move |card| {
+                    let position = list_item.position();
+                    if position == u32::MAX {
+                        return;
+                    }
+
+                    if card.is_selected() {
+                        list_selection_model.select_item(position, false);
+                        set_app_action_enabled(&application, "unlock_all_apps", true);
+                        set_app_action_enabled(&application, "lock_all_apps", true);
+                    } else {
+                        list_selection_model.unselect_item(position);
+                        let selection = list_selection_model.selection();
+                        let has_selection = !selection.is_empty();
+                        set_app_action_enabled(&application, "unlock_all_apps", has_selection);
+                        set_app_action_enabled(&application, "lock_all_apps", has_selection);
+                    }
+                }
+            ));
+
+            unsafe {
+                card.set_data("selection-handler", handler_id.as_raw());
+            }
         }
     ));
 
@@ -429,6 +464,14 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                 launch_button.disconnect(signal_handler);
             } else {
                 eprintln!("[CLIENT] Launch button unbind failed");
+            }
+
+            if let Some(handler) = card.data("selection-handler") {
+                let ulong: c_ulong = *handler.as_ptr();
+                let signal_handler = SignalHandlerId::from_glib(ulong);
+                card.disconnect(signal_handler);
+            } else {
+                eprintln!("[CLIENT] Card selection state unbind failed");
             }
         }
     });
@@ -547,6 +590,163 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     ));
 
     // App actions
+    let action_select_all_apps = SimpleAction::new("select_all_apps", None);
+    action_select_all_apps.connect_activate(clone!(
+        #[weak]
+        grid_view,
+        #[weak]
+        application,
+        move |_, _| {
+            if let Some(selection_model) = grid_view.model() {
+                selection_model.select_all();
+                let has_selection = !selection_model.selection().is_empty();
+                set_app_action_enabled(&application, "unlock_all_apps", has_selection);
+                set_app_action_enabled(&application, "lock_all_apps", has_selection);
+            }
+        }
+    ));
+
+    let action_unselect_all_apps = SimpleAction::new("unselect_all_apps", None);
+    action_unselect_all_apps.connect_activate(clone!(
+        #[weak]
+        grid_view,
+        #[weak]
+        application,
+        move |_, _| {
+            if let Some(selection_model) = grid_view.model() {
+                selection_model.unselect_all();
+                set_app_action_enabled(&application, "unlock_all_apps", false);
+                set_app_action_enabled(&application, "lock_all_apps", false);
+            }
+        }
+    ));
+
+    let action_unlock_all_selected = SimpleAction::new("unlock_all_apps", None);
+    action_unlock_all_selected.set_enabled(false);
+    action_unlock_all_selected.connect_activate(clone!(
+        #[weak]
+        grid_view,
+        move |_, _| {
+            let Some(selection_model) = grid_view.model() else {
+                return;
+            };
+            let selection = selection_model.selection();
+
+            let mut app_ids = Vec::new();
+            if let Some((mut iter, first)) = gtk::BitsetIter::init_first(&selection) {
+                let mut indices = vec![first];
+                while let Some(idx) = iter.next() {
+                    indices.push(idx);
+                }
+
+                for index in indices {
+                    if let Some(item) = selection_model
+                        .item(index)
+                        .and_downcast::<GSteamAppObject>()
+                    {
+                        app_ids.push(item.app_id());
+                    }
+                }
+            }
+
+            if app_ids.is_empty() {
+                return;
+            }
+
+            grid_view.set_sensitive(false);
+
+            let handle = spawn_blocking(move || {
+                for app_id in app_ids {
+                    let res = UnlockAllAchievements { app_id }.request();
+
+                    match res {
+                        Ok(_) => {}
+                        Err(e) => {
+                            eprintln!("[CLIENT] Error unlocking app {}: {}", app_id, e);
+                            return Err(e);
+                        }
+                    }
+                }
+
+                Ok(())
+            });
+
+            MainContext::default().spawn_local(clone!(
+                #[weak]
+                grid_view,
+                async move {
+                    let _ = handle.await;
+                    grid_view.set_sensitive(true);
+                }
+            ));
+        }
+    ));
+
+    let action_lock_all_selected = SimpleAction::new("lock_all_apps", None);
+    action_lock_all_selected.set_enabled(false);
+    action_lock_all_selected.connect_activate(clone!(
+        #[weak]
+        grid_view,
+        move |_, _| {
+            let Some(selection_model) = grid_view.model() else {
+                return;
+            };
+            let selection = selection_model.selection();
+
+            let mut app_ids = Vec::new();
+            if let Some((mut iter, first)) = gtk::BitsetIter::init_first(&selection) {
+                let mut indices = vec![first];
+                while let Some(idx) = iter.next() {
+                    indices.push(idx);
+                }
+
+                for index in indices {
+                    if let Some(item) = selection_model
+                        .item(index)
+                        .and_downcast::<GSteamAppObject>()
+                    {
+                        app_ids.push(item.app_id());
+                    }
+                }
+            }
+
+            if app_ids.is_empty() {
+                return;
+            }
+
+            grid_view.set_sensitive(false);
+
+            let handle = spawn_blocking(move || {
+                for app_id in app_ids {
+                    let res = ResetStats {
+                        app_id,
+                        achievements_too: true,
+                    }
+                    .request();
+
+                    match res {
+                        Ok(_) => {}
+                        Err(e) => {
+                            eprintln!("[CLIENT] Error locking app {}: {}", app_id, e);
+                            return Err(e);
+                        }
+                    }
+                }
+
+                Ok(())
+            });
+
+            MainContext::default().spawn_local(clone!(
+                #[weak]
+                grid_view,
+                async move {
+                    let _ = handle.await;
+                    grid_view.set_sensitive(true);
+                }
+            ));
+        }
+    ));
+
     let action_refresh_app_list = SimpleAction::new("refresh_app_list", None);
     action_refresh_app_list.connect_activate(clone!(
         #[strong]
@@ -563,8 +763,12 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         list_stack,
         #[weak]
         search_entry,
+        #[weak]
+        application,
         move |_, _| {
             list_stack.set_visible_child_name("loading");
+            set_app_action_enabled(&application, "unlock_all_apps", false);
+            set_app_action_enabled(&application, "lock_all_apps", false);
             search_entry.set_sensitive(false);
             let apps = spawn_blocking(move || GetSubscribedAppList.request());
             MainContext::default().spawn_local(clone!(
@@ -837,6 +1041,10 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         &action_refresh_achievements_list,
         &action_clear_all_stats_and_achievements,
         &filter_junk_action,
+        &action_select_all_apps,
+        &action_unselect_all_apps,
+        &action_unlock_all_selected,
+        &action_lock_all_selected,
     );
 
     let key_controller = gtk::EventControllerKey::new();

@@ -1,4 +1,4 @@
-SamRewrittem
+SamRewritten
 ===
 
 <p align=center>
@@ -97,6 +97,7 @@ snap install samrewritten
 ## Features
 
 * Lock and unlock select achievements with a single click
+* Lock and unlock achievements for all or selected apps
 * Edit statistics instantly
 * Schedule achievement unlocking over a set period of time
 

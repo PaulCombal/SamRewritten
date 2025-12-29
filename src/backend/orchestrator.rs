@@ -326,24 +326,29 @@ fn process_command(
         }
 
         SteamCommand::UnlockAllAchievements(app_id) => {
-            #[cfg(debug_assertions)]
-            if app_id == 0 {
-                let response = SteamResponse::<bool>::Success(true).sam_serialize();
-                tx.write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
-                return true;
-            }
+            let current_exe = get_executable_path();
+            let mut bidir =
+                BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
+                    .expect("Could not create app server process");
 
-            if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response = send_app_command(bidir, SteamCommand::UnlockAllAchievements(app_id));
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            } else {
-                let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
-                let response = response.sam_serialize();
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            }
+            // Just to be sure (this is probably useless)
+            std::thread::sleep(std::time::Duration::from_millis(50));
+
+            let response =
+                send_app_command(&mut bidir, SteamCommand::UnlockAllAchievements(app_id));
+
+            // Just to be sure (this is probably useless)
+            std::thread::sleep(std::time::Duration::from_millis(50));
+
+            send_app_command(&mut bidir, SteamCommand::Shutdown);
+
+            bidir
+                .child
+                .wait()
+                .expect("[ORCHESTRATOR] Failed to wait child process]");
+
+            tx.write_all(&response)
+                .expect("[ORCHESTRATOR] Failed to send response");
         }
 
         SteamCommand::StoreStatsAndAchievements(app_id) => {
@@ -397,17 +402,31 @@ fn process_command(
         }
 
         SteamCommand::ResetStats(app_id, achievements_too) => {
-            if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response =
-                    send_app_command(bidir, SteamCommand::ResetStats(app_id, achievements_too));
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            } else {
-                let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
-                let response = response.sam_serialize();
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            }
+            let current_exe = get_executable_path();
+            let mut bidir =
+                BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
+                    .expect("Could not create app server process");
+
+            // Just to be sure (this is probably useless)
+            std::thread::sleep(std::time::Duration::from_millis(50));
+
+            let response = send_app_command(
+                &mut bidir,
+                SteamCommand::ResetStats(app_id, achievements_too),
+            );
+
+            // Just to be sure (this is probably useless)
+            std::thread::sleep(std::time::Duration::from_millis(50));
+
+            send_app_command(&mut bidir, SteamCommand::Shutdown);
+
+            bidir
+                .child
+                .wait()
+                .expect("[ORCHESTRATOR] Failed to wait child process]");
+
+            tx.write_all(&response)
+                .expect("[ORCHESTRATOR] Failed to send response");
         }
     };
 

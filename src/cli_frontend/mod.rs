@@ -17,6 +17,7 @@ use crate::backend::app_lister::AppLister;
 use crate::backend::app_manager::AppManager;
 use crate::backend::connected_steam::ConnectedSteam;
 use clap::{Args, Parser, Subcommand};
+use serde_json::json;
 
 #[derive(Parser)]
 #[clap(
@@ -43,10 +44,16 @@ enum Command {
         #[command(flatten)]
         ids: Ids,
     },
+    UnlockAll {
+        app_id: u32,
+    },
     Lock {
         app_id: u32,
         #[command(flatten)]
         ids: Ids,
+    },
+    LockAll {
+        app_id: u32,
     },
 }
 
@@ -185,6 +192,27 @@ pub fn main() -> std::process::ExitCode {
             };
         }
 
+        Command::UnlockAll { app_id } => {
+            let mut manager = match AppManager::new_connected(app_id) {
+                Ok(manager) => manager,
+                Err(e) => {
+                    eprintln!("Failed to connect to Steam: {}", e);
+                    return std::process::ExitCode::FAILURE;
+                }
+            };
+
+            match manager.unlock_all_achievements() {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Failed to unlock all achievements: {}", e);
+                    return std::process::ExitCode::FAILURE;
+                }
+            }
+
+            let status = json!({"success": true});
+            println!("{}", status);
+        }
+
         Command::Lock { app_id, ids } => {
             let manager = match AppManager::new_connected(app_id) {
                 Ok(manager) => manager,
@@ -227,6 +255,27 @@ pub fn main() -> std::process::ExitCode {
                     return std::process::ExitCode::FAILURE;
                 }
             };
+        }
+
+        Command::LockAll { app_id } => {
+            let mut manager = match AppManager::new_connected(app_id) {
+                Ok(manager) => manager,
+                Err(e) => {
+                    eprintln!("Failed to connect to Steam: {}", e);
+                    return std::process::ExitCode::FAILURE;
+                }
+            };
+
+            match manager.reset_all_stats(true) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Failed to reset all achievements: {}", e);
+                    return std::process::ExitCode::FAILURE;
+                }
+            }
+
+            let status = json!({"success": true});
+            println!("{}", status);
         }
     }
 

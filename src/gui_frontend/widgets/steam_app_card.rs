@@ -25,6 +25,7 @@ mod imp {
     use super::*;
     use crate::gui_frontend::widgets::gradient_overlay::GradientOverlay;
     use glib::Properties;
+    use gtk::glib::clone;
     use gtk::{Box, Image, Label, Orientation};
     use std::cell::RefCell;
 
@@ -33,6 +34,8 @@ mod imp {
     pub struct SteamAppCard {
         #[property(get, set = Self::set_app_object, explicit_notify)]
         pub app_object: RefCell<Option<GSteamAppObject>>,
+        #[property(get, set)]
+        pub is_selected: std::cell::Cell<bool>,
 
         pub overlay: gtk::Overlay,
         pub gradient: GradientOverlay,
@@ -40,7 +43,7 @@ mod imp {
         pub image: ShimmerImage,
         pub filler_box: gtk::Box,
 
-        // UI elements pinned to bottom
+        // UI elements over the overlay
         pub bottom_container: gtk::Box,
         pub name_label: gtk::Label,
         #[property(get)]
@@ -50,6 +53,7 @@ mod imp {
         pub manage_button: gtk::Button,
         #[property(get)]
         pub manage_button_new: gtk::Button,
+        pub check_button: gtk::CheckButton,
     }
 
     #[glib::object_subclass]
@@ -155,7 +159,13 @@ mod imp {
             self.bottom_container.append(&self.name_label);
             self.bottom_container.append(&button_row);
 
-            // 6. Final Assembly
+            // 6. Setup Checkbox (Top Left)
+            self.check_button.set_halign(gtk::Align::Start);
+            self.check_button.set_valign(gtk::Align::Start);
+            self.check_button.set_margin_top(15);
+            self.check_button.set_margin_start(15);
+
+            // 7. Final Assembly
             self.overlay.set_child(Some(&self.main_layout));
 
             self.gradient.set_hexpand(true);
@@ -163,11 +173,12 @@ mod imp {
             self.overlay.add_overlay(&self.gradient);
 
             self.overlay.add_overlay(&self.bottom_container);
+            self.overlay.add_overlay(&self.check_button);
 
             self.overlay.set_parent(&*obj);
             obj.set_overflow(gtk::Overflow::Hidden);
 
-            // 7. Setup Expressions (The Path B way)
+            // 8. Setup Expressions
             let app_obj_expr = obj.property_expression("app-object");
             app_obj_expr
                 .chain_property::<GSteamAppObject>("app_name")
@@ -175,6 +186,57 @@ mod imp {
             app_obj_expr
                 .chain_property::<GSteamAppObject>("image_url")
                 .bind(&self.image, "url", gtk::Widget::NONE);
+
+            let opacity_closure = glib::RustClosure::new(move |values: &[glib::Value]| {
+                let is_selected = values
+                    .get(1)
+                    .and_then(|val| val.get::<bool>().ok())
+                    .unwrap_or(false);
+
+                let opacity = if is_selected { 1.0f64 } else { 0.7f64 };
+                Some(opacity.to_value())
+            });
+
+            let opacity_expr = gtk::ClosureExpression::new::<f64>(
+                &[obj.property_expression("is-selected")],
+                opacity_closure,
+            );
+
+            obj.bind_property("is-selected", &self.check_button, "active")
+                .sync_create()
+                .bidirectional()
+                .build();
+            opacity_expr.bind(&self.check_button, "opacity", gtk::Widget::NONE);
+
+            // 9. Behavior
+            let gesture = gtk::GestureClick::new();
+            gesture.set_propagation_phase(gtk::PropagationPhase::Capture);
+            let gesture = gtk::GestureClick::new();
+            gesture.set_propagation_phase(gtk::PropagationPhase::Capture);
+            gesture.connect_pressed(clone!(
+                #[weak]
+                obj,
+                move |gesture, _, x, y| {
+                    // Find the widget exactly at the click coordinates
+                    let target = obj.pick(x, y, gtk::PickFlags::DEFAULT);
+
+                    if let Some(widget) = target {
+                        // If the user clicked a Button or the CheckButton,
+                        // do NOT claim the event. Let it bubble down to them.
+                        if widget.ancestor(gtk::Button::static_type()).is_some()
+                            || widget.ancestor(gtk::CheckButton::static_type()).is_some()
+                        {
+                            gesture.set_state(gtk::EventSequenceState::Denied);
+                            return;
+                        }
+                    }
+
+                    // Otherwise, it was a click on the card background.
+                    // Claim it to prevent the GridView from selecting the row.
+                    gesture.set_state(gtk::EventSequenceState::Claimed);
+                }
+            ));
+            self.overlay.add_controller(gesture);
         }
 
         fn dispose(&self) {

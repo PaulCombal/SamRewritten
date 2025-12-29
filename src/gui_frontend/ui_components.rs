@@ -68,17 +68,19 @@ pub fn create_context_menu_button() -> (MenuButton, PopoverMenu, gtk::gio::Menu)
         .icon_name("open-menu-symbolic")
         .build();
 
-    let context_menu_model = gtk::gio::Menu::new();
+    let bulk_process_section = gtk::gio::Menu::new();
+    bulk_process_section.append(Some("Select all visible apps"), Some("app.select_all_apps"));
+    bulk_process_section.append(Some("Deselect all apps"), Some("app.unselect_all_apps"));
+    bulk_process_section.append(Some("Unlock all in selection"), Some("app.unlock_all_apps"));
+    bulk_process_section.append(Some("Reset all in selection"), Some("app.lock_all_apps"));
 
-    // Let's remember we can add sections, but for now I don't see the use case
-    // let section = gio::Menu::new();
-    // section.append(Some("Sub Item A"), Some("app.subitemA"));
-    // menu.append_section(Some("Section"), &section);
+    let context_menu_model = gtk::gio::Menu::new();
     context_menu_model.append(Some("Refresh app list"), Some("app.refresh_app_list"));
     let check_item = gtk::gio::MenuItem::new(Some("Filter junk"), Some("app.filter_junk_option"));
     context_menu_model.append_item(&check_item);
     context_menu_model.append(Some("About"), Some("app.about"));
     context_menu_model.append(Some("Quit"), Some("app.quit"));
+    context_menu_model.append_section(Some("Bulk process (Beta)"), &bulk_process_section);
 
     let popover = PopoverMenu::builder()
         .position(PositionType::Bottom)
@@ -96,11 +98,18 @@ pub fn set_context_popover_to_app_list_context(
     application: &MainApplication,
 ) {
     menu_model.remove_all();
+    let bulk_process_section = gtk::gio::Menu::new();
+    bulk_process_section.append(Some("Select all visible apps"), Some("app.select_all_apps"));
+    bulk_process_section.append(Some("Deselect all apps"), Some("app.unselect_all_apps"));
+    bulk_process_section.append(Some("Unlock all in selection"), Some("app.unlock_all_apps"));
+    bulk_process_section.append(Some("Reset all in selection"), Some("app.lock_all_apps"));
+
     menu_model.append(Some("Refresh app list"), Some("app.refresh_app_list"));
     let check_item = gtk::gio::MenuItem::new(Some("Filter junk"), Some("app.filter_junk_option"));
     menu_model.append_item(&check_item);
     menu_model.append(Some("About"), Some("app.about"));
     menu_model.append(Some("Quit"), Some("app.quit"));
+    menu_model.append_section(Some("Bulk process (Beta)"), &bulk_process_section);
 
     set_app_action_enabled(&application, "refresh_achievements_list", false);
 }

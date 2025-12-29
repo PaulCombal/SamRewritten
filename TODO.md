@@ -1,7 +1,3 @@
-### High priority
-
-Selectable cards and lock/unlock all actions
-
 ### Medium priority
 
 Refactoring of gui_frontend (ask junie?)

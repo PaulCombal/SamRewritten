@@ -1,6 +1,8 @@
 # Contributing
 
-Have a look at the TODO list of things if you want to do something that will very likely be accepted
+Have a look at the TODO list of things if you want to do something that will very likely be accepted.
+
+Before making significant changes, please contact a significant contributor.
 
 Be civilized, avoid useless comments.
 
