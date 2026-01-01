@@ -70,6 +70,9 @@ mod imp {
             let obj = self.obj();
 
             // 1. Setup Base Layout
+            // 200 is hardcoded because we set a height request on the card
+            // Ideally, you want the value to be obj.height + 5
+            self.image.set_placeholder_height(200);
             self.filler_box.set_vexpand(true);
             self.main_layout.set_orientation(Orientation::Vertical);
             self.main_layout.append(&self.image);
@@ -160,6 +163,7 @@ mod imp {
             self.bottom_container.append(&button_row);
 
             // 6. Setup Checkbox (Top Left)
+            self.check_button.add_css_class("osd");
             self.check_button.set_halign(gtk::Align::Start);
             self.check_button.set_valign(gtk::Align::Start);
             self.check_button.set_margin_top(15);
@@ -193,7 +197,7 @@ mod imp {
                     .and_then(|val| val.get::<bool>().ok())
                     .unwrap_or(false);
 
-                let opacity = if is_selected { 1.0f64 } else { 0.7f64 };
+                let opacity = if is_selected { 1.0f64 } else { 0.5f64 };
                 Some(opacity.to_value())
             });
 

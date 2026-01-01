@@ -76,6 +76,8 @@ mod imp {
         pub receiver: RefCell<Option<Receiver<Texture>>>,
         pub texture: RefCell<Option<Texture>>,
         pub texture_size_ratio: Cell<f32>,
+        #[property(get, set)]
+        pub placeholder_height: Cell<i32>,
     }
 
     #[glib::object_subclass]
@@ -205,33 +207,50 @@ mod imp {
 
         fn measure(&self, orientation: gtk::Orientation, for_size: i32) -> (i32, i32, i32, i32) {
             let ratio = self.texture_size_ratio.get();
-            let min_width = self.obj().width_request();
+            let request_width = self.obj().width_request();
+            let request_height = self.obj().height_request();
 
             if orientation == gtk::Orientation::Horizontal {
                 // How wide should we be?
                 let width = if for_size < 0 {
-                    min_width
+                    request_width
                 } else {
                     // Height is known, calculate Width: W = H * ratio
                     (for_size as f32 * ratio) as i32
                 };
-                (width, width, -1, -1)
+
+                // Ensure we never report a natural size smaller than our minimum request
+                let min_w = request_width.max(16);
+                let nat_w = width.max(min_w);
+
+                (min_w, nat_w, -1, -1)
             } else {
                 // How tall should we be?
                 if self.loaded.borrow().is_none() {
-                    // If we're not loaded, just allow any requested height
-                    let height = self.obj().height_request();
-                    return (height, height, -1, -1);
+                    let min_h = request_height.max(16);
+                    let placeholder_h = self.placeholder_height.get();
+                    let nat_h = if placeholder_h > 0 {
+                        placeholder_h
+                    } else {
+                        min_h
+                    };
+                    return (min_h, nat_h, -1, -1);
                 }
 
                 let height = if for_size < 0 {
-                    // Width is unknown, calculate height from our minimum width
-                    (min_width as f32 / ratio) as i32
+                    (request_width as f32 / ratio) as i32
                 } else {
-                    // Width is known (for_size), calculate Height: H = W / ratio
-                    (for_size as f32 / ratio) as i32
+                    if request_width > 0 && for_size > request_width {
+                        request_height
+                    } else {
+                        (for_size as f32 / ratio) as i32
+                    }
                 };
-                (height, height, -1, -1)
+
+                let min_h = request_height.max(16);
+                let nat_h = height.max(min_h);
+
+                (min_h, nat_h, -1, -1)
             }
         }
     }

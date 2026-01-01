@@ -6,7 +6,7 @@
 # Strict with dev mode is used for screenshots.
 
 rm *.snap
-snap remove samrewritten
+snap remove samrewritten --purge
 snapcraft pack
 snap install --devmode --dangerous *.snap
 #snap install --dangerous *.snap
