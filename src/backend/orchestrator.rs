@@ -402,31 +402,38 @@ fn process_command(
         }
 
         SteamCommand::ResetStats(app_id, achievements_too) => {
-            let current_exe = get_executable_path();
-            let mut bidir =
-                BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
-                    .expect("Could not create app server process");
+            if let Some(bidir) = children_processes.get_mut(&app_id) {
+                let response =
+                    send_app_command(bidir, SteamCommand::ResetStats(app_id, achievements_too));
+                tx.write_all(&response)
+                    .expect("[ORCHESTRATOR] Failed to send response");
+            } else {
+                let current_exe = get_executable_path();
+                let mut bidir =
+                    BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
+                        .expect("Could not create app server process");
 
-            // Just to be sure (this is probably useless)
-            std::thread::sleep(std::time::Duration::from_millis(50));
+                // Just to be sure (this is probably useless)
+                std::thread::sleep(std::time::Duration::from_millis(50));
 
-            let response = send_app_command(
-                &mut bidir,
-                SteamCommand::ResetStats(app_id, achievements_too),
-            );
+                let response = send_app_command(
+                    &mut bidir,
+                    SteamCommand::ResetStats(app_id, achievements_too),
+                );
 
-            // Just to be sure (this is probably useless)
-            std::thread::sleep(std::time::Duration::from_millis(50));
+                // Just to be sure (this is probably useless)
+                std::thread::sleep(std::time::Duration::from_millis(10));
 
-            send_app_command(&mut bidir, SteamCommand::Shutdown);
+                send_app_command(&mut bidir, SteamCommand::Shutdown);
 
-            bidir
-                .child
-                .wait()
-                .expect("[ORCHESTRATOR] Failed to wait child process]");
+                bidir
+                    .child
+                    .wait()
+                    .expect("[ORCHESTRATOR] Failed to wait child process]");
 
-            tx.write_all(&response)
-                .expect("[ORCHESTRATOR] Failed to send response");
+                tx.write_all(&response)
+                    .expect("[ORCHESTRATOR] Failed to send response");
+            }
         }
     };
 
