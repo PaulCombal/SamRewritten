@@ -184,11 +184,11 @@ impl Request for SetAchievement {
 }
 
 impl Request for UnlockAllAchievements {
-    type Response = ();
+    type Response = bool;
 }
 
 impl Request for StoreStatsAndAchievements {
-    type Response = ();
+    type Response = bool;
 }
 
 impl Request for SetIntStat {
@@ -203,75 +203,75 @@ impl Request for ResetStats {
     type Response = bool;
 }
 
-impl Into<SteamCommand> for GetSubscribedAppList {
-    fn into(self) -> SteamCommand {
+impl From<GetSubscribedAppList> for SteamCommand {
+    fn from(val: GetSubscribedAppList) -> Self {
         SteamCommand::GetSubscribedAppList
     }
 }
 
-impl Into<SteamCommand> for Shutdown {
-    fn into(self) -> SteamCommand {
+impl From<Shutdown> for SteamCommand {
+    fn from(val: Shutdown) -> Self {
         SteamCommand::Shutdown
     }
 }
 
-impl Into<SteamCommand> for LaunchApp {
-    fn into(self) -> SteamCommand {
-        SteamCommand::LaunchApp(self.app_id)
+impl From<LaunchApp> for SteamCommand {
+    fn from(val: LaunchApp) -> Self {
+        SteamCommand::LaunchApp(val.app_id)
     }
 }
 
-impl Into<SteamCommand> for StopApp {
-    fn into(self) -> SteamCommand {
-        SteamCommand::StopApp(self.app_id)
+impl From<StopApp> for SteamCommand {
+    fn from(val: StopApp) -> Self {
+        SteamCommand::StopApp(val.app_id)
     }
 }
 
-impl Into<SteamCommand> for GetAchievements {
-    fn into(self) -> SteamCommand {
-        SteamCommand::GetAchievements(self.app_id)
+impl From<GetAchievements> for SteamCommand {
+    fn from(val: GetAchievements) -> Self {
+        SteamCommand::GetAchievements(val.app_id)
     }
 }
 
-impl Into<SteamCommand> for GetStats {
-    fn into(self) -> SteamCommand {
-        SteamCommand::GetStats(self.app_id)
+impl From<GetStats> for SteamCommand {
+    fn from(val: GetStats) -> Self {
+        SteamCommand::GetStats(val.app_id)
     }
 }
 
-impl Into<SteamCommand> for SetAchievement {
-    fn into(self) -> SteamCommand {
-        SteamCommand::SetAchievement(self.app_id, self.unlocked, self.achievement_id, self.store)
+impl From<SetAchievement> for SteamCommand {
+    fn from(val: SetAchievement) -> Self {
+        SteamCommand::SetAchievement(val.app_id, val.unlocked, val.achievement_id, val.store)
     }
 }
 
-impl Into<SteamCommand> for StoreStatsAndAchievements {
-    fn into(self) -> SteamCommand {
-        SteamCommand::StoreStatsAndAchievements(self.app_id)
+impl From<StoreStatsAndAchievements> for SteamCommand {
+    fn from(val: StoreStatsAndAchievements) -> Self {
+        SteamCommand::StoreStatsAndAchievements(val.app_id)
     }
 }
 
-impl Into<SteamCommand> for UnlockAllAchievements {
-    fn into(self) -> SteamCommand {
-        SteamCommand::UnlockAllAchievements(self.app_id)
+impl From<UnlockAllAchievements> for SteamCommand {
+    fn from(val: UnlockAllAchievements) -> Self {
+        SteamCommand::UnlockAllAchievements(val.app_id)
     }
 }
 
-impl Into<SteamCommand> for SetIntStat {
-    fn into(self) -> SteamCommand {
-        SteamCommand::SetIntStat(self.app_id, self.stat_id, self.value)
+impl From<SetIntStat> for SteamCommand {
+    fn from(val: SetIntStat) -> Self {
+        SteamCommand::SetIntStat(val.app_id, val.stat_id, val.value)
     }
 }
 
-impl Into<SteamCommand> for SetFloatStat {
-    fn into(self) -> SteamCommand {
-        SteamCommand::SetFloatStat(self.app_id, self.stat_id, self.value)
+impl From<SetFloatStat> for SteamCommand {
+    fn from(val: SetFloatStat) -> Self {
+        SteamCommand::SetFloatStat(val.app_id, val.stat_id, val.value)
     }
 }
 
-impl Into<SteamCommand> for ResetStats {
-    fn into(self) -> SteamCommand {
-        SteamCommand::ResetStats(self.app_id, self.achievements_too)
+impl From<ResetStats> for SteamCommand {
+    fn from(val: ResetStats) -> Self {
+        SteamCommand::ResetStats(val.app_id, val.achievements_too)
     }
 }
 

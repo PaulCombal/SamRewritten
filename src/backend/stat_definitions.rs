@@ -269,6 +269,11 @@ pub struct AchievementDefinition {
     pub icon_normal: String,
     pub icon_locked: String,
     pub is_hidden: bool,
+
+    /// Rumors are the achievement permission values are:
+    /// 0: Unprotected achievement: unlockable
+    /// 1: Game server achievements
+    /// 2: Developer/publisher achievements (event-driven, seasonal, earned in a privileged session)
     pub permission: i32,
 }
 

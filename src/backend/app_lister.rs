@@ -236,7 +236,7 @@ impl<'a> AppLister<'a> {
             app_type: if xml_game.app_type.as_ref().is_none() {
                 AppModelType::App
             } else {
-                AppModelType::from_str(&xml_game.app_type.as_ref().unwrap())
+                AppModelType::from_str(xml_game.app_type.as_ref().unwrap())
                     .map_err(|_| SamError::AppListRetrievalFailed)?
             },
             developer,
@@ -254,7 +254,7 @@ impl<'a> AppLister<'a> {
         for xml_game in xml_games.games {
             let app_id: AppId_t = xml_game.app_id;
 
-            if self.steam_apps.is_subscribed_app(app_id).unwrap_or(false) == false {
+            if !self.steam_apps.is_subscribed_app(app_id).unwrap_or(false) {
                 continue;
             }
 

@@ -243,10 +243,10 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> i
                 }
 
                 let response = match app_manager.unlock_all_achievements() {
-                    Ok(_) => SteamResponse::Success(()),
+                    Ok(_) => SteamResponse::Success(true),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error unlocking all achievements: {e}");
-                        SteamResponse::Error::<()>(e)
+                        SteamResponse::Error::<bool>(e)
                     }
                 };
                 let response = response.sam_serialize();

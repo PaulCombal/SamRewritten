@@ -117,7 +117,7 @@ impl SteamUserStats {
             let success =
                 (vtable.get_stat_int32)(self.inner.ptr, c_stat_name.as_ptr(), &mut stat_value);
 
-            if success == false {
+            if !success {
                 return Err(SteamClientError::UnknownError);
             }
 
@@ -139,7 +139,7 @@ impl SteamUserStats {
             let success =
                 (vtable.get_stat_float)(self.inner.ptr, c_stat_name.as_ptr(), &mut stat_value);
 
-            if success == false {
+            if !success {
                 return Err(SteamClientError::UnknownError);
             }
 
@@ -159,7 +159,7 @@ impl SteamUserStats {
 
             let success = (vtable.set_stat_int32)(self.inner.ptr, c_stat_name.as_ptr(), stat_value);
 
-            if success == false {
+            if !success {
                 return Err(SteamClientError::UnknownError);
             }
 
@@ -183,7 +183,7 @@ impl SteamUserStats {
 
             let success = (vtable.set_stat_float)(self.inner.ptr, c_stat_name.as_ptr(), stat_value);
 
-            if success == false {
+            if !success {
                 return Err(SteamClientError::UnknownError);
             }
 

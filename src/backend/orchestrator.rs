@@ -26,8 +26,12 @@ use std::collections::HashMap;
 use std::io::Read;
 use std::io::Write;
 use std::process::Command;
+use std::sync::LazyLock;
 
-fn send_app_command(bidir: &mut BidirChild, command: SteamCommand) -> Vec<u8> {
+fn send_app_command(
+    bidir: &mut BidirChild,
+    command: SteamCommand,
+) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let command = command.sam_serialize();
     let mut buffer_len = [0u8; size_of::<usize>()];
     bidir.tx.write_all(&command).expect("Send command failed");
@@ -36,7 +40,7 @@ fn send_app_command(bidir: &mut BidirChild, command: SteamCommand) -> Vec<u8> {
         Ok(_) => {}
         Err(e) => {
             eprintln!("[ORCHESTRATOR] Error reading length from pipe: {e}");
-            return SteamResponse::<()>::Error(SamError::SocketCommunicationFailed).sam_serialize();
+            return Err(e.into());
         }
     }
 
@@ -47,14 +51,14 @@ fn send_app_command(bidir: &mut BidirChild, command: SteamCommand) -> Vec<u8> {
         Ok(_) => {}
         Err(e) => {
             eprintln!("[ORCHESTRATOR] Error reading message from pipe: {e}");
-            return SteamResponse::<()>::Error(SamError::SocketCommunicationFailed).sam_serialize();
+            return Err(e.into());
         }
     };
 
     let mut result = Vec::with_capacity(buffer_len.len() + buffer.len());
     result.extend_from_slice(&buffer_len);
     result.extend_from_slice(&buffer);
-    result
+    Ok(result)
 }
 
 pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> i32 {
@@ -110,6 +114,10 @@ fn process_command(
     children_processes: &mut HashMap<u32, BidirChild>,
     connected_steam: &mut ConnectedSteam,
 ) -> bool {
+    static SOCKET_ERROR_RESPONSE: LazyLock<Vec<u8>> = LazyLock::new(|| {
+        SteamResponse::<()>::Error(SamError::SocketCommunicationFailed).sam_serialize()
+    });
+
     match command {
         SteamCommand::GetSubscribedAppList => {
             dev_println!("[ORCHESTRATOR] Received GetSubscribedAppList");
@@ -187,7 +195,15 @@ fn process_command(
 
             let mut bidir_opt = children_processes.remove(&app_id);
             let bidir = bidir_opt.as_mut().unwrap();
-            let response = send_app_command(bidir, SteamCommand::Shutdown);
+            let response = match send_app_command(bidir, SteamCommand::Shutdown) {
+                Ok(response) => response,
+                Err(_) => {
+                    dev_println!("[ORCHESTRATOR] Error sending shutdown command to app {app_id}");
+                    tx.write_all(&SOCKET_ERROR_RESPONSE)
+                        .expect("[ORCHESTRATOR] Failed to send response");
+                    return true;
+                }
+            };
 
             bidir
                 .child
@@ -202,7 +218,7 @@ fn process_command(
             dev_println!("[ORCHESTRATOR] StopApps");
 
             for (app_id, child) in children_processes.iter_mut() {
-                send_app_command(child, SteamCommand::Shutdown);
+                let _ = send_app_command(child, SteamCommand::Shutdown);
                 dev_println!("[ORCHESTRATOR] Sent shutdown command to app {app_id}");
                 child
                     .child
@@ -220,7 +236,7 @@ fn process_command(
 
         SteamCommand::Shutdown => {
             for (app_id, child) in children_processes.iter_mut() {
-                send_app_command(child, SteamCommand::Shutdown);
+                let _ = send_app_command(child, SteamCommand::Shutdown);
                 dev_println!("[ORCHESTRATOR] Sent shutdown command to app {app_id}");
                 child
                     .child
@@ -269,9 +285,17 @@ fn process_command(
             }
 
             if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response = send_app_command(bidir, SteamCommand::GetAchievements(app_id));
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
+                match send_app_command(bidir, SteamCommand::GetAchievements(app_id)) {
+                    Ok(response) => {
+                        tx.write_all(&response)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        dev_println!("[ORCHESTRATOR] Failed to load achievements for app {app_id}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                };
             } else {
                 let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
                 let response = response.sam_serialize();
@@ -290,9 +314,17 @@ fn process_command(
             }
 
             if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response = send_app_command(bidir, SteamCommand::GetStats(app_id));
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
+                match send_app_command(bidir, SteamCommand::GetStats(app_id)) {
+                    Ok(response) => {
+                        tx.write_all(&response)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        dev_println!("[ORCHESTRATOR] Failed to load stats for app {app_id}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
             } else {
                 let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
                 let response = response.sam_serialize();
@@ -311,12 +343,20 @@ fn process_command(
             }
 
             if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response = send_app_command(
+                match send_app_command(
                     bidir,
                     SteamCommand::SetAchievement(app_id, unlocked, achievement_id, store),
-                );
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
+                ) {
+                    Ok(response) => {
+                        tx.write_all(&response)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        dev_println!("[ORCHESTRATOR] Failed to set achievement for app {app_id}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
             } else {
                 let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
                 let response = response.sam_serialize();
@@ -332,23 +372,39 @@ fn process_command(
                     .expect("Could not create app server process");
 
             // Just to be sure (this is probably useless)
-            std::thread::sleep(std::time::Duration::from_millis(50));
+            std::thread::sleep(std::time::Duration::from_millis(10));
 
             let response =
                 send_app_command(&mut bidir, SteamCommand::UnlockAllAchievements(app_id));
 
             // Just to be sure (this is probably useless)
-            std::thread::sleep(std::time::Duration::from_millis(50));
+            std::thread::sleep(std::time::Duration::from_millis(10));
 
-            send_app_command(&mut bidir, SteamCommand::Shutdown);
+            match send_app_command(&mut bidir, SteamCommand::Shutdown) {
+                Ok(_) => {}
+                Err(_) => {
+                    dev_println!("[ORCHESTRATOR] Error sending shutdown command to app {app_id}");
+                    tx.write_all(&SOCKET_ERROR_RESPONSE)
+                        .expect("[ORCHESTRATOR] Failed to send response");
+                    return true;
+                }
+            };
 
             bidir
                 .child
                 .wait()
                 .expect("[ORCHESTRATOR] Failed to wait child process]");
 
-            tx.write_all(&response)
-                .expect("[ORCHESTRATOR] Failed to send response");
+            match response {
+                Ok(resp) => {
+                    tx.write_all(&resp)
+                        .expect("[ORCHESTRATOR] Failed to send response");
+                }
+                Err(_) => {
+                    tx.write_all(&SOCKET_ERROR_RESPONSE)
+                        .expect("[ORCHESTRATOR] Failed to send response");
+                }
+            }
         }
 
         SteamCommand::StoreStatsAndAchievements(app_id) => {
@@ -361,10 +417,17 @@ fn process_command(
             }
 
             if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response =
-                    send_app_command(bidir, SteamCommand::StoreStatsAndAchievements(app_id));
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
+                match send_app_command(bidir, SteamCommand::StoreStatsAndAchievements(app_id)) {
+                    Ok(response) => {
+                        tx.write_all(&response)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        dev_println!("[ORCHESTRATOR] Failed to store stats for app {app_id}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
             } else {
                 let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
                 let response = response.sam_serialize();
@@ -375,10 +438,17 @@ fn process_command(
 
         SteamCommand::SetIntStat(app_id, stat_id, value) => {
             if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response =
-                    send_app_command(bidir, SteamCommand::SetIntStat(app_id, stat_id, value));
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
+                match send_app_command(bidir, SteamCommand::SetIntStat(app_id, stat_id, value)) {
+                    Ok(response) => {
+                        tx.write_all(&response)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        dev_println!("[ORCHESTRATOR] Failed to set stat for app {app_id}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
             } else {
                 let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
                 let response = response.sam_serialize();
@@ -389,10 +459,17 @@ fn process_command(
 
         SteamCommand::SetFloatStat(app_id, stat_id, value) => {
             if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response =
-                    send_app_command(bidir, SteamCommand::SetFloatStat(app_id, stat_id, value));
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
+                match send_app_command(bidir, SteamCommand::SetFloatStat(app_id, stat_id, value)) {
+                    Ok(response) => {
+                        tx.write_all(&response)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        dev_println!("[ORCHESTRATOR] Failed to set stat for app {app_id}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
             } else {
                 let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
                 let response = response.sam_serialize();
@@ -403,10 +480,17 @@ fn process_command(
 
         SteamCommand::ResetStats(app_id, achievements_too) => {
             if let Some(bidir) = children_processes.get_mut(&app_id) {
-                let response =
-                    send_app_command(bidir, SteamCommand::ResetStats(app_id, achievements_too));
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
+                match send_app_command(bidir, SteamCommand::ResetStats(app_id, achievements_too)) {
+                    Ok(response) => {
+                        tx.write_all(&response)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        dev_println!("[ORCHESTRATOR] Failed to reset stats for app {app_id}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
             } else {
                 let current_exe = get_executable_path();
                 let mut bidir =
@@ -414,7 +498,7 @@ fn process_command(
                         .expect("Could not create app server process");
 
                 // Just to be sure (this is probably useless)
-                std::thread::sleep(std::time::Duration::from_millis(50));
+                std::thread::sleep(std::time::Duration::from_millis(10));
 
                 let response = send_app_command(
                     &mut bidir,
@@ -424,15 +508,33 @@ fn process_command(
                 // Just to be sure (this is probably useless)
                 std::thread::sleep(std::time::Duration::from_millis(10));
 
-                send_app_command(&mut bidir, SteamCommand::Shutdown);
+                match send_app_command(&mut bidir, SteamCommand::Shutdown) {
+                    Ok(_) => {}
+                    Err(_) => {
+                        dev_println!(
+                            "[ORCHESTRATOR] Error sending shutdown command (resetting stats) to app {app_id}"
+                        );
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                        return true;
+                    }
+                };
 
                 bidir
                     .child
                     .wait()
                     .expect("[ORCHESTRATOR] Failed to wait child process]");
 
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
+                match response {
+                    Ok(resp) => {
+                        tx.write_all(&resp)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
             }
         }
     };

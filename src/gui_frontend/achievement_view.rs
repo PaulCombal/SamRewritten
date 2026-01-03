@@ -47,7 +47,7 @@ pub fn create_achievements_view(
     let app_timed_achievements_model = ListStore::new::<GAchievementObject>();
 
     let app_achievement_string_filter = StringFilter::builder()
-        .expression(&GAchievementObject::this_expression("search-text"))
+        .expression(GAchievementObject::this_expression("search-text"))
         .match_mode(StringFilterMatchMode::Substring)
         .ignore_case(true)
         .build();
@@ -98,11 +98,11 @@ pub fn create_achievements_view(
         &app_achievements_model,
         &app_timed_achievements_model,
         &achievement_views_stack,
-        &app_achievement_count_value,
-        &application,
+        app_achievement_count_value,
+        application,
     );
     let (achievements_automatic_frame, _achievements_automatic_stop) =
-        create_achievements_automatic_view(&app_timed_achievement_selection_model, &application);
+        create_achievements_automatic_view(&app_timed_achievement_selection_model, application);
 
     achievement_views_stack.add_named(&achievements_manual_frame, Some("manual"));
     achievement_views_stack.add_named(&achievements_automatic_frame, Some("automatic"));
@@ -120,14 +120,12 @@ pub fn create_achievements_view(
 
 pub fn count_unlocked_achievements(model: &ListStore) -> u32 {
     let mut count = 0;
-    for ach in model {
-        if let Ok(obj) = ach {
-            let g_achievement = obj
-                .downcast::<GAchievementObject>()
-                .expect("Not a GAchievementObject");
-            if g_achievement.is_achieved() {
-                count += 1;
-            }
+    for obj in model.into_iter().flatten() {
+        let g_achievement = obj
+            .downcast::<GAchievementObject>()
+            .expect("Not a GAchievementObject");
+        if g_achievement.is_achieved() {
+            count += 1;
         }
     }
     count

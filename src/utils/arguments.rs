@@ -65,7 +65,7 @@ pub fn parse_cli_arguments() -> CliArguments {
                 let key = split[0];
                 let value = split[1];
 
-                if value.len() == 0 {
+                if value.is_empty() {
                     continue;
                 }
 
@@ -132,16 +132,15 @@ pub fn parse_gui_arguments(cmd_line: &gtk::gio::ApplicationCommandLine) -> GuiAr
 
     for arg in arguments.iter().skip(1) {
         // Skip the first argument (program name)
-        if let Some(arg_str) = arg.to_str() {
-            if arg_str.starts_with("--auto-open=") {
-                if let Some(value_str) = arg_str.strip_prefix("--auto-open=") {
-                    if let Ok(value) = value_str.parse::<u32>() {
-                        args.auto_open.set(value);
-                        println!("Parsed --auto-open value: {}", value);
-                    } else {
-                        eprintln!("Error: Invalid value for --auto-open: {}", value_str);
-                    }
-                }
+        if let Some(arg_str) = arg.to_str()
+            && arg_str.starts_with("--auto-open=")
+            && let Some(value_str) = arg_str.strip_prefix("--auto-open=")
+        {
+            if let Ok(value) = value_str.parse::<u32>() {
+                args.auto_open.set(value);
+                println!("Parsed --auto-open value: {}", value);
+            } else {
+                eprintln!("Error: Invalid value for --auto-open: {}", value_str);
             }
         }
     }

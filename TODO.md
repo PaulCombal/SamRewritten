@@ -1,3 +1,7 @@
+### High priority
+
+- Once Ubuntu 26.04 LTS is out, upgrade the GTK and Adwaita versions to 24.04
+
 ### Medium priority
 
 Refactoring of gui_frontend (ask junie?)

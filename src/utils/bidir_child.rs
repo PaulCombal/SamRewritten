@@ -39,12 +39,11 @@ impl BidirChild {
         let child_to_parent_tx_handle: i32 = child_to_parent_tx.into_raw_fd();
         let parent_to_child_rx_handle: i32 = parent_to_child_rx.into_raw_fd();
 
-        let child = match {
-            command
-                .arg(format!("--tx={child_to_parent_tx_handle}"))
-                .arg(format!("--rx={parent_to_child_rx_handle}"))
-                .spawn()
-        } {
+        let child = match command
+            .arg(format!("--tx={child_to_parent_tx_handle}"))
+            .arg(format!("--rx={parent_to_child_rx_handle}"))
+            .spawn()
+        {
             Ok(child) => {
                 // We don't need to close the ends we don't need, they are already consumed
                 // drop(parent_to_child_rx);

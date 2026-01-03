@@ -120,9 +120,9 @@ pub trait SamSerializable {
 impl<T> SamSerializable for SteamResponse<T> where T: Sized + Serialize {}
 impl SamSerializable for SteamCommand {}
 
-impl<T> Into<Result<T, SamError>> for SteamResponse<T> {
-    fn into(self) -> Result<T, SamError> {
-        match self {
+impl<T> From<SteamResponse<T>> for Result<T, SamError> {
+    fn from(val: SteamResponse<T>) -> Self {
+        match val {
             SteamResponse::Success(data) => Ok(data),
             SteamResponse::Error(error) => Err(error),
         }

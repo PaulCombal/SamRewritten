@@ -44,20 +44,18 @@ impl ShimmerImage {
 }
 
 mod imp {
-    use crate::dev_println;
     use glib::Properties;
+    use glib::ThreadPool;
     use gtk::gdk::{RGBA, Texture};
-    use gtk::gio::spawn_blocking;
-    use gtk::glib::{self, Bytes, base64_encode};
+    use gtk::glib::{self};
     use gtk::graphene::{Point, Rect, Size};
     use gtk::gsk::{ColorStop, LinearGradientNode, RoundedRect};
     use gtk::prelude::*;
     use gtk::subclass::prelude::*;
-    use reqwest::blocking::Client;
     use std::cell::{Cell, RefCell};
-    use std::env::temp_dir;
-    use std::fs::{exists, write};
-    use std::sync::mpsc::{Receiver, TryRecvError, sync_channel};
+    use std::hash::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+    use std::sync::mpsc::{Receiver, TryRecvError};
 
     const GRADIENT_WIDTH: f32 = 0.8;
     const BASE_COLOR: RGBA = RGBA::new(0.7, 0.7, 0.7, 1.0);
@@ -116,6 +114,58 @@ mod imp {
     }
 
     impl WidgetImpl for ShimmerImage {
+        fn request_mode(&self) -> gtk::SizeRequestMode {
+            // This tells GTK that height depends on width
+            gtk::SizeRequestMode::HeightForWidth
+        }
+
+        fn measure(&self, orientation: gtk::Orientation, for_size: i32) -> (i32, i32, i32, i32) {
+            let ratio = self.texture_size_ratio.get();
+            let request_width = self.obj().width_request();
+            let request_height = self.obj().height_request();
+
+            if orientation == gtk::Orientation::Horizontal {
+                // How wide should we be?
+                let width = if for_size < 0 {
+                    request_width
+                } else {
+                    // Height is known, calculate Width: W = H * ratio
+                    (for_size as f32 * ratio) as i32
+                };
+
+                // Ensure we never report a natural size smaller than our minimum request
+                let min_w = request_width.max(16);
+                let nat_w = width.max(min_w);
+
+                (min_w, nat_w, -1, -1)
+            } else {
+                // How tall should we be?
+                if self.loaded.borrow().is_none() {
+                    let min_h = request_height.max(16);
+                    let placeholder_h = self.placeholder_height.get();
+                    let nat_h = if placeholder_h > 0 {
+                        placeholder_h
+                    } else {
+                        min_h
+                    };
+                    return (min_h, nat_h, -1, -1);
+                }
+
+                let height = if for_size < 0 {
+                    (request_width as f32 / ratio) as i32
+                } else if request_width > 0 && for_size > request_width {
+                    request_height
+                } else {
+                    (for_size as f32 / ratio) as i32
+                };
+
+                let min_h = request_height.max(16);
+                let nat_h = height.max(min_h);
+
+                (min_h, nat_h, -1, -1)
+            }
+        }
+
         fn snapshot(&self, snapshot: &gtk::Snapshot) {
             let widget = self.obj();
             let width = widget.width() as f32;
@@ -126,14 +176,14 @@ mod imp {
             let rounded = RoundedRect::new(rect, size, size, size, size);
             snapshot.push_rounded_clip(&rounded);
 
-            if let Some(url) = self.url.borrow_mut().take() {
-                if Some(url.as_str()) != self.loaded.borrow().as_deref() {
-                    self.texture.borrow_mut().take();
-                    self.loaded.borrow_mut().take();
-                    self.receiver.borrow_mut().take();
-                    self.load(url.as_str());
-                    self.loaded.borrow_mut().replace(url);
-                }
+            if let Some(url) = self.url.borrow_mut().take()
+                && Some(url.as_str()) != self.loaded.borrow().as_deref()
+            {
+                self.texture.borrow_mut().take();
+                self.loaded.borrow_mut().take();
+                self.receiver.borrow_mut().take();
+                self.load(url.as_str());
+                self.loaded.borrow_mut().replace(url);
             }
 
             let receiver = self.receiver.borrow_mut().take();
@@ -199,159 +249,91 @@ mod imp {
 
             snapshot.pop();
         }
-
-        fn request_mode(&self) -> gtk::SizeRequestMode {
-            // This tells GTK that height depends on width
-            gtk::SizeRequestMode::HeightForWidth
-        }
-
-        fn measure(&self, orientation: gtk::Orientation, for_size: i32) -> (i32, i32, i32, i32) {
-            let ratio = self.texture_size_ratio.get();
-            let request_width = self.obj().width_request();
-            let request_height = self.obj().height_request();
-
-            if orientation == gtk::Orientation::Horizontal {
-                // How wide should we be?
-                let width = if for_size < 0 {
-                    request_width
-                } else {
-                    // Height is known, calculate Width: W = H * ratio
-                    (for_size as f32 * ratio) as i32
-                };
-
-                // Ensure we never report a natural size smaller than our minimum request
-                let min_w = request_width.max(16);
-                let nat_w = width.max(min_w);
-
-                (min_w, nat_w, -1, -1)
-            } else {
-                // How tall should we be?
-                if self.loaded.borrow().is_none() {
-                    let min_h = request_height.max(16);
-                    let placeholder_h = self.placeholder_height.get();
-                    let nat_h = if placeholder_h > 0 {
-                        placeholder_h
-                    } else {
-                        min_h
-                    };
-                    return (min_h, nat_h, -1, -1);
-                }
-
-                let height = if for_size < 0 {
-                    (request_width as f32 / ratio) as i32
-                } else {
-                    if request_width > 0 && for_size > request_width {
-                        request_height
-                    } else {
-                        (for_size as f32 / ratio) as i32
-                    }
-                };
-
-                let min_h = request_height.max(16);
-                let nat_h = height.max(min_h);
-
-                (min_h, nat_h, -1, -1)
-            }
-        }
     }
 
     impl ShimmerImage {
+        // TODO: Once we use GTK4.10+, maybe refactor to use MainContext::channel
+        // TODO: clear the Pool when the application has requested to exit
         fn load(&self, url: &str) {
             self.failed.set(false);
-            let split = url.split("://").collect::<Vec<&str>>();
-            if split.len() != 2 {
-                dev_println!("[CLIENT] Invalid URL: {url}");
-                self.failed.set(true);
-                return;
+            let url_string = url.to_string();
+            let (sender, receiver) = std::sync::mpsc::channel::<Result<Vec<u8>, ()>>();
+            let obj_weak = self.obj().downgrade();
+
+            // Limit concurrency to 8 threads to keep the system smooth
+            // This is only meant to be called on the main thread
+            thread_local! {
+                static POOL: ThreadPool = ThreadPool::shared(Some(8)).expect("Failed to create thread pool");
             }
 
-            let (sender, receiver) = sync_channel::<Texture>(0);
-            self.receiver.borrow_mut().replace(receiver);
-            let failed = self.failed.clone();
+            POOL.with(|pool| {
+                let res = pool.push(move || {
+                    let result = if url_string.starts_with("file://") {
+                        let path = url_string.replace("file://", "");
+                        std::fs::read(path).map_err(|_| ())
+                    } else {
+                        let mut hasher = DefaultHasher::new();
+                        url_string.hash(&mut hasher);
+                        let hash_name = format!("{:x}.cache", hasher.finish());
 
-            match split[0] {
-                "https" => {
-                    let mut path = temp_dir();
-                    let url = url.to_string();
-                    path.push(format!("{}.jpg", base64_encode(url.as_bytes())));
+                        let mut cache_path = std::env::temp_dir();
+                        cache_path.push(hash_name);
 
-                    spawn_blocking(move || {
-                        if !exists(path.as_path()).unwrap_or_default() {
-                            dev_println!("[CLIENT] Downloading: {url}");
-                            //Download and store to path
-                            let response = match Client::new()
-                                .get(url.as_str())
-                                .send()
-                                .and_then(|response| response.error_for_status())
-                                .and_then(|response| response.bytes())
-                            {
-                                Ok(response) => response,
-                                Err(error) => {
-                                    failed.set(true);
-                                    return eprintln!("[CLIENT] Failed to download {url}: {error}");
-                                }
-                            };
-
-                            if let Err(error) = write(path.as_path(), response) {
-                                failed.set(true);
-                                eprintln!("[CLIENT] Failed to write {url} to {path:?}: {error}");
-                                return;
-                            }
+                        if cache_path.exists() {
+                            Ok(std::fs::read(&cache_path).unwrap())
                         } else {
-                            dev_println!("[CLIENT] Cached loading: {url}");
-                        }
-
-                        let data = match std::fs::read(path.as_path()) {
-                            Ok(data) => data,
-                            Err(error) => {
-                                failed.set(true);
-                                eprintln!("[CLIENT] Failed to read {url} from {path:?}: {error}");
-                                return;
-                            }
-                        };
-
-                        match Texture::from_bytes(&Bytes::from(data.as_slice())) {
-                            Ok(texture) => {
-                                sender.send(texture).ok();
-                            }
-                            Err(error) => {
-                                failed.set(true);
-                                eprintln!("[CLIENT] Failed to create {url} from bytes: {error}");
+                            // Download from HTTPS
+                            let client = reqwest::blocking::Client::new();
+                            match client.get(&url_string).send().and_then(|res| res.bytes()) {
+                                Ok(bytes) => {
+                                    let data = bytes.to_vec();
+                                    let _ = std::fs::write(&cache_path, &data);
+                                    Ok(data)
+                                }
+                                Err(_) => Err(()),
                             }
                         }
-                    });
-                }
-                "file" => {
-                    let file_path = split[1].to_string();
-                    spawn_blocking(move || {
-                        // std::thread::sleep(std::time::Duration::from_millis(5000));
-                        let data = match std::fs::read(&file_path) {
-                            Ok(data) => data,
-                            Err(error) => {
-                                failed.set(true);
-                                eprintln!("[CLIENT] Failed to read {file_path}: {error}");
-                                return;
-                            }
-                        };
+                    };
 
-                        match Texture::from_bytes(&Bytes::from(data.as_slice())) {
-                            Ok(texture) => {
-                                sender.send(texture).ok();
+                    let _ = sender.send(result);
+
+                    // Wake up the Main Loop
+                    glib::idle_add(|| glib::ControlFlow::Break);
+                });
+
+                if res.is_err() {
+                    self.failed.set(true);
+                }
+            });
+
+            // 3. UI Thread: Watch for the result
+            glib::idle_add_local(move || {
+                if let Ok(res) = receiver.try_recv() {
+                    if let Some(obj) = obj_weak.upgrade() {
+                        let imp = obj.imp();
+                        match res {
+                            Ok(data) => {
+                                let gbytes = glib::Bytes::from(&data);
+                                if let Ok(texture) = Texture::from_bytes(&gbytes) {
+                                    let ratio = texture.width() as f32 / texture.height() as f32;
+                                    imp.texture_size_ratio.set(ratio);
+                                    imp.texture.borrow_mut().replace(texture);
+                                    obj.queue_resize();
+                                } else {
+                                    imp.failed.set(true);
+                                    obj.queue_draw();
+                                }
                             }
-                            Err(error) => {
-                                failed.set(true);
-                                eprintln!(
-                                    "[CLIENT] Failed to create {file_path} from bytes: {error}"
-                                );
+                            Err(_) => {
+                                imp.failed.set(true);
+                                obj.queue_draw();
                             }
                         }
-                    });
+                    }
+                    return glib::ControlFlow::Break;
                 }
-                _ => {
-                    failed.set(true);
-                    dev_println!("[CLIENT] Unsupported URL scheme: {url}");
-                }
-            }
+                glib::ControlFlow::Continue
+            });
         }
     }
 }

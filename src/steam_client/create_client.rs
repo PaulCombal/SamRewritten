@@ -109,7 +109,7 @@ pub fn create_steam_client(silent: bool) -> Result<SteamClient, Box<dyn std::err
     }
 
     let (raw_client, callback_fn, free_callback_fn) =
-        new_steam_client_interface(&STEAM_CLIENT_LIB.get().unwrap())?;
+        new_steam_client_interface(STEAM_CLIENT_LIB.get().unwrap())?;
     let client = unsafe { SteamClient::from_raw(raw_client, callback_fn, free_callback_fn) };
 
     Ok(client)

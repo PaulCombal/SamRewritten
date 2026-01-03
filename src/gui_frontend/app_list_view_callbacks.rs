@@ -73,7 +73,7 @@ pub(crate) fn switch_from_app_list_to_app(
         .request()
     });
 
-    set_context_popover_to_app_details_context(&menu_model, &application);
+    set_context_popover_to_app_details_context(menu_model, &application);
 
     MainContext::default().spawn_local(clone!(async move {
         match handle.await {

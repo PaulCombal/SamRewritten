@@ -137,7 +137,7 @@ impl KeyValue {
 
     pub fn get(&self, key: &str) -> &KeyValue {
         // self.children.get(key).cloned().unwrap_or_else(Self::invalid)
-        self.children.get(key).unwrap_or(&Self::invalid())
+        self.children.get(key).unwrap_or(Self::invalid())
     }
 
     pub fn as_string(&self, default: &str) -> String {

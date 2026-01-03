@@ -204,7 +204,7 @@ impl<'a> AppManager {
                             continue;
                         }
 
-                        if bits.1.valid == false || bits.1.children.is_empty() {
+                        if !bits.1.valid || bits.1.children.is_empty() {
                             continue;
                         }
 
@@ -496,7 +496,7 @@ impl<'a> AppManager {
                 continue;
             }
 
-            if (achievement.permission & 2) != 0 {
+            if achievement.permission != 0 {
                 continue;
             }
 

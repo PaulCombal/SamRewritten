@@ -113,7 +113,8 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         .icon_name("go-previous")
         .sensitive(false)
         .build();
-    let (context_menu_button, _, menu_model) = create_context_menu_button();
+    let (context_menu_button, _, menu_model, header_menu_icon, header_menu_spinner) =
+        create_context_menu_button();
     header_bar.pack_start(&back_button);
     header_bar.pack_start(&search_entry);
     header_bar.pack_end(&context_menu_button);
@@ -359,8 +360,9 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             }
 
             let handler = manage_button_new_window.connect_clicked(move |_| {
+                // TODO: Find a way to gracefully wait for this
                 Command::new(get_executable_path())
-                    .arg(&format!("--auto-open={app_id_to_bind}"))
+                    .arg(format!("--auto-open={app_id_to_bind}"))
                     .spawn()
                     .expect("Could not start child process");
             });
@@ -373,7 +375,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                 #[cfg(unix)]
                 {
                     Command::new("xdg-open")
-                        .arg(&format!("steam://run/{app_id_to_bind}"))
+                        .arg(format!("steam://run/{app_id_to_bind}"))
                         .spawn()
                         .expect("Could not start child process")
                         .wait()
@@ -491,7 +493,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
 
             // This logic is needed to have flashes of "no results found"
             if launch_app_by_id_visible.take() {
-                if let Some(app_id) = text.as_ref().map(|t| t.parse::<u32>().ok()).flatten() {
+                if let Some(app_id) = text.as_ref().and_then(|t| t.parse::<u32>().ok()) {
                     launch_app_by_id_visible.set(true);
                     list_store.insert(
                         1,
@@ -513,7 +515,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                 return;
             }
 
-            if let Some(app_id) = text.clone().map(|t| t.parse::<u32>().ok()).flatten() {
+            if let Some(app_id) = text.clone().and_then(|t| t.parse::<u32>().ok()) {
                 launch_app_by_id_visible.set(true);
                 list_store.insert(
                     0,
@@ -626,6 +628,12 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     action_unlock_all_selected.connect_activate(clone!(
         #[weak]
         grid_view,
+        #[weak]
+        header_menu_icon,
+        #[weak]
+        header_menu_spinner,
+        #[weak]
+        application,
         move |_, _| {
             let Some(selection_model) = grid_view.model() else {
                 return;
@@ -635,7 +643,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             let mut app_ids = Vec::new();
             if let Some((mut iter, first)) = gtk::BitsetIter::init_first(&selection) {
                 let mut indices = vec![first];
-                while let Some(idx) = iter.next() {
+                for idx in iter.by_ref() {
                     indices.push(idx);
                 }
 
@@ -653,10 +661,16 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                 return;
             }
 
+            set_app_action_enabled(&application, "unlock_all_apps", false);
+            set_app_action_enabled(&application, "lock_all_apps", false);
             grid_view.set_sensitive(false);
+            header_menu_icon.set_visible(false);
+            header_menu_spinner.set_visible(true);
+            header_menu_spinner.set_spinning(true);
 
             let handle = spawn_blocking(move || {
                 for app_id in app_ids {
+                    crate::dev_println!("[CLIENT] Unlocking all achievements for app {app_id}... ");
                     let res = UnlockAllAchievements { app_id }.request();
 
                     match res {
@@ -674,9 +688,21 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             MainContext::default().spawn_local(clone!(
                 #[weak]
                 grid_view,
+                #[weak]
+                header_menu_icon,
+                #[weak]
+                header_menu_spinner,
+                #[weak]
+                application,
                 async move {
                     let _ = handle.await;
+
+                    set_app_action_enabled(&application, "unlock_all_apps", true);
+                    set_app_action_enabled(&application, "lock_all_apps", true);
                     grid_view.set_sensitive(true);
+                    header_menu_spinner.set_spinning(false);
+                    header_menu_spinner.set_visible(false);
+                    header_menu_icon.set_visible(true);
                 }
             ));
         }
@@ -687,6 +713,8 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     action_lock_all_selected.connect_activate(clone!(
         #[weak]
         grid_view,
+        #[weak]
+        application,
         move |_, _| {
             let Some(selection_model) = grid_view.model() else {
                 return;
@@ -696,7 +724,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             let mut app_ids = Vec::new();
             if let Some((mut iter, first)) = gtk::BitsetIter::init_first(&selection) {
                 let mut indices = vec![first];
-                while let Some(idx) = iter.next() {
+                for idx in iter.by_ref() {
                     indices.push(idx);
                 }
 
@@ -714,7 +742,12 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                 return;
             }
 
+            set_app_action_enabled(&application, "unlock_all_apps", false);
+            set_app_action_enabled(&application, "lock_all_apps", false);
             grid_view.set_sensitive(false);
+            header_menu_icon.set_visible(false);
+            header_menu_spinner.set_visible(true);
+            header_menu_spinner.set_spinning(true);
 
             let handle = spawn_blocking(move || {
                 for app_id in app_ids {
@@ -739,9 +772,18 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             MainContext::default().spawn_local(clone!(
                 #[weak]
                 grid_view,
+                #[weak]
+                header_menu_icon,
+                #[weak]
+                header_menu_spinner,
                 async move {
                     let _ = handle.await;
+                    set_app_action_enabled(&application, "unlock_all_apps", true);
+                    set_app_action_enabled(&application, "lock_all_apps", true);
                     grid_view.set_sensitive(true);
+                    header_menu_spinner.set_spinning(false);
+                    header_menu_spinner.set_visible(false);
+                    header_menu_icon.set_visible(true);
                 }
             ));
         }
@@ -948,12 +990,11 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
 
             let app_id_copy = app_id.get().unwrap();
             let handle = spawn_blocking(move || {
-                let success = ResetStats {
+                ResetStats {
                     app_id: app_id_copy,
                     achievements_too: true,
                 }
-                .request();
-                success
+                .request()
             });
 
             MainContext::default().spawn_local(clone!(async move {
@@ -1018,7 +1059,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                                     &app_shimmer_image,
                                     &app_label,
                                     &menu_model,
-                                    &stack,
+                                    stack,
                                 );
                                 break;
                             }

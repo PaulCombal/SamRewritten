@@ -38,7 +38,7 @@ pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
     let app_stats_model = ListStore::new::<GStatObject>();
 
     let app_stats_string_filter = StringFilter::builder()
-        .expression(&GStatObject::this_expression("display-name"))
+        .expression(GStatObject::this_expression("display-name"))
         .match_mode(StringFilterMatchMode::Substring)
         .ignore_case(true)
         .build();
@@ -254,7 +254,7 @@ pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
             let integer_stat = stat_object.is_integer();
             let stat_id = stat_object.id().clone();
             let stat_object_clone = stat_object.clone();
-            let app_id = stat_object.app_id().clone();
+            let app_id = stat_object.app_id();
 
             glib::spawn_future_local(async move {
                 let join_handle = spawn_blocking(move || {

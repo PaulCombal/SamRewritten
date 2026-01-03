@@ -114,12 +114,10 @@ fn create_header(
             let achievements_to_unlock_count = (desired_achievements - unlocked_achievements) as usize;
             let mut achievements_to_unlock = vec![];
 
-            for achievement in &raw_model {
-                if let Ok(obj) = achievement {
-                    let g_achievement = obj.downcast::<GAchievementObject>().expect("Not a GAchievementObject");
-                    if !g_achievement.is_achieved() && g_achievement.permission() & 2 == 0 {
-                        achievements_to_unlock.push(g_achievement);
-                    }
+            for obj in (&raw_model).into_iter().flatten() {
+                let g_achievement = obj.downcast::<GAchievementObject>().expect("Not a GAchievementObject");
+                if !g_achievement.is_achieved() && g_achievement.permission() == 0 {
+                    achievements_to_unlock.push(g_achievement);
                 }
             }
 
@@ -289,8 +287,8 @@ pub fn create_achievements_manual_view(
         header_achievements_start,
         cancel_timed_unlock,
     ) = create_header(
-        &app_id,
-        &achievement_views_stack,
+        app_id,
+        achievement_views_stack,
         raw_model,
         timed_raw_model,
         application,
@@ -432,7 +430,7 @@ pub fn create_achievements_manual_view(
                 .get(1)
                 .and_then(|val| val.get::<i32>().ok())
                 .unwrap_or(0);
-            let is_sensitive = (permission & 2) == 0;
+            let is_sensitive = permission == 0;
             Some(is_sensitive.to_value())
         });
         let permission_protected_closure = glib::RustClosure::new(|values: &[glib::Value]| {
@@ -440,14 +438,14 @@ pub fn create_achievements_manual_view(
                 .get(1)
                 .and_then(|val| val.get::<i32>().ok())
                 .unwrap_or(0);
-            let is_protected = (permission & 2) != 0;
+            let is_protected = permission != 0;
             Some(is_protected.to_value())
         });
 
         let visible_child_expr =
             ClosureExpression::new::<String>(&[is_achieved_expr], achieved_visible_icon_closure);
         let permission_sensitive_expr = ClosureExpression::new::<bool>(
-            &[permission_expr.clone()],
+            std::slice::from_ref(&permission_expr),
             permission_sensitive_closure,
         );
         let permission_protected_expr =
@@ -513,7 +511,7 @@ pub fn create_achievements_manual_view(
                 #[weak]
                 header_achievements_start,
                 move |switch| {
-                    if cancel_timed_unlock.load(std::sync::atomic::Ordering::Relaxed) == false {
+                    if !cancel_timed_unlock.load(std::sync::atomic::Ordering::Relaxed) {
                         dev_println!("[CLIENT] Not unlocking achievement after switch callback (automatic unlocking in progress): {}", achievement_object.name());
                         return;
                     }

@@ -39,12 +39,9 @@ use std::sync::RwLock;
 static DEFAULT_PROCESS: RwLock<Option<BidirChild>> = RwLock::new(None);
 
 fn shutdown() {
-    match Shutdown.request() {
-        Err(err) => {
-            eprintln!("[CLIENT] Failed to send shutdown message: {}", err);
-            return;
-        }
-        Ok(_) => {}
+    if let Err(err) = Shutdown.request() {
+        eprintln!("[CLIENT] Failed to send shutdown message: {}", err);
+        return;
     };
 
     let mut guard = DEFAULT_PROCESS.write().unwrap();

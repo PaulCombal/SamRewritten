@@ -17,6 +17,7 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
 use gtk::gdk::Paintable;
 use gtk::gdk_pixbuf::Pixbuf;
+use gtk::prelude::BoxExt;
 use gtk::{
     AboutDialog, ApplicationWindow, Image, License, MenuButton, PopoverMenu, PositionType,
     gdk_pixbuf,
@@ -63,10 +64,26 @@ pub fn load_logo() -> Paintable {
     }
 }
 
-pub fn create_context_menu_button() -> (MenuButton, PopoverMenu, gtk::gio::Menu) {
+pub fn create_context_menu_button() -> (MenuButton, PopoverMenu, gtk::gio::Menu, Image, gtk::Spinner)
+{
     let menu_button = MenuButton::builder()
         .icon_name("open-menu-symbolic")
         .build();
+
+    let menu_button_content = gtk::Box::builder()
+        .orientation(gtk::Orientation::Horizontal)
+        .spacing(0)
+        .build();
+
+    let menu_button_icon = Image::from_icon_name("open-menu-symbolic");
+    let menu_button_spinner = gtk::Spinner::builder()
+        .spinning(false)
+        .visible(false)
+        .build();
+
+    menu_button_content.append(&menu_button_icon);
+    menu_button_content.append(&menu_button_spinner);
+    menu_button.set_child(Some(&menu_button_content));
 
     let bulk_process_section = gtk::gio::Menu::new();
     bulk_process_section.append(Some("Select all visible apps"), Some("app.select_all_apps"));
@@ -90,7 +107,13 @@ pub fn create_context_menu_button() -> (MenuButton, PopoverMenu, gtk::gio::Menu)
 
     menu_button.set_popover(Some(&popover));
 
-    (menu_button, popover, context_menu_model)
+    (
+        menu_button,
+        popover,
+        context_menu_model,
+        menu_button_icon,
+        menu_button_spinner,
+    )
 }
 
 pub fn set_context_popover_to_app_list_context(
@@ -111,7 +134,7 @@ pub fn set_context_popover_to_app_list_context(
     menu_model.append(Some("Quit"), Some("app.quit"));
     menu_model.append_section(Some("Bulk process (Beta)"), &bulk_process_section);
 
-    set_app_action_enabled(&application, "refresh_achievements_list", false);
+    set_app_action_enabled(application, "refresh_achievements_list", false);
 }
 
 pub fn set_context_popover_to_app_details_context(
@@ -130,5 +153,5 @@ pub fn set_context_popover_to_app_details_context(
     menu_model.append(Some("About"), Some("app.about"));
     menu_model.append(Some("Quit"), Some("app.quit"));
 
-    set_app_action_enabled(&application, "refresh_app_list", false);
+    set_app_action_enabled(application, "refresh_app_list", false);
 }
