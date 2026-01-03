@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Copyright (C) 2025 Paul <abonnementspaul (at) gmail.com>
+// Copyright (C) 2026 Paul <abonnementspaul (at) gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

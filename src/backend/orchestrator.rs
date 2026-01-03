@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Copyright (C) 2025 Paul <abonnementspaul (at) gmail.com>
+// Copyright (C) 2026 Paul <abonnementspaul (at) gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -208,7 +208,7 @@ fn process_command(
             bidir
                 .child
                 .wait()
-                .expect("[ORCHESTRATOR] Failed to wait child process]");
+                .expect("[ORCHESTRATOR] Failed to wait child process");
 
             tx.write_all(&response)
                 .expect("[ORCHESTRATOR] Failed to send response");
@@ -223,7 +223,7 @@ fn process_command(
                 child
                     .child
                     .wait()
-                    .expect("[ORCHESTRATOR] Failed to wait child process]");
+                    .expect("[ORCHESTRATOR] Failed to wait child process");
             }
 
             children_processes.clear();
@@ -241,7 +241,7 @@ fn process_command(
                 child
                     .child
                     .wait()
-                    .expect("[ORCHESTRATOR] Failed to wait child process]");
+                    .expect("[ORCHESTRATOR] Failed to wait child process");
             }
 
             let response = SteamResponse::Success(true);
@@ -393,7 +393,7 @@ fn process_command(
             bidir
                 .child
                 .wait()
-                .expect("[ORCHESTRATOR] Failed to wait child process]");
+                .expect("[ORCHESTRATOR] Failed to wait child process");
 
             match response {
                 Ok(resp) => {
@@ -523,7 +523,7 @@ fn process_command(
                 bidir
                     .child
                     .wait()
-                    .expect("[ORCHESTRATOR] Failed to wait child process]");
+                    .expect("[ORCHESTRATOR] Failed to wait child process");
 
                 match response {
                     Ok(resp) => {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Copyright (C) 2025 Paul <abonnementspaul (at) gmail.com>
+// Copyright (C) 2026 Paul <abonnementspaul (at) gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ use serde_json::json;
 #[clap(
     author,
     version,
-    long_about = "Steam Achievements Manager Rewritten\nLicensed under GNU GPLv3, Copyright (c) 2025"
+    long_about = "Steam Achievements Manager Rewritten\nLicensed under GNU GPLv3, Copyright (C) 2026"
 )]
 struct Cli {
     #[command(subcommand)]
