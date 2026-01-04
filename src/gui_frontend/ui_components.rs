@@ -19,8 +19,8 @@ use gtk::gdk::Paintable;
 use gtk::gdk_pixbuf::Pixbuf;
 use gtk::prelude::BoxExt;
 use gtk::{
-    AboutDialog, ApplicationWindow, Image, License, MenuButton, PopoverMenu, PositionType,
-    gdk_pixbuf,
+    AboutDialog, ApplicationWindow, Image, Label, License, MenuButton, Popover, PopoverMenu,
+    PositionType, Spinner, gdk_pixbuf,
 };
 use std::io::Cursor;
 
@@ -64,26 +64,23 @@ pub fn load_logo() -> Paintable {
     }
 }
 
-pub fn create_context_menu_button() -> (MenuButton, PopoverMenu, gtk::gio::Menu, Image, gtk::Spinner)
-{
+pub fn create_context_menu_button() -> (
+    MenuButton,
+    PopoverMenu,
+    gtk::gio::Menu,
+    MenuButton,
+    Label,
+    Label,
+) {
     let menu_button = MenuButton::builder()
         .icon_name("open-menu-symbolic")
         .build();
 
-    let menu_button_content = gtk::Box::builder()
-        .orientation(gtk::Orientation::Horizontal)
-        .spacing(0)
-        .build();
-
-    let menu_button_icon = Image::from_icon_name("open-menu-symbolic");
-    let menu_button_spinner = gtk::Spinner::builder()
-        .spinning(false)
+    let menu_button_loading_spinner = Spinner::builder().spinning(true).build();
+    let menu_button_loading = MenuButton::builder()
+        .child(&menu_button_loading_spinner)
         .visible(false)
         .build();
-
-    menu_button_content.append(&menu_button_icon);
-    menu_button_content.append(&menu_button_spinner);
-    menu_button.set_child(Some(&menu_button_content));
 
     let bulk_process_section = gtk::gio::Menu::new();
     bulk_process_section.append(Some("Select all visible apps"), Some("app.select_all_apps"));
@@ -105,14 +102,34 @@ pub fn create_context_menu_button() -> (MenuButton, PopoverMenu, gtk::gio::Menu,
         .menu_model(&context_menu_model)
         .build();
 
+    let popover_loading_box = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(5)
+        .margin_start(5)
+        .margin_end(5)
+        .margin_top(5)
+        .margin_bottom(5)
+        .width_request(200)
+        .build();
+    let popover_loading_progress_label = Label::new(Some("Loading..."));
+    let popover_loading_info_label = Label::builder()
+        .max_width_chars(20)
+        .ellipsize(gtk::pango::EllipsizeMode::Middle)
+        .build();
+    popover_loading_box.append(&popover_loading_progress_label);
+    popover_loading_box.append(&popover_loading_info_label);
+    let popover_loading = Popover::builder().child(&popover_loading_box).build();
+
     menu_button.set_popover(Some(&popover));
+    menu_button_loading.set_popover(Some(&popover_loading));
 
     (
         menu_button,
         popover,
         context_menu_model,
-        menu_button_icon,
-        menu_button_spinner,
+        menu_button_loading,
+        popover_loading_progress_label,
+        popover_loading_info_label,
     )
 }
 

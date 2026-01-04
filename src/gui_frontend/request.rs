@@ -204,13 +204,13 @@ impl Request for ResetStats {
 }
 
 impl From<GetSubscribedAppList> for SteamCommand {
-    fn from(val: GetSubscribedAppList) -> Self {
+    fn from(_val: GetSubscribedAppList) -> Self {
         SteamCommand::GetSubscribedAppList
     }
 }
 
 impl From<Shutdown> for SteamCommand {
-    fn from(val: Shutdown) -> Self {
+    fn from(_val: Shutdown) -> Self {
         SteamCommand::Shutdown
     }
 }

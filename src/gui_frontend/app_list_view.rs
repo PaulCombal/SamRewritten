@@ -113,11 +113,18 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         .icon_name("go-previous")
         .sensitive(false)
         .build();
-    let (context_menu_button, _, menu_model, header_menu_icon, header_menu_spinner) =
-        create_context_menu_button();
+    let (
+        context_menu_button,
+        _,
+        menu_model,
+        context_menu_button_loading,
+        context_menu_button_loading_progress_label,
+        context_menu_button_info_label,
+    ) = create_context_menu_button();
     header_bar.pack_start(&back_button);
     header_bar.pack_start(&search_entry);
     header_bar.pack_end(&context_menu_button);
+    header_bar.pack_end(&context_menu_button_loading);
 
     let list_scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(PolicyType::Never)
@@ -629,18 +636,23 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         #[weak]
         grid_view,
         #[weak]
-        header_menu_icon,
-        #[weak]
-        header_menu_spinner,
-        #[weak]
         application,
+        #[weak]
+        context_menu_button,
+        #[weak]
+        context_menu_button_loading,
+        #[weak]
+        context_menu_button_loading_progress_label,
+        #[weak]
+        context_menu_button_info_label,
         move |_, _| {
             let Some(selection_model) = grid_view.model() else {
                 return;
             };
             let selection = selection_model.selection();
 
-            let mut app_ids = Vec::new();
+            let mut apps_to_unlock = std::collections::HashMap::new();
+
             if let Some((mut iter, first)) = gtk::BitsetIter::init_first(&selection) {
                 let mut indices = vec![first];
                 for idx in iter.by_ref() {
@@ -652,57 +664,84 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                         .item(index)
                         .and_downcast::<GSteamAppObject>()
                     {
-                        app_ids.push(item.app_id());
+                        apps_to_unlock.insert(item.app_id(), item.app_name());
                     }
                 }
             }
 
-            if app_ids.is_empty() {
+            if apps_to_unlock.is_empty() {
                 return;
             }
 
             set_app_action_enabled(&application, "unlock_all_apps", false);
             set_app_action_enabled(&application, "lock_all_apps", false);
+            context_menu_button_loading.set_visible(true);
+            context_menu_button.set_visible(false);
             grid_view.set_sensitive(false);
-            header_menu_icon.set_visible(false);
-            header_menu_spinner.set_visible(true);
-            header_menu_spinner.set_spinning(true);
+
+            // TODO: rewrite with MainContext::channel when upgrading GTK version
+            let (tx, rx) = std::sync::mpsc::channel::<(u32, String)>();
+            let total_apps = apps_to_unlock.len();
 
             let handle = spawn_blocking(move || {
-                for app_id in app_ids {
-                    crate::dev_println!("[CLIENT] Unlocking all achievements for app {app_id}... ");
+                for (i, (app_id, app_name)) in apps_to_unlock.into_iter().enumerate() {
+                    let current_step: u32 = (i as u32) + 1;
+                    crate::dev_println!(
+                        "[CLIENT] Unlocking app {app_id} ({current_step}/{total_apps})"
+                    );
+
+                    if let Err(e) = tx.send((current_step, app_name.to_string())) {
+                        eprintln!("[CLIENT] Error sending app unlocked step: {e:?}");
+                    };
+
                     let res = UnlockAllAchievements { app_id }.request();
 
-                    match res {
-                        Ok(_) => {}
-                        Err(e) => {
-                            eprintln!("[CLIENT] Error unlocking app {}: {}", app_id, e);
-                            return Err(e);
+                    if let Err(e) = res {
+                        eprintln!("[CLIENT] Error unlocking app {}: {}", app_id, e);
+                        if let Err(e) = tx.send((u32::MAX, "ERROR".to_string())) {
+                            eprintln!("[CLIENT] Error sending stop signal for unlocking: {e:?}");
                         }
+                        return Err(e);
                     }
                 }
 
+                if let Err(e) = tx.send((u32::MAX, "DONE".to_string())) {
+                    eprintln!("[CLIENT] Error sending done signal for unlocking: {e:?}");
+                }
                 Ok(())
+            });
+
+            glib::idle_add_local(move || {
+                while let Ok((step, app_name)) = rx.try_recv() {
+                    if step == u32::MAX {
+                        return glib::ControlFlow::Break;
+                    }
+
+                    context_menu_button_loading_progress_label
+                        .set_text(&format!("Unlocking {}/{}", step, total_apps));
+                    context_menu_button_info_label.set_text(&app_name);
+                }
+
+                glib::ControlFlow::Continue
             });
 
             MainContext::default().spawn_local(clone!(
                 #[weak]
                 grid_view,
                 #[weak]
-                header_menu_icon,
-                #[weak]
-                header_menu_spinner,
-                #[weak]
                 application,
+                #[weak]
+                context_menu_button_loading,
+                #[weak]
+                context_menu_button,
                 async move {
                     let _ = handle.await;
 
                     set_app_action_enabled(&application, "unlock_all_apps", true);
                     set_app_action_enabled(&application, "lock_all_apps", true);
+                    context_menu_button_loading.set_visible(false);
+                    context_menu_button.set_visible(true);
                     grid_view.set_sensitive(true);
-                    header_menu_spinner.set_spinning(false);
-                    header_menu_spinner.set_visible(false);
-                    header_menu_icon.set_visible(true);
                 }
             ));
         }
@@ -715,13 +754,22 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
         grid_view,
         #[weak]
         application,
+        #[weak]
+        context_menu_button,
+        #[weak]
+        context_menu_button_loading,
+        #[weak]
+        context_menu_button_loading_progress_label,
+        #[weak]
+        context_menu_button_info_label,
         move |_, _| {
             let Some(selection_model) = grid_view.model() else {
                 return;
             };
             let selection = selection_model.selection();
 
-            let mut app_ids = Vec::new();
+            let mut apps_to_unlock = std::collections::HashMap::new();
+
             if let Some((mut iter, first)) = gtk::BitsetIter::init_first(&selection) {
                 let mut indices = vec![first];
                 for idx in iter.by_ref() {
@@ -733,57 +781,87 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                         .item(index)
                         .and_downcast::<GSteamAppObject>()
                     {
-                        app_ids.push(item.app_id());
+                        apps_to_unlock.insert(item.app_id(), item.app_name());
                     }
                 }
             }
 
-            if app_ids.is_empty() {
+            if apps_to_unlock.is_empty() {
                 return;
             }
 
             set_app_action_enabled(&application, "unlock_all_apps", false);
             set_app_action_enabled(&application, "lock_all_apps", false);
+            context_menu_button_loading.set_visible(true);
+            context_menu_button.set_visible(false);
             grid_view.set_sensitive(false);
-            header_menu_icon.set_visible(false);
-            header_menu_spinner.set_visible(true);
-            header_menu_spinner.set_spinning(true);
+
+            // TODO: rewrite with MainContext::channel when upgrading GTK version
+            let (tx, rx) = std::sync::mpsc::channel::<(u32, String)>();
+            let total_apps = apps_to_unlock.len();
 
             let handle = spawn_blocking(move || {
-                for app_id in app_ids {
+                for (i, (app_id, app_name)) in apps_to_unlock.into_iter().enumerate() {
+                    let current_step: u32 = (i as u32) + 1;
+                    crate::dev_println!(
+                        "[CLIENT] Locking app {app_id} ({current_step}/{total_apps})"
+                    );
+
+                    if let Err(e) = tx.send((current_step, app_name.to_string())) {
+                        eprintln!("[CLIENT] Error sending app locked step: {e:?}");
+                    };
+
                     let res = ResetStats {
                         app_id,
                         achievements_too: true,
                     }
                     .request();
 
-                    match res {
-                        Ok(_) => {}
-                        Err(e) => {
-                            eprintln!("[CLIENT] Error locking app {}: {}", app_id, e);
-                            return Err(e);
+                    if let Err(e) = res {
+                        eprintln!("[CLIENT] Error locking app {}: {}", app_id, e);
+                        if let Err(e) = tx.send((u32::MAX, "ERROR".to_string())) {
+                            eprintln!("[CLIENT] Error sending stop signal for unlocking: {e:?}");
                         }
+                        return Err(e);
                     }
                 }
 
+                if let Err(e) = tx.send((u32::MAX, "DONE".to_string())) {
+                    eprintln!("[CLIENT] Error sending done signal for locking: {e:?}");
+                }
                 Ok(())
+            });
+
+            glib::idle_add_local(move || {
+                while let Ok((step, app_name)) = rx.try_recv() {
+                    if step == u32::MAX {
+                        return glib::ControlFlow::Break;
+                    }
+
+                    context_menu_button_loading_progress_label
+                        .set_text(&format!("Locking {}/{}", step, total_apps));
+                    context_menu_button_info_label.set_text(&app_name);
+                }
+
+                glib::ControlFlow::Continue
             });
 
             MainContext::default().spawn_local(clone!(
                 #[weak]
                 grid_view,
                 #[weak]
-                header_menu_icon,
+                application,
                 #[weak]
-                header_menu_spinner,
+                context_menu_button_loading,
+                #[weak]
+                context_menu_button,
                 async move {
                     let _ = handle.await;
                     set_app_action_enabled(&application, "unlock_all_apps", true);
                     set_app_action_enabled(&application, "lock_all_apps", true);
+                    context_menu_button_loading.set_visible(false);
+                    context_menu_button.set_visible(true);
                     grid_view.set_sensitive(true);
-                    header_menu_spinner.set_spinning(false);
-                    header_menu_spinner.set_visible(false);
-                    header_menu_icon.set_visible(true);
                 }
             ));
         }
