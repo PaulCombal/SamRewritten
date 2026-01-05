@@ -34,7 +34,18 @@ pub fn load_steamclient_library(silent: bool) -> Result<Library, Box<dyn std::er
         let steamclient_lib_path = steam_locator
             .get_lib_path(silent)
             .ok_or(SamError::UnknownError)?;
-        let lib_steamclient = Library::new(steamclient_lib_path)?;
+
+        let lib_steamclient = match Library::new(&steamclient_lib_path) {
+            Ok(lib) => lib,
+            Err(e) => {
+                eprintln!(
+                    "[STEAM CLIENT] Failed to open shared object at {} ({e})",
+                    steamclient_lib_path.display()
+                );
+                return Err(Box::new(e));
+            }
+        };
+
         Ok(lib_steamclient)
     }
 }

@@ -95,7 +95,7 @@ impl<'a> AppLister<'a> {
     pub fn new(steam_apps_001: &'a SteamApps001, steam_apps: &'a SteamApps) -> Self {
         let cache_dir = get_app_cache_dir();
         let app_list_url =
-            std::env::var("APP_LIST_URL").unwrap_or(String::from("https://gib.me/sam/games.xml"));
+            std::env::var("SAM_APP_LIST_URL").unwrap_or(String::from("https://gib.me/sam/games.xml"));
         let app_list_local = std::env::var("APP_LIST_LOCAL").unwrap_or(String::from("/apps.xml"));
         let current_language = steam_apps.get_current_game_language();
 

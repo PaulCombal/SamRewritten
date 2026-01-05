@@ -59,6 +59,10 @@ impl SteamLocator {
     pub fn get_steamclient_lib_path(silent: bool) -> Option<PathBuf> {
         use std::path::Path;
 
+        if let Ok(path_str) = std::env::var("SAM_STEAMCLIENT_PATH") {
+            return Some(Path::new(&path_str).to_owned());
+        }
+
         if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
             let path_str =
                 real_home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so";
@@ -139,6 +143,10 @@ impl SteamLocator {
     #[cfg(target_os = "linux")]
     fn get_user_game_stats_schema_prefix() -> Option<String> {
         use std::path::Path;
+
+        if let Ok(prefix) = std::env::var("SAM_USER_GAME_STAT_SCHEMA_PREFIX") {
+            return Some(prefix);
+        }
 
         if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
             let full_path = real_home

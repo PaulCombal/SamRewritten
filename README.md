@@ -15,7 +15,7 @@ SamRewritten
     <em>Adwaita version preview</em>
 </p>
 
-<p align="center">A Steam Achievements Manager for Windows and Linux.</p>
+<p align="center">A Steam Achievement Manager for Windows and Linux.</p>
 <p align="center">
     <a href="https://github.com/PaulCombal/SamRewritten/releases">DOWNLOAD</a>
 </p>
@@ -32,74 +32,61 @@ SamRewritten
 SamRewritten is heavily inspired by other wonderful projects such
 as [Steam Achievements Manager by Gibbed](https://github.com/gibbed/SteamAchievementManager)
 or [Samira by jsnli](https://github.com/jsnli/Samira).
-Thanks to all the contributors of these amazing repositories, and also
-to [the legacy version of this very project](https://github.com/PaulCombal/SamRewritten-legacy).
+Thank you to all the contributors of these amazing projects, and
+to [the legacy version of SamRewritten](https://github.com/PaulCombal/SamRewritten-legacy).
 
-And most of all, thank you to all our awesome users and stargazers, giving us motivation to keep building.
+Most importantly, thank you to our awesome users and stargazers for giving us the motivation to keep building.
 
 ## What is SamRewritten?
 
-SamRewritten is a tool that allows you to unlock, and lock again achievements on your Steam account.
-Additionally, some apps and games expose stats which can also be edited using this tool. Achievements do not have any
-financial value, however they are very desirable for bragging rights!
+SamRewritten is a tool that allows you to unlock and relock achievements on your Steam account. Additionally, it can edit stats for games and apps that expose them. While achievements carry no financial value, they are widely used for collection progress and "bragging rights"!
 
 ## Installation
 
-Downloads are available in the [release tab](https://github.com/PaulCombal/SamRewritten/releases) for Windows (installer) and Linux (AppImage).
+Downloads are available on the [release tab](https://github.com/PaulCombal/SamRewritten/releases) for Windows (installer) and Linux (AppImage).
 
 <details>
-<summary>Click here to see detailed instructions for Windows</summary>
+<summary>Click here for detailed Windows instructions</summary>
 
-The supported way to run SamRewritten on Windows is by using the installer. 
-You can download the installer at the Releases page.
-This is the only thing you need to download; the other files are not meant to provide this program for Windows.
-After running the installer and completing the installation, SamRewritten should appear and can be searched for via the start menu.
+The recommended way to run SamRewritten on Windows is via the official installer.
+You can download it from the Releases page. This is the only file you need; the other listed assets are not intended for general Windows use.
+Once installed, you can find and launch SamRewritten through the Start menu.
 
-If the installation does not complete as intended, feel free to report it by opening an issue and providing as much details
-as possible, including your version of Windows.
+If the installation fails or behaves unexpectedly, please report the issue by opening a GitHub issue with as much detail as possible, including your Windows version.
+
 </details>
 
 <details>
-<summary>Click here to see detailed instructions for Linux</summary>
+<summary>Click here for detailed Linux instructions</summary>
 
-If your Linux distribution doesn't provide a way to install SamRewritten, you can use AppImages.
-AppImages are self-contained executables designed to run independently of your Linux distribution.
-AppImages for SamRewritten are available to download at the Releases page.
-To run an AppImage, make sure you have the permission to execute it first. This can usually be confirmed by right-clicking 
-the file, navigating to the permissions settings, and making sure the permission to run the file box is checked.
-You should then be able to double-click the AppImage file to start SamRewritten.
+If your distribution does not provide a native package for SamRewritten, you can use our AppImages.
+AppImages are self-contained executables designed to run on almost any Linux distribution.
+Download the latest AppImage from the Releases page. To run it, ensure the file has execution permissions. You can usually do this by right-clicking the file, navigating to "Permissions," and checking the "Allow executing file as program" box.
+You can then double-click the file to start the app.
 
-If SamRewritten doesn't start, you can troubleshoot the issue by starting the AppImage via a terminal and examine the output.
-To do so, open a terminal via your file manager in the same folder than your AppImage download and type the name of the file 
-to start it (eg: `./SamRewritten-gtk.AppImage`).
+If SamRewritten fails to launch, you can troubleshoot by running the AppImage from a terminal to see the logs.
+To do this, open a terminal in your download folder and run the file directly (e.g., ./SamRewritten-gtk.AppImage).
 
-If the message in the console mentions Fuse or libfuse, you might need to install it and try again:
-```shell
+If you see an error regarding "FUSE" or "libfuse," you may need to install the library:
+```bash
 sudo apt install libfuse2 # Example for Ubuntu/Debian
 ```
 
-If the error persists, feel free to open an issue including your Linux distribution and its version, as well as the
-console output that appeared after typing the name of the AppImage in your terminal. 
+If issues persist, please open an issue including your distribution, version, and the console output from your terminal.
+
 </details>
 
 > [!NOTE]
-> For Arch linux and derivatives, you can install SamRewritten with yay:
+> For Arch Linux and its derivatives, you can install SamRewritten with yay:
 >
 > `yay -S samrewritten-git`
 
-<!--
-Additionally, Snap users can install SamRewritten using the App store or with the following command:
-```bash
-snap install samrewritten
-```
--->
-
 ## Features
 
-* Lock and unlock select achievements with a single click
-* Lock and unlock achievements for all or selected apps
-* Edit statistics instantly
-* Schedule achievement unlocking over a set period of time
+* Lock and unlock specific achievements with a single click
+* Bulk lock/unlock achievements for all or selected apps
+* Schedule achievement unlocks over a custom period
+* Edit statistics in real-time
 
 ## Limitations
 
@@ -109,25 +96,32 @@ snap install samrewritten
 * Ubuntu/Debian installations with the .deb file from the official Steam website
 * Distribution installations that use the Steam runtime (Gentoo, Arch, `~/.steam/root` exists)
 
-If you wish to see your distribution supported, please open an issue.
+If you would like to see your specific distribution supported, please open an issue.
 
-> [!TIP]  
-> Flatpak support poses a considerable challenge. If you or someone you know with knowledge of Flatpak internals can offer to help, please don't hold back and reach out!
+> [!TIP]
+> Flatpak support is a significant technical challenge. If you are familiar with Flatpak internals and would like to help, please reach out!
 
 ## CLI
 
-SamRewritten can also be used as a command line tool. The CLI version does not require GTK to be installed.
-For Windows users, the installer unpacks the CLI version along the other executables, in the installation folder.
-However, no shortcut is created.
+SamRewritten also functions as a command-line tool. The CLI version does not require GTK.
+For Windows users, the installer places the CLI version in the installation folder, though no shortcut is created for it.
 
-The CLI version of SamRewritten allows to: 
-* list apps, achievements, and stats
-* lock and unlock achievements
+The CLI allows you to:
 
-## End user agreements
+* List apps, achievements, and stats
+* Lock and unlock achievements
+* Bulk lock and unlock achievements
 
-This software serves as a Proof-of-Concept. Users are responsible of their actions using this tool.
-By using this tools, you agree that you are the only responsible to the management of your Steam account. None of the
-contributors can be held responsible for the actions and their repercussions you have done using this tool.
+## Environment variables
 
-Using this tool on multiplayer games is highly discouraged.
+SamRewritten's behavior can be altered via environment variables:
+* `SAM_APP_LIST_URL` which URL to download the app list from
+* `SAM_STEAMCLIENT_PATH` (Linux only) override which `steamclient.so` file to load.
+* `SAM_USER_GAME_STAT_SCHEMA_PREFIX` (Linux only) override the prefix of the app bin data files to load
+
+## End User Agreement
+
+This software is provided as a Proof-of-Concept. Users are solely responsible for any actions taken with this tool.
+By using SamRewritten, you acknowledge that you alone are responsible for the management of your Steam account. None of the contributors shall be held liable for any repercussions resulting from the use of this software.
+
+Using this tool in multiplayer games is highly discouraged.
