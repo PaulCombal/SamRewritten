@@ -72,37 +72,61 @@ impl<'a> AppManager {
             return Ok(());
         }
 
-        let steam_id = self
-            .connected_steam
-            .user
-            .get_steam_id()
-            .map_err(|_| SamError::UnknownError)?;
+        let steam_id = match self.connected_steam.user.get_steam_id() {
+            Ok(id) => id,
+            Err(e) => {
+                eprintln!("[APP MANAGER] Error getting steam id: {}", e);
+                return Err(SamError::UnknownError);
+            }
+        };
+
         dev_println!(
             "[APP SERVER] Requesting current stats for current user: {:?}",
             steam_id
         );
-        let callback_handle = self
-            .connected_steam
-            .user_stats
-            .request_user_stats(steam_id)
-            .map_err(|_| SamError::UnknownError)?;
+
+        let callback_handle = match self.connected_steam.user_stats.request_user_stats(steam_id) {
+            Ok(callback_handle) => callback_handle,
+            Err(e) => {
+                eprintln!("[APP MANAGER] Error requesting user stats: {}", e);
+                return Err(SamError::UnknownError);
+            }
+        };
 
         // Try for 10 seconds at 60 fps
         for _ in 0..600 {
-            if self
+            let completed = match self
                 .connected_steam
                 .utils
                 .is_api_call_completed(callback_handle)
-                .map_err(|_| SamError::UnknownError)?
             {
-                let result = self
+                Ok(res) => res,
+                Err(e) => {
+                    eprintln!(
+                        "[APP MANAGER] Error checking request_user_stats api call completed: {}",
+                        e
+                    );
+                    return Err(SamError::UnknownError);
+                }
+            };
+
+            if completed {
+                let result = match self
                     .connected_steam
                     .utils
                     .get_api_call_result::<UserStatsReceived_t>(
                         callback_handle,
                         SteamCallbackId::UserStatsReceived,
-                    )
-                    .map_err(|_| SamError::UnknownError)?;
+                    ) {
+                    Ok(res) => res,
+                    Err(e) => {
+                        eprintln!(
+                            "[APP MANAGER] Error getting request_user_stats api call result: {}",
+                            e
+                        );
+                        return Err(SamError::UnknownError);
+                    }
+                };
 
                 dev_println!("[APP SERVER] User stats received callback result: {result:?}");
 
@@ -110,13 +134,14 @@ impl<'a> AppManager {
                     self.user_stats_received = true;
                 }
 
-                break;
+                return Ok(());
             }
 
             std::thread::sleep(std::time::Duration::from_millis(17));
         }
 
-        Ok(())
+        eprintln!("[APP MANAGER] Requesting user stats for current user timed out");
+        Err(SamError::UnknownError)
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs
@@ -124,9 +149,27 @@ impl<'a> AppManager {
         self.request_current_stats()?;
         let steam_locator_lock = SteamLocator::global();
         let mut steam_locator = steam_locator_lock.write().unwrap();
-        let bin_file = steam_locator.get_user_game_stats_schema(&self.app_id)?;
 
-        let kv = KeyValue::load_as_binary(bin_file).map_err(|_| SamError::UnknownError)?;
+        let bin_file = match steam_locator.get_user_game_stats_schema(&self.app_id) {
+            Ok(bin_file) => bin_file,
+            Err(e) => {
+                eprintln!("[APP MANAGER] Error getting user game stats file: {}", e);
+                return Err(e);
+            }
+        };
+
+        let kv = match KeyValue::load_as_binary(&bin_file) {
+            Ok(kv) => kv,
+            Err(e) => {
+                eprintln!(
+                    "[APP MANAGER] Error loading key value from path {}: {:?}",
+                    bin_file.display(),
+                    e
+                );
+                return Err(SamError::UnknownError);
+            }
+        };
+
         let current_language = self.connected_steam.apps.get_current_game_language();
         let stats = kv.get(&self.app_id.to_string());
         let stats = stats.get("stats");
@@ -145,8 +188,13 @@ impl<'a> AppManager {
                 stat.get("type").as_i32(0)
             };
 
-            let type_ =
-                UserStatType::try_from(raw_type as u8).map_err(|_| SamError::UnknownError)?;
+            let type_ = match UserStatType::try_from(raw_type as u8) {
+                Ok(t) => t,
+                Err(e) => {
+                    eprintln!("[APP MANAGER] Failed to parse user stat type: {}", e);
+                    return Err(SamError::UnknownError);
+                }
+            };
 
             match type_ {
                 UserStatType::Invalid => {
