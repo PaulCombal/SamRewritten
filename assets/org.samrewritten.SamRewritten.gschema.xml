@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schemalist>
+    <schema id="org.samrewritten.SamRewritten" path="/org/samrewritten/SamRewritten/">
+        <key name="filter-junk" type="b">
+            <default>false</default>
+            <summary>Filter Junk</summary>
+            <description>Whether SamRewritten should filter junk items.</description>
+        </key>
+    </schema>
+</schemalist>

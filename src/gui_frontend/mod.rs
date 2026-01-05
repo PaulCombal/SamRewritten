@@ -22,6 +22,7 @@ mod app_view;
 mod application_actions;
 mod custom_progress_bar_widget;
 mod gobjects;
+mod gsettings;
 mod request;
 mod stat_view;
 mod ui_components;

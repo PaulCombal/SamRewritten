@@ -1,5 +1,6 @@
 /target
 *.xml
-!*.gresource.xml
 *.snap
-icon.png
+gschemas.compiled
+!*.gschema.xml
+!*.gresource.xml

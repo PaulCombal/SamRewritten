@@ -13,7 +13,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use std::process::Command;
+
 fn main() {
+    let schema_dir = "assets";
+
+    let status = Command::new("glib-compile-schemas")
+        .arg(schema_dir)
+        .status();
+
+    match status {
+        Ok(s) if s.success() => {
+            println!("cargo:rerun-if-changed={}", schema_dir);
+        }
+        Ok(s) => {
+            panic!("glib-compile-schemas failed with exit code: {}", s);
+        }
+        Err(e) => {
+            panic!(
+                "Failed to execute glib-compile-schemas: {}. \
+                Make sure GLib development tools are installed.",
+                e
+            );
+        }
+    }
+
     #[cfg(windows)]
     {
         let mut res = winres::WindowsResource::new();

@@ -21,6 +21,7 @@ use crate::gui_frontend::application_actions::{set_app_action_enabled, setup_app
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::gobjects::stat::GStatObject;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
+use crate::gui_frontend::gsettings::get_settings;
 use crate::gui_frontend::request::{
     GetAchievements, GetStats, GetSubscribedAppList, Request, ResetStats, StopApp,
     UnlockAllAchievements,
@@ -50,6 +51,7 @@ use std::rc::Rc;
 
 pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationCommandLine) -> i32 {
     let gui_args = parse_gui_arguments(cmd_line);
+    let settings = get_settings();
     let launch_app_by_id_visible = Rc::new(Cell::new(false));
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
@@ -148,15 +150,11 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     // App list models
     let list_factory = SignalListItemFactory::new();
     let list_store = ListStore::new::<GSteamAppObject>();
-
-    #[cfg(not(debug_assertions))]
-    let filter_junk_action =
-        SimpleAction::new_stateful("filter_junk_option", None, &true.to_variant());
-
-    #[cfg(debug_assertions)]
-    let filter_junk_action =
-        SimpleAction::new_stateful("filter_junk_option", None, &false.to_variant());
-
+    let filter_junk_action = SimpleAction::new_stateful(
+        "filter_junk_option",
+        None,
+        &settings.boolean("filter-junk").to_variant(),
+    );
     let search_entry_clone = search_entry.clone();
     let filter_junk_action_clone = filter_junk_action.clone();
     let list_custom_filter = gtk::CustomFilter::new(move |obj| {
@@ -182,10 +180,15 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     filter_junk_action.connect_activate(clone!(
         #[weak]
         list_custom_filter,
+        #[strong]
+        settings,
         move |action, _| {
             let state = action.state().unwrap();
             let value: bool = state.get::<bool>().unwrap();
             action.set_state(&(!value).to_variant());
+            if let Err(e) = settings.set_boolean("filter-junk", !value) {
+                eprintln!("[CLIENT] Error saving filter-junk setting: {e:?}");
+            }
             list_custom_filter.changed(gtk::FilterChange::Different);
         }
     ));

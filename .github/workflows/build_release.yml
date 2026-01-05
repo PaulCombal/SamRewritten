@@ -69,9 +69,11 @@ jobs:
           $tempArchiveRoot = "./$ARCHIVE_NAME"
           $tempBinFolder = "./$ARCHIVE_NAME/bin"
           $tempShareFolder = "./$ARCHIVE_NAME/share"
+          $tempSchemaFolder = "./$ARCHIVE_NAME/share/glib-2.0/schemas"
           
           New-Item -ItemType Directory -Path $tempBinFolder
           New-Item -ItemType Directory -Path $tempShareFolder
+          New-Item -ItemType Directory -Path $tempSchemaFolder -Force
           
           Get-ChildItem -Path $originalBinFolder -Filter "*.dll" -File | ForEach-Object {
             Copy-Item -Path $_.FullName -Destination $tempBinFolder -Force
@@ -86,6 +88,10 @@ jobs:
           
           Copy-Item -Path "$originalLibFolder" -Destination $tempArchiveRoot -Recurse -Force
           Write-Host "Copied lib to $tempArchiveRoot"
+          
+          Copy-Item -Path "assets/org.samrewritten.SamRewritten.gschema.xml" -Destination $tempSchemaFolder -Force
+          Copy-Item -Path "assets/gschemas.compiled" -Destination $tempSchemaFolder -Force
+          Write-Host "Copied GSettings schemas to $tempSchemaFolder"
         shell: pwsh
 
       - name: Build GTK-RS application (console)
