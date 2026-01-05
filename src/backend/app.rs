@@ -73,7 +73,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> i
                     continue;
                 }
 
-                let response = match app_manager.get_achievements() {
+                let response = match app_manager.get_achievements(true) {
                     Ok(achievements) => SteamResponse::Success(achievements),
                     Err(e) => SteamResponse::Error::<Vec<AchievementInfo>>(e),
                 };

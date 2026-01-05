@@ -684,6 +684,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             let total_apps = apps_to_unlock.len();
 
             let handle = spawn_blocking(move || {
+                let mut failed_apps = Vec::new();
                 for (i, (app_id, app_name)) in apps_to_unlock.into_iter().enumerate() {
                     let current_step: u32 = (i as u32) + 1;
                     crate::dev_println!(
@@ -698,17 +699,15 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
 
                     if let Err(e) = res {
                         eprintln!("[CLIENT] Error unlocking app {}: {}", app_id, e);
-                        if let Err(e) = tx.send((u32::MAX, "ERROR".to_string())) {
-                            eprintln!("[CLIENT] Error sending stop signal for unlocking: {e:?}");
-                        }
-                        return Err(e);
+                        failed_apps.push(app_name);
                     }
                 }
 
                 if let Err(e) = tx.send((u32::MAX, "DONE".to_string())) {
                     eprintln!("[CLIENT] Error sending done signal for unlocking: {e:?}");
                 }
-                Ok(())
+
+                failed_apps
             });
 
             glib::idle_add_local(move || {
@@ -735,7 +734,32 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                 #[weak]
                 context_menu_button,
                 async move {
-                    let _ = handle.await;
+                    let failed_apps = handle.await.expect("[CLIENT] Failed to wait for unlock thread to finish");
+
+                    if !failed_apps.is_empty() {
+                        let total_failed = failed_apps.len();
+                        let display_text = if total_failed > 10 {
+                            let first_ten = failed_apps[..10].join("\n");
+                            let remaining = total_failed - 10;
+                            format!("{}\n\n... and {} more", first_ten, remaining)
+                        } else {
+                            failed_apps.join("\n")
+                        };
+
+                        let dialog = gtk::MessageDialog::builder()
+                            .message_type(gtk::MessageType::Error)
+                            .buttons(gtk::ButtonsType::Ok)
+                            .title("Unlock Incomplete")
+                            .text(format!("Failed to unlock achievements for the following apps:\n\n{}", display_text))
+                            .build();
+
+                        if let Some(current_window) = application.active_window() {
+                            dialog.set_transient_for(Some(&current_window));
+                        }
+
+                        dialog.run_future().await;
+                        dialog.close();
+                    }
 
                     set_app_action_enabled(&application, "unlock_all_apps", true);
                     set_app_action_enabled(&application, "lock_all_apps", true);
@@ -768,7 +792,7 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
             };
             let selection = selection_model.selection();
 
-            let mut apps_to_unlock = std::collections::HashMap::new();
+            let mut apps_to_lock = std::collections::HashMap::new();
 
             if let Some((mut iter, first)) = gtk::BitsetIter::init_first(&selection) {
                 let mut indices = vec![first];
@@ -781,12 +805,12 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                         .item(index)
                         .and_downcast::<GSteamAppObject>()
                     {
-                        apps_to_unlock.insert(item.app_id(), item.app_name());
+                        apps_to_lock.insert(item.app_id(), item.app_name());
                     }
                 }
             }
 
-            if apps_to_unlock.is_empty() {
+            if apps_to_lock.is_empty() {
                 return;
             }
 
@@ -798,10 +822,10 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
 
             // TODO: rewrite with MainContext::channel when upgrading GTK version
             let (tx, rx) = std::sync::mpsc::channel::<(u32, String)>();
-            let total_apps = apps_to_unlock.len();
+            let total_apps = apps_to_lock.len();
 
             let handle = spawn_blocking(move || {
-                for (i, (app_id, app_name)) in apps_to_unlock.into_iter().enumerate() {
+                for (i, (app_id, app_name)) in apps_to_lock.into_iter().enumerate() {
                     let current_step: u32 = (i as u32) + 1;
                     crate::dev_println!(
                         "[CLIENT] Locking app {app_id} ({current_step}/{total_apps})"

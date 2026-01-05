@@ -245,38 +245,40 @@ impl<'a> AppManager {
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs#L420
-    pub fn get_achievements(&mut self) -> Result<Vec<AchievementInfo>, SamError> {
-        let callback_handle = self
-            .connected_steam
-            .user_stats
-            .request_global_achievement_percentages()
-            .map_err(|_| SamError::UnknownError)?;
+    pub fn get_achievements(&mut self, with_global_achieved: bool) -> Result<Vec<AchievementInfo>, SamError> {
         let mut global_stats_fetched = EResult::k_EResultFail;
-
-        // Try for 10 seconds at 60 fps
-        for _ in 0..600 {
-            if self
+        if with_global_achieved {
+            let callback_handle = self
                 .connected_steam
-                .utils
-                .is_api_call_completed(callback_handle)
-                .map_err(|_| SamError::UnknownError)?
-            {
-                let result = self
+                .user_stats
+                .request_global_achievement_percentages()
+                .map_err(|_| SamError::UnknownError)?;
+
+            // Try for 10 seconds at 60 fps
+            for _ in 0..600 {
+                if self
                     .connected_steam
                     .utils
-                    .get_api_call_result::<GlobalAchievementPercentagesReady_t>(
-                        callback_handle,
-                        SteamCallbackId::GlobalAchievementPercentagesReady,
-                    )
-                    .map_err(|_| SamError::UnknownError)?;
-                global_stats_fetched = result.m_eResult;
-                dev_println!(
+                    .is_api_call_completed(callback_handle)
+                    .map_err(|_| SamError::UnknownError)?
+                {
+                    let result = self
+                        .connected_steam
+                        .utils
+                        .get_api_call_result::<GlobalAchievementPercentagesReady_t>(
+                            callback_handle,
+                            SteamCallbackId::GlobalAchievementPercentagesReady,
+                        )
+                        .map_err(|_| SamError::UnknownError)?;
+                    global_stats_fetched = result.m_eResult;
+                    dev_println!(
                     "[APP SERVER] Global achievement percentages callback result: {result:?}"
                 );
-                break;
-            }
+                    break;
+                }
 
-            std::thread::sleep(std::time::Duration::from_millis(17));
+                std::thread::sleep(std::time::Duration::from_millis(17));
+            }
         }
 
         let mut achievement_infos: Vec<AchievementInfo> = vec![];
@@ -458,7 +460,7 @@ impl<'a> AppManager {
                     }
                     Ok(true)
                 }
-                Err(_) => Err(SamError::UnknownError),
+                Err(_) => Err(SamError::LockUnlockAchievementFailed),
             }
         } else {
             match self
@@ -476,7 +478,7 @@ impl<'a> AppManager {
                     }
                     Ok(true)
                 }
-                Err(_) => Err(SamError::UnknownError),
+                Err(_) => Err(SamError::LockUnlockAchievementFailed),
             }
         }
     }
@@ -490,7 +492,8 @@ impl<'a> AppManager {
     }
 
     pub fn unlock_all_achievements(&mut self) -> Result<(), SamError> {
-        let achievements = self.get_achievements()?;
+        let achievements = self.get_achievements(false)?;
+        let mut has_failures = false;
         for achievement in achievements {
             if achievement.is_achieved {
                 continue;
@@ -506,7 +509,10 @@ impl<'a> AppManager {
                 .set_achievement(achievement.id.as_str())
             {
                 Ok(_) => {}
-                Err(_) => return Err(SamError::UnknownError),
+                Err(_) => {
+                    eprintln!("[APP MANAGER] Failed to unlock achievement for app {} while unlocking all: {achievement:?}", self.app_id);
+                    has_failures = true;
+                },
             }
         }
 
@@ -515,7 +521,12 @@ impl<'a> AppManager {
             .store_stats()
             .map_err(|_| SamError::StatStoreFailed)?;
 
-        Ok(())
+        if has_failures {
+            Err(SamError::LockUnlockAchievementFailed)
+        }
+        else {
+            Ok(())
+        }
     }
 
     pub fn set_stat_i32(&self, stat_name: &str, stat_value: i32) -> Result<bool, SamError> {

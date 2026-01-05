@@ -25,6 +25,7 @@ pub enum SamError {
     AppListRetrievalFailed,
     SocketCommunicationFailed,
     StatStoreFailed,
+    LockUnlockAchievementFailed,
     AppMismatchError,
     UnknownError,
 }
@@ -32,15 +33,16 @@ pub enum SamError {
 impl std::fmt::Display for SamError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            SamError::SerializationFailed => write!(f, "Sam error: Serialization failed"),
-            SamError::SteamConnectionFailed => write!(f, "Sam error: Steam connection failed"),
-            SamError::AppListRetrievalFailed => write!(f, "Sam error: App list retrieval failed"),
-            SamError::UnknownError => write!(f, "Sam error: Unknown error"),
+            SamError::SerializationFailed => write!(f, "SAM: Serialization failed"),
+            SamError::SteamConnectionFailed => write!(f, "SAM: Steam connection failed"),
+            SamError::AppListRetrievalFailed => write!(f, "SAM: App list retrieval failed"),
+            SamError::UnknownError => write!(f, "SAM: Unknown error"),
             SamError::SocketCommunicationFailed => {
-                write!(f, "Sam error: SocketCommunication failed")
+                write!(f, "SAM: SocketCommunication failed")
             }
-            SamError::AppMismatchError => write!(f, "Sam error: App mismatch"),
-            SamError::StatStoreFailed => write!(f, "Sam error: Stat/ach store failed"),
+            SamError::AppMismatchError => write!(f, "SAM: App mismatch"),
+            SamError::StatStoreFailed => write!(f, "SAM: Stat/ach store failed"),
+            SamError::LockUnlockAchievementFailed => write!(f, "SAM: Lock/unlock achievement failed"),
         }
     }
 }

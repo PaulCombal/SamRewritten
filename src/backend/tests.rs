@@ -27,7 +27,7 @@ mod tests {
         let mut app_manager =
             AppManager::new_connected(206690).expect("Failed to create app manager");
         let achievements = app_manager
-            .get_achievements()
+            .get_achievements(true)
             .expect("Failed to get achievements");
         println!("{achievements:?}")
     }

@@ -77,7 +77,7 @@ pub fn main() -> std::process::ExitCode {
                 }
             };
 
-            let achievements = match manager.get_achievements() {
+            let achievements = match manager.get_achievements(true) {
                 Ok(achievements) => achievements,
                 Err(e) => {
                     eprintln!("Failed to get achievements: {}", e);
