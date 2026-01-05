@@ -245,7 +245,10 @@ impl<'a> AppManager {
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs#L420
-    pub fn get_achievements(&mut self, with_global_achieved: bool) -> Result<Vec<AchievementInfo>, SamError> {
+    pub fn get_achievements(
+        &mut self,
+        with_global_achieved: bool,
+    ) -> Result<Vec<AchievementInfo>, SamError> {
         let mut global_stats_fetched = EResult::k_EResultFail;
         if with_global_achieved {
             let callback_handle = self
@@ -272,8 +275,8 @@ impl<'a> AppManager {
                         .map_err(|_| SamError::UnknownError)?;
                     global_stats_fetched = result.m_eResult;
                     dev_println!(
-                    "[APP SERVER] Global achievement percentages callback result: {result:?}"
-                );
+                        "[APP SERVER] Global achievement percentages callback result: {result:?}"
+                    );
                     break;
                 }
 
@@ -510,9 +513,12 @@ impl<'a> AppManager {
             {
                 Ok(_) => {}
                 Err(_) => {
-                    eprintln!("[APP MANAGER] Failed to unlock achievement for app {} while unlocking all: {achievement:?}", self.app_id);
+                    eprintln!(
+                        "[APP MANAGER] Failed to unlock achievement for app {} while unlocking all: {achievement:?}",
+                        self.app_id
+                    );
                     has_failures = true;
-                },
+                }
             }
         }
 
@@ -523,8 +529,7 @@ impl<'a> AppManager {
 
         if has_failures {
             Err(SamError::LockUnlockAchievementFailed)
-        }
-        else {
+        } else {
             Ok(())
         }
     }

@@ -734,7 +734,9 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                 #[weak]
                 context_menu_button,
                 async move {
-                    let failed_apps = handle.await.expect("[CLIENT] Failed to wait for unlock thread to finish");
+                    let failed_apps = handle
+                        .await
+                        .expect("[CLIENT] Failed to wait for unlock thread to finish");
 
                     if !failed_apps.is_empty() {
                         let total_failed = failed_apps.len();
@@ -750,7 +752,10 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
                             .message_type(gtk::MessageType::Error)
                             .buttons(gtk::ButtonsType::Ok)
                             .title("Unlock Incomplete")
-                            .text(format!("Failed to unlock achievements for the following apps:\n\n{}", display_text))
+                            .text(format!(
+                                "Failed to unlock achievements for the following apps:\n\n{}",
+                                display_text
+                            ))
                             .build();
 
                         if let Some(current_window) = application.active_window() {

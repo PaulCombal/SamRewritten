@@ -42,7 +42,9 @@ impl std::fmt::Display for SamError {
             }
             SamError::AppMismatchError => write!(f, "SAM: App mismatch"),
             SamError::StatStoreFailed => write!(f, "SAM: Stat/ach store failed"),
-            SamError::LockUnlockAchievementFailed => write!(f, "SAM: Lock/unlock achievement failed"),
+            SamError::LockUnlockAchievementFailed => {
+                write!(f, "SAM: Lock/unlock achievement failed")
+            }
         }
     }
 }
