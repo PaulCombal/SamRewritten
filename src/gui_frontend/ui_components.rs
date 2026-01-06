@@ -17,7 +17,7 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
 use gtk::gdk::Paintable;
 use gtk::gdk_pixbuf::Pixbuf;
-use gtk::prelude::BoxExt;
+use gtk::prelude::{BoxExt, ToVariant};
 use gtk::{
     AboutDialog, ApplicationWindow, Image, Label, License, MenuButton, Popover, PopoverMenu,
     PositionType, Spinner, gdk_pixbuf,
@@ -82,19 +82,8 @@ pub fn create_context_menu_button() -> (
         .visible(false)
         .build();
 
-    let bulk_process_section = gtk::gio::Menu::new();
-    bulk_process_section.append(Some("Select all visible apps"), Some("app.select_all_apps"));
-    bulk_process_section.append(Some("Deselect all apps"), Some("app.unselect_all_apps"));
-    bulk_process_section.append(Some("Unlock all in selection"), Some("app.unlock_all_apps"));
-    bulk_process_section.append(Some("Reset all in selection"), Some("app.lock_all_apps"));
-
     let context_menu_model = gtk::gio::Menu::new();
-    context_menu_model.append(Some("Refresh app list"), Some("app.refresh_app_list"));
-    let check_item = gtk::gio::MenuItem::new(Some("Filter junk"), Some("app.filter_junk_option"));
-    context_menu_model.append_item(&check_item);
-    context_menu_model.append(Some("About"), Some("app.about"));
-    context_menu_model.append(Some("Quit"), Some("app.quit"));
-    context_menu_model.append_section(Some("Bulk process (Beta)"), &bulk_process_section);
+    setup_app_list_popover_menu(&context_menu_model);
 
     let popover = PopoverMenu::builder()
         .position(PositionType::Bottom)
@@ -133,10 +122,8 @@ pub fn create_context_menu_button() -> (
     )
 }
 
-pub fn set_context_popover_to_app_list_context(
-    menu_model: &gtk::gio::Menu,
-    application: &MainApplication,
-) {
+#[inline]
+fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
     menu_model.remove_all();
     let bulk_process_section = gtk::gio::Menu::new();
     bulk_process_section.append(Some("Select all visible apps"), Some("app.select_all_apps"));
@@ -151,6 +138,28 @@ pub fn set_context_popover_to_app_list_context(
     menu_model.append(Some("Quit"), Some("app.quit"));
     menu_model.append_section(Some("Bulk process (Beta)"), &bulk_process_section);
 
+    let theme_section = gtk::gio::Menu::new();
+    let theme_options = [
+        #[cfg(feature = "adwaita")]
+        ("System", "system"),
+        ("Light", "light"),
+        ("Dark", "dark"),
+    ];
+
+    for (label, value) in theme_options {
+        let item = gtk::gio::MenuItem::new(Some(label), Some("app.change_theme"));
+        item.set_action_and_target_value(Some("app.change_theme"), Some(&value.to_variant()));
+        theme_section.append_item(&item);
+    }
+
+    menu_model.append_section(Some("Appearance"), &theme_section);
+}
+
+pub fn set_context_popover_to_app_list_context(
+    menu_model: &gtk::gio::Menu,
+    application: &MainApplication,
+) {
+    setup_app_list_popover_menu(menu_model);
     set_app_action_enabled(application, "refresh_achievements_list", false);
 }
 

@@ -602,6 +602,73 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     ));
 
     // App actions
+    #[cfg(feature = "adwaita")]
+    {
+        let default_theme = settings.string("app-theme").to_variant();
+        let theme_action = SimpleAction::new_stateful(
+            "change_theme",
+            Some(&glib::VariantTy::STRING),
+            &default_theme,
+        );
+
+        theme_action.connect_activate(move |action, parameter| {
+            if let Some(theme_name) = parameter.and_then(|p| p.get::<String>()) {
+                action.set_state(&theme_name.to_variant());
+                let style_manager = adw::StyleManager::default();
+                match theme_name.as_str() {
+                    "dark" => style_manager.set_color_scheme(adw::ColorScheme::PreferDark),
+                    "light" => style_manager.set_color_scheme(adw::ColorScheme::PreferLight),
+                    _ => style_manager.set_color_scheme(adw::ColorScheme::Default),
+                }
+                if let Err(e) = settings.set_string("app-theme", &theme_name) {
+                    eprintln!("[CLIENT] Error saving app-theme setting: {e:?}");
+                }
+            }
+        });
+
+        theme_action.activate(Some(&default_theme));
+        application.add_action(&theme_action);
+    }
+
+    #[cfg(not(feature = "adwaita"))]
+    {
+        let default_theme = match settings.string("app-theme").as_str() {
+            "dark" => "dark",
+            _ => "light",
+        }
+        .to_variant();
+
+        let theme_action = SimpleAction::new_stateful(
+            "change_theme",
+            Some(&glib::VariantTy::STRING),
+            &default_theme,
+        );
+
+        theme_action.connect_activate(move |action, parameter| {
+            if let Some(theme_name) = parameter.and_then(|p| p.get::<String>()) {
+                action.set_state(&theme_name.to_variant());
+
+                let default_settings =
+                    gtk::Settings::default().expect("Could not get default settings");
+                match theme_name.as_str() {
+                    "dark" => {
+                        default_settings.set_property("gtk-application-prefer-dark-theme", true);
+                    }
+                    _ => {
+                        default_settings.set_property("gtk-application-prefer-dark-theme", false);
+                    }
+                }
+
+                if let Err(e) = settings.set_string("app-theme", &theme_name) {
+                    eprintln!("[CLIENT] Error saving app-theme setting: {e:?}");
+                }
+            }
+        });
+
+        theme_action.activate(Some(&default_theme));
+        application.add_action(&theme_action);
+    }
+
     let action_select_all_apps = SimpleAction::new("select_all_apps", None);
     action_select_all_apps.connect_activate(clone!(
         #[weak]
