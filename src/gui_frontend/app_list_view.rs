@@ -34,8 +34,8 @@ use crate::utils::app_paths::get_executable_path;
 use crate::utils::arguments::parse_gui_arguments;
 use crate::utils::ipc_types::SamError;
 use gtk::gio::{ApplicationCommandLine, ListStore, SimpleAction, spawn_blocking};
-use gtk::glib::SignalHandlerId;
 use gtk::glib::translate::FromGlib;
+use gtk::glib::{ExitCode, SignalHandlerId};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{
@@ -49,7 +49,10 @@ use std::ffi::c_ulong;
 use std::process::Command;
 use std::rc::Rc;
 
-pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationCommandLine) -> i32 {
+pub fn create_main_ui(
+    application: &MainApplication,
+    cmd_line: &ApplicationCommandLine,
+) -> ExitCode {
     let gui_args = parse_gui_arguments(cmd_line);
     let settings = get_settings();
     let launch_app_by_id_visible = Rc::new(Cell::new(false));
@@ -1283,5 +1286,5 @@ pub fn create_main_ui(application: &MainApplication, cmd_line: &ApplicationComma
     window.add_controller(key_controller);
     window.present();
 
-    0
+    ExitCode::SUCCESS
 }

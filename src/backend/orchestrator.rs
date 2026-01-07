@@ -61,7 +61,7 @@ fn send_app_command(
     Ok(result)
 }
 
-pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> i32 {
+pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
     let mut connected_steam: Option<ConnectedSteam> = None;
     let mut children_processes: HashMap<u32, BidirChild> = HashMap::new();
 

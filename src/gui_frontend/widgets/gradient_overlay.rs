@@ -1,7 +1,9 @@
 use gtk::glib;
 
 glib::wrapper! {
-    pub struct GradientOverlay(ObjectSubclass<imp::GradientOverlay>) @extends gtk::Widget;
+    pub struct GradientOverlay(ObjectSubclass<imp::GradientOverlay>)
+        @extends gtk::Widget,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl Default for GradientOverlay {

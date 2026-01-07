@@ -6,7 +6,8 @@ use gtk::subclass::prelude::*;
 
 glib::wrapper! {
     pub struct SteamAppCard(ObjectSubclass<imp::SteamAppCard>)
-        @extends gtk::Widget;
+        @extends gtk::Widget,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl Default for SteamAppCard {

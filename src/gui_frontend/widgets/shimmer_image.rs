@@ -18,7 +18,8 @@ use gtk::glib::subclass::types::ObjectSubclassIsExt;
 
 glib::wrapper! {
     pub struct ShimmerImage(ObjectSubclass<imp::ShimmerImage>)
-        @extends gtk::Widget;
+        @extends gtk::Widget,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl Default for ShimmerImage {

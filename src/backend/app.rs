@@ -21,7 +21,7 @@ use crate::utils::ipc_types::{SamError, SamSerializable, SteamCommand, SteamResp
 use interprocess::unnamed_pipe::{Recver, Sender};
 use std::io::Write;
 
-pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> i32 {
+pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
     let mut app_manager = AppManager::new_connected(app_id);
 
     #[cfg(debug_assertions)]
