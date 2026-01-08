@@ -136,7 +136,7 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
     menu_model.append_item(&check_item);
     menu_model.append(Some("About"), Some("app.about"));
     menu_model.append(Some("Quit"), Some("app.quit"));
-    menu_model.append_section(Some("Bulk process (Beta)"), &bulk_process_section);
+    menu_model.append_section(Some("Bulk process"), &bulk_process_section);
 
     let theme_section = gtk::gio::Menu::new();
     let theme_options = [
