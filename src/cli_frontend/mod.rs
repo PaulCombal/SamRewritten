@@ -258,7 +258,7 @@ pub fn main() -> std::process::ExitCode {
         }
 
         Command::LockAll { app_id } => {
-            let mut manager = match AppManager::new_connected(app_id) {
+            let manager = match AppManager::new_connected(app_id) {
                 Ok(manager) => manager,
                 Err(e) => {
                     eprintln!("Failed to connect to Steam: {}", e);

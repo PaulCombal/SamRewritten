@@ -128,7 +128,7 @@ impl<'a> AppLister<'a> {
         Ok(xml_data)
     }
 
-    fn load_app_list_str(&self, source: &String) -> Result<XmlGames, SamError> {
+    fn load_app_list_str(&self, source: &str) -> Result<XmlGames, SamError> {
         let xml_data: XmlGames =
             quick_xml::de::from_str(source).map_err(|_| SamError::AppListRetrievalFailed)?;
         Ok(xml_data)

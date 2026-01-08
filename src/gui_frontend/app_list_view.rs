@@ -643,7 +643,7 @@ pub fn create_main_ui(
 
         let theme_action = SimpleAction::new_stateful(
             "change_theme",
-            Some(&glib::VariantTy::STRING),
+            Some(glib::VariantTy::STRING),
             &default_theme,
         );
 
@@ -1028,7 +1028,7 @@ pub fn create_main_ui(
                                 app_list_no_result_label.set_text("No results. Check for spelling mistakes or try typing an App Id.");
                             }
                         },
-                        Ok(Err(sam_error)) if sam_error == SamError::AppListRetrievalFailed => {
+                        Ok(Err(SamError::AppListRetrievalFailed)) => {
                             search_entry.set_sensitive(true);
                             app_list_no_result_label.set_text("Failed to load library. Check your internet connection. Search for App Id to get started.");
                             list_of_apps_or_no_result.set_visible_child_name("empty");
@@ -1284,7 +1284,54 @@ pub fn create_main_ui(
     ));
 
     window.add_controller(key_controller);
+
+    warn(&window);
+
     window.present();
 
     ExitCode::SUCCESS
 }
+
+#[cfg(unix)]
+fn warn(window: &ApplicationWindow) {
+    use crate::utils::steam_locator::SteamLocator;
+    use gtk::prelude::{DialogExt, GtkWindowExt, WidgetExt};
+
+    let dirs = SteamLocator::get_local_steam_install_root_folders();
+    if dirs.len() > 1 {
+        let path_list = dirs
+            .iter()
+            .map(|p| format!("• {}", p.display()))
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        let full_message = format!(
+            "Multiple Steam installations have been detected on your system. \
+            This will most likely cause <b>severe instabilities</b> with SamRewritten. \
+            <b>Please delete all unused Steam installations before proceeding or use \
+            environment variables to point SamRewritten to the correct location, \
+            as described on the <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-file#environment-variables\">Github main page.</a></b>\n\n\
+            The following locations were found:\n{}",
+            path_list
+        );
+
+        let dialog = gtk::MessageDialog::new(
+            Some(window),
+            gtk::DialogFlags::MODAL,
+            gtk::MessageType::Warning,
+            gtk::ButtonsType::Ok,
+            full_message,
+        );
+
+        dialog.set_use_markup(true);
+        dialog.set_title(Some("WARNING"));
+        dialog.connect_response(|dialog, _| {
+            dialog.destroy();
+        });
+
+        dialog.show();
+    }
+}
+
+#[cfg(windows)]
+fn warn(_window: &ApplicationWindow) {}

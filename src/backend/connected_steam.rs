@@ -33,7 +33,7 @@ pub struct ConnectedSteam {
     pub user: SteamUser,
 }
 
-impl<'a> ConnectedSteam {
+impl ConnectedSteam {
     pub fn new(silent: bool) -> Result<Self, Box<dyn std::error::Error>> {
         let client = create_steam_client(silent)?;
         let h_pipe = client.create_steam_pipe()?;

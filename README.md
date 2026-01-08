@@ -87,6 +87,7 @@ If issues persist, please open an issue including your distribution, version, an
 * Bulk lock/unlock achievements for all or selected apps
 * Schedule achievement unlocks over a custom period
 * Edit statistics in real-time
+* A light and dark theme
 
 ## Limitations
 
@@ -115,9 +116,10 @@ The CLI allows you to:
 ## Environment variables
 
 SamRewritten's behavior can be altered via environment variables:
-* `SAM_APP_LIST_URL` which URL to download the app list from
+* `SAM_STEAM_INSTALL_ROOT` (Linux only) override the detected Steam installation root path.
 * `SAM_STEAMCLIENT_PATH` (Linux only) override which `steamclient.so` file to load.
-* `SAM_USER_GAME_STAT_SCHEMA_PREFIX` (Linux only) override the prefix of the app bin data files to load
+* `SAM_GSCHEMA_DIR_FALLBACK` Fallback path for the `gschema.compiled` directory.
+* `SAM_APP_LIST_URL` which URL to download the app list from
 
 ## End User Agreement
 

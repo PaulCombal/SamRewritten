@@ -72,11 +72,11 @@ impl SteamLocator {
         let home = std::env::var("HOME").expect("Failed to get home dir");
         let lib_paths = [
             home.clone() + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so",
-            home.clone() + "/.steam/debian-installation/linux64/steamclient.so",
-            home.clone() + "/.steam/sdk64/steamclient.so",
-            home.clone() + "/.steam/steam/linux64/steamclient.so",
             home.clone() + "/.local/share/Steam/linux64/steamclient.so",
-            home + "/.steam/root/linux64/steamclient.so",
+            home.clone() + "/.steam/steam/linux64/steamclient.so",
+            home.clone() + "/.steam/debian-installation/linux64/steamclient.so",
+            home.clone() + "/.steam/root/linux64/steamclient.so",
+            home.clone() + "/.steam/sdk64/steamclient.so",
         ];
 
         if silent {
@@ -142,34 +142,19 @@ impl SteamLocator {
 
     #[cfg(target_os = "linux")]
     fn get_user_game_stats_schema_prefix() -> Option<String> {
-        use std::path::Path;
-
-        if let Ok(prefix) = std::env::var("SAM_USER_GAME_STAT_SCHEMA_PREFIX") {
-            return Some(prefix);
-        }
-
         if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
             let full_path = real_home
                 + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_";
             return Some(full_path);
         }
 
-        let home = std::env::var("HOME").expect("Failed to get home dir");
-        let install_dirs = [
-            home.clone() + "/snap/steam/common/.local/share/Steam",
-            home.clone() + "/.steam/debian-installation",
-            home.clone() + "/.steam/steam",
-            home.clone() + "/.local/share/Steam",
-            home + "/.steam/root",
-        ];
+        let dirs = Self::get_local_steam_install_root_folders();
 
-        for install_dir in install_dirs {
-            if Path::new(&install_dir).exists() {
-                return Some(install_dir + "/appcache/stats/UserGameStatsSchema_");
-            }
+        if dirs.is_empty() {
+            return None;
         }
 
-        None
+        Some(dirs[0].to_str()?.to_owned() + "/appcache/stats/UserGameStatsSchema_")
     }
 
     #[cfg(target_os = "windows")]
@@ -186,30 +171,44 @@ impl SteamLocator {
     }
 
     #[cfg(target_os = "linux")]
-    pub fn get_local_app_banner_file_prefix() -> Option<String> {
-        use std::path::Path;
+    pub fn get_local_steam_install_root_folders() -> Vec<PathBuf> {
+        use std::path::PathBuf;
 
         if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
-            let prefix = real_home + "/snap/steam/common/.local/share/Steam/appcache/librarycache/";
-            return Some(prefix);
+            let prefix = PathBuf::from(real_home).join("snap/steam/common/.local/share/Steam");
+            return vec![prefix];
+        }
+
+        if let Ok(path) = std::env::var("SAM_STEAM_INSTALL_ROOT") {
+            return vec![PathBuf::from(path)];
         }
 
         let home = std::env::var("HOME").expect("Failed to get home dir");
-        let install_dirs = [
-            home.clone() + "/snap/steam/common/.local/share/Steam",
-            home.clone() + "/.steam/debian-installation",
-            home.clone() + "/.steam/steam",
-            home.clone() + "/.local/share/Steam",
-            home + "/.steam/root",
+        let home_path = PathBuf::from(home);
+
+        let potential_dirs = [
+            home_path.join("snap/steam/common/.local/share/Steam"),
+            home_path.join(".local/share/Steam"),
+            home_path.join(".steam/steam"),
+            home_path.join(".steam/debian-installation"),
+            home_path.join(".steam/root"),
         ];
 
-        for install_dir in install_dirs {
-            if Path::new(&install_dir).exists() {
-                return Some(install_dir + "/appcache/librarycache/");
-            }
-        }
+        potential_dirs
+            .into_iter()
+            .filter(|path| path.exists())
+            .collect()
+    }
 
-        None
+    #[cfg(target_os = "linux")]
+    pub fn get_local_app_banner_file_prefix() -> Option<String> {
+        let dirs = Self::get_local_steam_install_root_folders();
+
+        if dirs.is_empty() {
+            None
+        } else {
+            Some(dirs[0].to_str()?.to_owned() + "/appcache/librarycache/")
+        }
     }
 
     #[cfg(target_os = "windows")]

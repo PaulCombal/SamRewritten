@@ -39,7 +39,7 @@ pub struct AppManager {
     stat_definitions: Vec<StatDefinition>,
 }
 
-impl<'a> AppManager {
+impl AppManager {
     pub fn new_connected(app_id: AppId_t) -> Result<Self, Box<dyn std::error::Error>> {
         unsafe {
             env::set_var("SteamAppId", app_id.to_string());
