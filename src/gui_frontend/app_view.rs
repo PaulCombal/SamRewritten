@@ -21,15 +21,10 @@ use gtk::gio::ListStore;
 use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};
 use gtk::prelude::*;
-use gtk::{
-    Adjustment, Align, Box, Button, Label, Orientation, Separator, SpinButton, Spinner, Stack,
-    StackTransitionType, StringFilter, ToggleButton,
-};
+use gtk::{Align, Box, Frame, Label, Orientation, Separator, Spinner, Stack, StackTransitionType, StringFilter, ToggleButton};
 use gtk::{Paned, glib};
 use std::cell::Cell;
 use std::rc::Rc;
-use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
 
 pub fn create_app_view(
     app_id: Rc<Cell<Option<u32>>>,
@@ -53,11 +48,7 @@ pub fn create_app_view(
     ListStore,
     StringFilter,
     Paned,
-    Adjustment,
-    SpinButton,
-    Button,
-    Arc<AtomicBool>,
-    Stack,
+    Frame,
 ) {
     let app_spinner = Spinner::builder().spinning(true).margin_end(5).build();
     let app_spinner_label = Label::builder().label("Loading...").build();
@@ -199,13 +190,9 @@ pub fn create_app_view(
     app_sidebar.append(&app_type_box);
 
     let (
-        app_achievements_stack,
+        app_achievements_frame,
         app_achievements_model,
         app_achievement_string_filter,
-        achievements_manual_adjustement,
-        achievements_manual_spinbox,
-        achievements_manual_start,
-        cancel_timed_unlock,
     ) = create_achievements_view(
         app_id.clone(),
         app_unlocked_achievements_count,
@@ -218,7 +205,7 @@ pub fn create_app_view(
     let app_stack = Stack::builder()
         .transition_type(StackTransitionType::SlideLeftRight)
         .build();
-    app_stack.add_named(&app_achievements_stack, Some("achievements"));
+    app_stack.add_named(&app_achievements_frame, Some("achievements"));
     app_stack.add_named(&app_stat_scrolled_window, Some("stats"));
     app_stack.add_named(&app_loading_failed_label, Some("failed"));
     app_stack.add_named(&app_no_entries_value, Some("empty"));
@@ -307,10 +294,6 @@ pub fn create_app_view(
         app_stat_model,
         app_stat_string_filter,
         app_pane,
-        achievements_manual_adjustement,
-        achievements_manual_spinbox,
-        achievements_manual_start,
-        cancel_timed_unlock,
-        app_achievements_stack,
+        app_achievements_frame,
     )
 }

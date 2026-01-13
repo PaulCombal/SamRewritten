@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-mod achievement_automatic_view;
 mod achievement_manual_view;
 mod achievement_view;
 mod app_list_view;

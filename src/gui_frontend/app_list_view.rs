@@ -79,11 +79,7 @@ pub fn create_main_ui(
         app_stat_model,
         app_stat_string_filter,
         app_pane,
-        achievements_manual_adjustement,
-        _achievements_manual_spinbox,
-        achievements_manual_start,
-        cancel_timed_unlock,
-        app_achievements_stack,
+        _app_achievements_frame
     ) = create_app_view(
         app_id.clone(),
         app_unlocked_achievements_count.clone(),
@@ -576,10 +572,10 @@ pub fn create_main_ui(
         app_achievements_model,
         #[weak]
         app_stat_model,
-        #[strong]
-        cancel_timed_unlock,
+        // #[strong]
+        // cancel_timed_unlock,
         move |_| {
-            cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
+            // cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
             list_stack.set_visible_child_name("list");
             set_context_popover_to_app_list_context(&menu_model, &application);
             if let Some(app_id) = app_id.take() {
@@ -1070,21 +1066,21 @@ pub fn create_main_ui(
         app_stats_count_value,
         #[weak]
         app_stack,
-        #[weak]
-        achievements_manual_adjustement,
-        #[weak]
-        achievements_manual_start,
-        #[weak]
-        app_achievements_stack,
-        #[strong]
-        cancel_timed_unlock,
+        // #[weak]
+        // achievements_manual_adjustement,
+        // #[weak]
+        // achievements_manual_start,
+        // #[weak]
+        // app_achievements_stack,
+        // #[strong]
+        // cancel_timed_unlock,
         move |_, _| {
             app_stack.set_visible_child_name("loading");
             set_app_action_enabled(&application, "refresh_achievements_list", false);
             app_achievements_model.remove_all();
             app_stat_model.remove_all();
-            cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
-            app_achievements_stack.set_visible_child_name("manual");
+            // cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
+            // app_achievements_stack.set_visible_child_name("manual");
 
             let app_id_copy = app_id.get().unwrap();
             let handle = spawn_blocking(move || {
@@ -1131,14 +1127,6 @@ pub fn create_main_ui(
                     } else {
                         app_stack.set_visible_child_name("empty");
                     }
-
-                    achievements_manual_start
-                        .set_sensitive(achievement_unlocked_len != achievement_len);
-
-                    let lower = std::cmp::min(achievement_unlocked_len + 1, achievement_len);
-                    achievements_manual_adjustement.set_lower(lower as f64);
-                    achievements_manual_adjustement.set_upper(achievement_len as f64);
-                    achievements_manual_adjustement.set_value(achievement_len as f64);
 
                     set_app_action_enabled(&application, "refresh_achievements_list", true);
                     set_app_action_enabled(&application, "clear_all_stats_and_achievements", true);

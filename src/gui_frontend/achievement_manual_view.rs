@@ -14,258 +14,23 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
-use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::achievement_view::count_unlocked_achievements;
 use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
-use crate::gui_frontend::request::{Request, SetAchievement, StoreStatsAndAchievements};
+use crate::gui_frontend::request::{Request, SetAchievement};
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
-use crate::utils::format::format_seconds_to_hh_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::translate::FromGlib;
 use gtk::glib::{MainContext, SignalHandlerId, clone};
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;
 use gtk::{
-    Adjustment, Align, Box, Button, ClosureExpression, Frame, Label, ListBox, ListBoxRow, ListItem,
-    ListView, NoSelection, Orientation, Overlay, ScrolledWindow, SelectionMode,
-    SignalListItemFactory, SpinButton, Stack, StackTransitionType, Switch, Widget, glib,
+    Align, Box, ClosureExpression, Frame, Label, ListItem,
+    ListView, NoSelection, Orientation, Overlay, ScrolledWindow,
+    SignalListItemFactory, Stack, StackTransitionType, Switch, Widget, glib,
 };
 use std::cell::Cell;
-use std::cmp::Ordering;
 use std::ffi::c_ulong;
 use std::rc::Rc;
-use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
-
-#[inline]
-fn create_header(
-    app_id: &Rc<Cell<Option<u32>>>,
-    achievement_views_stack: &Stack,
-    raw_model: &ListStore,
-    timed_raw_model: &ListStore,
-    application: &MainApplication,
-) -> (ListBox, Adjustment, SpinButton, Button, Arc<AtomicBool>) {
-    let list = ListBox::builder()
-        .selection_mode(SelectionMode::None)
-        .build();
-    let hbox = Box::new(Orientation::Horizontal, 10);
-
-    let label_unlock = Label::new(Some("Get to"));
-    let label_achievements_over = Label::new(Some("unlocked over"));
-    let label_achievements_minutes = Label::new(Some("minutes"));
-
-    let adjustment_achievements_count = Adjustment::builder()
-        .lower(0.0)
-        .upper(i32::MAX as f64)
-        .step_increment(1.0)
-        .build();
-    let spin_button_achievements_count = SpinButton::builder()
-        .adjustment(&adjustment_achievements_count)
-        .digits(0)
-        .build();
-    let adjustment_minutes_count = Adjustment::builder()
-        .lower(0.0)
-        .upper(i32::MAX as f64)
-        .step_increment(1.0)
-        .build();
-    let spin_button_minutes_count = SpinButton::builder()
-        .adjustment(&adjustment_minutes_count)
-        .digits(0)
-        .build();
-
-    let spacer = Box::builder()
-        .orientation(Orientation::Horizontal)
-        .hexpand(true)
-        .build();
-    let button_start = Button::builder().label("Start").build();
-    let cancelled_task = Arc::new(AtomicBool::new(true));
-
-    hbox.append(&label_unlock);
-    hbox.append(&spin_button_achievements_count);
-    hbox.append(&label_achievements_over);
-    hbox.append(&spin_button_minutes_count);
-    hbox.append(&label_achievements_minutes);
-    hbox.append(&spacer);
-    hbox.append(&button_start);
-
-    button_start.connect_clicked(clone!(
-        #[weak]
-        raw_model,
-        #[strong]
-        timed_raw_model,
-        #[strong]
-        app_id,
-        #[weak]
-        application,
-        #[weak]
-        spin_button_minutes_count,
-        #[weak]
-        spin_button_achievements_count,
-        #[weak]
-        achievement_views_stack,
-        #[weak]
-        cancelled_task,
-        move |_| {
-            let unlocked_achievements = count_unlocked_achievements(&raw_model) as i32;
-            let total_achievements = raw_model.n_items();
-            let desired_achievements = spin_button_achievements_count.value_as_int();
-            let desired_minutes = spin_button_minutes_count.value_as_int();
-            let achievements_to_unlock_count = (desired_achievements - unlocked_achievements) as usize;
-            let mut achievements_to_unlock = vec![];
-
-            for obj in (&raw_model).into_iter().flatten() {
-                let g_achievement = obj.downcast::<GAchievementObject>().expect("Not a GAchievementObject");
-                if !g_achievement.is_achieved() && g_achievement.permission() == 0 {
-                    achievements_to_unlock.push(g_achievement);
-                }
-            }
-
-            achievements_to_unlock.sort_by(|a, b| {
-                let percent_a = a.global_achieved_percent();
-                let percent_b = b.global_achieved_percent();
-
-                percent_b.partial_cmp(&percent_a).unwrap_or_else(|| {
-                    if percent_a.is_nan() && percent_b.is_nan() {
-                        Ordering::Equal
-                    } else if percent_a.is_nan() {
-                        Ordering::Greater
-                    } else {
-                        Ordering::Less
-                    }
-                })
-            });
-
-            achievements_to_unlock.truncate(achievements_to_unlock_count);
-            let app_id_int = app_id.get().expect("No App ID?");
-
-            dev_println!("[CLIENT] Evaluation of automatic unlocking: unlocked: {unlocked_achievements}, total: {total_achievements}, desired: {desired_achievements}");
-            if desired_minutes == 0 {
-                dev_println!("[CLIENT] Unlock desired achievements immediately");
-                for achievement_to_unlock in achievements_to_unlock {
-                    let res = SetAchievement {
-                        app_id: app_id_int,
-                        achievement_id: achievement_to_unlock.id(),
-                        unlocked: true,
-                        store: false
-                    }.request();
-
-                    match res {
-                        Ok(_) => {}
-                        Err(e) => {
-                            eprintln!("[CLIENT] Failed to set achievement: {:?}", e);
-                        }
-                    }
-                }
-
-                let res = StoreStatsAndAchievements {app_id: app_id_int}.request();
-                match res {
-                    Ok(_) => {}
-                    Err(e) => {
-                        eprintln!("[CLIENT] Failed to store stats and achievements: {:?}", e);
-                    }
-                }
-
-                application.activate_action("refresh_achievements_list", None);
-                return;
-            }
-
-            timed_raw_model.remove_all();
-            timed_raw_model.extend_from_slice(&achievements_to_unlock);
-            cancelled_task.store(false, std::sync::atomic::Ordering::Relaxed);
-
-            MainContext::default().spawn_local(clone!(
-                #[strong]
-                timed_raw_model,
-                async move {
-                    let start_time = std::time::Instant::now();
-                    let need_elapsed_ms = (desired_minutes * 60 * 1000) as u64;
-                    let ms_per_achievement = need_elapsed_ms / achievements_to_unlock_count as u64;
-                    let target_refresh_ms = std::cmp::min(1000, ms_per_achievement);
-                    let refresh_duration = std::time::Duration::from_millis(target_refresh_ms);
-                    let mut next_ach_to_unlock_index = 0usize;
-
-                    while next_ach_to_unlock_index < achievements_to_unlock_count {
-                        let loop_start_tick = std::time::Instant::now();
-
-                        if cancelled_task.load(std::sync::atomic::Ordering::Relaxed) {
-                            dev_println!("[CLIENT] Timed unlock task cancelled");
-                            timed_raw_model.remove_all();
-                            break;
-                        }
-
-                        let total_elapsed = start_time.elapsed();
-                        let total_elapsed_ms = total_elapsed.as_millis() as u64;
-                        let target_unlock_time_ms = (next_ach_to_unlock_index as u64 + 1) * ms_per_achievement;
-
-                        if total_elapsed_ms >= target_unlock_time_ms {
-                            let achievement = &achievements_to_unlock[next_ach_to_unlock_index];
-                            dev_println!("[CLIENT] Timed unlock of {}", achievement.name());
-                            achievement.set_is_achieved(true);
-
-                            let achievement_id = achievement.id();
-                            let result = spawn_blocking(move || {
-                                SetAchievement {
-                                    app_id: app_id_int,
-                                    achievement_id,
-                                    unlocked: true,
-                                    store: true
-                                }
-                                .request()
-                            }).await;
-
-                            match result {
-                                Ok(response) => dev_println!("[CLIENT] Achievement result: {:?}", response),
-                                Err(e) => eprintln!("[CLIENT] Achievement failed: {:?}", e),
-                            }
-
-                            next_ach_to_unlock_index += 1;
-                        }
-
-                        for (i, ach) in achievements_to_unlock.iter().enumerate() {
-                            let ach_target_ms = (i as u64 + 1) * ms_per_achievement;
-                            let remaining_ms = ach_target_ms.saturating_sub(total_elapsed_ms);
-                            let remaining_seconds = remaining_ms / 1000;
-
-                            if remaining_seconds == 0 {
-                                ach.set_time_until_unlock("OK");
-                            } else {
-                                ach.set_time_until_unlock(format_seconds_to_hh_mm_ss(remaining_seconds as usize));
-                            }
-                        }
-
-                        let work_duration = loop_start_tick.elapsed();
-                        let sleep_reduction = std::cmp::min(refresh_duration, work_duration);
-                        let adjusted_sleep = refresh_duration.saturating_sub(sleep_reduction);
-                        glib::timeout_future(adjusted_sleep).await;
-                    }
-
-                    dev_println!("[CLIENT] Timed unlock task finished");
-                }
-            ));
-
-            achievement_views_stack.set_visible_child_name("automatic");
-        }
-    ));
-
-    let list_box_row = ListBoxRow::builder()
-        .child(&hbox)
-        .activatable(false)
-        .margin_end(5)
-        .margin_start(5)
-        .margin_top(5)
-        .margin_bottom(5)
-        .build();
-    list.append(&list_box_row);
-
-    (
-        list,
-        adjustment_achievements_count,
-        spin_button_achievements_count,
-        button_start,
-        cancelled_task,
-    )
-}
 
 #[inline]
 pub fn create_achievements_manual_view(
@@ -273,25 +38,8 @@ pub fn create_achievements_manual_view(
     app_unlocked_achievements_count: &Rc<Cell<usize>>,
     filtered_model: &NoSelection,
     raw_model: &ListStore,
-    timed_raw_model: &ListStore,
-    achievement_views_stack: &Stack,
     app_achievement_count_value: &Label,
-    application: &MainApplication,
-) -> (Frame, Adjustment, SpinButton, Button, Arc<AtomicBool>) {
-    let (
-        header,
-        header_achievements_adjustment,
-        header_achievements_spinbox,
-        header_achievements_start,
-        cancel_timed_unlock,
-    ) = create_header(
-        app_id,
-        achievement_views_stack,
-        raw_model,
-        timed_raw_model,
-        application,
-    );
-
+) -> (Frame,) {
     let achievements_list_factory = SignalListItemFactory::new();
 
     let app_achievements_list_view = ListView::builder()
@@ -457,20 +205,12 @@ pub fn create_achievements_manual_view(
     achievements_list_factory.connect_bind(clone!(
         #[strong]
         app_unlocked_achievements_count,
-        #[strong]
-        cancel_timed_unlock,
         #[weak]
         app_id,
         #[weak]
         app_achievement_count_value,
         #[weak]
         raw_model,
-        #[weak]
-        header_achievements_adjustment,
-        #[weak]
-        header_achievements_spinbox,
-        #[weak]
-        header_achievements_start,
         move |_, list_item| unsafe {
             let list_item = list_item
                 .downcast_ref::<ListItem>()
@@ -496,23 +236,11 @@ pub fn create_achievements_manual_view(
             let handler_id = switch.connect_state_notify(clone!(
                 #[strong]
                 app_unlocked_achievements_count,
-                #[strong]
-                cancel_timed_unlock,
                 #[weak]
                 app_achievement_count_value,
                 #[weak]
                 raw_model,
-                #[weak]
-                header_achievements_adjustment,
-                #[weak]
-                header_achievements_spinbox,
-                #[weak]
-                header_achievements_start,
                 move |switch| {
-                    if !cancel_timed_unlock.load(std::sync::atomic::Ordering::Relaxed) {
-                        dev_println!("[CLIENT] Not unlocking achievement after switch callback (automatic unlocking in progress): {}", achievement_object.name());
-                        return;
-                    }
                     if !switch.is_sensitive() {
                         dev_println!("[CLIENT] Switch flipped when not sensitive.. WARNING");
                         return;
@@ -543,8 +271,6 @@ pub fn create_achievements_manual_view(
                         switch,
                         #[weak]
                         achievement_object,
-                        #[weak]
-                        header_achievements_start,
                         async move {
                             let result = handle.await.expect("spawn_blocking task panicked");
 
@@ -559,28 +285,16 @@ pub fn create_achievements_manual_view(
                                         unlocked_achievements_count_value - 1
                                     };
 
-                                    header_achievements_start.set_sensitive(
-                                        new_unlocked_count != raw_model_len as usize,
-                                    );
                                     app_unlocked_achievements_count.set(new_unlocked_count);
 
                                     app_achievement_count_value.set_label(&format!(
                                         "{new_unlocked_count} / {raw_model_len}"
                                     ));
 
-                                    let lower = std::cmp::min(
+                                    let _lower = std::cmp::min(
                                         new_unlocked_count + 1,
                                         raw_model_len as usize,
                                     );
-                                    header_achievements_adjustment.set_lower(lower as f64);
-
-                                    let spinbox_value =
-                                        header_achievements_spinbox.value_as_int() as usize;
-                                    let spinbox_value =
-                                        std::cmp::max(spinbox_value, new_unlocked_count + 1);
-                                    let spinbox_value =
-                                        std::cmp::min(spinbox_value, raw_model_len as usize);
-                                    header_achievements_spinbox.set_value(spinbox_value as f64);
                                 }
                                 Err(e) => {
                                     eprintln!("[CLIENT] Error setting achievement: {e}");
@@ -623,22 +337,16 @@ pub fn create_achievements_manual_view(
         }
     });
 
-    let vbox = Box::new(Orientation::Vertical, 5);
-    vbox.append(&header);
-    vbox.append(&app_achievements_scrolled_window);
+
     let app_achievements_frame = Frame::builder()
         .margin_end(15)
         .margin_start(15)
         .margin_top(15)
         .margin_bottom(15)
-        .child(&vbox)
+        .child(&app_achievements_scrolled_window)
         .build();
 
     (
         app_achievements_frame,
-        header_achievements_adjustment,
-        header_achievements_spinbox,
-        header_achievements_start,
-        cancel_timed_unlock,
     )
 }
