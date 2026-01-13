@@ -60,6 +60,11 @@ pub fn create_main_ui(
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
 
+    let res_data = include_bytes!(concat!(env!("OUT_DIR"), "/sam_rewritten.gresource"));
+    let resource = gtk::gio::Resource::from_data(&glib::Bytes::from_owned(res_data.to_vec()))
+        .expect("Failed to load GResource");
+    gtk::gio::resources_register(&resource);
+
     // Create the UI components for the app view
     let (
         app_stack,

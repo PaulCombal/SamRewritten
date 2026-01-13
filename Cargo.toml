@@ -32,6 +32,9 @@ winreg = "0"
 [target.'cfg(windows)'.build-dependencies]
 winres = "0"
 
+[build-dependencies]
+glib-build-tools = "0"
+
 [package.metadata.appimage]
 icon = "assets/icon_256.png"
 desktop_entry = "package/samrewritten.desktop"

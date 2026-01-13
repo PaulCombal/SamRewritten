@@ -1,0 +1,77 @@
+using Gtk 4.0;
+
+template $SamAchievementsPage : Box {
+  orientation: vertical;
+  spacing: 0;
+
+  // Toolbar area
+  Box {
+    margin-top: 12;
+    margin-bottom: 12;
+    margin-start: 12;
+    margin-end: 12;
+    spacing: 12;
+
+    // Mode Selection (Radio-style buttons)
+    Box {
+      // style-classes: ["linked"]; // Joins buttons together visually
+
+      ToggleButton manual_mode_btn {
+        label: "Manual";
+        active: true;
+      }
+
+      ToggleButton timed_mode_btn {
+        label: "Timed";
+        group: manual_mode_btn;
+      }
+    }
+
+    // Centered Spacer / Search Entry could go here
+    Box { hexpand: true; }
+
+    // Contextual Actions (End of the bar)
+    Box {
+      spacing: 6;
+
+      // Manual Mode Actions: Sorting
+      Box {
+        visible: bind manual_mode_btn.active;
+        spacing: 6;
+
+        Button {
+          icon-name: "view-sort-ascending-symbolic";
+          tooltip-text: "Sort A-Z";
+          // Bind to your Rust sorting logic
+        }
+        Button {
+          icon-name: "view-sort-descending-symbolic"; // Representing % unlock
+          tooltip-text: "Sort by Unlock %";
+        }
+      }
+
+      // Timed Mode Actions: Configure
+      MenuButton config_button {
+        visible: bind timed_mode_btn.active;
+        label: "Configure & Start";
+
+//        popover: Popover {
+//          child: $SamTimerConfigPopover {};
+//        };
+      }
+    }
+  }
+
+  Separator { orientation: horizontal; }
+
+  // Achievement List
+  ScrolledWindow {
+    vexpand: true;
+    hscrollbar-policy: never;
+
+    ListView list_view {
+      // The Row implementation will handle the Drag Handle visibility
+      // based on the timed_mode_btn.active state.
+    }
+  }
+}

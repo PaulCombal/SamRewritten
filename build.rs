@@ -16,6 +16,56 @@
 use std::process::Command;
 
 fn main() {
+    compile_gschemas();
+    compile_blueprints();
+    pack_gresources();
+
+    #[cfg(windows)]
+    {
+        let mut res = winres::WindowsResource::new();
+        res.set_icon("assets/icon.ico");
+        res.compile().unwrap();
+    }
+}
+
+fn pack_gresources() {
+    glib_build_tools::compile_resources(
+        &["assets"],
+        "assets/org.samrewritten.SamRewritten.gresource.xml",
+        "sam_rewritten.gresource",
+    );
+}
+
+fn compile_blueprints() {
+    let ui_dir = "assets/ui";
+
+    // Tell Cargo to rerun this script if any blueprint file changes
+    println!("cargo:rerun-if-changed={}", ui_dir);
+
+    let entries = std::fs::read_dir(ui_dir).expect("Failed to read UI directory");
+
+    for entry in entries {
+        let entry = entry.expect("Failed to read entry");
+        let path = entry.path();
+
+        if path.extension().map_or(false, |ext| ext == "blp") {
+            let output_path = path.with_extension("ui");
+            let status = Command::new("blueprint-compiler")
+                .arg("batch-compile")
+                .arg(ui_dir) // Output directory
+                .arg(ui_dir) // Input directory
+                .arg(&path)
+                .status()
+                .expect("Failed to execute blueprint-compiler. Is it installed?");
+
+            if !status.success() {
+                panic!("Blueprint compilation failed for {:?}", path);
+            }
+        }
+    }
+}
+
+fn compile_gschemas() {
     let schema_dir = "assets";
 
     let status = Command::new("glib-compile-schemas")
@@ -36,12 +86,5 @@ fn main() {
                 e
             );
         }
-    }
-
-    #[cfg(windows)]
-    {
-        let mut res = winres::WindowsResource::new();
-        res.set_icon("assets/icon.ico");
-        res.compile().unwrap();
     }
 }

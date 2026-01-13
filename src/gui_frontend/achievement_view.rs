@@ -14,7 +14,6 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::achievement_manual_view::create_achievements_manual_view;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use gtk::gio::ListStore;
 use gtk::prelude::*;
@@ -22,13 +21,14 @@ use gtk::{CustomSorter, FilterListModel, Frame, Label, NoSelection, SortListMode
 use std::cell::Cell;
 use std::cmp::Ordering;
 use std::rc::Rc;
+use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
 
 pub fn create_achievements_view(
-    app_id: Rc<Cell<Option<u32>>>,
-    app_unlocked_achievements_count: Rc<Cell<usize>>,
-    _application: &MainApplication,
-    app_achievement_count_value: &Label,
-) -> (Frame, ListStore, StringFilter) {
+    // app_id: Rc<Cell<Option<u32>>>,
+    // app_unlocked_achievements_count: Rc<Cell<usize>>,
+    // _application: &MainApplication,
+    // app_achievement_count_value: &Label,
+) -> (SamAchievementsPage, ListStore, StringFilter) {
     let app_achievements_model = ListStore::new::<GAchievementObject>();
 
     let app_achievement_string_filter = StringFilter::builder()
@@ -61,18 +61,20 @@ pub fn create_achievements_view(
     let app_achievement_selection_model = NoSelection::new(Option::<ListStore>::None);
     app_achievement_selection_model.set_model(Some(&app_achievement_sort_model));
 
-    let (
-        achievements_manual_frame,
-    ) = create_achievements_manual_view(
-        &app_id,
-        &app_unlocked_achievements_count,
-        &app_achievement_selection_model,
-        &app_achievements_model,
-        app_achievement_count_value,
-    );
+    // let (
+    //     achievements_manual_frame,
+    // ) = create_achievements_manual_view(
+    //     &app_id,
+    //     &app_unlocked_achievements_count,
+    //     &app_achievement_selection_model,
+    //     &app_achievements_model,
+    //     app_achievement_count_value,
+    // );
+
+    let achievements_page = SamAchievementsPage::default();
 
     (
-        achievements_manual_frame,
+        achievements_page,
         app_achievements_model,
         app_achievement_string_filter,
     )

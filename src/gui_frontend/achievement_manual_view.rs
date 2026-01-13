@@ -14,7 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
-use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
+use crate::gui_frontend::widgets::custom_progress_bar::CustomProgressBar;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::request::{Request, SetAchievement};
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;

@@ -25,6 +25,7 @@ use gtk::{Align, Box, Frame, Label, Orientation, Separator, Spinner, Stack, Stac
 use gtk::{Paned, glib};
 use std::cell::Cell;
 use std::rc::Rc;
+use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
 
 pub fn create_app_view(
     app_id: Rc<Cell<Option<u32>>>,
@@ -48,7 +49,7 @@ pub fn create_app_view(
     ListStore,
     StringFilter,
     Paned,
-    Frame,
+    SamAchievementsPage,
 ) {
     let app_spinner = Spinner::builder().spinning(true).margin_end(5).build();
     let app_spinner_label = Label::builder().label("Loading...").build();
@@ -194,10 +195,10 @@ pub fn create_app_view(
         app_achievements_model,
         app_achievement_string_filter,
     ) = create_achievements_view(
-        app_id.clone(),
-        app_unlocked_achievements_count,
-        application,
-        &app_achievement_count_value,
+        // app_id.clone(),
+        // app_unlocked_achievements_count,
+        // application,
+        // &app_achievement_count_value,
     );
 
     let (app_stat_scrolled_window, app_stat_model, app_stat_string_filter) = create_stats_view();
