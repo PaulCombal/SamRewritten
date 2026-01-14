@@ -28,9 +28,9 @@ use std::rc::Rc;
 use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
 
 pub fn create_app_view(
-    app_id: Rc<Cell<Option<u32>>>,
-    app_unlocked_achievements_count: Rc<Cell<usize>>,
-    application: &MainApplication,
+    // app_id: Rc<Cell<Option<u32>>>,
+    // app_unlocked_achievements_count: Rc<Cell<usize>>,
+    // application: &MainApplication,
 ) -> (
     Stack,
     ShimmerImage,

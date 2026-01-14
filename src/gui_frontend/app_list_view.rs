@@ -84,11 +84,11 @@ pub fn create_main_ui(
         app_stat_model,
         app_stat_string_filter,
         app_pane,
-        _app_achievements_frame
+        app_achievements_page
     ) = create_app_view(
-        app_id.clone(),
-        app_unlocked_achievements_count.clone(),
-        application,
+        // app_id.clone(),
+        // app_unlocked_achievements_count.clone(),
+        // application,
     );
 
     // Loading box
@@ -267,7 +267,7 @@ pub fn create_main_ui(
                 &app_developer_value,
                 &app_achievement_count_value,
                 &app_stats_count_value,
-                app_stack.clone(),
+                app_stack,
                 &app_id,
                 &app_metacritic_box,
                 &app_metacritic_value,
@@ -1062,7 +1062,7 @@ pub fn create_main_ui(
         #[weak]
         application,
         #[weak]
-        app_achievements_model,
+        app_achievements_page,
         #[weak]
         app_stat_model,
         #[weak]
@@ -1071,21 +1071,13 @@ pub fn create_main_ui(
         app_stats_count_value,
         #[weak]
         app_stack,
-        // #[weak]
-        // achievements_manual_adjustement,
-        // #[weak]
-        // achievements_manual_start,
-        // #[weak]
-        // app_achievements_stack,
-        // #[strong]
-        // cancel_timed_unlock,
         move |_, _| {
+            crate::dev_println!("[CLIENT] Action triggered: refresh_achievements_list");
             app_stack.set_visible_child_name("loading");
             set_app_action_enabled(&application, "refresh_achievements_list", false);
-            app_achievements_model.remove_all();
+            app_achievements_page.clear_model();
             app_stat_model.remove_all();
             // cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
-            // app_achievements_stack.set_visible_child_name("manual");
 
             let app_id_copy = app_id.get().unwrap();
             let handle = spawn_blocking(move || {
@@ -1121,7 +1113,7 @@ pub fn create_main_ui(
                         .into_iter()
                         .map(GAchievementObject::new)
                         .collect();
-                    app_achievements_model.extend_from_slice(&objects);
+                    app_achievements_page.extend_model_from_slice(&objects);
 
                     let objects: Vec<GStatObject> =
                         stats.into_iter().map(GStatObject::new).collect();

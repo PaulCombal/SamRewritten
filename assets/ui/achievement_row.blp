@@ -1,0 +1,90 @@
+using Gtk 4.0;
+
+template $SamAchievementRow : Box {
+  orientation: horizontal;
+
+  Overlay {
+    hexpand: true;
+
+    [overlay]
+    $CustomProgressBar global_percentage_progress_bar {
+      visible: false; // Managed by bindings in Rust
+    }
+
+    Box achievement_content {
+      orientation: horizontal;
+      margin-top: 8;
+      margin-bottom: 8;
+      margin-start: 8;
+      margin-end: 8;
+      spacing: 12;
+
+      Box icon_box {
+        orientation: vertical;
+        halign: start;
+
+        Stack icon_stack {
+          transition-type: rotate_left_right;
+
+          StackPage {
+            name: "normal";
+            child: $ShimmerImage normal_icon {
+              width-request: 32;
+              height-request: 32;
+            };
+          }
+
+          StackPage {
+            name: "locked";
+            child: $ShimmerImage locked_icon {
+              width-request: 32;
+              height-request: 32;
+            };
+          }
+        }
+      }
+
+      // Text Section
+      Box label_box {
+        orientation: vertical;
+        valign: center;
+
+        Label name_label {
+          halign: start;
+          ellipsize: end;
+          // styles [
+          //   "heading"
+          // ]
+        }
+
+        Label description_label {
+          halign: start;
+          ellipsize: end;
+          // styles [
+          //   "caption"
+          // ]
+        }
+      }
+
+      Box {
+        hexpand: true;
+      }
+
+      Box action_box {
+        orientation: horizontal;
+        valign: center;
+        spacing: 8;
+
+        Image protected_icon {
+          icon-name: "action-unavailable-symbolic";
+          tooltip-text: "This achievement is protected.";
+          visible: false; // Managed by bindings
+        }
+
+        Switch achievement_switch {
+          valign: center;
+        }
+      }
+    }
+  }
+}

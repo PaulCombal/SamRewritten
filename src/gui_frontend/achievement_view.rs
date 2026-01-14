@@ -17,7 +17,7 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use gtk::gio::ListStore;
 use gtk::prelude::*;
-use gtk::{CustomSorter, FilterListModel, Frame, Label, NoSelection, SortListModel, StringFilter, StringFilterMatchMode};
+use gtk::{CustomSorter, FilterListModel, Frame, Label, MultiSelection, NoSelection, SortListModel, StringFilter, StringFilterMatchMode};
 use std::cell::Cell;
 use std::cmp::Ordering;
 use std::rc::Rc;
@@ -58,8 +58,8 @@ pub fn create_achievements_view(
         .sorter(&global_achieved_percent_sorter)
         .build();
 
-    let app_achievement_selection_model = NoSelection::new(Option::<ListStore>::None);
-    app_achievement_selection_model.set_model(Some(&app_achievement_sort_model));
+    // let app_achievement_selection_model = MultiSelection::new(Option::<ListStore>::None);
+    // app_achievement_selection_model.set_model(Some(&app_achievement_sort_model));
 
     // let (
     //     achievements_manual_frame,
@@ -72,6 +72,7 @@ pub fn create_achievements_view(
     // );
 
     let achievements_page = SamAchievementsPage::default();
+    // achievements_page.set_achievements_model(app_achievement_selection_model);
 
     (
         achievements_page,

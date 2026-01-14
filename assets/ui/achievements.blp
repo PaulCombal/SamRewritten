@@ -14,7 +14,9 @@ template $SamAchievementsPage : Box {
 
     // Mode Selection (Radio-style buttons)
     Box {
-      // style-classes: ["linked"]; // Joins buttons together visually
+      styles [
+        "linked"
+      ]
 
       ToggleButton manual_mode_btn {
         label: "Manual";
@@ -32,21 +34,20 @@ template $SamAchievementsPage : Box {
 
     // Contextual Actions (End of the bar)
     Box {
-      spacing: 6;
-
-      // Manual Mode Actions: Sorting
       Box {
-        visible: bind manual_mode_btn.active;
-        spacing: 6;
+        styles [
+          "linked"
+        ]
 
-        Button {
-          icon-name: "view-sort-ascending-symbolic";
-          tooltip-text: "Sort A-Z";
-          // Bind to your Rust sorting logic
+        visible: bind manual_mode_btn.active;
+
+        ToggleButton manual_mode_sort_az_btn {
+          label: "A-Z";
+          active: true;
         }
-        Button {
-          icon-name: "view-sort-descending-symbolic"; // Representing % unlock
-          tooltip-text: "Sort by Unlock %";
+        ToggleButton manual_mode_sort_unlock_btn {
+          label: "Unlock %";
+          group: manual_mode_sort_az_btn;
         }
       }
 
