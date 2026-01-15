@@ -17,7 +17,7 @@ jobs:
 
       - name: Install NSIS
         run: |
-          Invoke-WebRequest https://netcologne.dl.sourceforge.net/project/nsis/NSIS%203/3.11/nsis-3.11-setup.exe -OutFile C:\WINDOWS\Temp\nsis-3.11-setup.exe
+          Invoke-WebRequest https://unlimited.dl.sourceforge.net/project/nsis/NSIS%203/3.11/nsis-3.11-setup.exe?viasf=1 -OutFile C:\WINDOWS\Temp\nsis-3.11-setup.exe
           Invoke-Expression "& C:\WINDOWS\Temp\nsis-3.11-setup.exe /S"
 
       - name: Print NSIS version
