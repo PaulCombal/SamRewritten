@@ -69,47 +69,22 @@ impl SteamLocator {
             return Some(Path::new(&path_str).to_owned());
         }
 
-        let home = std::env::var("HOME").expect("Failed to get home dir");
-        let lib_paths = [
-            home.clone() + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so",
-            home.clone() + "/.local/share/Steam/linux64/steamclient.so",
-            home.clone() + "/.steam/steam/linux64/steamclient.so",
-            home.clone() + "/.steam/debian-installation/linux64/steamclient.so",
-            home.clone() + "/.steam/root/linux64/steamclient.so",
-            home.clone() + "/.steam/sdk64/steamclient.so",
-        ];
+        let steam_install_paths: Vec<PathBuf> = Self::get_local_steam_install_root_folders()
+            .into_iter()
+            .map(|path| path.join("linux64/steamclient.so"))
+            .filter(|path| path.exists())
+            .collect();
 
-        if silent {
-            for lib_path in lib_paths {
-                let path = Path::new(&lib_path);
-                if path.exists() {
-                    return Some(path.into());
-                }
-            }
+        let first_path = steam_install_paths.first()?;
 
-            return None;
-        }
-
-        let mut found_paths: Vec<PathBuf> = vec![];
-        for lib_path in lib_paths {
-            let path = Path::new(&lib_path);
-            if path.exists() {
-                found_paths.push(path.into());
-            }
-        }
-
-        if found_paths.is_empty() {
-            return None;
-        }
-
-        if found_paths.len() > 1 {
+        if !silent && steam_install_paths.len() > 1 {
             eprintln!("[STEAM LOCATOR] Found multiple Steam installations. Using the first one.");
-            for path in found_paths.iter() {
+            for path in &steam_install_paths {
                 eprintln!("[STEAM LOCATOR] - {}", path.display());
             }
         }
 
-        Some(found_paths[0].clone())
+        Some(first_path.clone())
     }
 
     #[cfg(target_os = "windows")]
@@ -196,7 +171,7 @@ impl SteamLocator {
 
         potential_dirs
             .into_iter()
-            .filter(|path| path.exists())
+            .filter(|path| path.exists() && !path.is_symlink())
             .collect()
     }
 
