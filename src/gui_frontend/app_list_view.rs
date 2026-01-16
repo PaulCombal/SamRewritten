@@ -60,6 +60,9 @@ pub fn create_main_ui(
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
 
+    // Template widgets imported in other templates must be registered here.
+    crate::gui_frontend::widgets::template_timer_popover::SamTimerConfigForm::static_type();
+
     let res_data = include_bytes!(concat!(env!("OUT_DIR"), "/sam_rewritten.gresource"));
     let resource = gtk::gio::Resource::from_data(&glib::Bytes::from_owned(res_data.to_vec()))
         .expect("Failed to load GResource");
@@ -84,7 +87,7 @@ pub fn create_main_ui(
         app_stat_model,
         app_stat_string_filter,
         app_pane,
-        app_achievements_page
+        app_achievements_page,
     ) = create_app_view(
         // app_id.clone(),
         // app_unlocked_achievements_count.clone(),

@@ -1,7 +1,7 @@
+use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 
 glib::wrapper! {
     pub struct SamAchievementRow(ObjectSubclass<imp::SamAchievementRow>)
@@ -41,43 +41,61 @@ impl SamAchievementRow {
             .sync_create()
             .build();
 
-        item.bind_property("global-achieved-percent", &imp.global_percentage_progress_bar.get(), "value")
-            .sync_create()
-            .build();
+        item.bind_property(
+            "global-achieved-percent",
+            &imp.global_percentage_progress_bar.get(),
+            "value",
+        )
+        .sync_create()
+        .build();
 
-        item.bind_property("global-achieved-percent-ok", &imp.global_percentage_progress_bar.get(), "visible")
-            .sync_create()
-            .build();
+        item.bind_property(
+            "global-achieved-percent-ok",
+            &imp.global_percentage_progress_bar.get(),
+            "visible",
+        )
+        .sync_create()
+        .build();
 
         // 2. Complex Logic via Expressions
         // Icon Stack: is-achieved (bool) -> visible-child-name (string)
         item.property_expression("is-achieved")
-            .chain_closure::<String>(glib::closure_local!(|_: Option<glib::Object>, is_achieved: bool| {
-                if is_achieved { "normal" } else { "locked" }
-            }))
-            .bind(&imp.icon_stack.get(), "visible-child-name", gtk::Widget::NONE);
+            .chain_closure::<String>(glib::closure_local!(
+                |_: Option<glib::Object>, is_achieved: bool| {
+                    if is_achieved { "normal" } else { "locked" }
+                }
+            ))
+            .bind(
+                &imp.icon_stack.get(),
+                "visible-child-name",
+                gtk::Widget::NONE,
+            );
 
         // Permission: permission (i32) -> sensitive (bool)
         item.property_expression("permission")
-            .chain_closure::<bool>(glib::closure_local!(|_: Option<glib::Object>, permission: i32| {
-                permission == 0
-            }))
-            .bind(&imp.achievement_switch.get(), "sensitive", gtk::Widget::NONE);
+            .chain_closure::<bool>(glib::closure_local!(
+                |_: Option<glib::Object>, permission: i32| { permission == 0 }
+            ))
+            .bind(
+                &imp.achievement_switch.get(),
+                "sensitive",
+                gtk::Widget::NONE,
+            );
 
         // Protected Icon: permission (i32) -> visible (bool)
         item.property_expression("permission")
-            .chain_closure::<bool>(glib::closure_local!(|_: Option<glib::Object>, permission: i32| {
-                permission != 0
-            }))
+            .chain_closure::<bool>(glib::closure_local!(
+                |_: Option<glib::Object>, permission: i32| { permission != 0 }
+            ))
             .bind(&imp.protected_icon.get(), "visible", gtk::Widget::NONE);
     }
 }
 
 mod imp {
     use super::*;
-    use gtk::{CompositeTemplate, TemplateChild};
     use crate::gui_frontend::widgets::custom_progress_bar::CustomProgressBar;
     use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
+    use gtk::{CompositeTemplate, TemplateChild};
 
     #[derive(Default, CompositeTemplate)]
     #[template(resource = "/org/samrewritten/SamRewritten/ui/achievement_row.ui")]

@@ -56,9 +56,9 @@ template $SamAchievementsPage : Box {
         visible: bind timed_mode_btn.active;
         label: "Configure & Start";
 
-//        popover: Popover {
-//          child: $SamTimerConfigPopover {};
-//        };
+        popover: Popover {
+          child: $SamTimerConfigForm {};
+        };
       }
     }
   }

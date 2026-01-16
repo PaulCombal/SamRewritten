@@ -1,6 +1,6 @@
-use gtk::{glib};
-use gtk::subclass::prelude::ObjectSubclassIsExt;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
+use gtk::glib;
+use gtk::subclass::prelude::ObjectSubclassIsExt;
 
 glib::wrapper! {
     pub struct SamAchievementsPage(ObjectSubclass<imp::SamAchievementsPage>)
@@ -25,12 +25,12 @@ impl SamAchievementsPage {
 }
 
 mod imp {
-    use gtk::glib;
-    use gtk::{CompositeTemplate, TemplateChild};
-    use gtk::prelude::{Cast, ListItemExt, ToggleButtonExt};
-    use gtk::subclass::prelude::*;
     use crate::gui_frontend::gobjects::achievement::GAchievementObject;
     use crate::gui_frontend::widgets::template_achievement_row::SamAchievementRow;
+    use gtk::glib;
+    use gtk::prelude::{Cast, ListItemExt, ToggleButtonExt};
+    use gtk::subclass::prelude::*;
+    use gtk::{CompositeTemplate, TemplateChild};
 
     #[derive(CompositeTemplate)]
     #[template(resource = "/org/samrewritten/SamRewritten/ui/achievements.ui")]
@@ -107,12 +107,16 @@ mod imp {
 
             // You can set up your mode-switch logic here
             let obj = self.obj();
-            self.manual_mode_btn.connect_toggled(glib::clone!(#[weak] obj, move |btn| {
-            if btn.is_active() {
-                println!("Switching to Manual Mode");
-                // logic to refresh list or change models
-            }
-        }));
+            self.manual_mode_btn.connect_toggled(glib::clone!(
+                #[weak]
+                obj,
+                move |btn| {
+                    if btn.is_active() {
+                        println!("Switching to Manual Mode");
+                        // logic to refresh list or change models
+                    }
+                }
+            ));
         }
     }
 

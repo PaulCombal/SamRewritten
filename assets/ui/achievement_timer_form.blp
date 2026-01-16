@@ -1,0 +1,58 @@
+using Gtk 4.0;
+
+template $SamTimerConfigForm : Box {
+  orientation: vertical;
+  spacing: 18;
+  margin-top: 18;
+  margin-bottom: 18;
+  margin-start: 18;
+  margin-end: 18;
+
+  // Title / Header
+  Label {
+    label: "Session Duration";
+    halign: start;
+    styles [
+      "title-4" 
+    ]
+  }
+
+  // Radio Button Group
+  Box {
+    orientation: vertical;
+    spacing: 8;
+    halign: start;
+
+    CheckButton radio_15 {
+      label: "15 Minutes";
+      active: true;
+    }
+
+    CheckButton radio_30 {
+      label: "30 Minutes";
+      group: radio_15;
+    }
+
+    CheckButton radio_60 {
+      label: "60 Minutes";
+      group: radio_15;
+    }
+    
+    CheckButton radio_custom {
+      label: "Custom Range";
+      group: radio_15;
+    }
+  }
+
+  // Action Button
+  Button start_session_btn {
+    label: "Start Timer";
+    halign: center;
+    
+    // Applying 'suggested-action' makes the button blue/prominent
+    styles [
+      "suggested-action",
+      "pill"
+    ]
+  }
+}

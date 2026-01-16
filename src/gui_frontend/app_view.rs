@@ -17,18 +17,20 @@ use super::stat_view::create_stats_view;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::achievement_view::create_achievements_view;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
+use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
 use gtk::gio::ListStore;
 use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};
 use gtk::prelude::*;
-use gtk::{Align, Box, Frame, Label, Orientation, Separator, Spinner, Stack, StackTransitionType, StringFilter, ToggleButton};
+use gtk::{
+    Align, Box, Frame, Label, Orientation, Separator, Spinner, Stack, StackTransitionType,
+    StringFilter, ToggleButton,
+};
 use gtk::{Paned, glib};
 use std::cell::Cell;
 use std::rc::Rc;
-use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
 
-pub fn create_app_view(
-    // app_id: Rc<Cell<Option<u32>>>,
+pub fn create_app_view(// app_id: Rc<Cell<Option<u32>>>,
     // app_unlocked_achievements_count: Rc<Cell<usize>>,
     // application: &MainApplication,
 ) -> (
@@ -190,11 +192,8 @@ pub fn create_app_view(
     app_sidebar.append(&app_stats_count_box);
     app_sidebar.append(&app_type_box);
 
-    let (
-        app_achievements_frame,
-        app_achievements_model,
-        app_achievement_string_filter,
-    ) = create_achievements_view(
+    let (app_achievements_frame, app_achievements_model, app_achievement_string_filter) =
+        create_achievements_view(
         // app_id.clone(),
         // app_unlocked_achievements_count,
         // application,

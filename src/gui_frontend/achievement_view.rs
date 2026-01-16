@@ -15,16 +15,18 @@
 
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
+use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
 use gtk::gio::ListStore;
 use gtk::prelude::*;
-use gtk::{CustomSorter, FilterListModel, Frame, Label, MultiSelection, NoSelection, SortListModel, StringFilter, StringFilterMatchMode};
+use gtk::{
+    CustomSorter, FilterListModel, Frame, Label, MultiSelection, NoSelection, SortListModel,
+    StringFilter, StringFilterMatchMode,
+};
 use std::cell::Cell;
 use std::cmp::Ordering;
 use std::rc::Rc;
-use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
 
-pub fn create_achievements_view(
-    // app_id: Rc<Cell<Option<u32>>>,
+pub fn create_achievements_view(// app_id: Rc<Cell<Option<u32>>>,
     // app_unlocked_achievements_count: Rc<Cell<usize>>,
     // _application: &MainApplication,
     // app_achievement_count_value: &Label,
@@ -40,7 +42,7 @@ pub fn create_achievements_view(
         .model(&app_achievements_model)
         .filter(&app_achievement_string_filter)
         .build();
-    
+
     let global_achieved_percent_sorter = CustomSorter::new(move |obj1, obj2| {
         let achievement1 = obj1.downcast_ref::<GAchievementObject>().unwrap();
         let achievement2 = obj2.downcast_ref::<GAchievementObject>().unwrap();

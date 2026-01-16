@@ -49,7 +49,6 @@ fn compile_blueprints() {
         let path = entry.path();
 
         if path.extension().map_or(false, |ext| ext == "blp") {
-            let output_path = path.with_extension("ui");
             let status = Command::new("blueprint-compiler")
                 .arg("batch-compile")
                 .arg(ui_dir) // Output directory

@@ -14,9 +14,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
-use crate::gui_frontend::widgets::custom_progress_bar::CustomProgressBar;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::request::{Request, SetAchievement};
+use crate::gui_frontend::widgets::custom_progress_bar::CustomProgressBar;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::translate::FromGlib;
@@ -24,9 +24,9 @@ use gtk::glib::{MainContext, SignalHandlerId, clone};
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;
 use gtk::{
-    Align, Box, ClosureExpression, Frame, Label, ListItem,
-    ListView, NoSelection, Orientation, Overlay, ScrolledWindow,
-    SignalListItemFactory, Stack, StackTransitionType, Switch, Widget, glib,
+    Align, Box, ClosureExpression, Frame, Label, ListItem, ListView, NoSelection, Orientation,
+    Overlay, ScrolledWindow, SignalListItemFactory, Stack, StackTransitionType, Switch, Widget,
+    glib,
 };
 use std::cell::Cell;
 use std::ffi::c_ulong;
@@ -249,7 +249,11 @@ pub fn create_achievements_manual_view(
                     let raw_model_len = raw_model.n_items();
                     let unlocked = switch.is_active();
 
-                    dev_println!("[CLIENT] Setting achievement after switch callback: {} ({})", achievement_object.name(), unlocked);
+                    dev_println!(
+                        "[CLIENT] Setting achievement after switch callback: {} ({})",
+                        achievement_object.name(),
+                        unlocked
+                    );
 
                     achievement_object.set_is_achieved(unlocked);
                     let achievement_id = achievement_id.clone();
@@ -258,7 +262,7 @@ pub fn create_achievements_manual_view(
                             app_id,
                             achievement_id,
                             unlocked,
-                            store: true
+                            store: true,
                         }
                         .request()
                     });
@@ -337,7 +341,6 @@ pub fn create_achievements_manual_view(
         }
     });
 
-
     let app_achievements_frame = Frame::builder()
         .margin_end(15)
         .margin_start(15)
@@ -346,7 +349,5 @@ pub fn create_achievements_manual_view(
         .child(&app_achievements_scrolled_window)
         .build();
 
-    (
-        app_achievements_frame,
-    )
+    (app_achievements_frame,)
 }

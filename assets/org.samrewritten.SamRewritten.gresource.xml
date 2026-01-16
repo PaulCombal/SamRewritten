@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
     <gresource prefix="/org/samrewritten/SamRewritten/">
+        <file preprocess="xml-stripblanks">ui/achievement_timer_form.ui</file>
         <file preprocess="xml-stripblanks">ui/achievements.ui</file>
         <file preprocess="xml-stripblanks">ui/achievement_row.ui</file>
     </gresource>
