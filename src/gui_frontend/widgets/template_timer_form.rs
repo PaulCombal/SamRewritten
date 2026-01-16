@@ -117,9 +117,7 @@ mod tests {
 
         let config_form_popover = SamTimerConfigForm::default();
 
-        let popover = gtk::Popover::builder()
-            .child(&config_form_popover)
-            .build();
+        let popover = gtk::Popover::builder().child(&config_form_popover).build();
 
         let menu_button = gtk::MenuButton::builder()
             .icon_name("emblem-system-symbolic")
