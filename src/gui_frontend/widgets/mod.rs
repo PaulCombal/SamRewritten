@@ -4,4 +4,4 @@ pub mod shimmer_image;
 pub mod steam_app_card;
 mod template_achievement_row;
 pub mod template_achievements;
-pub mod template_timer_popover;
+pub mod template_timer_form;

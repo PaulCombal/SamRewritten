@@ -2,57 +2,181 @@ using Gtk 4.0;
 
 template $SamTimerConfigForm : Box {
   orientation: vertical;
-  spacing: 18;
+  spacing: 24;
   margin-top: 18;
   margin-bottom: 18;
   margin-start: 18;
   margin-end: 18;
 
-  // Title / Header
-  Label {
-    label: "Session Duration";
-    halign: start;
-    styles [
-      "title-4" 
-    ]
-  }
-
-  // Radio Button Group
+  // --- Sorting Section ---
   Box {
     orientation: vertical;
-    spacing: 8;
-    halign: start;
+    spacing: 12;
 
-    CheckButton radio_15 {
-      label: "15 Minutes";
-      active: true;
+    Label {
+      label: "Sorting";
+      halign: start;
+      styles ["heading"]
     }
 
-    CheckButton radio_30 {
-      label: "30 Minutes";
-      group: radio_15;
+    Box {
+      orientation: vertical;
+      spacing: 8;
+      halign: start;
+
+      CheckButton sort_unlock_radio {
+        label: "Sort by unlock%";
+        active: true;
+      }
+
+      CheckButton sort_az_radio {
+        label: "Sort A-Z";
+        group: sort_unlock_radio;
+      }
     }
 
-    CheckButton radio_60 {
-      label: "60 Minutes";
-      group: radio_15;
-    }
-    
-    CheckButton radio_custom {
-      label: "Custom Range";
-      group: radio_15;
+    Button {
+      label: "Apply sort";
+      halign: start;
+      styles ["suggested-action"]
     }
   }
 
-  // Action Button
-  Button start_session_btn {
-    label: "Start Timer";
-    halign: center;
-    
-    // Applying 'suggested-action' makes the button blue/prominent
-    styles [
-      "suggested-action",
-      "pill"
-    ]
+  Separator { orientation: horizontal; }
+
+  // --- Auto Selection Section ---
+  Box {
+    orientation: vertical;
+    spacing: 12;
+
+    Label {
+      label: "Auto selection";
+      halign: start;
+      styles ["heading"]
+    }
+
+    // Option 1: Percent Range
+    Box {
+        spacing: 8;
+        CheckButton auto_percent_radio {
+          label: "Select next up to";
+          active: true;
+        }
+        SpinButton percent_input {
+          // Direct binding: this input is only sensitive when the radio is active
+          sensitive: bind auto_percent_radio.active;
+          adjustment: Adjustment {
+            lower: 0;
+            upper: 100;
+            step-increment: 1;
+          };
+        }
+        Label { label: "%"; }
+      }
+
+      // Option 2: Absolute Count
+      Box {
+        spacing: 8;
+        CheckButton auto_count_radio {
+          label: "Select next up to";
+          group: auto_percent_radio;
+        }
+        SpinButton count_input {
+          // Direct binding: toggles automatically when group selection changes
+          sensitive: bind auto_count_radio.active;
+          adjustment: Adjustment {
+            lower: 1;
+            upper: 10000;
+            step-increment: 1;
+          };
+        }
+      }
+
+    Button {
+      label: "Apply auto-select";
+      halign: start;
+      styles ["suggested-action"]
+    }
+  }
+
+  Separator { orientation: horizontal; }
+
+  // --- Timer Section ---
+  Box {
+    orientation: vertical;
+    spacing: 12;
+
+    Label {
+      label: "Timer";
+      halign: start;
+      styles ["heading"]
+    }
+
+    // Duration and Unit Row
+    Box {
+      spacing: 8;
+
+      SpinButton timer_input {
+        adjustment: Adjustment {
+          lower: 0;
+          upper: 9999;
+          step-increment: 1;
+        };
+      }
+
+      DropDown unit_dropdown {
+        model: StringList {
+          strings ["Minutes", "Hours"]
+        };
+      }
+    }
+
+    // Spacing Toggle Buttons
+    Box {
+      styles ["linked"] // Makes the buttons visually stick together
+
+      ToggleButton even_spacing_btn {
+        label: "Even spacing";
+        active: true;
+      }
+
+      ToggleButton random_spacing_btn {
+        label: "Random spacing";
+        group: even_spacing_btn;
+      }
+    }
+  }
+
+  Separator { orientation: horizontal; }
+
+  // --- Other Section ---
+  Box {
+    orientation: vertical;
+    spacing: 12;
+
+    Label {
+      label: "Other";
+      halign: start;
+      styles ["heading"]
+    }
+
+    Box {
+      orientation: vertical;
+      spacing: 8;
+
+      CheckButton exit_after_done_check {
+        label: "Exit app after done applying";
+      }
+
+      CheckButton hide_unlocked_check {
+        label: "Hide unlocked achievements in timed view";
+      }
+    }
+  }
+
+  Button {
+    label: "Start timer";
+    hexpand: true;
+    styles ["suggested-action"]
   }
 }

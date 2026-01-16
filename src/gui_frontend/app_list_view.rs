@@ -61,7 +61,7 @@ pub fn create_main_ui(
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
 
     // Template widgets imported in other templates must be registered here.
-    crate::gui_frontend::widgets::template_timer_popover::SamTimerConfigForm::static_type();
+    crate::gui_frontend::widgets::template_timer_form::SamTimerConfigForm::static_type();
 
     let res_data = include_bytes!(concat!(env!("OUT_DIR"), "/sam_rewritten.gresource"));
     let resource = gtk::gio::Resource::from_data(&glib::Bytes::from_owned(res_data.to_vec()))
