@@ -115,13 +115,6 @@ jobs:
       - name: Make installer
         run: Invoke-Expression "& ""C:\Program Files (x86)\NSIS\makensis.exe"" package/windows_installer.nsi"
 
-      # This is very messy and not release-ready. To fix!
-      #      - name: Upload zip artifact
-      #        uses: actions/upload-artifact@v4
-      #        with:
-      #          name: "SamRewritten-${{ github.ref_name }}-windows-x86_64-zip"
-      #          path: "SamRewritten-windows-x86_64/"
-
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
