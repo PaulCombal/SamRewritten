@@ -59,10 +59,7 @@ mod imp {
     use crate::gui_frontend::gobjects::achievement::GAchievementObject;
     use crate::gui_frontend::widgets::template_achievement_row::SamAchievementRow;
     use gtk::glib;
-    use gtk::prelude::{
-        Cast, CastNone, EventControllerExt, ListItemExt, RecentManagerExt, StaticType, ToValue,
-        ToggleButtonExt, WidgetExt,
-    };
+    use gtk::prelude::{CastNone, EventControllerExt, ListItemExt, ObjectExt, RecentManagerExt, StaticType, ToValue, ToggleButtonExt, WidgetExt};
     use gtk::subclass::prelude::*;
     use gtk::{CompositeTemplate, TemplateChild};
 
@@ -110,27 +107,23 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
-
-            // 1. Define the Factory
             let factory = gtk::SignalListItemFactory::new();
 
-            // 2. Setup: Create the Row Widget
-            // TODO?: connect simple crap here at item level
             factory.connect_setup(glib::clone!(#[weak] obj, move |_, list_item| {
                 let row = SamAchievementRow::new();
                 list_item.set_child(Some(&row));
 
                 let drag_source = gtk::DragSource::new();
+                let drop_target = gtk::DropTarget::new(glib::Type::OBJECT, gtk::gdk::DragAction::MOVE);
                 drag_source.set_actions(gtk::gdk::DragAction::MOVE);
 
-                // We use the list_item reference here. It stays valid for the
-                // lifetime of the widget, but its .item() changes during bind.
-                drag_source.connect_prepare(glib::clone!(#[weak] list_item, #[upgrade_or] None, move |_, _, _| {
+                drag_source.connect_prepare(glib::clone!(#[weak] list_item, #[weak] obj, #[upgrade_or] None, move |_, _, _| {
+                    if obj.imp().manual_mode_btn.is_active() {
+                        return None;
+                    }
                     let item = list_item.item()?;
                     Some(gtk::gdk::ContentProvider::for_value(&item.to_value()))
                 }));
-
-                let drop_target = gtk::DropTarget::new(glib::Type::OBJECT, gtk::gdk::DragAction::MOVE);
 
                 drop_target.connect_drop(glib::clone!(#[weak] list_item, #[weak] obj, #[upgrade_or] false, move |_, value, _, _| {
                     let dragged_item = value.get::<GAchievementObject>().ok();
@@ -147,21 +140,19 @@ mod imp {
                 row.add_controller(drop_target);
             }));
 
-            // 3. Bind: Map Data to the Row
-            factory.connect_bind(move |_, list_item| {
+            factory.connect_bind(glib::clone!(#[weak] obj, move |_, list_item| {
                 let item = list_item.item().expect("Item must exist");
-                let row = list_item
-                    .child()
-                    .expect("Child must exist")
-                    .downcast::<SamAchievementRow>()
-                    .expect("Child must be SamAchievementRow");
+                let row = list_item.child().and_downcast::<SamAchievementRow>().expect("Must be SamAchievementRow");
 
                 row.bind(&item);
-            });
+
+                obj.imp().timed_mode_btn.bind_property("active", &row, "select-layout")
+                    .sync_create()
+                    .build();
+            }));
 
             // TODO: connect_unbind
 
-            // 4. Attach to the ListView
             self.list_view.set_factory(Some(&factory));
 
             let selection_model = gtk::MultiSelection::new(Some(self.store.clone()));

@@ -92,14 +92,19 @@ impl SamAchievementRow {
 }
 
 mod imp {
+    use std::cell::Cell;
     use super::*;
     use crate::gui_frontend::widgets::custom_progress_bar::CustomProgressBar;
     use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
     use gtk::{CompositeTemplate, TemplateChild};
+    use gtk::glib::Properties;
 
-    #[derive(Default, CompositeTemplate)]
+    #[derive(Default, CompositeTemplate, Properties)]
     #[template(resource = "/org/samrewritten/SamRewritten/ui/achievement_row.ui")]
+    #[properties(wrapper_type = super::SamAchievementRow)]
     pub struct SamAchievementRow {
+        #[template_child]
+        pub drag_handle: TemplateChild<gtk::Image>,
         #[template_child]
         pub name_label: TemplateChild<gtk::Label>,
         #[template_child]
@@ -116,6 +121,9 @@ mod imp {
         pub protected_icon: TemplateChild<gtk::Image>,
         #[template_child]
         pub global_percentage_progress_bar: TemplateChild<CustomProgressBar>,
+
+        #[property(get, set)]
+        pub select_layout: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -133,7 +141,24 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for SamAchievementRow {}
+    impl ObjectImpl for SamAchievementRow {
+        fn properties() -> &'static [glib::ParamSpec] {
+            Self::derived_properties()
+        }
+
+        fn set_property(&self, id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
+            self.derived_set_property(id, value, pspec)
+        }
+
+        fn property(&self, id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+            self.derived_property(id, pspec)
+        }
+
+        fn constructed(&self) {
+            self.parent_constructed();
+        }
+    }
+
     impl WidgetImpl for SamAchievementRow {}
     impl BoxImpl for SamAchievementRow {}
 }

@@ -19,6 +19,15 @@ template $SamAchievementRow : Box {
       margin-end: 8;
       spacing: 12;
 
+      Image drag_handle {
+        icon-name: "list-drag-handle-symbolic";
+        valign: center;
+        visible: bind template.select-layout;
+        styles [
+          "drag-handle"
+        ]
+      }
+
       Box icon_box {
         orientation: vertical;
         halign: start;
@@ -78,11 +87,17 @@ template $SamAchievementRow : Box {
         Image protected_icon {
           icon-name: "action-unavailable-symbolic";
           tooltip-text: "This achievement is protected.";
-          visible: false; // Managed by bindings
+          visible: false;
         }
 
         Switch achievement_switch {
           valign: center;
+          visible: bind template.select-layout inverted;
+        }
+
+        CheckButton achievement_check {
+          valign: center;
+          visible: bind template.select-layout;
         }
       }
     }
