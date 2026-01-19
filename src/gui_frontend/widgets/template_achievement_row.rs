@@ -18,6 +18,9 @@ impl SamAchievementRow {
         let imp = self.imp();
         let item = item.downcast_ref::<GAchievementObject>().unwrap();
 
+        // Not a binding but a default value
+        self.set_is_selected(item.is_achieved());
+
         // 1. Basic Property Bindings
         item.bind_property("name", &imp.name_label.get(), "label")
             .sync_create()
@@ -38,6 +41,11 @@ impl SamAchievementRow {
         // Bidirectional: user toggling the switch updates the GObject property
         item.bind_property("is-achieved", &imp.achievement_switch.get(), "active")
             .bidirectional()
+            .sync_create()
+            .build();
+
+        item.bind_property("is-achieved", &imp.achievement_check.get(), "sensitive")
+            .invert_boolean()
             .sync_create()
             .build();
 
@@ -118,12 +126,16 @@ mod imp {
         #[template_child]
         pub achievement_switch: TemplateChild<gtk::Switch>,
         #[template_child]
+        pub achievement_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
         pub protected_icon: TemplateChild<gtk::Image>,
         #[template_child]
         pub global_percentage_progress_bar: TemplateChild<CustomProgressBar>,
 
         #[property(get, set)]
         pub select_layout: Cell<bool>,
+        #[property(get, set)]
+        pub is_selected: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -156,6 +168,13 @@ mod imp {
 
         fn constructed(&self) {
             self.parent_constructed();
+            let obj = self.obj();
+            let imp = obj.imp();
+            
+            obj.bind_property("is-selected", &imp.achievement_check.get(), "active")
+                .bidirectional()
+                .sync_create()
+                .build();
         }
     }
 

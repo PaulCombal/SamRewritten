@@ -59,31 +59,79 @@ mod imp {
     use crate::gui_frontend::gobjects::achievement::GAchievementObject;
     use crate::gui_frontend::widgets::template_achievement_row::SamAchievementRow;
     use gtk::glib;
-    use gtk::prelude::{CastNone, EventControllerExt, ListItemExt, ObjectExt, RecentManagerExt, StaticType, ToValue, ToggleButtonExt, WidgetExt};
+    use gtk::prelude::{Cast, CastNone, GObjectPropertyExpressionExt, ListItemExt, ObjectExt, ToValue, ToggleButtonExt, WidgetExt};
     use gtk::subclass::prelude::*;
     use gtk::{CompositeTemplate, TemplateChild};
 
     #[derive(CompositeTemplate)]
     #[template(resource = "/org/samrewritten/SamRewritten/ui/achievements.ui")]
     pub struct SamAchievementsPage {
-        // These names must match the "id" or object name in your Blueprint file
         #[template_child]
         pub manual_mode_btn: TemplateChild<gtk::ToggleButton>,
         #[template_child]
         pub timed_mode_btn: TemplateChild<gtk::ToggleButton>,
         #[template_child]
         pub list_view: TemplateChild<gtk::ListView>,
+        #[template_child]
+        pub manual_mode_sort_az_btn: TemplateChild<gtk::ToggleButton>,
+        #[template_child]
+        pub manual_mode_sort_unlock_btn: TemplateChild<gtk::ToggleButton>,
 
         pub store: gtk::gio::ListStore,
+        pub sort_model: gtk::SortListModel
     }
 
     impl Default for SamAchievementsPage {
         fn default() -> Self {
+            let store = gtk::gio::ListStore::new::<GAchievementObject>();
+            let sort_model = gtk::SortListModel::new(Some(store.clone()), None::<gtk::Sorter>);
+
             Self {
                 manual_mode_btn: TemplateChild::default(),
                 timed_mode_btn: TemplateChild::default(),
                 list_view: TemplateChild::default(),
-                store: gtk::gio::ListStore::new::<GAchievementObject>(),
+                manual_mode_sort_az_btn: TemplateChild::default(),
+                manual_mode_sort_unlock_btn: TemplateChild::default(),
+                store,
+                sort_model
+            }
+        }
+    }
+
+    impl SamAchievementsPage {
+        fn apply_sorting(&self) {
+            // 1. Timed Mode active -> No sorting
+            if self.timed_mode_btn.is_active() {
+                self.sort_model.set_sorter(None::<&gtk::Sorter>);
+                return;
+            }
+
+            // 2. A-Z Mode active -> StringSorter
+            if self.manual_mode_sort_az_btn.is_active() {
+                let sorter = gtk::StringSorter::builder()
+                    .expression(GAchievementObject::this_expression("name"))
+                    .build();
+                self.sort_model.set_sorter(Some(&sorter));
+            }
+
+            // 3. Unlock Mode active -> CustomSorter for f32
+            else if self.manual_mode_sort_unlock_btn.is_active() {
+                let sorter = gtk::CustomSorter::new(move |obj1, obj2| {
+                    let a = obj1.downcast_ref::<GAchievementObject>().unwrap();
+                    let b = obj2.downcast_ref::<GAchievementObject>().unwrap();
+
+                    let a_val = a.global_achieved_percent();
+                    let b_val = b.global_achieved_percent();
+
+                    a_val.partial_cmp(&b_val)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                        .into()
+                });
+                self.sort_model.set_sorter(Some(&sorter));
+            }
+            // 4. Fallback -> No sorting
+            else {
+                self.sort_model.set_sorter(None::<&gtk::Sorter>);
             }
         }
     }
@@ -155,21 +203,13 @@ mod imp {
 
             self.list_view.set_factory(Some(&factory));
 
-            let selection_model = gtk::MultiSelection::new(Some(self.store.clone()));
+            let selection_model = gtk::MultiSelection::new(Some(self.sort_model.clone()));
             self.list_view.set_model(Some(&selection_model));
 
-            // You can set up your mode-switch logic here
-            let obj = self.obj();
-            self.manual_mode_btn.connect_toggled(glib::clone!(
-                #[weak]
-                obj,
-                move |btn| {
-                    if btn.is_active() {
-                        println!("Switching to Manual Mode");
-                        // logic to refresh list or change models
-                    }
-                }
-            ));
+            self.manual_mode_sort_az_btn.connect_toggled(glib::clone!(#[weak] obj, move |_| obj.imp().apply_sorting()));
+            self.manual_mode_sort_unlock_btn.connect_toggled(glib::clone!(#[weak] obj, move |_| obj.imp().apply_sorting()));
+            self.timed_mode_btn.connect_toggled(glib::clone!(#[weak] obj, move |_| obj.imp().apply_sorting()));
+            obj.imp().apply_sorting();
         }
     }
 
