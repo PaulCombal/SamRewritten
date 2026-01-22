@@ -22,15 +22,16 @@ mod imp {
     use gtk::glib;
     use gtk::prelude::*;
     use gtk::subclass::prelude::*;
-    use gtk::{CompositeTemplate, TemplateChild};
+    use gtk::{CompositeTemplate};
+    use crate::gui_frontend::gsettings::get_settings;
 
     #[derive(Default, CompositeTemplate)]
     #[template(resource = "/org/samrewritten/SamRewritten/ui/achievement_timer_form.ui")]
     pub struct SamTimerConfigForm {
         // #[template_child]
-        // pub radio_15: TemplateChild<gtk::CheckButton>,
+        // pub sort_unlock_radio: TemplateChild<gtk::CheckButton>,
         // #[template_child]
-        // pub radio_30: TemplateChild<gtk::CheckButton>,
+        // pub sort_az_radio: TemplateChild<gtk::CheckButton>,
         // #[template_child]
         // pub radio_60: TemplateChild<gtk::CheckButton>,
         // #[template_child]
@@ -57,36 +58,45 @@ mod imp {
     impl ObjectImpl for SamTimerConfigForm {
         fn constructed(&self) {
             self.parent_constructed();
+            let obj = self.obj();
+            let settings = get_settings();
+            let group = gtk::gio::SimpleActionGroup::new();
 
-            // Example: Handling the "Start" button click
-            // let obj = self.obj();
-            //
-            // self.start_session_btn.connect_clicked(glib::clone!(
-            //     #[weak]
-            //     obj,
-            //     move |_| {
-            //         // Get the implementation pointer inside the closure
-            //         let imp = obj.imp();
-            //
-            //         let duration = if imp.radio_15.is_active() {
-            //             15
-            //         } else if imp.radio_30.is_active() {
-            //             30
-            //         } else if imp.radio_60.is_active() {
-            //             60
-            //         } else {
-            //             0
-            //         };
-            //
-            //         println!("Starting session with {} minutes", duration);
-            //
-            //         if let Some(widget) = obj.ancestor(gtk::Popover::static_type()) {
-            //             if let Ok(popover) = widget.downcast::<gtk::Popover>() {
-            //                 popover.popdown();
-            //             }
-            //         }
-            //     }
-            // ));
+            let initial_sort = settings.string("timed-sort-method");
+            let sort_action = gtk::gio::SimpleAction::new_stateful(
+                "sort-method",
+                Some(&String::static_variant_type()),
+                &initial_sort.to_variant(),
+            );
+
+            sort_action.connect_activate(gtk::glib::clone!(#[weak] settings, move |action, parameter| {
+                if let Some(target) = parameter {
+                    let val: String = target.get().unwrap();
+                    action.set_state(target);
+                    settings.set_string("timed-sort-method", &val).unwrap();
+                    crate::dev_println!("[CONFIG] Sort method changed to: {}", val);
+                }
+            }));
+
+            let initial_auto = settings.string("timed-autoselect-method");
+            let autoselect_action = gtk::gio::SimpleAction::new_stateful(
+                "autoselect-method",
+                Some(&String::static_variant_type()),
+                &initial_auto.to_variant(),
+            );
+
+            autoselect_action.connect_activate(gtk::glib::clone!(#[weak] settings, move |action, parameter| {
+            if let Some(target) = parameter {
+                    let val: String = target.get().unwrap();
+                    action.set_state(target);
+                    let _ = settings.set_string("timed-autoselect-method", &val);
+                    crate::dev_println!("[CONFIG] Autoselect method changed to: {}", val);
+                }
+            }));
+
+            group.add_action(&sort_action);
+            group.add_action(&autoselect_action);
+            obj.insert_action_group("config", Some(&group));
         }
     }
 

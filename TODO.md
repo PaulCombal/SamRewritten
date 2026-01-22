@@ -1,3 +1,6 @@
+Bouton apply sort
+Bouton apply auto-select
+
 ### High priority
 
 - Once Ubuntu 26.04 LTS is out, upgrade the GTK and Adwaita versions to 24.04

@@ -7,6 +7,18 @@
             <description>Whether SamRewritten should filter junk items.</description>
         </key>
 
+        <key name="timed-sort-method" type="s">
+            <default>'az'</default>
+            <summary>Default sorting on timed achievements view</summary>
+            <description>Values include 'az' or 'unlock'</description>
+        </key>
+
+        <key name="timed-autoselect-method" type="s">
+            <default>'percent'</default>
+            <summary>Default autoselect unit for timed unlock prepping</summary>
+            <description>Values include 'percent' or 'unit'</description>
+        </key>
+
         <key name="app-theme" type="s">
             <default>'system'</default>
             <summary>Application Theme</summary>

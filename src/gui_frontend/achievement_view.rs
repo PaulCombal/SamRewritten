@@ -38,27 +38,27 @@ pub fn create_achievements_view(// app_id: Rc<Cell<Option<u32>>>,
         .match_mode(StringFilterMatchMode::Substring)
         .ignore_case(true)
         .build();
-    let app_achievement_filter_model = FilterListModel::builder()
-        .model(&app_achievements_model)
-        .filter(&app_achievement_string_filter)
-        .build();
+    // let app_achievement_filter_model = FilterListModel::builder()
+    //     .model(&app_achievements_model)
+    //     .filter(&app_achievement_string_filter)
+    //     .build();
 
-    let global_achieved_percent_sorter = CustomSorter::new(move |obj1, obj2| {
-        let achievement1 = obj1.downcast_ref::<GAchievementObject>().unwrap();
-        let achievement2 = obj2.downcast_ref::<GAchievementObject>().unwrap();
-
-        let percent1 = achievement1.global_achieved_percent();
-        let percent2 = achievement2.global_achieved_percent();
-
-        percent2
-            .partial_cmp(&percent1)
-            .unwrap_or(Ordering::Equal)
-            .into()
-    });
-    let app_achievement_sort_model = SortListModel::builder()
-        .model(&app_achievement_filter_model)
-        .sorter(&global_achieved_percent_sorter)
-        .build();
+    // let global_achieved_percent_sorter = CustomSorter::new(move |obj1, obj2| {
+    //     let achievement1 = obj1.downcast_ref::<GAchievementObject>().unwrap();
+    //     let achievement2 = obj2.downcast_ref::<GAchievementObject>().unwrap();
+    //
+    //     let percent1 = achievement1.global_achieved_percent();
+    //     let percent2 = achievement2.global_achieved_percent();
+    //
+    //     percent2
+    //         .partial_cmp(&percent1)
+    //         .unwrap_or(Ordering::Equal)
+    //         .into()
+    // });
+    // let app_achievement_sort_model = SortListModel::builder()
+    //     .model(&app_achievement_filter_model)
+    //     .sorter(&global_achieved_percent_sorter)
+    //     .build();
 
     // let app_achievement_selection_model = MultiSelection::new(Option::<ListStore>::None);
     // app_achievement_selection_model.set_model(Some(&app_achievement_sort_model));
