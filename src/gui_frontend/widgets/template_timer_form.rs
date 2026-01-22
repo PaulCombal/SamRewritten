@@ -33,10 +33,10 @@ mod imp {
         // pub sort_unlock_radio: TemplateChild<gtk::CheckButton>,
         // #[template_child]
         // pub sort_az_radio: TemplateChild<gtk::CheckButton>,
-        // #[template_child]
-        // pub radio_60: TemplateChild<gtk::CheckButton>,
-        // #[template_child]
-        // pub radio_custom: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub count_input: TemplateChild<gtk::SpinButton>,
+        #[template_child]
+        pub percent_input: TemplateChild<gtk::SpinButton>,
         // #[template_child]
         // pub start_session_btn: TemplateChild<gtk::Button>,
     }
@@ -104,8 +104,27 @@ mod imp {
                 }
             }));
 
-            group.add_action(&trigger_sort_action);
+            let autoselect_trigger = gtk::gio::SimpleAction::new("trigger-autoselect", None);
 
+            autoselect_trigger.connect_activate(glib::clone!(#[weak] obj, move |_, _| {
+                let settings = get_settings();
+                let method = settings.string("timed-autoselect-method");
+                if method == "count" {
+                    // In a real scenario, you'd likely store the count in GSettings
+                    // or access the spin button value via a template child.
+                    // let count = settings.uint("timed-autoselect-count");
+                    let count = obj.imp().count_input.value() as u32;
+
+                    if let Some(page) = obj.ancestor(SamAchievementsPage::static_type()) {
+                        let page = page.downcast::<SamAchievementsPage>().unwrap();
+                        page.apply_auto_selection_count(count);
+                    }
+                }
+            }));
+
+            group.add_action(&autoselect_trigger);
+
+            group.add_action(&trigger_sort_action);
             group.add_action(&sort_action);
             group.add_action(&autoselect_action);
             obj.insert_action_group("config", Some(&group));

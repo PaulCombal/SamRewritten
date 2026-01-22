@@ -1,6 +1,6 @@
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use gtk::glib;
-use gtk::prelude::{Cast, ListModelExt, SettingsExt};
+use gtk::prelude::{Cast, CastNone, ListModelExt, SettingsExt};
 use gtk::subclass::prelude::ObjectSubclassIsExt;
 
 glib::wrapper! {
@@ -60,7 +60,7 @@ impl SamAchievementsPage {
         let method = settings.string("timed-sort-method");
 
         crate::dev_println!("[CLIENT] Sorting store manually, method: {}", method);
-        
+
         self.imp().store.sort(move |obj1, obj2| {
             let a = obj1.downcast_ref::<GAchievementObject>().unwrap();
             let b = obj2.downcast_ref::<GAchievementObject>().unwrap();
@@ -76,6 +76,35 @@ impl SamAchievementsPage {
                 a_name.cmp(&b_name).into()
             }
         });
+    }
+
+    pub fn apply_auto_selection_count(&self, count: u32) {
+        let store = &self.imp().store;
+        let mut selected_count = 0;
+
+        crate::dev_println!("[CLIENT] Applying auto_selection count of {}", count);
+
+        for i in 0..store.n_items() {
+            if let Some(obj) = store.item(i).and_downcast::<GAchievementObject>() {
+                if !obj.is_achieved() && obj.permission() == 0 {
+                    obj.set_is_selected(false);
+                }
+            }
+        }
+
+        for i in 0..store.n_items() {
+            if selected_count >= count {
+                break;
+            }
+
+            if let Some(obj) = store.item(i).and_downcast::<GAchievementObject>() {
+                // Check criteria: Not achieved and permission == 0
+                if !obj.is_achieved() && obj.permission() == 0 {
+                    obj.set_is_selected(true);
+                    selected_count += 1;
+                }
+            }
+        }
     }
 }
 

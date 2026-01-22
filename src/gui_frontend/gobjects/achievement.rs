@@ -43,6 +43,7 @@ impl GAchievementObject {
             .property("global-achieved-percent", global_achieved_percent)
             .property("global-achieved-percent-ok", global_achieved_percent_ok)
             .property("time-until-unlock", "...".to_string())
+            .property("is-selected", info.is_achieved)
             .build()
     }
 }
@@ -92,6 +93,9 @@ mod imp {
 
         #[property(get, set)]
         time_until_unlock: RefCell<String>,
+
+        #[property(get, set)]
+        is_selected: Cell<bool>,
     }
 
     #[glib::object_subclass]

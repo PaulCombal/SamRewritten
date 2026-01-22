@@ -18,9 +18,6 @@ impl SamAchievementRow {
         let imp = self.imp();
         let item = item.downcast_ref::<GAchievementObject>().unwrap();
 
-        // Not a binding but a default value
-        self.set_is_selected(item.is_achieved());
-
         // 1. Basic Property Bindings
         item.bind_property("name", &imp.name_label.get(), "label")
             .sync_create()
@@ -64,6 +61,11 @@ impl SamAchievementRow {
         )
         .sync_create()
         .build();
+
+        item.bind_property("is-selected", &imp.achievement_check.get(), "active")
+            .bidirectional()
+            .sync_create()
+            .build();
 
         // 2. Complex Logic via Expressions
         // Icon Stack: is-achieved (bool) -> visible-child-name (string)
@@ -134,8 +136,6 @@ mod imp {
 
         #[property(get, set)]
         pub select_layout: Cell<bool>,
-        #[property(get, set)]
-        pub is_selected: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -166,16 +166,11 @@ mod imp {
             self.derived_property(id, pspec)
         }
 
-        fn constructed(&self) {
-            self.parent_constructed();
-            let obj = self.obj();
-            let imp = obj.imp();
-            
-            obj.bind_property("is-selected", &imp.achievement_check.get(), "active")
-                .bidirectional()
-                .sync_create()
-                .build();
-        }
+        // fn constructed(&self) {
+        //     self.parent_constructed();
+        //     let obj = self.obj();
+        //     let imp = obj.imp();
+        // }
     }
 
     impl WidgetImpl for SamAchievementRow {}
