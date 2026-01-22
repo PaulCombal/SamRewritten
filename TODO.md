@@ -1,4 +1,3 @@
-Bouton apply sort
 Bouton apply auto-select
 
 ### High priority

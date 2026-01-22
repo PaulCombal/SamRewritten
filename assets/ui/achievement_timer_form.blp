@@ -27,20 +27,21 @@ template $SamTimerConfigForm : Box {
       CheckButton sort_unlock_radio {
         label: "Sort by unlock%";
         action-name: "config.sort-method";
-        action-target: "'az'";
+        action-target: "'unlock'";
       }
 
       CheckButton sort_az_radio {
         label: "Sort A-Z";
         group: sort_unlock_radio;
         action-name: "config.sort-method";
-        action-target: "'unlock'";
+        action-target: "'az'";
       }
     }
 
     Button {
       label: "Apply sort";
       halign: start;
+      action-name: "config.trigger-sort";
       styles ["suggested-action"]
     }
   }

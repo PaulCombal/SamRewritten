@@ -24,6 +24,7 @@ mod imp {
     use gtk::subclass::prelude::*;
     use gtk::{CompositeTemplate};
     use crate::gui_frontend::gsettings::get_settings;
+    use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
 
     #[derive(Default, CompositeTemplate)]
     #[template(resource = "/org/samrewritten/SamRewritten/ui/achievement_timer_form.ui")]
@@ -74,7 +75,7 @@ mod imp {
                     let val: String = target.get().unwrap();
                     action.set_state(target);
                     settings.set_string("timed-sort-method", &val).unwrap();
-                    crate::dev_println!("[CONFIG] Sort method changed to: {}", val);
+                    crate::dev_println!("[CLIENT] Sort method changed to: {}", val);
                 }
             }));
 
@@ -90,9 +91,20 @@ mod imp {
                     let val: String = target.get().unwrap();
                     action.set_state(target);
                     let _ = settings.set_string("timed-autoselect-method", &val);
-                    crate::dev_println!("[CONFIG] Autoselect method changed to: {}", val);
+                    crate::dev_println!("[CLIENT] Autoselect method changed to: {}", val);
                 }
             }));
+
+            let trigger_sort_action = gtk::gio::SimpleAction::new("trigger-sort", None);
+
+            trigger_sort_action.connect_activate(glib::clone!(#[weak] obj, move |_, _| {
+                if let Some(page) = obj.ancestor(SamAchievementsPage::static_type()) {
+                    let page = page.downcast::<SamAchievementsPage>().unwrap();
+                    page.sort_store_manually();
+                }
+            }));
+
+            group.add_action(&trigger_sort_action);
 
             group.add_action(&sort_action);
             group.add_action(&autoselect_action);

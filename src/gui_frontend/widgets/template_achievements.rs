@@ -1,6 +1,6 @@
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use gtk::glib;
-use gtk::prelude::ListModelExt;
+use gtk::prelude::{Cast, ListModelExt, SettingsExt};
 use gtk::subclass::prelude::ObjectSubclassIsExt;
 
 glib::wrapper! {
@@ -22,6 +22,7 @@ impl SamAchievementsPage {
 
     pub fn extend_model_from_slice(&self, slice: &[GAchievementObject]) {
         self.imp().store.extend_from_slice(slice);
+        self.sort_store_manually();
     }
 
     pub fn move_item(&self, item: &GAchievementObject, target: &GAchievementObject) {
@@ -52,6 +53,29 @@ impl SamAchievementsPage {
                 store.insert(dst, &obj);
             }
         }
+    }
+
+    pub fn sort_store_manually(&self) {
+        let settings = crate::gui_frontend::gsettings::get_settings();
+        let method = settings.string("timed-sort-method");
+
+        crate::dev_println!("[CLIENT] Sorting store manually, method: {}", method);
+        
+        self.imp().store.sort(move |obj1, obj2| {
+            let a = obj1.downcast_ref::<GAchievementObject>().unwrap();
+            let b = obj2.downcast_ref::<GAchievementObject>().unwrap();
+
+            if method == "unlock" {
+                let a_val = a.global_achieved_percent();
+                let b_val = b.global_achieved_percent();
+                a_val.partial_cmp(&b_val).unwrap_or(std::cmp::Ordering::Equal).into()
+            } else {
+                // Default to A-Z
+                let a_name = a.name();
+                let b_name = b.name();
+                a_name.cmp(&b_name).into()
+            }
+        });
     }
 }
 
