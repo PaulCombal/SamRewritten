@@ -14,91 +14,116 @@ impl SamAchievementRow {
         glib::Object::new()
     }
 
-    pub fn bind(&self, item: &glib::Object) {
+    pub fn setup_expressions(&self) {
         let imp = self.imp();
-        let item = item.downcast_ref::<GAchievementObject>().unwrap();
 
-        // 1. Basic Property Bindings
-        item.bind_property("name", &imp.name_label.get(), "label")
-            .sync_create()
-            .build();
+        // The root expression: self.list-item.item (as GAchievementObject)
+        let item_expr = self.property_expression("list-item")
+            .chain_property::<gtk::ListItem>("item");
 
-        item.bind_property("description", &imp.description_label.get(), "label")
-            .sync_create()
-            .build();
+        // --- 1. Basic Text & Images ---
+        item_expr.clone().chain_property::<GAchievementObject>("name")
+            .bind(&imp.name_label.get(), "label", gtk::Widget::NONE);
 
-        item.bind_property("icon-normal", &imp.normal_icon.get(), "url")
-            .sync_create()
-            .build();
+        item_expr.clone().chain_property::<GAchievementObject>("description")
+            .bind(&imp.description_label.get(), "label", gtk::Widget::NONE);
 
-        item.bind_property("icon-locked", &imp.locked_icon.get(), "url")
-            .sync_create()
-            .build();
+        item_expr.clone().chain_property::<GAchievementObject>("icon-normal")
+            .bind(&imp.normal_icon.get(), "url", gtk::Widget::NONE);
 
-        // Bidirectional: user toggling the switch updates the GObject property
-        item.bind_property("is-achieved", &imp.achievement_switch.get(), "active")
-            .bidirectional()
-            .sync_create()
-            .build();
+        item_expr.clone().chain_property::<GAchievementObject>("icon-locked")
+            .bind(&imp.locked_icon.get(), "url", gtk::Widget::NONE);
 
-        item.bind_property("is-achieved", &imp.achievement_check.get(), "sensitive")
-            .invert_boolean()
-            .sync_create()
-            .build();
+        // --- 2. Progress Bar ---
+        item_expr.clone().chain_property::<GAchievementObject>("global-achieved-percent")
+            .bind(&imp.global_percentage_progress_bar.get(), "value", gtk::Widget::NONE);
 
-        item.bind_property(
-            "global-achieved-percent",
-            &imp.global_percentage_progress_bar.get(),
-            "value",
+        item_expr.clone().chain_property::<GAchievementObject>("global-achieved-percent-ok")
+            .bind(&imp.global_percentage_progress_bar.get(), "visible", gtk::Widget::NONE);
+
+        // --- 3. Complex Visibility Logic (The fix for your original request) ---
+
+        // Checkbox Visibility: Visible ONLY IF (select_layout == true) AND (is_achieved == false)
+        gtk::ClosureExpression::new::<bool>(
+            &[
+                self.property_expression("select-layout"),
+                item_expr.clone().chain_property::<GAchievementObject>("is-achieved"),
+            ],
+            glib::closure_local!(|_: Option<glib::Object>, layout: bool, achieved: bool| {
+                layout && !achieved
+            }),
         )
-        .sync_create()
-        .build();
+            .bind(&imp.achievement_check.get(), "visible", gtk::Widget::NONE);
 
-        item.bind_property(
-            "global-achieved-percent-ok",
-            &imp.global_percentage_progress_bar.get(),
-            "visible",
-        )
-        .sync_create()
-        .build();
+        // --- 4. Logic via Chained Closures ---
 
-        item.bind_property("is-selected", &imp.achievement_check.get(), "active")
-            .bidirectional()
-            .sync_create()
-            .build();
+        // Icon Stack: is-achieved -> "normal" or "locked"
+        item_expr.clone().chain_property::<GAchievementObject>("is-achieved")
+            .chain_closure::<String>(glib::closure_local!(|_: Option<glib::Object>, achieved: bool| {
+                if achieved { "normal" } else { "locked" }
+            }))
+            .bind(&imp.icon_stack.get(), "visible-child-name", gtk::Widget::NONE);
 
-        // 2. Complex Logic via Expressions
-        // Icon Stack: is-achieved (bool) -> visible-child-name (string)
-        item.property_expression("is-achieved")
-            .chain_closure::<String>(glib::closure_local!(
-                |_: Option<glib::Object>, is_achieved: bool| {
-                    if is_achieved { "normal" } else { "locked" }
-                }
-            ))
-            .bind(
-                &imp.icon_stack.get(),
-                "visible-child-name",
-                gtk::Widget::NONE,
-            );
+        // Permission: permission (i32) -> switch sensitivity
+        item_expr.clone().chain_property::<GAchievementObject>("permission")
+            .chain_closure::<bool>(glib::closure_local!(|_: Option<glib::Object>, perm: i32| perm == 0))
+            .bind(&imp.achievement_switch.get(), "sensitive", gtk::Widget::NONE);
 
-        // Permission: permission (i32) -> sensitive (bool)
-        item.property_expression("permission")
-            .chain_closure::<bool>(glib::closure_local!(
-                |_: Option<glib::Object>, permission: i32| { permission == 0 }
-            ))
-            .bind(
-                &imp.achievement_switch.get(),
-                "sensitive",
-                gtk::Widget::NONE,
-            );
-
-        // Protected Icon: permission (i32) -> visible (bool)
-        item.property_expression("permission")
-            .chain_closure::<bool>(glib::closure_local!(
-                |_: Option<glib::Object>, permission: i32| { permission != 0 }
-            ))
+        // Permission: permission (i32) -> protected icon visibility
+        item_expr.clone().chain_property::<GAchievementObject>("permission")
+            .chain_closure::<bool>(glib::closure_local!(|_: Option<glib::Object>, perm: i32| perm != 0))
             .bind(&imp.protected_icon.get(), "visible", gtk::Widget::NONE);
+
+        // Checkbox sensitivity: !is-achieved
+        item_expr.clone().chain_property::<GAchievementObject>("is-achieved")
+            .chain_closure::<bool>(glib::closure_local!(|_: Option<glib::Object>, achieved: bool| !achieved))
+            .bind(&imp.achievement_check.get(), "sensitive", gtk::Widget::NONE);
     }
+
+    pub fn bind(&self, list_item: &gtk::ListItem) {
+        let imp = self.imp();
+        let item = list_item.item()
+            .and_downcast::<GAchievementObject>()
+            .expect("Model mismatch");
+
+        // 1. Clear old bindings before starting new ones
+        self.unbind();
+
+        // 2. Set the list item (triggers all Expressions)
+        self.set_list_item(Some(list_item.clone()));
+
+        // 3. Create bidirectional bindings and store them
+        let mut bindings = imp.active_bindings.borrow_mut();
+
+        bindings.push(
+            item.bind_property("is-achieved", &imp.achievement_switch.get(), "active")
+                .bidirectional()
+                .sync_create()
+                .build()
+        );
+
+        bindings.push(
+            item.bind_property("is-selected", &imp.achievement_check.get(), "active")
+                .bidirectional()
+                .sync_create()
+                .build()
+        );
+    }
+
+
+    pub fn unbind(&self) {
+        let imp = self.imp();
+
+        // 1. Reset the Expressions
+        self.set_list_item(None::<gtk::ListItem>);
+
+        // 2. Manually unbind and clear the vector
+        let mut bindings = imp.active_bindings.borrow_mut();
+        for binding in bindings.drain(..) {
+            binding.unbind();
+        }
+    }
+
 }
 
 mod imp {
@@ -107,7 +132,7 @@ mod imp {
     use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
     use gtk::glib::Properties;
     use gtk::{CompositeTemplate, TemplateChild};
-    use std::cell::Cell;
+    use std::cell::{Cell, RefCell};
 
     #[derive(Default, CompositeTemplate, Properties)]
     #[template(resource = "/org/samrewritten/SamRewritten/ui/achievement_row.ui")]
@@ -136,6 +161,11 @@ mod imp {
 
         #[property(get, set)]
         pub select_layout: Cell<bool>,
+
+        #[property(get, set, nullable)]
+        pub list_item: RefCell<Option<gtk::ListItem>>,
+
+        pub active_bindings: RefCell<Vec<glib::Binding>>,
     }
 
     #[glib::object_subclass]

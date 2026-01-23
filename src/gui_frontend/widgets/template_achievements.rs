@@ -261,6 +261,12 @@ mod imp {
                 obj,
                 move |_, list_item| {
                     let row = SamAchievementRow::new();
+                    row.setup_expressions();
+
+                    obj.imp().timed_mode_btn.bind_property("active", &row, "select-layout")
+                        .sync_create()
+                        .build();
+
                     list_item.set_child(Some(&row));
 
                     let drag_source = gtk::DragSource::new();
@@ -308,27 +314,17 @@ mod imp {
                 }
             ));
 
-            factory.connect_bind(glib::clone!(
-                #[weak]
-                obj,
-                move |_, list_item| {
-                    let item = list_item.item().expect("Item must exist");
-                    let row = list_item
-                        .child()
-                        .and_downcast::<SamAchievementRow>()
-                        .expect("Must be SamAchievementRow");
+            factory.connect_bind(glib::clone!(#[weak] obj, move |_, list_item| {
+                let list_item = list_item.downcast_ref::<gtk::ListItem>().expect("Must be ListItem");
+                let row = list_item.child().and_downcast::<SamAchievementRow>().expect("Must be SamAchievementRow");
 
-                    row.bind(&item);
+                row.bind(list_item);
+            }));
 
-                    obj.imp()
-                        .timed_mode_btn
-                        .bind_property("active", &row, "select-layout")
-                        .sync_create()
-                        .build();
-                }
-            ));
-
-            // TODO: connect_unbind
+            factory.connect_unbind(move |_, list_item| {
+                let row = list_item.child().and_downcast::<SamAchievementRow>().expect("Must be SamAchievementRow");
+                row.unbind();
+            });
 
             self.list_view.set_factory(Some(&factory));
 

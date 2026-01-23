@@ -1,10 +1,10 @@
-Checkbox states after relock etc
-
 Unbinding
 
 Showing how many selected for unlock somewhere
 
 Actually locking / unlocking in manual
+
+Filtering out unlocked in timed view
 
 Cleaning up the spaghetti
 
@@ -15,6 +15,7 @@ Cleaning up the spaghetti
 ### Medium priority
 
 Refactoring of gui_frontend (ask junie?)
+
 Translations
 
 ### Low priority
