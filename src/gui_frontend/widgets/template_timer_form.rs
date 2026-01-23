@@ -19,12 +19,12 @@ impl SamTimerConfigForm {
 }
 
 mod imp {
+    use crate::gui_frontend::gsettings::get_settings;
+    use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
+    use gtk::CompositeTemplate;
     use gtk::glib;
     use gtk::prelude::*;
     use gtk::subclass::prelude::*;
-    use gtk::{CompositeTemplate};
-    use crate::gui_frontend::gsettings::get_settings;
-    use crate::gui_frontend::widgets::template_achievements::SamAchievementsPage;
 
     #[derive(Default, CompositeTemplate)]
     #[template(resource = "/org/samrewritten/SamRewritten/ui/achievement_timer_form.ui")]
@@ -63,6 +63,32 @@ mod imp {
             let settings = get_settings();
             let group = gtk::gio::SimpleActionGroup::new();
 
+            let initial_count = settings.uint("timed-autoselect-count");
+            let initial_percent = settings.uint("timed-autoselect-percent");
+
+            self.count_input.set_value(initial_count as f64);
+            self.percent_input.set_value(initial_percent as f64);
+
+            self.count_input.connect_value_changed(glib::clone!(
+                #[weak]
+                settings,
+                move |spin| {
+                    let val = spin.value() as u32;
+                    let _ = settings.set_uint("timed-autoselect-count", val);
+                    crate::dev_println!("[CLIENT] Timed count setting saved: {}", val);
+                }
+            ));
+
+            self.percent_input.connect_value_changed(glib::clone!(
+                #[weak]
+                settings,
+                move |spin| {
+                    let val = spin.value() as u32;
+                    let _ = settings.set_uint("timed-autoselect-percent", val);
+                    crate::dev_println!("[CLIENT] Timed percent setting saved: {:.2}", val);
+                }
+            ));
+
             let initial_sort = settings.string("timed-sort-method");
             let sort_action = gtk::gio::SimpleAction::new_stateful(
                 "sort-method",
@@ -70,14 +96,18 @@ mod imp {
                 &initial_sort.to_variant(),
             );
 
-            sort_action.connect_activate(gtk::glib::clone!(#[weak] settings, move |action, parameter| {
-                if let Some(target) = parameter {
-                    let val: String = target.get().unwrap();
-                    action.set_state(target);
-                    settings.set_string("timed-sort-method", &val).unwrap();
-                    crate::dev_println!("[CLIENT] Sort method changed to: {}", val);
+            sort_action.connect_activate(gtk::glib::clone!(
+                #[weak]
+                settings,
+                move |action, parameter| {
+                    if let Some(target) = parameter {
+                        let val: String = target.get().unwrap();
+                        action.set_state(target);
+                        settings.set_string("timed-sort-method", &val).unwrap();
+                        crate::dev_println!("[CLIENT] Sort method changed to: {}", val);
+                    }
                 }
-            }));
+            ));
 
             let initial_auto = settings.string("timed-autoselect-method");
             let autoselect_action = gtk::gio::SimpleAction::new_stateful(
@@ -86,44 +116,56 @@ mod imp {
                 &initial_auto.to_variant(),
             );
 
-            autoselect_action.connect_activate(gtk::glib::clone!(#[weak] settings, move |action, parameter| {
-            if let Some(target) = parameter {
-                    let val: String = target.get().unwrap();
-                    action.set_state(target);
-                    let _ = settings.set_string("timed-autoselect-method", &val);
-                    crate::dev_println!("[CLIENT] Autoselect method changed to: {}", val);
+            autoselect_action.connect_activate(gtk::glib::clone!(
+                #[weak]
+                settings,
+                move |action, parameter| {
+                    if let Some(target) = parameter {
+                        let val: String = target.get().unwrap();
+                        action.set_state(target);
+                        let _ = settings.set_string("timed-autoselect-method", &val);
+                        crate::dev_println!("[CLIENT] Autoselect method changed to: {}", val);
+                    }
                 }
-            }));
+            ));
 
             let trigger_sort_action = gtk::gio::SimpleAction::new("trigger-sort", None);
 
-            trigger_sort_action.connect_activate(glib::clone!(#[weak] obj, move |_, _| {
-                if let Some(page) = obj.ancestor(SamAchievementsPage::static_type()) {
-                    let page = page.downcast::<SamAchievementsPage>().unwrap();
-                    page.sort_store_manually();
+            trigger_sort_action.connect_activate(glib::clone!(
+                #[weak]
+                obj,
+                move |_, _| {
+                    if let Some(page) = obj.ancestor(SamAchievementsPage::static_type()) {
+                        let page = page.downcast::<SamAchievementsPage>().unwrap();
+                        page.sort_store_manually();
+                    }
                 }
-            }));
+            ));
 
             let autoselect_trigger = gtk::gio::SimpleAction::new("trigger-autoselect", None);
 
-            autoselect_trigger.connect_activate(glib::clone!(#[weak] obj, move |_, _| {
-                let settings = get_settings();
-                let method = settings.string("timed-autoselect-method");
-                if method == "count" {
-                    // In a real scenario, you'd likely store the count in GSettings
-                    // or access the spin button value via a template child.
-                    // let count = settings.uint("timed-autoselect-count");
-                    let count = obj.imp().count_input.value() as u32;
+            autoselect_trigger.connect_activate(glib::clone!(
+                #[weak]
+                obj,
+                move |_, _| {
+                    let settings = get_settings();
+                    let method = settings.string("timed-autoselect-method");
 
                     if let Some(page) = obj.ancestor(SamAchievementsPage::static_type()) {
                         let page = page.downcast::<SamAchievementsPage>().unwrap();
-                        page.apply_auto_selection_count(count);
+
+                        if method == "count" {
+                            let count = obj.imp().count_input.value() as u32;
+                            page.apply_auto_selection_count(count);
+                        } else if method == "percent" {
+                            let percent = obj.imp().percent_input.value() as u32;
+                            page.apply_auto_selection_percent(percent);
+                        }
                     }
                 }
-            }));
+            ));
 
             group.add_action(&autoselect_trigger);
-
             group.add_action(&trigger_sort_action);
             group.add_action(&sort_action);
             group.add_action(&autoselect_action);

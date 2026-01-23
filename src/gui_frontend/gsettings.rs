@@ -15,7 +15,9 @@ pub fn get_settings() -> &'static Settings {
                 .expect("Could not find gschemas.compiled in APPDIR");
             let schema = source.lookup(APP_ID, true).expect("Schema not found");
             Settings::new_full(&schema, None::<&gtk::gio::SettingsBackend>, None)
-        } else if let Ok(snap_name) = std::env::var("SNAP_NAME") && snap_name != "samrewritten" {
+        } else if let Ok(snap_name) = std::env::var("SNAP_NAME")
+            && snap_name != "samrewritten"
+        {
             dev_println!("[CLIENT] Loading settings from dev config..");
             let source = gtk::gio::SettingsSchemaSource::from_directory("./assets", None, false)
                 .expect("Could not find gschemas.compiled in assets");

@@ -102,12 +102,12 @@ impl SamAchievementRow {
 }
 
 mod imp {
-    use std::cell::Cell;
     use super::*;
     use crate::gui_frontend::widgets::custom_progress_bar::CustomProgressBar;
     use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
-    use gtk::{CompositeTemplate, TemplateChild};
     use gtk::glib::Properties;
+    use gtk::{CompositeTemplate, TemplateChild};
+    use std::cell::Cell;
 
     #[derive(Default, CompositeTemplate, Properties)]
     #[template(resource = "/org/samrewritten/SamRewritten/ui/achievement_row.ui")]

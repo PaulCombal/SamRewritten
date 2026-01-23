@@ -68,7 +68,10 @@ impl SamAchievementsPage {
             if method == "unlock" {
                 let a_val = a.global_achieved_percent();
                 let b_val = b.global_achieved_percent();
-                a_val.partial_cmp(&b_val).unwrap_or(std::cmp::Ordering::Equal).into()
+                a_val
+                    .partial_cmp(&b_val)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .into()
             } else {
                 // Default to A-Z
                 let a_name = a.name();
@@ -106,13 +109,56 @@ impl SamAchievementsPage {
             }
         }
     }
+
+    pub fn apply_auto_selection_percent(&self, percent: u32) {
+        let store = &self.imp().store;
+        let percent = percent.clamp(0, 100);
+
+        // 1. Reset all selectable items first
+        for i in 0..store.n_items() {
+            if let Some(obj) = store.item(i).and_downcast::<GAchievementObject>() {
+                if !obj.is_achieved() && obj.permission() == 0 {
+                    obj.set_is_selected(false);
+                }
+            }
+        }
+
+        // 2. Count the total pool of selectable achievements
+        let mut selectable_pool = Vec::new();
+        for i in 0..store.n_items() {
+            if let Some(obj) = store.item(i).and_downcast::<GAchievementObject>() {
+                if !obj.is_achieved() && obj.permission() == 0 {
+                    selectable_pool.push(obj);
+                }
+            }
+        }
+
+        // 3. Calculate target count based on percentage
+        let total_selectable = selectable_pool.len() as f64;
+        let target_count = ((percent as f64 / 100.0) * total_selectable).round() as usize;
+
+        crate::dev_println!(
+            "[CLIENT] Applying auto_selection: {}% of {} items (Target: {})",
+            percent,
+            total_selectable,
+            target_count
+        );
+
+        // 4. Select items up to the target count
+        for obj in selectable_pool.into_iter().take(target_count) {
+            obj.set_is_selected(true);
+        }
+    }
 }
 
 mod imp {
     use crate::gui_frontend::gobjects::achievement::GAchievementObject;
     use crate::gui_frontend::widgets::template_achievement_row::SamAchievementRow;
     use gtk::glib;
-    use gtk::prelude::{Cast, CastNone, GObjectPropertyExpressionExt, ListItemExt, ObjectExt, ToValue, ToggleButtonExt, WidgetExt};
+    use gtk::prelude::{
+        Cast, CastNone, GObjectPropertyExpressionExt, ListItemExt, ObjectExt, ToValue,
+        ToggleButtonExt, WidgetExt,
+    };
     use gtk::subclass::prelude::*;
     use gtk::{CompositeTemplate, TemplateChild};
 
@@ -131,7 +177,7 @@ mod imp {
         pub manual_mode_sort_unlock_btn: TemplateChild<gtk::ToggleButton>,
 
         pub store: gtk::gio::ListStore,
-        pub sort_model: gtk::SortListModel
+        pub sort_model: gtk::SortListModel,
     }
 
     impl Default for SamAchievementsPage {
@@ -146,7 +192,7 @@ mod imp {
                 manual_mode_sort_az_btn: TemplateChild::default(),
                 manual_mode_sort_unlock_btn: TemplateChild::default(),
                 store,
-                sort_model
+                sort_model,
             }
         }
     }
@@ -166,7 +212,6 @@ mod imp {
                     .build();
                 self.sort_model.set_sorter(Some(&sorter));
             }
-
             // 3. Unlock Mode active -> CustomSorter for f32
             else if self.manual_mode_sort_unlock_btn.is_active() {
                 let sorter = gtk::CustomSorter::new(move |obj1, obj2| {
@@ -176,7 +221,8 @@ mod imp {
                     let a_val = a.global_achieved_percent();
                     let b_val = b.global_achieved_percent();
 
-                    a_val.partial_cmp(&b_val)
+                    a_val
+                        .partial_cmp(&b_val)
                         .unwrap_or(std::cmp::Ordering::Equal)
                         .into()
                 });
@@ -210,47 +256,77 @@ mod imp {
             let obj = self.obj();
             let factory = gtk::SignalListItemFactory::new();
 
-            factory.connect_setup(glib::clone!(#[weak] obj, move |_, list_item| {
-                let row = SamAchievementRow::new();
-                list_item.set_child(Some(&row));
+            factory.connect_setup(glib::clone!(
+                #[weak]
+                obj,
+                move |_, list_item| {
+                    let row = SamAchievementRow::new();
+                    list_item.set_child(Some(&row));
 
-                let drag_source = gtk::DragSource::new();
-                let drop_target = gtk::DropTarget::new(glib::Type::OBJECT, gtk::gdk::DragAction::MOVE);
-                drag_source.set_actions(gtk::gdk::DragAction::MOVE);
+                    let drag_source = gtk::DragSource::new();
+                    let drop_target =
+                        gtk::DropTarget::new(glib::Type::OBJECT, gtk::gdk::DragAction::MOVE);
+                    drag_source.set_actions(gtk::gdk::DragAction::MOVE);
 
-                drag_source.connect_prepare(glib::clone!(#[weak] list_item, #[weak] obj, #[upgrade_or] None, move |_, _, _| {
-                    if obj.imp().manual_mode_btn.is_active() {
-                        return None;
-                    }
-                    let item = list_item.item()?;
-                    Some(gtk::gdk::ContentProvider::for_value(&item.to_value()))
-                }));
+                    drag_source.connect_prepare(glib::clone!(
+                        #[weak]
+                        list_item,
+                        #[weak]
+                        obj,
+                        #[upgrade_or]
+                        None,
+                        move |_, _, _| {
+                            if obj.imp().manual_mode_btn.is_active() {
+                                return None;
+                            }
+                            let item = list_item.item()?;
+                            Some(gtk::gdk::ContentProvider::for_value(&item.to_value()))
+                        }
+                    ));
 
-                drop_target.connect_drop(glib::clone!(#[weak] list_item, #[weak] obj, #[upgrade_or] false, move |_, value, _, _| {
-                    let dragged_item = value.get::<GAchievementObject>().ok();
-                    let target_item = list_item.item().and_downcast::<GAchievementObject>();
+                    drop_target.connect_drop(glib::clone!(
+                        #[weak]
+                        list_item,
+                        #[weak]
+                        obj,
+                        #[upgrade_or]
+                        false,
+                        move |_, value, _, _| {
+                            let dragged_item = value.get::<GAchievementObject>().ok();
+                            let target_item = list_item.item().and_downcast::<GAchievementObject>();
 
-                    if let (Some(source), Some(target)) = (dragged_item, target_item) {
-                        obj.move_item(&source, &target);
-                        return true;
-                    }
-                    false
-                }));
+                            if let (Some(source), Some(target)) = (dragged_item, target_item) {
+                                obj.move_item(&source, &target);
+                                return true;
+                            }
+                            false
+                        }
+                    ));
 
-                row.add_controller(drag_source);
-                row.add_controller(drop_target);
-            }));
+                    row.add_controller(drag_source);
+                    row.add_controller(drop_target);
+                }
+            ));
 
-            factory.connect_bind(glib::clone!(#[weak] obj, move |_, list_item| {
-                let item = list_item.item().expect("Item must exist");
-                let row = list_item.child().and_downcast::<SamAchievementRow>().expect("Must be SamAchievementRow");
+            factory.connect_bind(glib::clone!(
+                #[weak]
+                obj,
+                move |_, list_item| {
+                    let item = list_item.item().expect("Item must exist");
+                    let row = list_item
+                        .child()
+                        .and_downcast::<SamAchievementRow>()
+                        .expect("Must be SamAchievementRow");
 
-                row.bind(&item);
+                    row.bind(&item);
 
-                obj.imp().timed_mode_btn.bind_property("active", &row, "select-layout")
-                    .sync_create()
-                    .build();
-            }));
+                    obj.imp()
+                        .timed_mode_btn
+                        .bind_property("active", &row, "select-layout")
+                        .sync_create()
+                        .build();
+                }
+            ));
 
             // TODO: connect_unbind
 
@@ -259,9 +335,22 @@ mod imp {
             let selection_model = gtk::MultiSelection::new(Some(self.sort_model.clone()));
             self.list_view.set_model(Some(&selection_model));
 
-            self.manual_mode_sort_az_btn.connect_toggled(glib::clone!(#[weak] obj, move |_| obj.imp().apply_sorting()));
-            self.manual_mode_sort_unlock_btn.connect_toggled(glib::clone!(#[weak] obj, move |_| obj.imp().apply_sorting()));
-            self.timed_mode_btn.connect_toggled(glib::clone!(#[weak] obj, move |_| obj.imp().apply_sorting()));
+            self.manual_mode_sort_az_btn.connect_toggled(glib::clone!(
+                #[weak]
+                obj,
+                move |_| obj.imp().apply_sorting()
+            ));
+            self.manual_mode_sort_unlock_btn
+                .connect_toggled(glib::clone!(
+                    #[weak]
+                    obj,
+                    move |_| obj.imp().apply_sorting()
+                ));
+            self.timed_mode_btn.connect_toggled(glib::clone!(
+                #[weak]
+                obj,
+                move |_| obj.imp().apply_sorting()
+            ));
             obj.imp().apply_sorting();
         }
     }

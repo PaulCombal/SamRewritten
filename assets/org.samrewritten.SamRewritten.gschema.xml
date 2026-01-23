@@ -19,6 +19,19 @@
             <description>Values include 'percent' or 'unit'</description>
         </key>
 
+        <key name="timed-autoselect-count" type="u">
+            <default>0</default>
+            <summary>Default autoselect count of achievements to unlock</summary>
+            <description>Value of type u32</description>
+        </key>
+
+        <key name="timed-autoselect-percent" type="u">
+            <default>100</default>
+            <range min="0" max="100"/>
+            <summary>Default autoselect count of achievements percentage to unlock</summary>
+            <description>Value of type u32 must be between 0 and 100</description>
+        </key>
+
         <key name="app-theme" type="s">
             <default>'system'</default>
             <summary>Application Theme</summary>

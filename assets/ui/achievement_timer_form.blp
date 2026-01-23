@@ -92,7 +92,7 @@ template $SamTimerConfigForm : Box {
           // Direct binding: toggles automatically when group selection changes
           sensitive: bind auto_count_radio.active;
           adjustment: Adjustment {
-            lower: 1;
+            lower: 0;
             upper: 10000;
             step-increment: 1;
           };
