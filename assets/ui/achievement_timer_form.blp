@@ -61,49 +61,58 @@ template $SamTimerConfigForm : Box {
 
     // Option 1: Percent Range
     Box {
-        spacing: 8;
-        CheckButton auto_percent_radio {
-          label: "Select next up to";
-          action-name: "config.autoselect-method";
-          action-target: "'percent'";
-          active: true;
-        }
-        SpinButton percent_input {
-          sensitive: bind auto_percent_radio.active;
-          adjustment: Adjustment {
-            lower: 0;
-            upper: 100;
-            step-increment: 1;
-          };
-        }
-        Label { label: "%"; }
+      spacing: 8;
+      CheckButton auto_percent_radio {
+        label: "Select next up to";
+        action-name: "config.autoselect-method";
+        action-target: "'percent'";
+        active: true;
       }
-
-      // Option 2: Absolute Count
-      Box {
-        spacing: 8;
-        CheckButton auto_count_radio {
-          label: "Select next up to";
-          group: auto_percent_radio;
-          action-name: "config.autoselect-method";
-          action-target: "'count'";
-        }
-        SpinButton count_input {
-          // Direct binding: toggles automatically when group selection changes
-          sensitive: bind auto_count_radio.active;
-          adjustment: Adjustment {
-            lower: 0;
-            upper: 10000;
-            step-increment: 1;
-          };
-        }
+      SpinButton percent_input {
+        sensitive: bind auto_percent_radio.active;
+        adjustment: Adjustment {
+          lower: 0;
+          upper: 100;
+          step-increment: 1;
+        };
       }
+      Label { label: "%"; }
+    }
 
-    Button {
-      label: "Apply auto-select";
+    // Option 2: Absolute Count
+    Box {
+      spacing: 8;
+      CheckButton auto_count_radio {
+        label: "Select next up to";
+        group: auto_percent_radio;
+        action-name: "config.autoselect-method";
+        action-target: "'count'";
+      }
+      SpinButton count_input {
+        // Direct binding: toggles automatically when group selection changes
+        sensitive: bind auto_count_radio.active;
+        adjustment: Adjustment {
+          lower: 0;
+          upper: 10000;
+          step-increment: 1;
+        };
+      }
+    }
+
+    Box {
       halign: start;
-      action-name: "config.trigger-autoselect";
-      styles ["suggested-action"]
+      spacing: 6;
+
+      Button {
+        label: "Apply auto-select";
+        action-name: "config.trigger-autoselect";
+        styles ["suggested-action"]
+      }
+
+      Label selected_count_label {
+        label: "0 selected";
+        styles ["dim-label"]
+      }
     }
   }
 
@@ -182,7 +191,7 @@ template $SamTimerConfigForm : Box {
     }
   }
 
-  Button {
+  Button start_button {
     label: "Start timer";
     hexpand: true;
     styles ["suggested-action"]

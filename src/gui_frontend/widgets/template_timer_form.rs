@@ -37,8 +37,10 @@ mod imp {
         pub count_input: TemplateChild<gtk::SpinButton>,
         #[template_child]
         pub percent_input: TemplateChild<gtk::SpinButton>,
-        // #[template_child]
-        // pub start_session_btn: TemplateChild<gtk::Button>,
+        #[template_child]
+        pub selected_count_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub start_button: TemplateChild<gtk::Button>,
     }
 
     #[glib::object_subclass]

@@ -1,6 +1,8 @@
-Unbinding
+Save timer settings
 
-Showing how many selected for unlock somewhere
+Implement "Hide unlocked"
+
+Removing blue selection bg
 
 Actually locking / unlocking in manual
 

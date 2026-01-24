@@ -1,7 +1,8 @@
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use gtk::glib;
-use gtk::prelude::{Cast, CastNone, ListModelExt, SettingsExt};
+use gtk::prelude::{Cast, CastNone, ListModelExt, PopoverExt, SettingsExt, WidgetExt};
 use gtk::subclass::prelude::ObjectSubclassIsExt;
+use crate::gui_frontend::widgets::template_timer_form::SamTimerConfigForm;
 
 glib::wrapper! {
     pub struct SamAchievementsPage(ObjectSubclass<imp::SamAchievementsPage>)
@@ -149,9 +150,38 @@ impl SamAchievementsPage {
             obj.set_is_selected(true);
         }
     }
+
+    pub fn update_selected_label(&self) {
+        let imp = self.imp();
+        let store = &imp.store;
+        let mut count = 0;
+
+        for i in 0..store.n_items() {
+            if let Some(obj) = store.item(i).and_downcast::<GAchievementObject>() {
+                // Count items that are selected but not yet achieved
+                if obj.is_selected() && !obj.is_achieved() {
+                    count += 1;
+                }
+            }
+        }
+
+        // Navigate to the child widgets inside the popover [cite: 10]
+        if let Some(popover) = imp.config_button.popover().and_downcast::<gtk::Popover>() {
+            if let Some(timer_form) = popover.child().and_downcast::<SamTimerConfigForm>() {
+                let timer_imp = timer_form.imp();
+
+                // 1. Update the label text
+                timer_imp.selected_count_label.set_label(&format!("{} selected", count));
+
+                // 2. Disable/Enable the button based on the count
+                timer_imp.start_button.set_sensitive(count > 0);
+            }
+        }
+    }
 }
 
 mod imp {
+    use gtk::prelude::ListModelExt;
     use crate::gui_frontend::gobjects::achievement::GAchievementObject;
     use crate::gui_frontend::widgets::template_achievement_row::SamAchievementRow;
     use gtk::glib;
@@ -175,6 +205,8 @@ mod imp {
         pub manual_mode_sort_az_btn: TemplateChild<gtk::ToggleButton>,
         #[template_child]
         pub manual_mode_sort_unlock_btn: TemplateChild<gtk::ToggleButton>,
+        #[template_child]
+        pub config_button: TemplateChild<gtk::MenuButton>,
 
         pub store: gtk::gio::ListStore,
         pub sort_model: gtk::SortListModel,
@@ -191,6 +223,7 @@ mod imp {
                 list_view: TemplateChild::default(),
                 manual_mode_sort_az_btn: TemplateChild::default(),
                 manual_mode_sort_unlock_btn: TemplateChild::default(),
+                config_button: TemplateChild::default(),
                 store,
                 sort_model,
             }
@@ -336,17 +369,36 @@ mod imp {
                 obj,
                 move |_| obj.imp().apply_sorting()
             ));
+
             self.manual_mode_sort_unlock_btn
                 .connect_toggled(glib::clone!(
                     #[weak]
                     obj,
                     move |_| obj.imp().apply_sorting()
                 ));
+
             self.timed_mode_btn.connect_toggled(glib::clone!(
                 #[weak]
                 obj,
                 move |_| obj.imp().apply_sorting()
             ));
+
+            // Listen for selection changes on every item added to the store
+            self.store.connect_items_changed(glib::clone!(#[weak] obj, move |store, _, _, _| {
+                for i in 0..store.n_items() {
+                    if let Some(item) = store.item(i).and_downcast::<GAchievementObject>() {
+                        // Connect to property notifications
+                        item.connect_notify_local(Some("is-selected"), glib::clone!(#[weak] obj, move |_, _| {
+                            obj.update_selected_label();
+                        }));
+                        item.connect_notify_local(Some("is-achieved"), glib::clone!(#[weak] obj, move |_, _| {
+                            obj.update_selected_label();
+                        }));
+                    }
+                }
+                obj.update_selected_label();
+            }));
+
             obj.imp().apply_sorting();
         }
     }
