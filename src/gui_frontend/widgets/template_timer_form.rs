@@ -41,6 +41,18 @@ mod imp {
         pub selected_count_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub start_button: TemplateChild<gtk::Button>,
+        #[template_child]
+        pub timer_input: TemplateChild<gtk::SpinButton>,
+        #[template_child]
+        pub unit_dropdown: TemplateChild<gtk::DropDown>,
+        #[template_child]
+        pub even_spacing_btn: TemplateChild<gtk::ToggleButton>,
+        #[template_child]
+        pub random_spacing_btn: TemplateChild<gtk::ToggleButton>,
+        #[template_child]
+        pub exit_after_done_check: TemplateChild<gtk::CheckButton>,
+        #[template_child]
+        pub hide_unlocked_check: TemplateChild<gtk::CheckButton>,
     }
 
     #[glib::object_subclass]
@@ -88,6 +100,57 @@ mod imp {
                     let val = spin.value() as u32;
                     let _ = settings.set_uint("timed-autoselect-percent", val);
                     crate::dev_println!("[CLIENT] Timed percent setting saved: {:.2}", val);
+                }
+            ));
+
+            let initial_timer_val = settings.uint("timed-timer-duration");
+            self.timer_input.set_value(initial_timer_val as f64);
+            self.timer_input.connect_value_changed(glib::clone!(#[weak] settings, move |spin| {
+                let _ = settings.set_uint("timed-timer-duration", spin.value() as u32);
+            }));
+
+            let initial_unit = settings.uint("timed-timer-unit-index");
+            self.unit_dropdown.set_selected(initial_unit);
+            self.unit_dropdown.connect_selected_notify(glib::clone!(#[weak] settings, move |dd| {
+                let _ = settings.set_uint("timed-timer-unit-index", dd.selected());
+            }));
+
+            let is_even = settings.boolean("timed-timer-use-even-spacing");
+            if is_even {
+                self.even_spacing_btn.set_active(true);
+            } else {
+                self.random_spacing_btn.set_active(true);
+            }
+
+            self.even_spacing_btn.connect_toggled(glib::clone!(#[weak] settings, move |btn| {
+                if btn.is_active() {
+                    let _ = settings.set_boolean("timed-timer-use-even-spacing", true);
+                }
+            }));
+
+            self.random_spacing_btn.connect_toggled(glib::clone!(#[weak] settings, move |btn| {
+                if btn.is_active() {
+                    let _ = settings.set_boolean("timed-timer-use-even-spacing", false);
+                }
+            }));
+
+            let initial_exit = settings.boolean("timed-exit-after-done");
+            self.exit_after_done_check.set_active(initial_exit);
+            self.exit_after_done_check.connect_toggled(glib::clone!(
+                #[weak] settings,
+                move |btn| {
+                    let _ = settings.set_boolean("timed-exit-after-done", btn.is_active());
+                    crate::dev_println!("[CLIENT] Exit after done set to: {}", btn.is_active());
+                }
+            ));
+
+            let initial_hide = settings.boolean("timed-hide-unlocked");
+            self.hide_unlocked_check.set_active(initial_hide);
+            self.hide_unlocked_check.connect_toggled(glib::clone!(
+                #[weak] settings,
+                move |btn| {
+                    let _ = settings.set_boolean("timed-hide-unlocked", btn.is_active());
+                    crate::dev_println!("[CLIENT] Hide unlocked set to: {}", btn.is_active());
                 }
             ));
 

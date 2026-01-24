@@ -1,5 +1,3 @@
-Save timer settings
-
 Implement "Hide unlocked"
 
 Removing blue selection bg

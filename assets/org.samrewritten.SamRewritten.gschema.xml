@@ -32,6 +32,36 @@
             <description>Value of type u32 must be between 0 and 100</description>
         </key>
 
+        <key name="timed-timer-duration" type="u">
+            <default>0</default>
+            <summary>Default timer unit value for timed achievements unlocking</summary>
+            <description>Eg: X minutes, or X hours</description>
+        </key>
+
+        <key name="timed-timer-unit-index" type="u">
+            <default>0</default>
+            <summary>Default timer unit for timed achievements unlocking</summary>
+            <description>Eg: minute, or hour</description>
+        </key>
+
+        <key name="timed-timer-use-even-spacing" type="b">
+            <default>true</default>
+            <summary>Use even spacing between achievement unlock when using timed mode</summary>
+            <description>If not, random spacing is used</description>
+        </key>
+
+        <key name="timed-exit-after-done" type="b">
+            <default>false</default>
+            <summary>Exit app after applying timed achievement unlocking</summary>
+            <description>If not, manual action will be required to exit game</description>
+        </key>
+
+        <key name="timed-hide-unlocked" type="b">
+            <default>true</default>
+            <summary>Hide already unlocked achievements in timed unlocking mode</summary>
+            <description>If not, all achievements will be listed</description>
+        </key>
+
         <key name="app-theme" type="s">
             <default>'system'</default>
             <summary>Application Theme</summary>
