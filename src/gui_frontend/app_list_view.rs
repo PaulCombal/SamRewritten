@@ -46,7 +46,6 @@ use gtk::{
 use gtk::{IconSize, glib};
 use std::cell::Cell;
 use std::ffi::c_ulong;
-use std::path::Path;
 use std::process::Command;
 use std::rc::Rc;
 

@@ -94,13 +94,13 @@ jobs:
           Write-Host "Copied GSettings schemas to $tempSchemaFolder"
         shell: pwsh
 
-      - name: Build GTK-RS application (console)
-        run: cargo build --release --features win-console --target x86_64-pc-windows-msvc
+      - name: Build GTK-RS application (debug, console)
+        run: cargo build --features win-console --target x86_64-pc-windows-msvc
 
       - name: Move console executable to release archive
         run: |
           $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
-          Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-console.exe"
+          Copy-Item "target/x86_64-pc-windows-msvc/debug/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-console.exe"
         shell: pwsh
 
       - name: Build GTK-RS application (CLI)

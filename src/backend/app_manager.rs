@@ -39,6 +39,18 @@ pub struct AppManager {
     stat_definitions: Vec<StatDefinition>,
 }
 
+fn adler32(data: &[u8]) -> u32 {
+    let mut a: u32 = 1;
+    let mut b: u32 = 0;
+
+    for byte in data {
+        a = (a + *byte as u32) % 65521;
+        b = (b + a) % 65521;
+    }
+
+    (b << 16) | a
+}
+
 impl AppManager {
     pub fn new_connected(app_id: AppId_t) -> Result<Self, Box<dyn std::error::Error>> {
         unsafe {
@@ -158,6 +170,22 @@ impl AppManager {
             }
         };
 
+        #[cfg(debug_assertions)]
+        {
+            match std::fs::read(&bin_file) {
+                Ok(bytes) => {
+                    dev_println!(
+                        "[APP MANAGER] Loading user game stats file {} (Checksum: {:08x})",
+                        bin_file.display(),
+                        adler32(&bytes)
+                    );
+                }
+                Err(e) => {
+                    dev_println!("[APP MANAGER] Error loading user game stats file: {}", e);
+                }
+            };
+        }
+
         let kv = match KeyValue::load_as_binary(&bin_file) {
             Ok(kv) => kv,
             Err(e) => {
@@ -253,6 +281,7 @@ impl AppManager {
                         }
 
                         if !bits.1.valid || bits.1.children.is_empty() {
+                            dev_println!("[APP MANAGER] Invalid achievements bits.1: {}", bits.1);
                             continue;
                         }
 
@@ -340,6 +369,8 @@ impl AppManager {
 
         for def in self.achievement_definitions.iter() {
             if def.id.is_empty() {
+                dev_println!("[APP MANAGER] Achievement definition ID is empty:");
+                dev_println!("{def:?}");
                 continue;
             }
 
@@ -398,6 +429,13 @@ impl AppManager {
                 }
             }
         }
+
+        dev_println!(
+            "[APP MANAGER] Loaded {} achievement definitions for {} achievements for app {}",
+            self.achievement_definitions.len(),
+            achievement_infos.len(),
+            self.app_id
+        );
 
         Ok(achievement_infos)
     }
@@ -646,5 +684,15 @@ impl AppManager {
         }
 
         default_value.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::backend::app_manager::adler32;
+
+    #[test]
+    fn test_adler32() {
+        println!("Adler null: {:08x}", adler32(&vec![]));
     }
 }
