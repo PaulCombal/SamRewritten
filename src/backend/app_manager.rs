@@ -14,7 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::backend::connected_steam::ConnectedSteam;
-use crate::backend::key_value::KeyValue;
+use crate::backend::key_value::{KeyValue, KeyValueData};
 use crate::backend::stat_definitions::{
     AchievementDefinition, AchievementInfo, BaseStatDefinition, FloatStatDefinition, FloatStatInfo,
     IntStatInfo, IntegerStatDefinition, StatDefinition, StatInfo,
@@ -210,22 +210,33 @@ impl AppManager {
                 continue;
             }
 
-            let raw_type = if stat.get("type_int").valid {
-                stat.get("type_int").as_i32(0)
-            } else {
-                stat.get("type").as_i32(0)
-            };
+            let mut type_ = UserStatType::Invalid;
 
-            let type_ = match UserStatType::try_from(raw_type as u8) {
-                Ok(t) => t,
-                Err(e) => {
-                    eprintln!("[APP MANAGER] Failed to parse user stat type: {}", e);
-                    return Err(SamError::UnknownError);
+            // Schema in the new format?
+            let type_node = stat.get("type");
+            if let KeyValueData::String(ref type_str) = type_node.data {
+                if let Ok(parsed) = type_str.parse::<UserStatType>() {
+                    type_ = parsed;
                 }
-            };
+            }
+
+            // Schema in the old format?
+            if type_ == UserStatType::Invalid {
+                let type_int_node = stat.get("type_int");
+
+                let raw_type = if type_int_node.valid {
+                    type_int_node.as_i32(0)
+                } else {
+                    type_node.as_i32(0)
+                };
+
+                type_ = UserStatType::try_from(raw_type as u8)
+                    .unwrap_or_else(|_| UserStatType::Invalid);
+            }
 
             match type_ {
                 UserStatType::Invalid => {
+                    eprintln!("[APP MANAGER] Failed to parse user stat type: {type_node:?}");
                     continue;
                 }
 

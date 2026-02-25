@@ -14,6 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use std::convert::TryFrom;
+use std::str::FromStr;
 
 pub enum KeyValueEncoding {
     Utf8,
@@ -41,6 +42,21 @@ impl TryFrom<u8> for UserStatType {
             4 => Ok(UserStatType::Achievements),
             5 => Ok(UserStatType::GroupAchievements),
             _ => Err(format!("Invalid UserStatType value: {}", value)),
+        }
+    }
+}
+
+impl FromStr for UserStatType {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "int" | "integer" => Ok(UserStatType::Integer),
+            "float" => Ok(UserStatType::Float),
+            "averagerate" => Ok(UserStatType::AverageRate),
+            "achievements" => Ok(UserStatType::Achievements),
+            "groupachievements" => Ok(UserStatType::GroupAchievements),
+            _ => Err(()),
         }
     }
 }

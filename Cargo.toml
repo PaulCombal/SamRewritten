@@ -1,6 +1,6 @@
 [package]
 name = "SamRewritten"
-version = "1.2.2"
+version = "1.2.3"
 description = "Steam Achievement Manager Rewritten"
 edition = "2024"
 authors = [
