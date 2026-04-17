@@ -35,7 +35,7 @@ winres = "0"
 [package.metadata.appimage]
 icon = "assets/icon_256.png"
 desktop_entry = "package/samrewritten.desktop"
-assets = ["assets/gschemas.compiled"]
+assets = ["assets/gschemas.compiled", "assets/icons"]
 
 [profile.release]
 lto = "thin"

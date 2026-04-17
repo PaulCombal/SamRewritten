@@ -53,6 +53,18 @@ pub fn create_main_ui(
     application: &MainApplication,
     cmd_line: &ApplicationCommandLine,
 ) -> ExitCode {
+    if let Ok(appdir) = std::env::var("APPDIR") {
+        let system_icon = std::path::Path::new(
+            "/usr/share/icons/Adwaita/symbolic/actions/open-menu-symbolic.svg",
+        );
+        if !system_icon.exists() {
+            if let Some(display) = gtk::gdk::Display::default() {
+                gtk::IconTheme::for_display(&display)
+                    .add_search_path(std::path::Path::new(&appdir).join("icons"));
+            }
+        }
+    }
+
     let gui_args = parse_gui_arguments(cmd_line);
     let settings = get_settings();
     let launch_app_by_id_visible = Rc::new(Cell::new(false));
