@@ -53,14 +53,16 @@ pub fn create_main_ui(
     application: &MainApplication,
     cmd_line: &ApplicationCommandLine,
 ) -> ExitCode {
+    #[cfg(unix)]
     if let Ok(appdir) = std::env::var("APPDIR") {
-        let system_icon = std::path::Path::new(
-            "/usr/share/icons/Adwaita/symbolic/actions/open-menu-symbolic.svg",
-        );
-        if !system_icon.exists() {
-            if let Some(display) = gtk::gdk::Display::default() {
-                gtk::IconTheme::for_display(&display)
-                    .add_search_path(std::path::Path::new(&appdir).join("icons"));
+        if let Some(display) = gtk::gdk::Display::default() {
+            let theme = gtk::IconTheme::for_display(&display);
+
+            if !theme.has_icon("open-menu-symbolic") {
+                crate::dev_println!("[CLIENT] Icon not found in system theme. Using fallback.");
+
+                let fallback_path = std::path::Path::new(&appdir).join("icons");
+                theme.add_search_path(fallback_path);
             }
         }
     }
