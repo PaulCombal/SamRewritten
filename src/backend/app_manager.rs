@@ -39,6 +39,7 @@ pub struct AppManager {
     stat_definitions: Vec<StatDefinition>,
 }
 
+#[cfg(any(debug_assertions, test))]
 fn adler32(data: &[u8]) -> u32 {
     let mut a: u32 = 1;
     let mut b: u32 = 0;

@@ -1,9 +1,9 @@
-# Snaps cannot be built inside docker containers since snap requires systemd
-
 services:
   rust-gtk-appimage:
+    # Reproduce CI pipeline env
     build:
-      dockerfile: ./appimage.Dockerfile
+      context: ../
+      dockerfile: ./package/appimage.Dockerfile
     volumes:
       - ../:/mnt:z
 #    command: /bin/bash -c "cargo appimage"
@@ -11,8 +11,10 @@ services:
     command: tail -f /dev/null
 
   rust-gtk-archlinux:
+    # Reproduce CI pipeline env
     build:
-      dockerfile: ./arch.Dockerfile
+      context: ../
+      dockerfile: ./package/arch.Dockerfile
     volumes:
       - ../:/mnt:z
     command: tail -f /dev/null

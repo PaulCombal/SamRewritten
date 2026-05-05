@@ -28,4 +28,7 @@ RUN ln -nfs /squashfs-root/usr/bin/appimagetool /usr/bin/appimagetool
 
 WORKDIR /mnt
 
+COPY package/bundle-icons.sh /bundle-icons.sh
+RUN chmod +x /bundle-icons.sh
+ENTRYPOINT ["/bundle-icons.sh"]
 CMD ["/bin/bash"]

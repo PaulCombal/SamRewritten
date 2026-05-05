@@ -4,3 +4,4 @@
 gschemas.compiled
 !*.gschema.xml
 !*.gresource.xml
+assets/icons
