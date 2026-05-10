@@ -113,6 +113,9 @@ The CLI allows you to:
 * Lock and unlock achievements
 * Bulk lock and unlock achievements
 
+When using a graphical version of SamRewritten, you can use `--auto-open=X` where `X` is an AppId, to open SamRewritten
+directly on the corresponding app's details page.
+
 ## Environment variables
 
 SamRewritten's behavior can be altered via environment variables:
