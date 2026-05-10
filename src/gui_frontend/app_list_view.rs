@@ -1191,48 +1191,49 @@ pub fn create_main_ui(
                 #[strong]
                 app_stack,
                 async move {
-                let dialog = gtk::MessageDialog::builder()
+                    let dialog = gtk::MessageDialog::builder()
                     .message_type(gtk::MessageType::Warning)
                     .buttons(gtk::ButtonsType::None)
                     .title("Reset Everything")
                     .text("This will reset all achievements and stats for this app. Are you sure?")
                     .build();
 
-                dialog.add_button("Cancel", gtk::ResponseType::Cancel);
-                let reset_button = dialog.add_button("Sure, reset", gtk::ResponseType::Accept);
-                reset_button.add_css_class("destructive-action");
+                    dialog.add_button("Cancel", gtk::ResponseType::Cancel);
+                    let reset_button = dialog.add_button("Sure, reset", gtk::ResponseType::Accept);
+                    reset_button.add_css_class("destructive-action");
 
-                if let Some(current_window) = application.active_window() {
-                    dialog.set_transient_for(Some(&current_window));
-                }
-
-                let response = dialog.run_future().await;
-                dialog.close();
-
-                if response != gtk::ResponseType::Accept {
-                    return;
-                }
-
-                app_stack.set_visible_child_name("loading");
-                set_app_action_enabled(&application, "clear_all_stats_and_achievements", false);
-                app_achievements_model.remove_all();
-                app_stat_model.remove_all();
-
-                let app_id_copy = app_id.get().unwrap();
-                let handle = spawn_blocking(move || {
-                    ResetStats {
-                        app_id: app_id_copy,
-                        achievements_too: true,
+                    if let Some(current_window) = application.active_window() {
+                        dialog.set_transient_for(Some(&current_window));
                     }
-                    .request()
-                });
 
-                let Ok(Ok(_success)) = handle.await else {
-                    return app_stack.set_visible_child_name("failed");
-                };
+                    let response = dialog.run_future().await;
+                    dialog.close();
 
-                action_refresh_achievements_list.activate(None);
-            }));
+                    if response != gtk::ResponseType::Accept {
+                        return;
+                    }
+
+                    app_stack.set_visible_child_name("loading");
+                    set_app_action_enabled(&application, "clear_all_stats_and_achievements", false);
+                    app_achievements_model.remove_all();
+                    app_stat_model.remove_all();
+
+                    let app_id_copy = app_id.get().unwrap();
+                    let handle = spawn_blocking(move || {
+                        ResetStats {
+                            app_id: app_id_copy,
+                            achievements_too: true,
+                        }
+                        .request()
+                    });
+
+                    let Ok(Ok(_success)) = handle.await else {
+                        return app_stack.set_visible_child_name("failed");
+                    };
+
+                    action_refresh_achievements_list.activate(None);
+                }
+            ));
         }
     ));
 

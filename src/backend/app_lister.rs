@@ -113,10 +113,18 @@ impl<'a> AppLister<'a> {
             "[ORCHESTRATOR] Downloading app list from:  {}",
             &self.app_list_url
         );
+
         let response = reqwest::blocking::get(&self.app_list_url)
-            .unwrap()
+            .map_err(|e| {
+                eprintln!("[ORCHESTRATOR] Failed to download app list: {}", e);
+                SamError::AppListRetrievalFailed
+            })?
             .text()
-            .map_err(|_| SamError::AppListRetrievalFailed)?;
+            .map_err(|e| {
+                eprintln!("[ORCHESTRATOR] Failed to decode text from app list: {}", e);
+                SamError::AppListRetrievalFailed
+            })?;
+
         Ok(response)
     }
 
