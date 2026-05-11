@@ -164,8 +164,10 @@ impl<'a> AppLister<'a> {
                 "[ORCHESTRATOR] App list loaded. Saving in:  {}",
                 &self.app_list_local
             );
-            fs::write(&self.app_list_local, &app_list_str)
-                .map_err(|_| SamError::AppListRetrievalFailed)?;
+            fs::write(&self.app_list_local, &app_list_str).map_err(|e| {
+                eprintln!("[ORCHESTRATOR] Failed to save app list: {}", e);
+                SamError::AppListRetrievalFailed
+            })?;
         } else {
             dev_println!("[ORCHESTRATOR] Loading app list from local location");
             xml_games = self.load_app_list_file()?;

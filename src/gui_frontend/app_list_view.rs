@@ -1267,34 +1267,39 @@ pub fn create_main_ui(
                 if auto_launch_app > 0 {
                     gui_args.auto_open.set(0);
 
-                    // let mut found_iter = None;
-                    for ach in &list_store {
-                        if let Ok(obj) = ach {
-                            let g_app = obj
-                                .downcast::<GSteamAppObject>()
-                                .expect("Not a GSteamAppObject");
-                            if g_app.app_id() == auto_launch_app {
-                                // found_iter = Some(g_app);
-                                switch_from_app_list_to_app(
-                                    &g_app,
-                                    application.clone(),
-                                    &app_type_value,
-                                    &app_developer_value,
-                                    &app_achievement_count_value,
-                                    &app_stats_count_value,
-                                    app_stack.clone(),
-                                    &app_id,
-                                    &app_metacritic_box,
-                                    &app_metacritic_value,
-                                    &app_shimmer_image,
-                                    &app_label,
-                                    &menu_model,
-                                    stack,
-                                );
-                                break;
-                            }
-                        }
-                    }
+                    let target_app = list_store
+                        .snapshot()
+                        .into_iter()
+                        .filter_map(|obj| obj.downcast::<GSteamAppObject>().ok())
+                        .find(|g_app| g_app.app_id() == auto_launch_app);
+
+                    let app_to_open = target_app.unwrap_or_else(|| {
+                        GSteamAppObject::new(AppModel {
+                            app_id: auto_launch_app,
+                            app_name: format!("App {auto_launch_app}"),
+                            app_type: AppModelType::App,
+                            developer: "Unknown".to_string(),
+                            image_url: None,
+                            metacritic_score: None,
+                        })
+                    });
+
+                    switch_from_app_list_to_app(
+                        &app_to_open,
+                        application,
+                        &app_type_value,
+                        &app_developer_value,
+                        &app_achievement_count_value,
+                        &app_stats_count_value,
+                        app_stack,
+                        &app_id,
+                        &app_metacritic_box,
+                        &app_metacritic_value,
+                        &app_shimmer_image,
+                        &app_label,
+                        &menu_model,
+                        stack,
+                    );
                 }
             }
         }
