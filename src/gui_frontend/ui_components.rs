@@ -17,10 +17,11 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
 use gtk::gdk::Paintable;
 use gtk::gdk_pixbuf::Pixbuf;
+use gtk::glib::object::Cast;
 use gtk::prelude::{BoxExt, ToVariant};
 use gtk::{
-    AboutDialog, ApplicationWindow, Image, Label, License, MenuButton, Popover, PopoverMenu,
-    PositionType, Spinner, gdk_pixbuf,
+    AboutDialog, ApplicationWindow, Label, License, MenuButton, Popover, PopoverMenu, PositionType,
+    Spinner, gdk_pixbuf,
 };
 use std::io::Cursor;
 
@@ -48,9 +49,7 @@ pub fn load_logo() -> Paintable {
     let image_bytes = include_bytes!("../../assets/icon_256.png");
 
     if let Ok(logo_pixbuf) = Pixbuf::from_read(Cursor::new(image_bytes)) {
-        Image::from_pixbuf(Some(&logo_pixbuf))
-            .paintable()
-            .expect("Failed to create logo image")
+        gtk::gdk::Texture::for_pixbuf(&logo_pixbuf).upcast::<Paintable>()
     } else {
         eprintln!("[CLIENT] Failed to load logo. Using a gray square.");
 
@@ -58,9 +57,7 @@ pub fn load_logo() -> Paintable {
             .expect("Failed to create minimal pixbuf fallback");
         pixbuf.fill(0x808080FF);
 
-        Image::from_pixbuf(Some(&pixbuf))
-            .paintable()
-            .expect("Failed to create logo image")
+        gtk::gdk::Texture::for_pixbuf(&pixbuf).upcast::<Paintable>()
     }
 }
 
@@ -132,10 +129,25 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
     bulk_process_section.append(Some("Reset all in selection"), Some("app.lock_all_apps"));
 
     menu_model.append(Some("Refresh app list"), Some("app.refresh_app_list"));
-    let check_item = gtk::gio::MenuItem::new(Some("Filter junk"), Some("app.filter_junk_option"));
+    let check_item = gtk::gio::MenuItem::new(Some("Filter junk"), Some("app.filter-junk"));
     menu_model.append_item(&check_item);
     menu_model.append(Some("About"), Some("app.about"));
     menu_model.append(Some("Quit"), Some("app.quit"));
+
+    let sort_section = gtk::gio::Menu::new();
+    let sort_options = [
+        ("App ID", "app_id"),
+        ("Alphabetical", "alphabetical"),
+        ("Last time played", "last_played"),
+        ("Time played", "playtime"),
+    ];
+    for (label, value) in sort_options {
+        let item = gtk::gio::MenuItem::new(Some(label), Some("app.app-sort"));
+        item.set_action_and_target_value(Some("app.app-sort"), Some(&value.to_variant()));
+        sort_section.append_item(&item);
+    }
+    menu_model.append_section(Some("Sort by"), &sort_section);
+
     menu_model.append_section(Some("Bulk process"), &bulk_process_section);
 
     let theme_section = gtk::gio::Menu::new();
@@ -147,8 +159,8 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
     ];
 
     for (label, value) in theme_options {
-        let item = gtk::gio::MenuItem::new(Some(label), Some("app.change_theme"));
-        item.set_action_and_target_value(Some("app.change_theme"), Some(&value.to_variant()));
+        let item = gtk::gio::MenuItem::new(Some(label), Some("app.app-theme"));
+        item.set_action_and_target_value(Some("app.app-theme"), Some(&value.to_variant()));
         theme_section.append_item(&item);
     }
 

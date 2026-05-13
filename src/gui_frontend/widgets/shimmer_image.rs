@@ -14,7 +14,6 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use gtk::glib;
-use gtk::glib::subclass::types::ObjectSubclassIsExt;
 
 glib::wrapper! {
     pub struct ShimmerImage(ObjectSubclass<imp::ShimmerImage>)
@@ -36,11 +35,7 @@ impl ShimmerImage {
     }
 
     pub fn reset(&self) {
-        self.imp().url.borrow_mut().take();
-        self.imp().texture.borrow_mut().take();
-        self.imp().receiver.borrow_mut().take();
-        self.imp().loaded.borrow_mut().take();
-        self.imp().failed.set(true);
+        self.set_url("");
     }
 }
 
@@ -54,13 +49,77 @@ mod imp {
     use gtk::prelude::*;
     use gtk::subclass::prelude::*;
     use std::cell::{Cell, RefCell};
+    use std::collections::HashMap;
     use std::hash::DefaultHasher;
     use std::hash::{Hash, Hasher};
-    use std::sync::mpsc::{Receiver, TryRecvError};
+    use std::sync::OnceLock;
+    use std::time::Duration;
 
     const GRADIENT_WIDTH: f32 = 0.8;
     const BASE_COLOR: RGBA = RGBA::new(0.7, 0.7, 0.7, 1.0);
     const HIGHLIGHT_COLOR: RGBA = RGBA::new(0.8, 0.8, 0.8, 1.0);
+
+    const TEXTURE_CACHE_CAPACITY: usize = 256;
+
+    fn http_client() -> &'static reqwest::blocking::Client {
+        static CLIENT: OnceLock<reqwest::blocking::Client> = OnceLock::new();
+        CLIENT.get_or_init(|| {
+            reqwest::blocking::Client::builder()
+                .pool_idle_timeout(Some(Duration::from_secs(30)))
+                .build()
+                .unwrap_or_else(|_| reqwest::blocking::Client::new())
+        })
+    }
+
+    struct TextureCache {
+        entries: HashMap<String, (Texture, u64)>,
+        counter: u64,
+        capacity: usize,
+    }
+
+    impl TextureCache {
+        fn new(capacity: usize) -> Self {
+            Self {
+                entries: HashMap::new(),
+                counter: 0,
+                capacity,
+            }
+        }
+
+        fn get(&mut self, url: &str) -> Option<Texture> {
+            let entry = self.entries.get_mut(url)?;
+            self.counter += 1;
+            entry.1 = self.counter;
+            Some(entry.0.clone())
+        }
+
+        fn insert(&mut self, url: String, texture: Texture) {
+            self.counter += 1;
+            if let Some(entry) = self.entries.get_mut(&url) {
+                *entry = (texture, self.counter);
+                return;
+            }
+            if self.entries.len() >= self.capacity
+                && let Some(evict_key) = self
+                    .entries
+                    .iter()
+                    .min_by_key(|(_, (_, c))| *c)
+                    .map(|(k, _)| k.clone())
+            {
+                self.entries.remove(&evict_key);
+            }
+            self.entries.insert(url, (texture, self.counter));
+        }
+    }
+
+    thread_local! {
+        static TEXTURE_CACHE: RefCell<TextureCache> =
+            RefCell::new(TextureCache::new(TEXTURE_CACHE_CAPACITY));
+        static IN_FLIGHT: RefCell<HashMap<String, Vec<glib::WeakRef<super::ShimmerImage>>>> =
+            RefCell::new(HashMap::new());
+        // Limit concurrency to 8 threads to keep the system smooth
+        static POOL: ThreadPool = ThreadPool::shared(Some(8)).expect("Failed to create thread pool");
+    }
 
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::ShimmerImage)]
@@ -69,10 +128,7 @@ mod imp {
         pub current: Cell<i64>,
         #[property(get, set)]
         pub url: RefCell<Option<String>>,
-        #[property(get, set)]
-        pub loaded: RefCell<Option<String>>,
         pub failed: Cell<bool>,
-        pub receiver: RefCell<Option<Receiver<Texture>>>,
         pub texture: RefCell<Option<Texture>>,
         pub texture_size_ratio: Cell<f32>,
         #[property(get, set)]
@@ -91,22 +147,39 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
-            obj.reset();
 
             self.texture_size_ratio.set(1.0);
+            self.failed.set(true);
+
+            obj.connect_url_notify(|this| {
+                let imp = this.imp();
+                imp.texture.replace(None);
+                imp.texture_size_ratio.set(1.0);
+                imp.start.set(0);
+
+                let url_opt = imp.url.borrow().clone();
+                match url_opt.as_deref() {
+                    Some(url) if !url.is_empty() => {
+                        imp.failed.set(false);
+                        imp.load(url);
+                    }
+                    _ => {
+                        imp.failed.set(true);
+                    }
+                }
+
+                this.queue_resize();
+            });
+
             obj.add_tick_callback(|widget, clock| {
                 if let Some(this) = widget.downcast_ref::<super::ShimmerImage>() {
-                    //Enabling this will cause some of the images to retain their old texture
-                    //even if the url property changes, but only if the widget was rendered before
-                    //and then jumps into view while it's contents are still cached.
-                    //if this.imp().texture.borrow().is_none() {
-                    this.queue_draw();
-                    //}
-
                     let imp = this.imp();
-                    imp.current.set(clock.frame_time());
-                    if imp.start.get() == 0 {
-                        imp.start.set(clock.frame_time());
+                    if imp.texture.borrow().is_none() && !imp.failed.get() {
+                        imp.current.set(clock.frame_time());
+                        if imp.start.get() == 0 {
+                            imp.start.set(clock.frame_time());
+                        }
+                        this.queue_draw();
                     }
                 }
                 glib::ControlFlow::Continue
@@ -126,22 +199,18 @@ mod imp {
             let request_height = self.obj().height_request();
 
             if orientation == gtk::Orientation::Horizontal {
-                // How wide should we be?
                 let width = if for_size < 0 {
                     request_width
                 } else {
-                    // Height is known, calculate Width: W = H * ratio
                     (for_size as f32 * ratio) as i32
                 };
 
-                // Ensure we never report a natural size smaller than our minimum request
                 let min_w = request_width.max(16);
                 let nat_w = width.max(min_w);
 
                 (min_w, nat_w, -1, -1)
             } else {
-                // How tall should we be?
-                if self.loaded.borrow().is_none() {
+                if self.texture.borrow().is_none() {
                     let min_h = request_height.max(16);
                     let placeholder_h = self.placeholder_height.get();
                     let nat_h = if placeholder_h > 0 {
@@ -177,39 +246,6 @@ mod imp {
             let rounded = RoundedRect::new(rect, size, size, size, size);
             snapshot.push_rounded_clip(&rounded);
 
-            if let Some(url) = self.url.borrow_mut().take()
-                && Some(url.as_str()) != self.loaded.borrow().as_deref()
-            {
-                self.texture.borrow_mut().take();
-                self.loaded.borrow_mut().take();
-                self.receiver.borrow_mut().take();
-                self.load(url.as_str());
-                self.loaded.borrow_mut().replace(url);
-            }
-
-            let receiver = self.receiver.borrow_mut().take();
-            if let Some(receiver) = receiver {
-                match receiver.try_recv() {
-                    Ok(texture) => {
-                        let width = texture.width();
-                        let height = texture.height();
-                        let ratio = width as f32 / height as f32;
-                        self.texture_size_ratio.set(ratio);
-
-                        self.texture.borrow_mut().replace(texture);
-
-                        let obj = self.obj();
-                        obj.queue_resize();
-                    }
-                    Err(TryRecvError::Empty) => {
-                        self.receiver.borrow_mut().replace(receiver);
-                    }
-                    Err(TryRecvError::Disconnected) => {
-                        self.failed.set(true);
-                    }
-                }
-            }
-
             if self.failed.get() {
                 // TODO: Insert an icon in the middle: insert-image-symbolic
                 snapshot.append_color(&BASE_COLOR, &rect);
@@ -223,7 +259,7 @@ mod imp {
                 let start_pos = -GRADIENT_WIDTH + (1.0 + 2.0 * GRADIENT_WIDTH) * progress;
                 let end_pos = start_pos + GRADIENT_WIDTH;
 
-                let color_stops = vec![
+                let color_stops = [
                     ColorStop::new(0.0, BASE_COLOR),
                     ColorStop::new(0.3, HIGHLIGHT_COLOR),
                     ColorStop::new(0.5, HIGHLIGHT_COLOR),
@@ -235,7 +271,7 @@ mod imp {
                     &rect,
                     &Point::new(width * start_pos, 0.0),
                     &Point::new(width * end_pos, 0.0),
-                    color_stops.as_slice(),
+                    &color_stops,
                 );
                 snapshot.append_node(&gradient);
             }
@@ -253,23 +289,42 @@ mod imp {
     }
 
     impl ShimmerImage {
-        // TODO: Once we use GTK4.10+, maybe refactor to use MainContext::channel
+        fn apply_texture(&self, texture: Texture) {
+            let ratio = texture.width() as f32 / texture.height() as f32;
+            self.texture_size_ratio.set(ratio);
+            self.texture.replace(Some(texture));
+            self.failed.set(false);
+            self.obj().queue_resize();
+        }
+
         // TODO: clear the Pool when the application has requested to exit
         fn load(&self, url: &str) {
-            self.failed.set(false);
-            let url_string = url.to_string();
-            let (sender, receiver) = std::sync::mpsc::channel::<Result<Vec<u8>, ()>>();
-            let obj_weak = self.obj().downgrade();
-
-            // Limit concurrency to 8 threads to keep the system smooth
-            // This is only meant to be called on the main thread
-            thread_local! {
-                static POOL: ThreadPool = ThreadPool::shared(Some(8)).expect("Failed to create thread pool");
+            if let Some(texture) = TEXTURE_CACHE.with(|c| c.borrow_mut().get(url)) {
+                self.apply_texture(texture);
+                return;
             }
 
-            POOL.with(|pool| {
-                let res = pool.push(move || {
-                    let result = if url_string.starts_with("file://") {
+            let obj_weak = self.obj().downgrade();
+            let url_string = url.to_string();
+            let already_in_flight = IN_FLIGHT.with(|f| {
+                let mut map = f.borrow_mut();
+                if let Some(waiters) = map.get_mut(&url_string) {
+                    waiters.push(obj_weak);
+                    true
+                } else {
+                    map.insert(url_string.clone(), vec![obj_weak]);
+                    false
+                }
+            });
+
+            if already_in_flight {
+                return;
+            }
+
+            let url_for_bail = url_string.clone();
+            let push_res = POOL.with(|pool| {
+                pool.push(move || {
+                    let result: Result<Vec<u8>, ()> = if url_string.starts_with("file://") {
                         let path = url_string.replace("file://", "");
                         std::fs::read(path).map_err(|_| ())
                     } else {
@@ -281,11 +336,13 @@ mod imp {
                         cache_path.push(hash_name);
 
                         if cache_path.exists() {
-                            Ok(std::fs::read(&cache_path).unwrap())
+                            std::fs::read(&cache_path).map_err(|_| ())
                         } else {
-                            // Download from HTTPS
-                            let client = reqwest::blocking::Client::new();
-                            match client.get(&url_string).send().and_then(|res| res.bytes()) {
+                            match http_client()
+                                .get(&url_string)
+                                .send()
+                                .and_then(|res| res.bytes())
+                            {
                                 Ok(bytes) => {
                                     let data = bytes.to_vec();
                                     let _ = std::fs::write(&cache_path, &data);
@@ -296,45 +353,45 @@ mod imp {
                         }
                     };
 
-                    let _ = sender.send(result);
+                    glib::MainContext::default().invoke(move || {
+                        let waiters = IN_FLIGHT
+                            .with(|f| f.borrow_mut().remove(&url_string))
+                            .unwrap_or_default();
 
-                    // Wake up the Main Loop
-                    glib::idle_add(|| glib::ControlFlow::Break);
-                });
+                        let texture_result: Result<Texture, ()> = result.and_then(|data| {
+                            let gbytes = glib::Bytes::from(&data);
+                            Texture::from_bytes(&gbytes).map_err(|_| ())
+                        });
 
-                if res.is_err() {
-                    self.failed.set(true);
-                }
-            });
+                        if let Ok(ref texture) = texture_result {
+                            TEXTURE_CACHE.with(|c| {
+                                c.borrow_mut()
+                                    .insert(url_string.clone(), texture.clone())
+                            });
+                        }
 
-            // 3. UI Thread: Watch for the result
-            glib::idle_add_local(move || {
-                if let Ok(res) = receiver.try_recv() {
-                    if let Some(obj) = obj_weak.upgrade() {
-                        let imp = obj.imp();
-                        match res {
-                            Ok(data) => {
-                                let gbytes = glib::Bytes::from(&data);
-                                if let Ok(texture) = Texture::from_bytes(&gbytes) {
-                                    let ratio = texture.width() as f32 / texture.height() as f32;
-                                    imp.texture_size_ratio.set(ratio);
-                                    imp.texture.borrow_mut().replace(texture);
-                                    obj.queue_resize();
-                                } else {
-                                    imp.failed.set(true);
+                        for weak in waiters {
+                            let Some(obj) = weak.upgrade() else { continue };
+                            // Widget may have been recycled to a different URL mid-flight
+                            if obj.imp().url.borrow().as_deref() != Some(url_string.as_str()) {
+                                continue;
+                            }
+                            match texture_result {
+                                Ok(ref texture) => obj.imp().apply_texture(texture.clone()),
+                                Err(_) => {
+                                    obj.imp().failed.set(true);
                                     obj.queue_draw();
                                 }
                             }
-                            Err(_) => {
-                                imp.failed.set(true);
-                                obj.queue_draw();
-                            }
                         }
-                    }
-                    return glib::ControlFlow::Break;
-                }
-                glib::ControlFlow::Continue
+                    });
+                })
             });
+
+            if push_res.is_err() {
+                IN_FLIGHT.with(|f| f.borrow_mut().remove(&url_for_bail));
+                self.failed.set(true);
+            }
         }
     }
 }

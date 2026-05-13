@@ -15,12 +15,14 @@
 
 use crate::backend::app_lister::AppLister;
 use crate::backend::connected_steam::ConnectedSteam;
+use crate::backend::local_config::parse_localconfig;
 #[cfg(debug_assertions)]
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_types::{SamError, SamSerializable, SteamCommand, SteamResponse};
+use crate::utils::steam_locator::SteamLocator;
 use interprocess::unnamed_pipe::{Recver, Sender};
 use std::collections::HashMap;
 use std::io::Read;
@@ -119,14 +121,58 @@ fn process_command(
     });
 
     match command {
-        SteamCommand::GetSubscribedAppList => {
-            dev_println!("[ORCHESTRATOR] Received GetSubscribedAppList");
+        SteamCommand::GetSubscribedAppList(include_playtime) => {
+            dev_println!("[ORCHESTRATOR] Received GetSubscribedAppList({include_playtime})");
+
+            let vdf_path = if include_playtime {
+                match connected_steam.user.get_steam_id() {
+                    Ok(steam_id) => {
+                        let account_id = (steam_id.m_steamid & 0xFFFF_FFFF) as u32;
+                        let path = SteamLocator::get_local_config_path(account_id);
+                        if path.is_none() {
+                            dev_println!(
+                                "[ORCHESTRATOR] localconfig.vdf not found for account {account_id}"
+                            );
+                        }
+                        path
+                    }
+                    Err(e) => {
+                        dev_println!("[ORCHESTRATOR] Failed to get Steam ID: {e:?}");
+                        None
+                    }
+                }
+            } else {
+                None
+            };
+
+            let vdf_handle =
+                vdf_path.map(|path| std::thread::spawn(move || parse_localconfig(&path)));
+
             let apps_001 = &connected_steam.apps_001;
             let apps = &connected_steam.apps;
             let app_lister = AppLister::new(apps_001, apps);
+            let result = app_lister.get_owned_apps();
 
-            match app_lister.get_owned_apps() {
-                Ok(apps) => {
+            match result {
+                Ok(mut apps) => {
+                    if let Some(handle) = vdf_handle {
+                        match handle.join() {
+                            Ok(Ok(map)) => {
+                                for app in &mut apps {
+                                    if let Some(entry) = map.get(&app.app_id) {
+                                        app.playtime_minutes = entry.playtime_minutes;
+                                        app.last_played = entry.last_played;
+                                    }
+                                }
+                            }
+                            Ok(Err(_)) => {
+                                // parse_localconfig already logged via dev_println!
+                            }
+                            Err(_) => {
+                                eprintln!("[ORCHESTRATOR] VDF parse thread panicked");
+                            }
+                        }
+                    }
                     let response = SteamResponse::Success(apps);
                     let response = response.sam_serialize();
                     tx.write_all(&response)

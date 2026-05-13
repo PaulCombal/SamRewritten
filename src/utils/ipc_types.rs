@@ -53,7 +53,7 @@ impl std::error::Error for SamError {}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum SteamCommand {
-    GetSubscribedAppList,
+    GetSubscribedAppList(bool),
     LaunchApp(u32),
     StopApp(u32),
     StopApps,

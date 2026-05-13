@@ -27,7 +27,6 @@ pub fn setup_app_actions(
     refresh_app_list_action: &SimpleAction,
     refresh_achievements_list_action: &SimpleAction,
     reset_all_stats_and_achievements_action: &SimpleAction,
-    filter_junk_action: &SimpleAction,
     select_all_apps_action: &SimpleAction,
     unselect_all_apps_action: &SimpleAction,
     unlock_all_apps_action: &SimpleAction,
@@ -38,7 +37,7 @@ pub fn setup_app_actions(
         #[weak]
         about_dialog,
         move |_, _| {
-            about_dialog.show();
+            about_dialog.set_visible(true);
         }
     ));
 
@@ -51,7 +50,6 @@ pub fn setup_app_actions(
         }
     ));
 
-    application.add_action(filter_junk_action);
     application.add_action(select_all_apps_action);
     application.add_action(unselect_all_apps_action);
     application.add_action(unlock_all_apps_action);

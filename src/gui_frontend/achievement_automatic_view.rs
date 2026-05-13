@@ -21,7 +21,7 @@ use gtk::glib::clone;
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;
 use gtk::{
-    Align, Box, Button, ClosureExpression, Frame, Label, ListBox, ListBoxRow, ListView,
+    Align, Box, Button, ClosureExpression, Frame, Label, ListBox, ListBoxRow, ListItem, ListView,
     NoSelection, Orientation, ScrolledWindow, SelectionMode, SignalListItemFactory, Stack,
     StackTransitionType, Widget, glib,
 };
@@ -82,6 +82,9 @@ pub fn create_achievements_automatic_view(
         .build();
 
     achievements_list_factory.connect_setup(move |_, list_item| {
+        let list_item = list_item
+            .downcast_ref::<ListItem>()
+            .expect("Needs to be a ListItem");
         let normal_icon = ShimmerImage::new();
         normal_icon.set_size_request(32, 32);
         let locked_icon = ShimmerImage::new();

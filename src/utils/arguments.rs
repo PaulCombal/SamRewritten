@@ -74,33 +74,27 @@ pub fn parse_cli_arguments() -> CliArguments {
                     continue;
                 }
 
-                #[cfg(target_os = "linux")]
                 if key == "--tx" {
-                    let raw_handle = value.parse::<i32>().expect("Invalid value for --tx");
-                    args.tx = Some(Sender::from_raw_fd(raw_handle));
+                    args.tx = Some(cfg_select! {
+                        target_os = "linux" => Sender::from_raw_fd(
+                            value.parse::<i32>().expect("Invalid value for --tx"),
+                        ),
+                        target_os = "windows" => Sender::from_raw_handle(
+                            value.parse::<usize>().expect("Invalid value for --tx") as RawHandle,
+                        ),
+                    });
                     continue;
                 }
 
-                #[cfg(target_os = "windows")]
-                if key == "--tx" {
-                    let raw_handle =
-                        value.parse::<usize>().expect("Invalid value for --tx") as RawHandle;
-                    args.tx = Some(Sender::from_raw_handle(raw_handle));
-                    continue;
-                }
-
-                #[cfg(target_os = "linux")]
                 if key == "--rx" {
-                    let raw_handle = value.parse::<i32>().expect("Invalid value for --rx");
-                    args.rx = Some(Recver::from_raw_fd(raw_handle));
-                    continue;
-                }
-
-                #[cfg(target_os = "windows")]
-                if key == "--rx" {
-                    let raw_handle =
-                        value.parse::<usize>().expect("Invalid value for --rx") as RawHandle;
-                    args.rx = Some(Recver::from_raw_handle(raw_handle));
+                    args.rx = Some(cfg_select! {
+                        target_os = "linux" => Recver::from_raw_fd(
+                            value.parse::<i32>().expect("Invalid value for --rx"),
+                        ),
+                        target_os = "windows" => Recver::from_raw_handle(
+                            value.parse::<usize>().expect("Invalid value for --rx") as RawHandle,
+                        ),
+                    });
                     continue;
                 }
             },

@@ -12,5 +12,11 @@
             <summary>Application Theme</summary>
             <description>The preferred color scheme for the application. Valid values are 'system', 'light', and 'dark'.</description>
         </key>
+
+        <key name="app-sort" type="s">
+            <default>'app_id'</default>
+            <summary>App List Sort Order</summary>
+            <description>How the app list is sorted. Valid values are 'app_id', 'alphabetical', 'last_played', and 'playtime'.</description>
+        </key>
     </schema>
 </schemalist>

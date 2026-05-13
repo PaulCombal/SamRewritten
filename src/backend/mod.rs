@@ -18,6 +18,7 @@ pub mod app_lister;
 pub mod app_manager;
 pub mod connected_steam;
 pub mod key_value;
+pub mod local_config;
 pub mod orchestrator;
 pub mod stat_definitions;
 mod tests;

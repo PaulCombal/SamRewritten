@@ -161,7 +161,7 @@ impl AppManager {
     pub fn load_definitions(&mut self) -> Result<(), SamError> {
         self.request_current_stats()?;
         let steam_locator_lock = SteamLocator::global();
-        let mut steam_locator = steam_locator_lock.write().unwrap();
+        let steam_locator = steam_locator_lock.read().unwrap();
 
         let bin_file = match steam_locator.get_user_game_stats_schema(&self.app_id) {
             Ok(bin_file) => bin_file,

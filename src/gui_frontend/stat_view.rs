@@ -60,6 +60,9 @@ pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
         .build();
 
     stats_list_factory.connect_setup(move |_, list_item| {
+        let list_item = list_item
+            .downcast_ref::<ListItem>()
+            .expect("Needs to be a ListItem");
         let adjustment = Adjustment::builder()
             .lower(i32::MIN as f64)
             .upper(i32::MAX as f64)

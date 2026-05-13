@@ -30,7 +30,7 @@ static STEAM_CLIENT_LIB: OnceLock<Library> = OnceLock::new(); // Make the lifeti
 pub fn load_steamclient_library(silent: bool) -> Result<Library, Box<dyn std::error::Error>> {
     unsafe {
         let steam_locator_lock = SteamLocator::global();
-        let mut steam_locator = steam_locator_lock.write()?;
+        let steam_locator = steam_locator_lock.read().unwrap();
         let steamclient_lib_path = steam_locator
             .get_lib_path(silent)
             .ok_or(SamError::UnknownError)?;
@@ -58,7 +58,7 @@ pub fn load_steamclient_library(silent: bool) -> Result<Library, Box<dyn std::er
 
     unsafe {
         let steam_locator_lock = SteamLocator::global();
-        let mut steam_locator = steam_locator_lock.write()?;
+        let steam_locator = steam_locator_lock.read().unwrap();
         let steamclient_lib_path = steam_locator
             .get_lib_path(silent)
             .ok_or(SamError::UnknownError)?;

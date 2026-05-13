@@ -22,8 +22,7 @@ use crate::gui_frontend::request::{Request, SetAchievement, StoreStatsAndAchieve
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use crate::utils::format::format_seconds_to_hh_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
-use gtk::glib::translate::FromGlib;
-use gtk::glib::{MainContext, SignalHandlerId, clone};
+use gtk::glib::{MainContext, clone};
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;
 use gtk::{
@@ -33,7 +32,6 @@ use gtk::{
 };
 use std::cell::Cell;
 use std::cmp::Ordering;
-use std::ffi::c_ulong;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -304,7 +302,27 @@ pub fn create_achievements_manual_view(
         .vexpand(true)
         .build();
 
-    achievements_list_factory.connect_setup(move |_, list_item| {
+    achievements_list_factory.connect_setup(clone!(
+        #[strong]
+        app_unlocked_achievements_count,
+        #[strong]
+        cancel_timed_unlock,
+        #[weak]
+        app_id,
+        #[weak]
+        app_achievement_count_value,
+        #[weak]
+        raw_model,
+        #[weak]
+        header_achievements_adjustment,
+        #[weak]
+        header_achievements_spinbox,
+        #[weak]
+        header_achievements_start,
+        move |_, list_item| {
+        let list_item = list_item
+            .downcast_ref::<ListItem>()
+            .expect("Needs to be a ListItem");
         let normal_icon = ShimmerImage::new();
         normal_icon.set_size_request(32, 32);
         let locked_icon = ShimmerImage::new();
@@ -452,176 +470,128 @@ pub fn create_achievements_manual_view(
         visible_child_expr.bind(&icon_stack, "visible-child-name", Widget::NONE);
         permission_sensitive_expr.bind(&switch, "sensitive", Widget::NONE);
         permission_protected_expr.bind(&protected_icon, "visible", Widget::NONE);
-    });
 
-    achievements_list_factory.connect_bind(clone!(
-        #[strong]
-        app_unlocked_achievements_count,
-        #[strong]
-        cancel_timed_unlock,
-        #[weak]
-        app_id,
-        #[weak]
-        app_achievement_count_value,
-        #[weak]
-        raw_model,
-        #[weak]
-        header_achievements_adjustment,
-        #[weak]
-        header_achievements_spinbox,
-        #[weak]
-        header_achievements_start,
-        move |_, list_item| unsafe {
-            let list_item = list_item
-                .downcast_ref::<ListItem>()
-                .expect("Needs to be a ListItem");
-            let achievement_object = list_item
-                .item()
-                .and_then(|item| item.downcast::<GAchievementObject>().ok())
-                .expect("Item should be a GAchievementObject");
+        // Install the user-toggle handler once per allocated widget. It reads
+        // the *current* GAchievementObject from the list_item at click time, so
+        // no per-bind handler reinstallation is needed. Binding-driven state
+        // changes (model → switch) are filtered out by the equality check below.
+        switch.connect_state_notify(clone!(
+            #[weak]
+            list_item,
+            #[strong]
+            app_unlocked_achievements_count,
+            #[strong]
+            cancel_timed_unlock,
+            #[weak]
+            app_id,
+            #[weak]
+            app_achievement_count_value,
+            #[weak]
+            raw_model,
+            #[weak]
+            header_achievements_adjustment,
+            #[weak]
+            header_achievements_spinbox,
+            #[weak]
+            header_achievements_start,
+            move |switch| {
+                let Some(achievement_object) =
+                    list_item.item().and_downcast::<GAchievementObject>()
+                else {
+                    return;
+                };
 
-            let switch = list_item
-                .child()
-                .and_then(|child| child.downcast::<Overlay>().ok())
-                .and_then(|overlay| overlay.last_child())
-                .and_then(|main_box| main_box.last_child())
-                .and_then(|switch_box| switch_box.downcast::<Box>().ok())
-                .and_then(|switch_box| switch_box.last_child())
-                .and_then(|switch| switch.downcast::<Switch>().ok())
-                .expect("achievements_list_factory::connect_bind: Could not find Switch widget");
-
-            let app_id = app_id.get().unwrap_or_default();
-            let achievement_id = achievement_object.id().clone();
-
-            let handler_id = switch.connect_state_notify(clone!(
-                #[strong]
-                app_unlocked_achievements_count,
-                #[strong]
-                cancel_timed_unlock,
-                #[weak]
-                app_achievement_count_value,
-                #[weak]
-                raw_model,
-                #[weak]
-                header_achievements_adjustment,
-                #[weak]
-                header_achievements_spinbox,
-                #[weak]
-                header_achievements_start,
-                move |switch| {
-                    if !cancel_timed_unlock.load(std::sync::atomic::Ordering::Relaxed) {
-                        dev_println!("[CLIENT] Not unlocking achievement after switch callback (automatic unlocking in progress): {}", achievement_object.name());
-                        return;
-                    }
-                    if !switch.is_sensitive() {
-                        dev_println!("[CLIENT] Switch flipped when not sensitive.. WARNING");
-                        return;
-                    }
-                    switch.set_sensitive(false);
-                    let raw_model_len = raw_model.n_items();
-                    let unlocked = switch.is_active();
-
-                    dev_println!("[CLIENT] Setting achievement after switch callback: {} ({})", achievement_object.name(), unlocked);
-
-                    achievement_object.set_is_achieved(unlocked);
-                    let achievement_id = achievement_id.clone();
-                    let handle = spawn_blocking(move || {
-                        SetAchievement {
-                            app_id,
-                            achievement_id,
-                            unlocked,
-                            store: true
-                        }
-                        .request()
-                    });
-                    MainContext::default().spawn_local(clone!(
-                        #[strong]
-                        app_unlocked_achievements_count,
-                        #[weak]
-                        app_achievement_count_value,
-                        #[weak]
-                        switch,
-                        #[weak]
-                        achievement_object,
-                        #[weak]
-                        header_achievements_start,
-                        async move {
-                            let result = handle.await.expect("spawn_blocking task panicked");
-
-                            match result {
-                                Ok(_) => {
-                                    let unlocked_achievements_count_value =
-                                        app_unlocked_achievements_count.get();
-
-                                    let new_unlocked_count = if unlocked {
-                                        unlocked_achievements_count_value + 1
-                                    } else {
-                                        unlocked_achievements_count_value - 1
-                                    };
-
-                                    header_achievements_start.set_sensitive(
-                                        new_unlocked_count != raw_model_len as usize,
-                                    );
-                                    app_unlocked_achievements_count.set(new_unlocked_count);
-
-                                    app_achievement_count_value.set_label(&format!(
-                                        "{new_unlocked_count} / {raw_model_len}"
-                                    ));
-
-                                    let lower = std::cmp::min(
-                                        new_unlocked_count + 1,
-                                        raw_model_len as usize,
-                                    );
-                                    header_achievements_adjustment.set_lower(lower as f64);
-
-                                    let spinbox_value =
-                                        header_achievements_spinbox.value_as_int() as usize;
-                                    let spinbox_value =
-                                        std::cmp::max(spinbox_value, new_unlocked_count + 1);
-                                    let spinbox_value =
-                                        std::cmp::min(spinbox_value, raw_model_len as usize);
-                                    header_achievements_spinbox.set_value(spinbox_value as f64);
-                                }
-                                Err(e) => {
-                                    eprintln!("[CLIENT] Error setting achievement: {e}");
-                                    achievement_object.set_is_achieved(!unlocked);
-                                }
-                            }
-
-                            switch.set_sensitive(true);
-                        }
-                    ));
+                if !cancel_timed_unlock.load(std::sync::atomic::Ordering::Relaxed) {
+                    dev_println!("[CLIENT] Not unlocking achievement after switch callback (automatic unlocking in progress): {}", achievement_object.name());
+                    return;
                 }
-            ));
+                if !switch.is_sensitive() {
+                    dev_println!("[CLIENT] Switch flipped when not sensitive.. WARNING");
+                    return;
+                }
+                // Binding-driven sync (model → switch). The user didn't toggle anything.
+                if switch.is_active() == achievement_object.is_achieved() {
+                    return;
+                }
 
-            switch.set_data("handler", handler_id.as_raw());
-        }
-    ));
+                switch.set_sensitive(false);
+                let raw_model_len = raw_model.n_items();
+                let unlocked = switch.is_active();
 
-    achievements_list_factory.connect_unbind(move |_, list_item| unsafe {
-        let list_item = list_item
-            .downcast_ref::<ListItem>()
-            .expect("Needs to be a ListItem");
+                dev_println!("[CLIENT] Setting achievement after switch callback: {} ({})", achievement_object.name(), unlocked);
 
-        let switch = list_item
-            .child()
-            .and_then(|child| child.downcast::<Overlay>().ok())
-            .and_then(|overlay| overlay.last_child())
-            .and_then(|main_box| main_box.last_child())
-            .and_then(|switch_box| switch_box.downcast::<Box>().ok())
-            .and_then(|switch_box| switch_box.last_child())
-            .and_then(|switch| switch.downcast::<Switch>().ok())
-            .expect("achievements_list_factory::connect_unbind: Could not find Switch widget");
+                achievement_object.set_is_achieved(unlocked);
+                let achievement_id = achievement_object.id().clone();
+                let app_id_val = app_id.get().unwrap_or_default();
+                let handle = spawn_blocking(move || {
+                    SetAchievement {
+                        app_id: app_id_val,
+                        achievement_id,
+                        unlocked,
+                        store: true,
+                    }
+                    .request()
+                });
+                MainContext::default().spawn_local(clone!(
+                    #[strong]
+                    app_unlocked_achievements_count,
+                    #[weak]
+                    app_achievement_count_value,
+                    #[weak]
+                    switch,
+                    #[weak]
+                    achievement_object,
+                    #[weak]
+                    header_achievements_start,
+                    async move {
+                        let result = handle.await.expect("spawn_blocking task panicked");
 
-        // Disconnect handler when item is unbound
-        if let Some(handler_id) = switch.data("handler") {
-            let ulong: c_ulong = *handler_id.as_ptr();
-            let signal_handler = SignalHandlerId::from_glib(ulong);
-            switch.disconnect(signal_handler);
-        } else {
-            eprintln!("[CLIENT] Achievement switch unbind failed");
-        }
-    });
+                        match result {
+                            Ok(_) => {
+                                let unlocked_achievements_count_value =
+                                    app_unlocked_achievements_count.get();
+
+                                let new_unlocked_count = if unlocked {
+                                    unlocked_achievements_count_value + 1
+                                } else {
+                                    unlocked_achievements_count_value - 1
+                                };
+
+                                header_achievements_start.set_sensitive(
+                                    new_unlocked_count != raw_model_len as usize,
+                                );
+                                app_unlocked_achievements_count.set(new_unlocked_count);
+
+                                app_achievement_count_value.set_label(&format!(
+                                    "{new_unlocked_count} / {raw_model_len}"
+                                ));
+
+                                let lower = std::cmp::min(
+                                    new_unlocked_count + 1,
+                                    raw_model_len as usize,
+                                );
+                                header_achievements_adjustment.set_lower(lower as f64);
+
+                                let spinbox_value =
+                                    header_achievements_spinbox.value_as_int() as usize;
+                                let spinbox_value =
+                                    std::cmp::max(spinbox_value, new_unlocked_count + 1);
+                                let spinbox_value =
+                                    std::cmp::min(spinbox_value, raw_model_len as usize);
+                                header_achievements_spinbox.set_value(spinbox_value as f64);
+                            }
+                            Err(e) => {
+                                eprintln!("[CLIENT] Error setting achievement: {e}");
+                                achievement_object.set_is_achieved(!unlocked);
+                            }
+                        }
+
+                        switch.set_sensitive(true);
+                    }
+                ));
+            }
+        ));
+    }));
 
     let vbox = Box::new(Orientation::Vertical, 5);
     vbox.append(&header);

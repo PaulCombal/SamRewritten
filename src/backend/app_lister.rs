@@ -43,6 +43,8 @@ pub struct AppModel {
     pub app_type: AppModelType,
     pub developer: String,
     pub metacritic_score: Option<u8>,
+    pub playtime_minutes: Option<u32>,
+    pub last_played: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -148,7 +150,7 @@ impl<'a> AppLister<'a> {
                 let last_update = metadata
                     .modified()
                     .map_err(|_| SamError::AppListRetrievalFailed)?;
-                let one_week_ago = SystemTime::now() - Duration::from_secs(7 * 24 * 60 * 60); // 7 days
+                let one_week_ago = SystemTime::now() - Duration::from_hours(7 * 24);
                 last_update < one_week_ago
             }
             Err(_) => true,
@@ -251,6 +253,8 @@ impl<'a> AppLister<'a> {
             },
             developer,
             metacritic_score,
+            playtime_minutes: None,
+            last_played: None,
         })
     }
 

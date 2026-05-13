@@ -365,6 +365,8 @@ mod tests {
                 app_type: AppModelType::App,
                 developer: "Valve".to_string(),
                 metacritic_score: Some(90),
+                playtime_minutes: None,
+                last_played: None,
             };
             list_store.append(&GSteamAppObject::new(app_model));
         }

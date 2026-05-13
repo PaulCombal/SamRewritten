@@ -3,17 +3,17 @@ use std::path::PathBuf;
 use std::sync::{OnceLock, RwLock};
 
 pub struct SteamLocator {
-    lib_path: Option<PathBuf>,
-    user_game_stats_schema_prefix: Option<String>,
-    local_app_banner_file_prefix: Option<String>,
+    lib_path: OnceLock<Option<PathBuf>>,
+    user_game_stats_schema_prefix: OnceLock<Option<String>>,
+    local_app_banner_file_prefix: OnceLock<Option<String>>,
 }
 
 impl SteamLocator {
     pub fn new() -> Self {
         Self {
-            lib_path: None,
-            user_game_stats_schema_prefix: None,
-            local_app_banner_file_prefix: None,
+            lib_path: OnceLock::new(),
+            user_game_stats_schema_prefix: OnceLock::new(),
+            local_app_banner_file_prefix: OnceLock::new(),
         }
     }
 
@@ -22,37 +22,51 @@ impl SteamLocator {
         INSTANCE.get_or_init(|| RwLock::new(SteamLocator::new()))
     }
 
-    pub fn get_lib_path(&mut self, silent: bool) -> Option<PathBuf> {
-        if self.lib_path.is_none() {
-            self.lib_path = Self::get_steamclient_lib_path(silent);
-        }
-        self.lib_path.clone()
+    pub fn get_lib_path(&self, silent: bool) -> Option<PathBuf> {
+        self.lib_path
+            .get_or_init(|| Self::get_steamclient_lib_path(silent))
+            .clone()
     }
 
-    pub fn get_user_game_stats_schema(&mut self, app_id: &u32) -> Result<PathBuf, SamError> {
-        if self.user_game_stats_schema_prefix.is_none() {
-            self.user_game_stats_schema_prefix = Self::get_user_game_stats_schema_prefix();
-        }
-
-        if let Some(prefix) = self.user_game_stats_schema_prefix.as_ref() {
-            let path_str = format!("{}{}.bin", prefix, app_id);
-            return Ok(PathBuf::from(path_str));
-        }
-
-        Err(SamError::UnknownError)
+    pub fn get_user_game_stats_schema(&self, app_id: &u32) -> Result<PathBuf, SamError> {
+        let prefix = self
+            .user_game_stats_schema_prefix
+            .get_or_init(Self::get_user_game_stats_schema_prefix)
+            .as_ref()
+            .ok_or(SamError::UnknownError)?;
+        Ok(PathBuf::from(format!("{}{}.bin", prefix, app_id)))
     }
 
-    pub fn get_local_app_banner_file_path(&mut self, app_id: &u32) -> Result<PathBuf, SamError> {
-        if self.local_app_banner_file_prefix.is_none() {
-            self.local_app_banner_file_prefix = Self::get_local_app_banner_file_prefix();
-        }
+    #[cfg(target_os = "linux")]
+    pub fn get_local_config_path(account_id: u32) -> Option<PathBuf> {
+        let relative = format!("userdata/{}/config/localconfig.vdf", account_id);
+        Self::get_local_steam_install_root_folders()
+            .into_iter()
+            .map(|root| root.join(&relative))
+            .find(|p| p.exists())
+    }
 
-        if let Some(prefix) = self.local_app_banner_file_prefix.as_ref() {
-            let path_str = format!("{}{}/header.jpg", prefix, app_id);
-            return Ok(PathBuf::from(path_str));
-        }
+    #[cfg(target_os = "windows")]
+    pub fn get_local_config_path(account_id: u32) -> Option<PathBuf> {
+        use winreg::RegKey;
+        use winreg::enums::HKEY_CURRENT_USER;
 
-        Err(SamError::UnknownError)
+        let subkey = RegKey::predef(HKEY_CURRENT_USER)
+            .open_subkey("SOFTWARE\\Valve\\Steam")
+            .ok()?;
+        let steam_path: String = subkey.get_value("SteamPath").ok()?;
+        let path = PathBuf::from(steam_path)
+            .join("userdata")
+            .join(account_id.to_string())
+            .join("config")
+            .join("localconfig.vdf");
+        path.exists().then_some(path)
+    }
+
+    pub fn get_local_app_banner_file_prefix_cached(&self) -> Option<String> {
+        self.local_app_banner_file_prefix
+            .get_or_init(Self::get_local_app_banner_file_prefix)
+            .clone()
     }
 
     #[cfg(target_os = "linux")]

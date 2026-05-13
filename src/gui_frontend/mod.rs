@@ -21,6 +21,7 @@ mod app_list_view_callbacks;
 mod app_view;
 mod application_actions;
 mod custom_progress_bar_widget;
+mod dialogs;
 mod gobjects;
 mod gsettings;
 mod request;
