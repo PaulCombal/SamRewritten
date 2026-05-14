@@ -16,8 +16,13 @@
 use crate::backend::app_lister::AppLister;
 use crate::backend::app_manager::AppManager;
 use crate::backend::connected_steam::ConnectedSteam;
+use crate::backend::progress_io::{apply_app_export, collect_app_export};
+use crate::utils::export_file::{ExportFile, FORMAT_VERSION, iso8601_utc_now};
+use crate::utils::ipc_types::{AppExport, ImportSummary};
 use clap::{Args, Parser, Subcommand};
+use serde::Serialize;
 use serde_json::json;
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 static INTERRUPTED: AtomicBool = AtomicBool::new(false);
@@ -60,6 +65,19 @@ enum Command {
     },
     Idle {
         app_id: u32,
+    },
+    /// Export achievements and stats for one or more apps to stdout as JSON.
+    Export {
+        #[arg(required = true)]
+        app_ids: Vec<u32>,
+    },
+    /// Import achievements and stats from a JSON file produced by `export`
+    /// (or by the GUI). Protected fields are skipped. Prints a JSON summary.
+    Import {
+        file: PathBuf,
+        /// Only import the app with this ID (skip the rest).
+        #[arg(long)]
+        app_id: Option<u32>,
     },
 }
 
@@ -304,6 +322,124 @@ pub fn main() -> std::process::ExitCode {
 
             let status = json!({"success": true});
             println!("{}", status);
+        }
+
+        Command::Export { app_ids } => {
+            let mut apps: Vec<AppExport> = Vec::new();
+            let mut failed = false;
+            for app_id in app_ids {
+                let mut manager = match AppManager::new_connected(app_id) {
+                    Ok(m) => m,
+                    Err(e) => {
+                        eprintln!("App {app_id}: failed to connect to Steam: {e}");
+                        failed = true;
+                        continue;
+                    }
+                };
+                match collect_app_export(&mut manager, app_id) {
+                    Ok(export) => apps.push(export),
+                    Err(e) => {
+                        eprintln!("App {app_id}: failed to read progress: {e}");
+                        failed = true;
+                    }
+                }
+            }
+
+            let file = ExportFile {
+                format_version: FORMAT_VERSION,
+                exported_at: iso8601_utc_now(),
+                apps,
+            };
+
+            match serde_json::to_string_pretty(&file) {
+                Ok(out) => println!("{}", out),
+                Err(e) => {
+                    eprintln!("Failed to serialize export: {}", e);
+                    return std::process::ExitCode::FAILURE;
+                }
+            }
+
+            if failed {
+                return std::process::ExitCode::FAILURE;
+            }
+        }
+
+        Command::Import { file, app_id } => {
+            let contents = match std::fs::read_to_string(&file) {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("Failed to read {}: {}", file.display(), e);
+                    return std::process::ExitCode::FAILURE;
+                }
+            };
+            let parsed: ExportFile = match serde_json::from_str(&contents) {
+                Ok(p) => p,
+                Err(e) => {
+                    eprintln!("Failed to parse {}: {}", file.display(), e);
+                    return std::process::ExitCode::FAILURE;
+                }
+            };
+            if parsed.format_version != FORMAT_VERSION {
+                eprintln!(
+                    "Unsupported format version: {} (this build expects {})",
+                    parsed.format_version, FORMAT_VERSION
+                );
+                return std::process::ExitCode::FAILURE;
+            }
+
+            #[derive(Serialize)]
+            struct AppResult {
+                app_id: u32,
+                #[serde(flatten)]
+                summary: ImportSummary,
+            }
+
+            let apps: Vec<AppExport> = parsed
+                .apps
+                .into_iter()
+                .filter(|a| app_id.map(|wanted| wanted == a.app_id).unwrap_or(true))
+                .collect();
+
+            if apps.is_empty() {
+                eprintln!("No matching apps to import.");
+                return std::process::ExitCode::FAILURE;
+            }
+
+            let mut results: Vec<AppResult> = Vec::new();
+            let mut any_failure = false;
+            for app in apps {
+                let id = app.app_id;
+                let manager = match AppManager::new_connected(id) {
+                    Ok(m) => m,
+                    Err(e) => {
+                        any_failure = true;
+                        let mut summary = ImportSummary::default();
+                        summary
+                            .errors
+                            .push(format!("Failed to connect to Steam: {e}"));
+                        results.push(AppResult { app_id: id, summary });
+                        continue;
+                    }
+                };
+
+                let summary = apply_app_export(&manager, app);
+                if !summary.errors.is_empty() {
+                    any_failure = true;
+                }
+                results.push(AppResult { app_id: id, summary });
+            }
+
+            match serde_json::to_string_pretty(&results) {
+                Ok(out) => println!("{}", out),
+                Err(e) => {
+                    eprintln!("Failed to serialize import summary: {}", e);
+                    return std::process::ExitCode::FAILURE;
+                }
+            }
+
+            if any_failure {
+                return std::process::ExitCode::FAILURE;
+            }
         }
     }
 

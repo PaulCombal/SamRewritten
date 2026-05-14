@@ -31,6 +31,8 @@ pub fn setup_app_actions(
     unselect_all_apps_action: &SimpleAction,
     unlock_all_apps_action: &SimpleAction,
     lock_all_apps_action: &SimpleAction,
+    export_selected_progress_action: &SimpleAction,
+    import_progress_action: &SimpleAction,
 ) {
     let action_show_about_dialog = SimpleAction::new("about", None);
     action_show_about_dialog.connect_activate(clone!(
@@ -54,6 +56,8 @@ pub fn setup_app_actions(
     application.add_action(unselect_all_apps_action);
     application.add_action(unlock_all_apps_action);
     application.add_action(lock_all_apps_action);
+    application.add_action(export_selected_progress_action);
+    application.add_action(import_progress_action);
     application.add_action(refresh_app_list_action);
     application.add_action(refresh_achievements_list_action);
     application.add_action(reset_all_stats_and_achievements_action);

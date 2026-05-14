@@ -14,6 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 mod bulk_actions;
+mod progress_actions;
 mod refresh_actions;
 mod settings_bindings;
 
@@ -33,6 +34,7 @@ use crate::gui_frontend::widgets::steam_app_card::SteamAppCard;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::arguments::parse_gui_arguments;
 use bulk_actions::create_bulk_actions;
+use progress_actions::create_progress_actions;
 use gtk::gio::{ApplicationCommandLine, ListStore, spawn_blocking};
 use gtk::glib::ExitCode;
 use gtk::glib::{MainContext, clone};
@@ -564,12 +566,18 @@ pub fn create_main_ui(
                         list_selection_model.select_item(position, false);
                         set_app_action_enabled(&application, "unlock_all_apps", true);
                         set_app_action_enabled(&application, "lock_all_apps", true);
+                        set_app_action_enabled(&application, "export_selected_progress", true);
                     } else {
                         list_selection_model.unselect_item(position);
                         let selection = list_selection_model.selection();
                         let has_selection = !selection.is_empty();
                         set_app_action_enabled(&application, "unlock_all_apps", has_selection);
                         set_app_action_enabled(&application, "lock_all_apps", has_selection);
+                        set_app_action_enabled(
+                            &application,
+                            "export_selected_progress",
+                            has_selection,
+                        );
                     }
                 }
             ));
@@ -712,6 +720,16 @@ pub fn create_main_ui(
         &context_menu_button_info_label,
     );
 
+    let (action_export_selected, action_import_progress) = create_progress_actions(
+        application,
+        &grid_view,
+        &list_store,
+        &context_menu_button,
+        &context_menu_button_loading,
+        &context_menu_button_loading_progress_label,
+        &context_menu_button_info_label,
+    );
+
     let action_refresh_app_list = create_refresh_app_list_action(
         application,
         &grid_view,
@@ -832,6 +850,8 @@ pub fn create_main_ui(
         &action_unselect_all_apps,
         &action_unlock_all_selected,
         &action_lock_all_selected,
+        &action_export_selected,
+        &action_import_progress,
     );
 
     let key_controller = gtk::EventControllerKey::new();

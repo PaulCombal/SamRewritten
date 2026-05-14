@@ -17,6 +17,7 @@ pub mod app_paths;
 pub mod arguments;
 pub mod bidir_child;
 pub mod dev_println;
+pub mod export_file;
 pub mod format;
 pub mod ipc_types;
 pub mod steam_locator;

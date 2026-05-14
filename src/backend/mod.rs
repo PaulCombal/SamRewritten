@@ -20,6 +20,7 @@ pub mod connected_steam;
 pub mod key_value;
 pub mod local_config;
 pub mod orchestrator;
+pub mod progress_io;
 pub mod stat_definitions;
 mod tests;
 pub mod types;

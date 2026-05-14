@@ -293,7 +293,7 @@ impl AppManager {
                         }
 
                         if !bits.1.valid || bits.1.children.is_empty() {
-                            dev_println!("[APP MANAGER] Invalid achievements bits.1: {}", bits.1);
+                            dev_println!("[APP MANAGER] Invalid achievements bits.1: {:?}", bits.1);
                             continue;
                         }
 

@@ -51,6 +51,44 @@ impl std::fmt::Display for SamError {
 
 impl std::error::Error for SamError {}
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct AppAchievementExport {
+    pub id: String,
+    pub is_achieved: bool,
+    pub permission: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum AppStatValue {
+    Int(i32),
+    Float(f32),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct AppStatExport {
+    pub id: String,
+    pub value: AppStatValue,
+    pub permission: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct AppExport {
+    pub app_id: u32,
+    #[serde(default)]
+    pub app_name: String,
+    pub achievements: Vec<AppAchievementExport>,
+    pub stats: Vec<AppStatExport>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+pub struct ImportSummary {
+    pub achievements_applied: usize,
+    pub stats_applied: usize,
+    pub skipped_protected: Vec<String>,
+    pub errors: Vec<String>,
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum SteamCommand {
     GetSubscribedAppList(bool),
@@ -68,6 +106,8 @@ pub enum SteamCommand {
     ResetStats(u32, bool),
     UnlockAllAchievements(u32),
     StoreStatsAndAchievements(u32),
+    ExportAppProgress(u32),
+    ImportAppProgress(u32, AppExport),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

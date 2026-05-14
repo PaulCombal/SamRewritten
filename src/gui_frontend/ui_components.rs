@@ -127,6 +127,11 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
     bulk_process_section.append(Some("Deselect all apps"), Some("app.unselect_all_apps"));
     bulk_process_section.append(Some("Unlock all in selection"), Some("app.unlock_all_apps"));
     bulk_process_section.append(Some("Reset all in selection"), Some("app.lock_all_apps"));
+    bulk_process_section.append(
+        Some("Export selected apps progress"),
+        Some("app.export_selected_progress"),
+    );
+    bulk_process_section.append(Some("Import progress..."), Some("app.import_progress"));
 
     menu_model.append(Some("Refresh app list"), Some("app.refresh_app_list"));
     let check_item = gtk::gio::MenuItem::new(Some("Filter junk"), Some("app.filter-junk"));

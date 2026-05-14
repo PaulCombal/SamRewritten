@@ -474,6 +474,120 @@ fn process_command(
             }
         }
 
+        SteamCommand::ExportAppProgress(app_id) => {
+            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
+                match send_app_command(bidir, SteamCommand::ExportAppProgress(app_id)) {
+                    Ok(response) => {
+                        tx.write_all(&response)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        dev_println!("[ORCHESTRATOR] Failed to export progress for app {app_id}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
+            } else {
+                let current_exe = get_executable_path();
+                let mut bidir =
+                    BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
+                        .expect("Could not create app server process");
+
+                std::thread::sleep(std::time::Duration::from_millis(10));
+
+                let response =
+                    send_app_command(&mut bidir, SteamCommand::ExportAppProgress(app_id));
+
+                std::thread::sleep(std::time::Duration::from_millis(10));
+
+                match send_app_command(&mut bidir, SteamCommand::Shutdown) {
+                    Ok(_) => {}
+                    Err(_) => {
+                        dev_println!(
+                            "[ORCHESTRATOR] Error sending shutdown command (export) to app {app_id}"
+                        );
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                        return true;
+                    }
+                };
+
+                bidir
+                    .child
+                    .wait()
+                    .expect("[ORCHESTRATOR] Failed to wait child process");
+
+                match response {
+                    Ok(resp) => {
+                        tx.write_all(&resp)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
+            }
+        }
+
+        SteamCommand::ImportAppProgress(app_id, payload) => {
+            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
+                match send_app_command(bidir, SteamCommand::ImportAppProgress(app_id, payload)) {
+                    Ok(response) => {
+                        tx.write_all(&response)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        dev_println!("[ORCHESTRATOR] Failed to import progress for app {app_id}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
+            } else {
+                let current_exe = get_executable_path();
+                let mut bidir =
+                    BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
+                        .expect("Could not create app server process");
+
+                std::thread::sleep(std::time::Duration::from_millis(10));
+
+                let response = send_app_command(
+                    &mut bidir,
+                    SteamCommand::ImportAppProgress(app_id, payload),
+                );
+
+                std::thread::sleep(std::time::Duration::from_millis(10));
+
+                match send_app_command(&mut bidir, SteamCommand::Shutdown) {
+                    Ok(_) => {}
+                    Err(_) => {
+                        dev_println!(
+                            "[ORCHESTRATOR] Error sending shutdown command (import) to app {app_id}"
+                        );
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                        return true;
+                    }
+                };
+
+                bidir
+                    .child
+                    .wait()
+                    .expect("[ORCHESTRATOR] Failed to wait child process");
+
+                match response {
+                    Ok(resp) => {
+                        tx.write_all(&resp)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                    Err(_) => {
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                    }
+                }
+            }
+        }
+
         SteamCommand::StoreStatsAndAchievements(app_id) => {
             #[cfg(debug_assertions)]
             if app_id == 0 {

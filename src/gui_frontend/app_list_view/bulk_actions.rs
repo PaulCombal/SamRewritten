@@ -42,6 +42,11 @@ pub fn create_bulk_actions(
                 let has_selection = !selection_model.selection().is_empty();
                 set_app_action_enabled(&application, "unlock_all_apps", has_selection);
                 set_app_action_enabled(&application, "lock_all_apps", has_selection);
+                set_app_action_enabled(
+                    &application,
+                    "export_selected_progress",
+                    has_selection,
+                );
             }
         }
     ));
@@ -57,6 +62,7 @@ pub fn create_bulk_actions(
                 selection_model.unselect_all();
                 set_app_action_enabled(&application, "unlock_all_apps", false);
                 set_app_action_enabled(&application, "lock_all_apps", false);
+                set_app_action_enabled(&application, "export_selected_progress", false);
             }
         }
     ));
@@ -106,6 +112,7 @@ pub fn create_bulk_actions(
 
             set_app_action_enabled(&application, "unlock_all_apps", false);
             set_app_action_enabled(&application, "lock_all_apps", false);
+            set_app_action_enabled(&application, "export_selected_progress", false);
             context_menu_button_loading.set_visible(true);
             context_menu_button.set_visible(false);
             grid_view.set_sensitive(false);
@@ -188,6 +195,7 @@ pub fn create_bulk_actions(
 
                     set_app_action_enabled(&application, "unlock_all_apps", true);
                     set_app_action_enabled(&application, "lock_all_apps", true);
+                    set_app_action_enabled(&application, "export_selected_progress", true);
                     context_menu_button_loading.set_visible(false);
                     context_menu_button.set_visible(true);
                     grid_view.set_sensitive(true);
@@ -241,6 +249,7 @@ pub fn create_bulk_actions(
 
             set_app_action_enabled(&application, "unlock_all_apps", false);
             set_app_action_enabled(&application, "lock_all_apps", false);
+            set_app_action_enabled(&application, "export_selected_progress", false);
             context_menu_button_loading.set_visible(true);
             context_menu_button.set_visible(false);
             grid_view.set_sensitive(false);
@@ -298,6 +307,7 @@ pub fn create_bulk_actions(
                     let _ = handle.await;
                     set_app_action_enabled(&application, "unlock_all_apps", true);
                     set_app_action_enabled(&application, "lock_all_apps", true);
+                    set_app_action_enabled(&application, "export_selected_progress", true);
                     context_menu_button_loading.set_visible(false);
                     context_menu_button.set_visible(true);
                     grid_view.set_sensitive(true);

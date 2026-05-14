@@ -14,10 +14,13 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::backend::app_manager::AppManager;
+use crate::backend::progress_io::{apply_app_export, collect_app_export};
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::steam_client::steamworks_types::AppId_t;
-use crate::utils::ipc_types::{SamError, SamSerializable, SteamCommand, SteamResponse};
+use crate::utils::ipc_types::{
+    AppExport, SamError, SamSerializable, SteamCommand, SteamResponse,
+};
 use interprocess::unnamed_pipe::{Recver, Sender};
 use std::io::Write;
 
@@ -251,6 +254,46 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                 };
                 let response = response.sam_serialize();
 
+                parent_tx
+                    .write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+            }
+
+            SteamCommand::ExportAppProgress(app_id_param) => {
+                if app_id_param != app_id {
+                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
+                    let response =
+                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
+                    parent_tx
+                        .write_all(&response)
+                        .expect("[APP SERVER] Failed to send response");
+                    continue;
+                }
+
+                let response = match collect_app_export(app_manager, app_id) {
+                    Ok(export) => SteamResponse::Success(export),
+                    Err(e) => SteamResponse::Error::<AppExport>(e),
+                };
+                let response = response.sam_serialize();
+
+                parent_tx
+                    .write_all(&response)
+                    .expect("[APP SERVER] Failed to send response");
+            }
+
+            SteamCommand::ImportAppProgress(app_id_param, payload) => {
+                if app_id_param != app_id {
+                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
+                    let response =
+                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
+                    parent_tx
+                        .write_all(&response)
+                        .expect("[APP SERVER] Failed to send response");
+                    continue;
+                }
+
+                let summary = apply_app_export(app_manager, payload);
+                let response = SteamResponse::Success(summary).sam_serialize();
                 parent_tx
                     .write_all(&response)
                     .expect("[APP SERVER] Failed to send response");
