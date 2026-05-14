@@ -4,6 +4,9 @@ services:
     build:
       context: ../
       dockerfile: ./package/appimage.Dockerfile
+      args:
+        USER_UID: "1000"
+        USER_GID: "1000"
     volumes:
       - ../:/mnt:z
 #    command: /bin/bash -c "cargo appimage"

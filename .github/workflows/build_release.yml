@@ -8,7 +8,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Rust toolchain
         run: |
@@ -112,20 +112,37 @@ jobs:
           Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-cli.exe"
         shell: pwsh
 
+      - name: Create portable zip
+        run: |
+          $STAGE_ROOT = "_portable"
+          $STAGE = "$STAGE_ROOT/SamRewritten-windows-x86_64"
+          New-Item -ItemType Directory -Path $STAGE_ROOT -Force | Out-Null
+          Copy-Item SamRewritten-windows-x86_64 $STAGE -Recurse -Force
+          Move-Item "$STAGE/bin/*" $STAGE -Force
+          Remove-Item "$STAGE/bin" -Recurse -Force
+          Compress-Archive -Path $STAGE -DestinationPath SamRewritten-windows-x86_64.zip -Force
+        shell: pwsh
+
       - name: Make installer
         run: Invoke-Expression "& ""C:\Program Files (x86)\NSIS\makensis.exe"" package/windows_installer.nsi"
 
+      - name: Stage installer for upload
+        run: Move-Item package/SamRewritten-installer.exe SamRewritten-installer.exe -Force
+        shell: pwsh
+
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-artifact
-          path: package/SamRewritten-installer.exe
+          path: |
+            SamRewritten-installer.exe
+            SamRewritten-windows-x86_64.zip
           retention-days: 1
 
   build_appimage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build Docker builder
         run: docker build -t samrewritten-builder -f package/appimage.Dockerfile .
@@ -152,7 +169,7 @@ jobs:
         run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-cli.AppImage
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-artifact
           path: target/appimage
@@ -163,13 +180,13 @@ jobs:
     needs: [ build_windows, build_appimage ] # This job depends on both build jobs
     steps:
       - name: Download Windows Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-artifact
           path: ./release_artifacts/windows
 
       - name: Download Linux Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-artifact
           path: ./release_artifacts/linux
@@ -182,7 +199,7 @@ jobs:
 
       - name: Create Release
         id: create_release # Assign an ID to this step to access its outputs
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           # The tag name for the release. github.ref_name automatically extracts the tag name (e.g., v1.0.0 from refs/tags/v1.0.0)
           tag_name: ${{ github.ref_name }}
@@ -201,6 +218,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             release_artifacts/windows/SamRewritten-installer.exe
+            release_artifacts/windows/SamRewritten-windows-x86_64.zip
             release_artifacts/linux/samrewritten-gtk.AppImage
             release_artifacts/linux/samrewritten-adw.AppImage
             release_artifacts/linux/samrewritten-cli.AppImage
