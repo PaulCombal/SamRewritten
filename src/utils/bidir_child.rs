@@ -25,7 +25,7 @@ use std::process::{Child, Command};
 
 #[derive(Debug)]
 pub struct BidirChild {
-    pub child: Child,
+    pub process: Child,
     pub tx: Sender,
     pub rx: Recver,
 }
@@ -39,7 +39,7 @@ impl BidirChild {
         let child_to_parent_tx_handle: i32 = child_to_parent_tx.into_raw_fd();
         let parent_to_child_rx_handle: i32 = parent_to_child_rx.into_raw_fd();
 
-        let child = match command
+        let process = match command
             .arg(format!("--tx={child_to_parent_tx_handle}"))
             .arg(format!("--rx={parent_to_child_rx_handle}"))
             .spawn()
@@ -58,7 +58,7 @@ impl BidirChild {
         };
 
         Ok(Self {
-            child,
+            process,
             tx: parent_to_child_tx,
             rx: child_to_parent_rx,
         })
@@ -80,7 +80,7 @@ impl BidirChild {
         let child_to_parent_tx_handle: OwnedHandle = child_to_parent_tx.into();
         let parent_to_child_rx_handle: OwnedHandle = parent_to_child_rx.into();
 
-        let child = match {
+        let process = match {
             command
                 .arg(format!(
                     "--tx={}",
@@ -105,7 +105,7 @@ impl BidirChild {
         };
 
         Ok(Self {
-            child,
+            process,
             tx: parent_to_child_tx,
             rx: child_to_parent_rx,
         })

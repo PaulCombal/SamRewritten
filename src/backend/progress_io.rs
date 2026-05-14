@@ -17,21 +17,21 @@ use crate::backend::app_manager::AppManager;
 use crate::backend::stat_definitions::StatInfo;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
+use crate::utils::ipc_client::IpcClient;
 use crate::utils::ipc_types::{
     AppAchievementExport, AppExport, AppStatExport, AppStatValue, ImportSummary, SamError,
-    SamSerializable, SteamCommand, SteamResponse,
+    SteamCommand,
 };
-use serde::de::DeserializeOwned;
-use std::io::Read;
-use std::io::Write;
+pub use crate::utils::ipc_types::parse_response_bytes;
 use std::process::Command;
 use std::sync::{Arc, Mutex};
 
 pub const MAX_CONCURRENT_APPS: usize = 30;
 
 /// Spawn one short-lived `samrewritten --app=X` child per `(app_id, command)`
-/// item, run them in parallel batches of at most `max_concurrent`, and return
-/// the per-app raw response bytes (or a `SamError` if the worker failed).
+/// item, run them in parallel with up to `max_concurrent` workers continuously
+/// pulling from a shared queue, and return the per-app raw response bytes (or
+/// a `SamError` if the worker failed).
 ///
 /// Callers deserialize the response bytes themselves via `SteamResponse::<T>`.
 /// The helper is intentionally generic — the same machinery serves
@@ -42,22 +42,27 @@ pub fn run_command_on_apps_concurrent(
     progress: Option<Arc<dyn Fn(usize, usize, u32) + Send + Sync>>,
 ) -> Vec<(u32, Result<Vec<u8>, SamError>)> {
     let total = items.len();
-    let cap = max_concurrent.max(1).min(MAX_CONCURRENT_APPS);
+    if total == 0 {
+        return Vec::new();
+    }
+    let cap = max_concurrent.max(1).min(MAX_CONCURRENT_APPS).min(total);
 
+    let queue = Arc::new(Mutex::new(items.into_iter()));
     let results = Arc::new(Mutex::new(
         Vec::<(u32, Result<Vec<u8>, SamError>)>::with_capacity(total),
     ));
     let done = Arc::new(Mutex::new(0usize));
 
-    for chunk in items.chunks(cap) {
-        std::thread::scope(|s| {
-            for (app_id, command) in chunk {
-                let app_id = *app_id;
-                let command = command.clone();
-                let results = Arc::clone(&results);
-                let done = Arc::clone(&done);
-                let progress = progress.clone();
-                s.spawn(move || {
+    std::thread::scope(|s| {
+        for _ in 0..cap {
+            let queue = Arc::clone(&queue);
+            let results = Arc::clone(&results);
+            let done = Arc::clone(&done);
+            let progress = progress.clone();
+            s.spawn(move || {
+                loop {
+                    let next = queue.lock().unwrap().next();
+                    let Some((app_id, command)) = next else { break };
                     let outcome = run_one(app_id, command);
                     let step = {
                         let mut d = done.lock().unwrap();
@@ -68,68 +73,30 @@ pub fn run_command_on_apps_concurrent(
                         cb(step, total, app_id);
                     }
                     results.lock().unwrap().push((app_id, outcome));
-                });
-            }
-        });
-    }
+                }
+            });
+        }
+    });
 
     Arc::try_unwrap(results).unwrap().into_inner().unwrap()
 }
 
 fn run_one(app_id: u32, command: SteamCommand) -> Result<Vec<u8>, SamError> {
     let current_exe = get_executable_path();
-    let mut bidir = BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))?;
+    let child = BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))?;
+    let mut ipc = IpcClient::new(child);
 
     std::thread::sleep(std::time::Duration::from_millis(10));
 
-    let response = send_app_command(&mut bidir, command);
+    let response = ipc.send(&command).and_then(|_| ipc.recv_frame());
 
     std::thread::sleep(std::time::Duration::from_millis(10));
 
-    let _ = send_app_command(&mut bidir, SteamCommand::Shutdown);
-    let _ = bidir.child.wait();
+    let _ = ipc.send(&SteamCommand::Shutdown);
+    let _ = ipc.recv_frame();
+    let _ = ipc.wait();
 
     response
-}
-
-/// Parse a length-prefixed `SteamResponse<T>` payload (as produced by
-/// `SamSerializable::sam_serialize` on the child side) into a `Result<T, SamError>`.
-pub fn parse_response_bytes<T: DeserializeOwned>(bytes: &[u8]) -> Result<T, SamError> {
-    let len_size = size_of::<usize>();
-    if bytes.len() < len_size {
-        return Err(SamError::SocketCommunicationFailed);
-    }
-    let json_bytes = &bytes[len_size..];
-    let message = String::from_utf8_lossy(json_bytes);
-    let response: SteamResponse<T> =
-        serde_json::from_str(&message).map_err(|_| SamError::SerializationFailed)?;
-    response.into()
-}
-
-fn send_app_command(bidir: &mut BidirChild, command: SteamCommand) -> Result<Vec<u8>, SamError> {
-    let serialized = command.sam_serialize();
-    bidir
-        .tx
-        .write_all(&serialized)
-        .map_err(|_| SamError::SocketCommunicationFailed)?;
-
-    let mut buffer_len = [0u8; size_of::<usize>()];
-    bidir
-        .rx
-        .read_exact(&mut buffer_len)
-        .map_err(|_| SamError::SocketCommunicationFailed)?;
-
-    let data_length = usize::from_le_bytes(buffer_len);
-    let mut buffer = vec![0u8; data_length];
-    bidir
-        .rx
-        .read_exact(&mut buffer)
-        .map_err(|_| SamError::SocketCommunicationFailed)?;
-
-    let mut result = Vec::with_capacity(buffer_len.len() + buffer.len());
-    result.extend_from_slice(&buffer_len);
-    result.extend_from_slice(&buffer);
-    Ok(result)
 }
 
 /// Snapshot every achievement and stat for `app_id` into an `AppExport`.

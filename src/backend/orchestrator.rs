@@ -21,67 +21,48 @@ use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
-use crate::utils::ipc_types::{SamError, SamSerializable, SteamCommand, SteamResponse};
+use crate::utils::ipc_client::IpcClient;
+use crate::utils::ipc_types::{
+    SamError, SteamCommand, SteamResponse, frame_message, read_message, write_message,
+};
 use crate::utils::steam_locator::SteamLocator;
 use interprocess::unnamed_pipe::{Recver, Sender};
 use std::collections::HashMap;
-use std::io::Read;
 use std::io::Write;
 use std::process::Command;
 use std::sync::LazyLock;
 
-fn send_app_command(
-    bidir: &mut BidirChild,
-    command: SteamCommand,
-) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    let command = command.sam_serialize();
-    let mut buffer_len = [0u8; size_of::<usize>()];
-    bidir.tx.write_all(&command).expect("Send command failed");
-
-    match bidir.rx.read_exact(&mut buffer_len) {
-        Ok(_) => {}
-        Err(e) => {
-            eprintln!("[ORCHESTRATOR] Error reading length from pipe: {e}");
-            return Err(e.into());
-        }
-    }
-
-    let data_length = usize::from_le_bytes(buffer_len);
-    let mut buffer = vec![0u8; data_length];
-
-    match bidir.rx.read_exact(&mut buffer) {
-        Ok(_) => {}
-        Err(e) => {
-            eprintln!("[ORCHESTRATOR] Error reading message from pipe: {e}");
-            return Err(e.into());
-        }
-    };
-
-    let mut result = Vec::with_capacity(buffer_len.len() + buffer.len());
-    result.extend_from_slice(&buffer_len);
-    result.extend_from_slice(&buffer);
-    Ok(result)
+/// Forward `command` to the app server and return the framed response bytes
+/// (length prefix + JSON) suitable for proxying straight back to the parent.
+fn send_app_command(ipc: &mut IpcClient, command: SteamCommand) -> Result<Vec<u8>, SamError> {
+    ipc.send(&command)?;
+    ipc.recv_frame()
 }
 
 pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
     let mut connected_steam: Option<ConnectedSteam> = None;
-    let mut children_processes: HashMap<u32, (BidirChild, usize)> = HashMap::new();
+    let mut children_processes: HashMap<u32, (IpcClient, usize)> = HashMap::new();
 
     loop {
         dev_println!("[ORCHESTRATOR] Main loop...");
 
-        let message =
-            SteamCommand::from_recver(parent_rx).expect("[ORCHESTRATOR] No message from pipe");
+        let message: SteamCommand = match read_message(parent_rx) {
+            Ok(m) => m,
+            Err(e) => {
+                eprintln!("[ORCHESTRATOR] Parent pipe error: {e} — shutting down");
+                for (_, (ipc, _)) in children_processes.iter_mut() {
+                    let _ = send_app_command(ipc, SteamCommand::Shutdown);
+                    let _ = ipc.wait();
+                }
+                return 1;
+            }
+        };
 
         dev_println!("[ORCHESTRATOR] Received message: {message:?}");
 
         if connected_steam.as_ref().is_none() {
             if message == SteamCommand::Shutdown {
-                let response = SteamResponse::Success(true);
-                let response = response.sam_serialize();
-                parent_tx
-                    .write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
+                let _ = write_message(parent_tx, &SteamResponse::Success(true));
                 dev_println!("[ORCHESTRATOR] Exiting");
                 break 0;
             }
@@ -90,12 +71,10 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
                 Ok(c) => Some(c),
                 Err(e) => {
                     dev_println!("[ORCHESTRATOR] Error connecting to Steam: {e}");
-                    let response: SteamResponse<String> =
-                        SteamResponse::Error(SamError::SteamConnectionFailed);
-                    let response = response.sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[ORCHESTRATOR] Failed to send response");
+                    let _ = write_message(
+                        parent_tx,
+                        &SteamResponse::<String>::Error(SamError::SteamConnectionFailed),
+                    );
                     continue;
                 }
             };
@@ -110,15 +89,91 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
     }
 }
 
+/// Forward `command` to the per-app child process for `app_id` and proxy its
+/// framed response back to `tx` verbatim. If no child is running for `app_id`,
+/// respond with `AppMismatchError`. If the IPC call to the child fails, respond
+/// with `SocketCommunicationFailed`.
+fn forward_to_child(
+    app_id: u32,
+    command: SteamCommand,
+    tx: &mut Sender,
+    children_processes: &mut HashMap<u32, (IpcClient, usize)>,
+    op_name: &str,
+) {
+    if let Some((ipc, _)) = children_processes.get_mut(&app_id) {
+        match send_app_command(ipc, command) {
+            Ok(response) => {
+                tx.write_all(&response)
+                    .expect("[ORCHESTRATOR] Failed to send response");
+            }
+            Err(_) => {
+                dev_println!("[ORCHESTRATOR] Failed to {op_name} for app {app_id}");
+                tx.write_all(&SOCKET_ERROR_RESPONSE)
+                    .expect("[ORCHESTRATOR] Failed to send response");
+            }
+        }
+    } else {
+        let _ = write_message(tx, &SteamResponse::<()>::Error(SamError::AppMismatchError));
+    }
+}
+
+static SOCKET_ERROR_RESPONSE: LazyLock<Vec<u8>> = LazyLock::new(|| {
+    frame_message(&SteamResponse::<()>::Error(SamError::SocketCommunicationFailed))
+});
+
 fn process_command(
     command: SteamCommand,
     tx: &mut Sender,
-    children_processes: &mut HashMap<u32, (BidirChild, usize)>,
+    children_processes: &mut HashMap<u32, (IpcClient, usize)>,
     connected_steam: &mut ConnectedSteam,
 ) -> bool {
-    static SOCKET_ERROR_RESPONSE: LazyLock<Vec<u8>> = LazyLock::new(|| {
-        SteamResponse::<()>::Error(SamError::SocketCommunicationFailed).sam_serialize()
-    });
+
+    /// One-shot: spawn an ephemeral app server, send `command`, then shut it
+    /// down. Proxies the framed response (or a `SocketCommunicationFailed`
+    /// envelope) back to `tx`. Used for commands the user can issue against
+    /// apps that aren't currently being held open (unlock-all, reset-stats).
+    fn run_ephemeral(tx: &mut Sender, app_id: u32, command: SteamCommand, op_name: &str) {
+        let current_exe = get_executable_path();
+        let child = match BidirChild::new(
+            Command::new(current_exe).arg(format!("--app={app_id}")),
+        ) {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!(
+                    "[ORCHESTRATOR] Failed to spawn app server for {op_name} {app_id}: {e}"
+                );
+                tx.write_all(&SOCKET_ERROR_RESPONSE)
+                    .expect("[ORCHESTRATOR] Failed to send response");
+                return;
+            }
+        };
+        let mut ipc = IpcClient::new(child);
+
+        // Just to be sure (this is probably useless)
+        std::thread::sleep(std::time::Duration::from_millis(10));
+        let response = send_app_command(&mut ipc, command);
+        // Just to be sure (this is probably useless)
+        std::thread::sleep(std::time::Duration::from_millis(10));
+
+        if send_app_command(&mut ipc, SteamCommand::Shutdown).is_err() {
+            dev_println!("[ORCHESTRATOR] Error sending shutdown to {op_name} app {app_id}");
+            tx.write_all(&SOCKET_ERROR_RESPONSE)
+                .expect("[ORCHESTRATOR] Failed to send response");
+            return;
+        }
+
+        ipc.wait()
+            .expect("[ORCHESTRATOR] Failed to wait child process");
+
+        match response {
+            Ok(resp) => tx
+                .write_all(&resp)
+                .expect("[ORCHESTRATOR] Failed to send response"),
+            Err(_) => tx
+                .write_all(&SOCKET_ERROR_RESPONSE)
+                .expect("[ORCHESTRATOR] Failed to send response"),
+        }
+    }
 
     match command {
         SteamCommand::GetSubscribedAppList(include_playtime) => {
@@ -173,16 +228,12 @@ fn process_command(
                             }
                         }
                     }
-                    let response = SteamResponse::Success(apps);
-                    let response = response.sam_serialize();
-                    tx.write_all(&response)
+                    write_message(tx, &SteamResponse::Success(apps))
                         .expect("[ORCHESTRATOR] Failed to send response");
                 }
                 Err(e) => {
                     dev_println!("[ORCHESTRATOR] Error getting owned apps: {e}");
-                    let response = SteamResponse::<()>::Error(e);
-                    let response = response.sam_serialize();
-                    tx.write_all(&response)
+                    write_message(tx, &SteamResponse::<()>::Error(e))
                         .expect("[ORCHESTRATOR] Failed to send response");
                 }
             };
@@ -193,8 +244,7 @@ fn process_command(
 
             #[cfg(debug_assertions)]
             if app_id == 0 {
-                let response = SteamResponse::<bool>::Success(true).sam_serialize();
-                tx.write_all(&response)
+                write_message(tx, &SteamResponse::<bool>::Success(true))
                     .expect("[APP SERVER] Failed to send response");
                 return true;
             }
@@ -203,38 +253,41 @@ fn process_command(
             if let Some((_, refcount)) = children_processes.get_mut(&app_id) {
                 *refcount += 1;
                 dev_println!("[ORCHESTRATOR] App {} refcount now {}", app_id, *refcount);
-                let response = SteamResponse::Success(true).sam_serialize();
-                tx.write_all(&response)
+                write_message(tx, &SteamResponse::Success(true))
                     .expect("[ORCHESTRATOR] Failed to send response");
                 return true;
             }
 
             // 2. Otherwise launch a new process with refcount = 1.
             let current_exe = get_executable_path();
-            let child = BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
-                .expect("Could not create app server process");
+            let child = match BidirChild::new(
+                Command::new(current_exe).arg(format!("--app={app_id}")),
+            ) {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("[ORCHESTRATOR] Failed to spawn app server for {app_id}: {e}");
+                    tx.write_all(&SOCKET_ERROR_RESPONSE)
+                        .expect("[ORCHESTRATOR] Failed to send response");
+                    return true;
+                }
+            };
 
-            children_processes.insert(app_id, (child, 1));
-            let response = SteamResponse::Success(true);
-            let response = response.sam_serialize();
-            tx.write_all(&response)
+            children_processes.insert(app_id, (IpcClient::new(child), 1));
+            write_message(tx, &SteamResponse::Success(true))
                 .expect("[ORCHESTRATOR] Failed to send response");
         }
 
         SteamCommand::StopApp(app_id) => {
             #[cfg(debug_assertions)]
             if app_id == 0 {
-                let response = SteamResponse::<bool>::Success(true).sam_serialize();
-                tx.write_all(&response)
+                write_message(tx, &SteamResponse::<bool>::Success(true))
                     .expect("[APP SERVER] Failed to send response");
                 return true;
             }
 
             let Some((_, refcount)) = children_processes.get_mut(&app_id) else {
                 eprintln!("[ORCHESTRATOR] App {} is not running", app_id);
-                let response: SteamResponse<()> = SteamResponse::Error(SamError::UnknownError);
-                let response = response.sam_serialize();
-                tx.write_all(&response)
+                write_message(tx, &SteamResponse::<()>::Error(SamError::UnknownError))
                     .expect("[ORCHESTRATOR] Failed to send response");
                 return true;
             };
@@ -246,16 +299,15 @@ fn process_command(
                     app_id,
                     *refcount
                 );
-                let response = SteamResponse::Success(true).sam_serialize();
-                tx.write_all(&response)
+                write_message(tx, &SteamResponse::Success(true))
                     .expect("[ORCHESTRATOR] Failed to send response");
                 return true;
             }
 
             // Refcount hit zero — actually shut the process down.
-            let mut bidir_opt = children_processes.remove(&app_id).map(|(b, _)| b);
-            let bidir = bidir_opt.as_mut().unwrap();
-            let response = match send_app_command(bidir, SteamCommand::Shutdown) {
+            let mut ipc_opt = children_processes.remove(&app_id).map(|(b, _)| b);
+            let ipc = ipc_opt.as_mut().unwrap();
+            let response = match send_app_command(ipc, SteamCommand::Shutdown) {
                 Ok(response) => response,
                 Err(_) => {
                     dev_println!("[ORCHESTRATOR] Error sending shutdown command to app {app_id}");
@@ -265,9 +317,7 @@ fn process_command(
                 }
             };
 
-            bidir
-                .child
-                .wait()
+            ipc.wait()
                 .expect("[ORCHESTRATOR] Failed to wait child process");
 
             tx.write_all(&response)
@@ -277,51 +327,40 @@ fn process_command(
         SteamCommand::StopApps => {
             dev_println!("[ORCHESTRATOR] StopApps");
 
-            for (app_id, (child, _)) in children_processes.iter_mut() {
-                let _ = send_app_command(child, SteamCommand::Shutdown);
+            for (app_id, (ipc, _)) in children_processes.iter_mut() {
+                let _ = send_app_command(ipc, SteamCommand::Shutdown);
                 dev_println!("[ORCHESTRATOR] Sent shutdown command to app {app_id}");
-                child
-                    .child
-                    .wait()
+                ipc.wait()
                     .expect("[ORCHESTRATOR] Failed to wait child process");
             }
 
             children_processes.clear();
 
-            let response = SteamResponse::Success(true);
-            let response = response.sam_serialize();
-            tx.write_all(&response)
+            write_message(tx, &SteamResponse::Success(true))
                 .expect("[ORCHESTRATOR] Failed to send response");
         }
 
         SteamCommand::Shutdown => {
-            for (app_id, (child, _)) in children_processes.iter_mut() {
-                let _ = send_app_command(child, SteamCommand::Shutdown);
+            for (app_id, (ipc, _)) in children_processes.iter_mut() {
+                let _ = send_app_command(ipc, SteamCommand::Shutdown);
                 dev_println!("[ORCHESTRATOR] Sent shutdown command to app {app_id}");
-                child
-                    .child
-                    .wait()
+                ipc.wait()
                     .expect("[ORCHESTRATOR] Failed to wait child process");
             }
 
-            let response = SteamResponse::Success(true);
-            let response = response.sam_serialize();
-            tx.write_all(&response)
+            write_message(tx, &SteamResponse::Success(true))
                 .expect("[ORCHESTRATOR] Failed to send response");
             return false;
         }
 
         SteamCommand::Status => {
-            let response = SteamResponse::Success(true);
-            let response = response.sam_serialize();
-            tx.write_all(&response)
+            write_message(tx, &SteamResponse::Success(true))
                 .expect("[ORCHESTRATOR] Failed to send response");
         }
 
         SteamCommand::GetRunningApps => {
             let running: Vec<u32> = children_processes.keys().copied().collect();
-            let response = SteamResponse::Success(running).sam_serialize();
-            tx.write_all(&response)
+            write_message(tx, &SteamResponse::Success(running))
                 .expect("[ORCHESTRATOR] Failed to send response");
         }
 
@@ -344,264 +383,116 @@ fn process_command(
                     ach_infos.push(ach_info);
                 }
 
-                let response =
-                    SteamResponse::<Vec<AchievementInfo>>::Success(ach_infos).sam_serialize();
-                tx.write_all(&response)
+                write_message(tx, &SteamResponse::<Vec<AchievementInfo>>::Success(ach_infos))
                     .expect("[APP SERVER] Failed to send response");
                 return true;
             }
 
-            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
-                match send_app_command(bidir, SteamCommand::GetAchievements(app_id)) {
-                    Ok(response) => {
-                        tx.write_all(&response)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                    Err(_) => {
-                        dev_println!("[ORCHESTRATOR] Failed to load achievements for app {app_id}");
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                };
-            } else {
-                let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
-                let response = response.sam_serialize();
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            }
+            forward_to_child(
+                app_id,
+                SteamCommand::GetAchievements(app_id),
+                tx,
+                children_processes,
+                "load achievements",
+            );
         }
 
         SteamCommand::GetStats(app_id) => {
             #[cfg(debug_assertions)]
             if app_id == 0 {
-                let response = SteamResponse::<Vec<StatInfo>>::Success(vec![]).sam_serialize();
-                tx.write_all(&response)
+                write_message(tx, &SteamResponse::<Vec<StatInfo>>::Success(vec![]))
                     .expect("[APP SERVER] Failed to send response");
                 return true;
             }
 
-            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
-                match send_app_command(bidir, SteamCommand::GetStats(app_id)) {
-                    Ok(response) => {
-                        tx.write_all(&response)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                    Err(_) => {
-                        dev_println!("[ORCHESTRATOR] Failed to load stats for app {app_id}");
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                }
-            } else {
-                let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
-                let response = response.sam_serialize();
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            }
+            forward_to_child(
+                app_id,
+                SteamCommand::GetStats(app_id),
+                tx,
+                children_processes,
+                "load stats",
+            );
         }
 
         SteamCommand::SetAchievement(app_id, unlocked, achievement_id, store) => {
             #[cfg(debug_assertions)]
             if app_id == 0 {
-                let response = SteamResponse::<bool>::Success(true).sam_serialize();
-                tx.write_all(&response)
+                write_message(tx, &SteamResponse::<bool>::Success(true))
                     .expect("[APP SERVER] Failed to send response");
                 return true;
             }
 
-            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
-                match send_app_command(
-                    bidir,
-                    SteamCommand::SetAchievement(app_id, unlocked, achievement_id, store),
-                ) {
-                    Ok(response) => {
-                        tx.write_all(&response)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                    Err(_) => {
-                        dev_println!("[ORCHESTRATOR] Failed to set achievement for app {app_id}");
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                }
-            } else {
-                let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
-                let response = response.sam_serialize();
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            }
+            forward_to_child(
+                app_id,
+                SteamCommand::SetAchievement(app_id, unlocked, achievement_id, store),
+                tx,
+                children_processes,
+                "set achievement",
+            );
         }
 
         SteamCommand::UnlockAllAchievements(app_id) => {
-            let current_exe = get_executable_path();
-            let mut bidir =
-                BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
-                    .expect("Could not create app server process");
-
-            // Just to be sure (this is probably useless)
-            std::thread::sleep(std::time::Duration::from_millis(10));
-
-            let response =
-                send_app_command(&mut bidir, SteamCommand::UnlockAllAchievements(app_id));
-
-            // Just to be sure (this is probably useless)
-            std::thread::sleep(std::time::Duration::from_millis(10));
-
-            match send_app_command(&mut bidir, SteamCommand::Shutdown) {
-                Ok(_) => {}
-                Err(_) => {
-                    dev_println!("[ORCHESTRATOR] Error sending shutdown command to app {app_id}");
-                    tx.write_all(&SOCKET_ERROR_RESPONSE)
-                        .expect("[ORCHESTRATOR] Failed to send response");
-                    return true;
-                }
-            };
-
-            bidir
-                .child
-                .wait()
-                .expect("[ORCHESTRATOR] Failed to wait child process");
-
-            match response {
-                Ok(resp) => {
-                    tx.write_all(&resp)
-                        .expect("[ORCHESTRATOR] Failed to send response");
-                }
-                Err(_) => {
-                    tx.write_all(&SOCKET_ERROR_RESPONSE)
-                        .expect("[ORCHESTRATOR] Failed to send response");
-                }
-            }
+            run_ephemeral(
+                tx,
+                app_id,
+                SteamCommand::UnlockAllAchievements(app_id),
+                "unlock-all",
+            );
         }
 
         SteamCommand::StoreStatsAndAchievements(app_id) => {
             #[cfg(debug_assertions)]
             if app_id == 0 {
-                let response = SteamResponse::<bool>::Success(true).sam_serialize();
-                tx.write_all(&response)
+                write_message(tx, &SteamResponse::<bool>::Success(true))
                     .expect("[APP SERVER] Failed to send response");
                 return true;
             }
 
-            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
-                match send_app_command(bidir, SteamCommand::StoreStatsAndAchievements(app_id)) {
-                    Ok(response) => {
-                        tx.write_all(&response)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                    Err(_) => {
-                        dev_println!("[ORCHESTRATOR] Failed to store stats for app {app_id}");
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                }
-            } else {
-                let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
-                let response = response.sam_serialize();
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            }
+            forward_to_child(
+                app_id,
+                SteamCommand::StoreStatsAndAchievements(app_id),
+                tx,
+                children_processes,
+                "store stats",
+            );
         }
 
         SteamCommand::SetIntStat(app_id, stat_id, value) => {
-            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
-                match send_app_command(bidir, SteamCommand::SetIntStat(app_id, stat_id, value)) {
-                    Ok(response) => {
-                        tx.write_all(&response)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                    Err(_) => {
-                        dev_println!("[ORCHESTRATOR] Failed to set stat for app {app_id}");
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                }
-            } else {
-                let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
-                let response = response.sam_serialize();
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            }
+            forward_to_child(
+                app_id,
+                SteamCommand::SetIntStat(app_id, stat_id, value),
+                tx,
+                children_processes,
+                "set int stat",
+            );
         }
 
         SteamCommand::SetFloatStat(app_id, stat_id, value) => {
-            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
-                match send_app_command(bidir, SteamCommand::SetFloatStat(app_id, stat_id, value)) {
-                    Ok(response) => {
-                        tx.write_all(&response)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                    Err(_) => {
-                        dev_println!("[ORCHESTRATOR] Failed to set stat for app {app_id}");
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                }
-            } else {
-                let response = SteamResponse::<()>::Error(SamError::AppMismatchError);
-                let response = response.sam_serialize();
-                tx.write_all(&response)
-                    .expect("[ORCHESTRATOR] Failed to send response");
-            }
+            forward_to_child(
+                app_id,
+                SteamCommand::SetFloatStat(app_id, stat_id, value),
+                tx,
+                children_processes,
+                "set float stat",
+            );
         }
 
         SteamCommand::ResetStats(app_id, achievements_too) => {
-            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
-                match send_app_command(bidir, SteamCommand::ResetStats(app_id, achievements_too)) {
-                    Ok(response) => {
-                        tx.write_all(&response)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                    Err(_) => {
-                        dev_println!("[ORCHESTRATOR] Failed to reset stats for app {app_id}");
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                }
-            } else {
-                let current_exe = get_executable_path();
-                let mut bidir =
-                    BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
-                        .expect("Could not create app server process");
-
-                // Just to be sure (this is probably useless)
-                std::thread::sleep(std::time::Duration::from_millis(10));
-
-                let response = send_app_command(
-                    &mut bidir,
+            if children_processes.contains_key(&app_id) {
+                forward_to_child(
+                    app_id,
                     SteamCommand::ResetStats(app_id, achievements_too),
+                    tx,
+                    children_processes,
+                    "reset stats",
                 );
-
-                // Just to be sure (this is probably useless)
-                std::thread::sleep(std::time::Duration::from_millis(10));
-
-                match send_app_command(&mut bidir, SteamCommand::Shutdown) {
-                    Ok(_) => {}
-                    Err(_) => {
-                        dev_println!(
-                            "[ORCHESTRATOR] Error sending shutdown command (resetting stats) to app {app_id}"
-                        );
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                        return true;
-                    }
-                };
-
-                bidir
-                    .child
-                    .wait()
-                    .expect("[ORCHESTRATOR] Failed to wait child process");
-
-                match response {
-                    Ok(resp) => {
-                        tx.write_all(&resp)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                    Err(_) => {
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                    }
-                }
+            } else {
+                run_ephemeral(
+                    tx,
+                    app_id,
+                    SteamCommand::ResetStats(app_id, achievements_too),
+                    "reset-stats",
+                );
             }
         }
 

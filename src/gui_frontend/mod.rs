@@ -32,13 +32,17 @@ mod widgets;
 use crate::APP_ID;
 use crate::gui_frontend::request::Request;
 use crate::utils::bidir_child::BidirChild;
+use crate::utils::ipc_client::IpcClient;
 use app_list_view::create_main_ui;
 use gtk::glib::ExitCode;
 use gtk::prelude::{ApplicationExt, ApplicationExtManual};
 use request::Shutdown;
-use std::sync::RwLock;
+use std::sync::Mutex;
 
-static DEFAULT_PROCESS: RwLock<Option<BidirChild>> = RwLock::new(None);
+// Frontend's handle to the orchestrator IPC. Structurally a Mutex (not an
+// RwLock) because every caller needs `&mut IpcClient` to drive a request —
+// there are no concurrent readers to optimize for.
+pub(crate) static DEFAULT_PROCESS: Mutex<Option<IpcClient>> = Mutex::new(None);
 
 fn shutdown() {
     if let Err(err) = Shutdown.request() {
@@ -46,11 +50,9 @@ fn shutdown() {
         return;
     };
 
-    let mut guard = DEFAULT_PROCESS.write().unwrap();
-    if let Some(ref mut bidir) = *guard {
-        bidir
-            .child
-            .wait()
+    let mut guard = DEFAULT_PROCESS.lock().unwrap();
+    if let Some(ref mut ipc) = *guard {
+        ipc.wait()
             .expect("[CLIENT] Failed to wait on orchestrator to shutdown");
     } else {
         panic!("[CLIENT] No orchestrator process to shutdown");
@@ -64,8 +66,8 @@ pub type MainApplication = adw::Application;
 
 pub fn main_ui(orchestrator: BidirChild) -> ExitCode {
     {
-        let mut guard = DEFAULT_PROCESS.write().unwrap();
-        *guard = Some(orchestrator);
+        let mut guard = DEFAULT_PROCESS.lock().unwrap();
+        *guard = Some(IpcClient::new(orchestrator));
     }
 
     let main_app = MainApplication::builder()

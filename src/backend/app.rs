@@ -18,9 +18,24 @@ use crate::backend::progress_io::{apply_app_export, collect_app_export};
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::steam_client::steamworks_types::AppId_t;
-use crate::utils::ipc_types::{AppExport, SamError, SamSerializable, SteamCommand, SteamResponse};
+use crate::utils::ipc_types::{
+    AppExport, SamError, SteamCommand, SteamResponse, read_message, write_message,
+};
 use interprocess::unnamed_pipe::{Recver, Sender};
-use std::io::Write;
+use serde::Serialize;
+
+fn send_response<T: Serialize>(tx: &mut Sender, resp: &SteamResponse<T>) {
+    write_message(tx, resp).expect("[APP SERVER] Failed to send response");
+}
+
+fn check_app_id(passed: u32, expected: u32, tx: &mut Sender) -> bool {
+    if passed != expected {
+        dev_println!("[APP SERVER] App ID mismatch: {passed} != {expected}");
+        send_response::<()>(tx, &SteamResponse::Error(SamError::AppMismatchError));
+        return false;
+    }
+    true
+}
 
 pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
     let mut app_manager = AppManager::new_connected(app_id);
@@ -33,15 +48,19 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
     loop {
         dev_println!("[APP SERVER] Main loop...");
 
-        let command =
-            SteamCommand::from_recver(parent_rx).expect("[APP SERVER] No message from pipe");
+        let command: SteamCommand = match read_message(parent_rx) {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!("[APP SERVER] Parent pipe error: {e} — shutting down");
+                return 1;
+            }
+        };
 
         if app_manager.as_ref().is_err() {
-            let response: SteamResponse<()> = SteamResponse::Error(SamError::SteamConnectionFailed);
-            let response = response.sam_serialize();
-            parent_tx
-                .write_all(&response)
-                .expect("[APP SERVER] Failed to send response");
+            send_response::<()>(
+                parent_tx,
+                &SteamResponse::Error(SamError::SteamConnectionFailed),
+            );
             continue;
         }
 
@@ -49,260 +68,149 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
 
         match command {
             SteamCommand::Status => {
-                let response = SteamResponse::Success(true).sam_serialize();
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                send_response(parent_tx, &SteamResponse::Success(true));
             }
 
             SteamCommand::Shutdown => {
-                let response = SteamResponse::Success(true).sam_serialize();
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                send_response(parent_tx, &SteamResponse::Success(true));
                 break;
             }
 
             SteamCommand::GetAchievements(app_id_param) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
-                let response = match app_manager.get_achievements(true) {
-                    Ok(achievements) => SteamResponse::Success(achievements),
-                    Err(e) => SteamResponse::Error::<Vec<AchievementInfo>>(e),
-                };
-                let response = response.sam_serialize();
-
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                let response: SteamResponse<Vec<AchievementInfo>> =
+                    match app_manager.get_achievements(true) {
+                        Ok(achievements) => SteamResponse::Success(achievements),
+                        Err(e) => SteamResponse::Error(e),
+                    };
+                send_response(parent_tx, &response);
             }
 
             SteamCommand::GetStats(app_id_param) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
-                let response = match app_manager.get_statistics() {
+                let response: SteamResponse<Vec<StatInfo>> = match app_manager.get_statistics() {
                     Ok(statistics) => SteamResponse::Success(statistics),
-                    Err(e) => SteamResponse::Error::<Vec<StatInfo>>(e),
+                    Err(e) => SteamResponse::Error(e),
                 };
-                let response = response.sam_serialize();
-
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                send_response(parent_tx, &response);
             }
 
             SteamCommand::SetAchievement(app_id_param, unlocked, achievement_id, store) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
-                let response = match app_manager.set_achievement(&achievement_id, unlocked, store) {
-                    Ok(_) => SteamResponse::Success(true),
-                    Err(e) => {
-                        dev_println!("[APP SERVER] Error setting achievement: {e}");
-                        SteamResponse::Error::<bool>(e)
-                    }
-                };
-                let response = response.sam_serialize();
-
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                let response: SteamResponse<bool> =
+                    match app_manager.set_achievement(&achievement_id, unlocked, store) {
+                        Ok(_) => SteamResponse::Success(true),
+                        Err(e) => {
+                            dev_println!("[APP SERVER] Error setting achievement: {e}");
+                            SteamResponse::Error(e)
+                        }
+                    };
+                send_response(parent_tx, &response);
             }
 
             SteamCommand::SetIntStat(app_id_param, stat_id, value) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
-                let response = match app_manager.set_stat_i32(&stat_id, value) {
+                let response: SteamResponse<bool> = match app_manager.set_stat_i32(&stat_id, value)
+                {
                     Ok(result) => SteamResponse::Success(result),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting int stat: {e}");
-                        SteamResponse::Error::<bool>(e)
+                        SteamResponse::Error(e)
                     }
                 };
-                let response = response.sam_serialize();
-
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                send_response(parent_tx, &response);
             }
 
             SteamCommand::SetFloatStat(app_id_param, stat_id, value) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
-                let response = match app_manager.set_stat_f32(&stat_id, value) {
+                let response: SteamResponse<bool> = match app_manager.set_stat_f32(&stat_id, value)
+                {
                     Ok(result) => SteamResponse::Success(result),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error setting float stat: {e}");
-                        SteamResponse::Error::<bool>(e)
+                        SteamResponse::Error(e)
                     }
                 };
-                let response = response.sam_serialize();
-
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                send_response(parent_tx, &response);
             }
 
             SteamCommand::StoreStatsAndAchievements(app_id_param) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
-                let response = match app_manager.store_stats_and_achievements() {
+                let response: SteamResponse<bool> = match app_manager.store_stats_and_achievements()
+                {
                     Ok(_) => SteamResponse::Success(true),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error storing stats and achievements: {e}");
-                        SteamResponse::Error::<bool>(e)
+                        SteamResponse::Error(e)
                     }
                 };
-                let response = response.sam_serialize();
-
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                send_response(parent_tx, &response);
             }
 
             SteamCommand::ResetStats(app_id_param, achievements_too) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
-                let response = match app_manager.reset_all_stats(achievements_too) {
-                    Ok(result) => SteamResponse::Success(result),
-                    Err(e) => {
-                        dev_println!("[APP SERVER] Error resetting stats: {e}");
-                        SteamResponse::Error::<bool>(e)
-                    }
-                };
-                let response = response.sam_serialize();
-
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                let response: SteamResponse<bool> =
+                    match app_manager.reset_all_stats(achievements_too) {
+                        Ok(result) => SteamResponse::Success(result),
+                        Err(e) => {
+                            dev_println!("[APP SERVER] Error resetting stats: {e}");
+                            SteamResponse::Error(e)
+                        }
+                    };
+                send_response(parent_tx, &response);
             }
 
             SteamCommand::UnlockAllAchievements(app_id_param) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
-                let response = match app_manager.unlock_all_achievements() {
+                let response: SteamResponse<bool> = match app_manager.unlock_all_achievements() {
                     Ok(_) => SteamResponse::Success(true),
                     Err(e) => {
                         dev_println!("[APP SERVER] Error unlocking all achievements: {e}");
-                        SteamResponse::Error::<bool>(e)
+                        SteamResponse::Error(e)
                     }
                 };
-                let response = response.sam_serialize();
-
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                send_response(parent_tx, &response);
             }
 
             SteamCommand::ExportAppProgress(app_id_param) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
-                let response = match collect_app_export(app_manager, app_id) {
-                    Ok(export) => SteamResponse::Success(export),
-                    Err(e) => SteamResponse::Error::<AppExport>(e),
-                };
-                let response = response.sam_serialize();
-
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                let response: SteamResponse<AppExport> =
+                    match collect_app_export(app_manager, app_id) {
+                        Ok(export) => SteamResponse::Success(export),
+                        Err(e) => SteamResponse::Error(e),
+                    };
+                send_response(parent_tx, &response);
             }
 
             SteamCommand::ImportAppProgress(app_id_param, payload) => {
-                if app_id_param != app_id {
-                    dev_println!("[APP SERVER] App ID mismatch: {app_id_param} != {app_id}");
-                    let response =
-                        SteamResponse::<()>::Error(SamError::AppMismatchError).sam_serialize();
-                    parent_tx
-                        .write_all(&response)
-                        .expect("[APP SERVER] Failed to send response");
+                if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-
                 let summary = apply_app_export(app_manager, payload);
-                let response = SteamResponse::Success(summary).sam_serialize();
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                send_response(parent_tx, &SteamResponse::Success(summary));
             }
 
             _ => {
                 dev_println!("[APP SERVER] Received unknown command {command:?}");
-                let response = SteamResponse::<()>::Error(SamError::UnknownError).sam_serialize();
-                parent_tx
-                    .write_all(&response)
-                    .expect("[APP SERVER] Failed to send response");
+                send_response::<()>(parent_tx, &SteamResponse::Error(SamError::UnknownError));
             }
         }
     }

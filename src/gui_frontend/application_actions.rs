@@ -77,3 +77,10 @@ pub fn set_app_action_enabled(application: &MainApplication, action_name: &str, 
         dev_println!("[CLIENT] Action not found {action_name}");
     }
 }
+
+pub fn set_bulk_actions_enabled(application: &MainApplication, enabled: bool) {
+    set_app_action_enabled(application, "unlock_all_apps", enabled);
+    set_app_action_enabled(application, "lock_all_apps", enabled);
+    set_app_action_enabled(application, "export_selected_progress", enabled);
+    set_app_action_enabled(application, "import_progress", enabled);
+}

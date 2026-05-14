@@ -31,6 +31,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
+#[allow(clippy::too_many_arguments)]
 pub fn create_refresh_app_list_action(
     application: &MainApplication,
     grid_view: &GridView,
@@ -40,6 +41,7 @@ pub fn create_refresh_app_list_action(
     app_list_no_result_label: &Label,
     list_stack: &Stack,
     search_entry: &SearchEntry,
+    idle_count: Rc<Cell<usize>>,
 ) -> SimpleAction {
     let action_refresh_app_list = SimpleAction::new("refresh_app_list", None);
     action_refresh_app_list.connect_activate(clone!(
@@ -59,6 +61,8 @@ pub fn create_refresh_app_list_action(
         search_entry,
         #[weak]
         application,
+        #[strong]
+        idle_count,
         move |_, _| {
             list_stack.set_visible_child_name("loading");
             set_app_action_enabled(&application, "unlock_all_apps", false);
@@ -85,6 +89,8 @@ pub fn create_refresh_app_list_action(
                 list_stack,
                 #[weak]
                 search_entry,
+                #[strong]
+                idle_count,
                 async move {
                     match apps.await {
                         Ok(Ok(app_vec)) => {
@@ -97,6 +103,7 @@ pub fn create_refresh_app_list_action(
                                 list_stack.set_visible_child_name("list");
                             } else {
                                 list_store.remove_all();
+                                idle_count.set(0);
                                 GSteamAppObject::rebuild_local_banner_index();
                                 let models: Vec<GSteamAppObject> =
                                     app_vec.into_iter().map(GSteamAppObject::new).collect();
@@ -111,6 +118,8 @@ pub fn create_refresh_app_list_action(
                                 MainContext::default().spawn_local(clone!(
                                     #[weak]
                                     list_store,
+                                    #[strong]
+                                    idle_count,
                                     async move {
                                         let Ok(Ok(running)) = running.await else {
                                             return;
@@ -126,7 +135,7 @@ pub fn create_refresh_app_list_action(
                                                 app.set_is_idling(true);
                                             }
                                         }
-                                        super::recompute_idle_cap(&list_store);
+                                        super::recompute_idle_cap(&list_store, &idle_count);
                                     }
                                 ));
                             }

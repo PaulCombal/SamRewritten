@@ -17,7 +17,7 @@ use crate::backend::progress_io::{
     MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
 };
 use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::application_actions::set_app_action_enabled;
+use crate::gui_frontend::application_actions::{set_app_action_enabled, set_bulk_actions_enabled};
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::utils::ipc_types::SteamCommand;
 use gtk::gio::{SimpleAction, spawn_blocking};
@@ -110,9 +110,7 @@ pub fn create_bulk_actions(
                 return;
             }
 
-            set_app_action_enabled(&application, "unlock_all_apps", false);
-            set_app_action_enabled(&application, "lock_all_apps", false);
-            set_app_action_enabled(&application, "export_selected_progress", false);
+            set_bulk_actions_enabled(&application, false);
             context_menu_button_loading.set_visible(true);
             context_menu_button.set_visible(false);
             grid_view.set_sensitive(false);
@@ -192,9 +190,7 @@ pub fn create_bulk_actions(
                         let _ = dialog.choose_future(parent.as_ref()).await;
                     }
 
-                    set_app_action_enabled(&application, "unlock_all_apps", true);
-                    set_app_action_enabled(&application, "lock_all_apps", true);
-                    set_app_action_enabled(&application, "export_selected_progress", true);
+                    set_bulk_actions_enabled(&application, true);
                     context_menu_button_loading.set_visible(false);
                     context_menu_button.set_visible(true);
                     grid_view.set_sensitive(true);
@@ -246,9 +242,7 @@ pub fn create_bulk_actions(
                 return;
             }
 
-            set_app_action_enabled(&application, "unlock_all_apps", false);
-            set_app_action_enabled(&application, "lock_all_apps", false);
-            set_app_action_enabled(&application, "export_selected_progress", false);
+            set_bulk_actions_enabled(&application, false);
             context_menu_button_loading.set_visible(true);
             context_menu_button.set_visible(false);
             grid_view.set_sensitive(false);
@@ -294,9 +288,7 @@ pub fn create_bulk_actions(
                 context_menu_button,
                 async move {
                     let _ = handle.await;
-                    set_app_action_enabled(&application, "unlock_all_apps", true);
-                    set_app_action_enabled(&application, "lock_all_apps", true);
-                    set_app_action_enabled(&application, "export_selected_progress", true);
+                    set_bulk_actions_enabled(&application, true);
                     context_menu_button_loading.set_visible(false);
                     context_menu_button.set_visible(true);
                     grid_view.set_sensitive(true);

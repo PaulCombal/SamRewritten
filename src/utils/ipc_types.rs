@@ -13,10 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use interprocess::unnamed_pipe::Recver;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use std::io::Read;
+use std::io::{Read, Write};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum SamError {
@@ -116,54 +115,79 @@ pub enum SteamResponse<T> {
     Error(SamError),
 }
 
-pub trait SamSerializable {
-    fn sam_serialize(&self) -> Vec<u8>
-    where
-        Self: Sized + Serialize,
-    {
-        let serialized = serde_json::to_string(&self).unwrap();
-        let s_bytes = serialized.as_bytes();
-        let length = s_bytes.len();
-        let length_bytes = length.to_le_bytes();
-        let mut result = Vec::with_capacity(length_bytes.len() + s_bytes.len());
-        result.extend_from_slice(&length_bytes);
-        result.extend_from_slice(s_bytes);
-        result
-    }
-
-    fn from_recver(rx: &mut Recver) -> Result<Self, SamError>
-    where
-        Self: DeserializeOwned,
-    {
-        let mut buffer_len = [0u8; size_of::<usize>()];
-        match rx.read_exact(&mut buffer_len) {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("[IPC] Error reading length from pipe: {e}");
-                // Does this actually happen and shouldn't we kill our child?
-                return Err(SamError::SocketCommunicationFailed);
-            }
-        }
-
-        let data_length = usize::from_le_bytes(buffer_len);
-        let mut buffer = vec![0u8; data_length];
-
-        match rx.read_exact(&mut buffer) {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("[IPC] Error reading message from pipe: {e}");
-                return Err(SamError::SocketCommunicationFailed);
-            }
-        };
-
-        let message = String::from_utf8_lossy(&buffer);
-        let message: Self = serde_json::from_str(&message).expect("Failed to deserialize message");
-        Ok(message)
-    }
+/// Serialize a message as a length-prefixed (`usize` little-endian) JSON frame.
+pub fn frame_message<T: Serialize + ?Sized>(msg: &T) -> Vec<u8> {
+    let serialized = serde_json::to_vec(msg).expect("Serializing IPC message must not fail");
+    let length_bytes = serialized.len().to_le_bytes();
+    let mut frame = Vec::with_capacity(length_bytes.len() + serialized.len());
+    frame.extend_from_slice(&length_bytes);
+    frame.extend_from_slice(&serialized);
+    frame
 }
 
-impl<T> SamSerializable for SteamResponse<T> where T: Sized + Serialize {}
-impl SamSerializable for SteamCommand {}
+/// Frame `msg` and write it to `w`. Used by both ends of the pipe.
+pub fn write_message<T: Serialize + ?Sized>(
+    w: &mut impl Write,
+    msg: &T,
+) -> Result<(), SamError> {
+    let frame = frame_message(msg);
+    w.write_all(&frame).map_err(|e| {
+        eprintln!("[IPC] Failed to write framed message: {e}");
+        SamError::SocketCommunicationFailed
+    })
+}
+
+/// Read a length-prefixed JSON frame and return the JSON payload (no prefix).
+pub fn read_frame(r: &mut impl Read) -> Result<Vec<u8>, SamError> {
+    let mut len_buf = [0u8; size_of::<usize>()];
+    r.read_exact(&mut len_buf).map_err(|e| {
+        eprintln!("[IPC] Failed to read message length: {e}");
+        SamError::SocketCommunicationFailed
+    })?;
+    let data_len = usize::from_le_bytes(len_buf);
+    let mut payload = vec![0u8; data_len];
+    r.read_exact(&mut payload).map_err(|e| {
+        eprintln!("[IPC] Failed to read message payload: {e}");
+        SamError::SocketCommunicationFailed
+    })?;
+    Ok(payload)
+}
+
+/// Read a framed message and deserialize the JSON payload.
+pub fn read_message<T: DeserializeOwned>(r: &mut impl Read) -> Result<T, SamError> {
+    let payload = read_frame(r)?;
+    serde_json::from_slice(&payload).map_err(|e| {
+        eprintln!("[IPC] Failed to deserialize message: {e}");
+        SamError::SerializationFailed
+    })
+}
+
+/// Read a framed message and return its bytes *with the length prefix intact*.
+/// Used by the orchestrator to proxy a child's response to the parent verbatim.
+pub fn read_frame_raw(r: &mut impl Read) -> Result<Vec<u8>, SamError> {
+    let payload = read_frame(r)?;
+    let mut frame = Vec::with_capacity(size_of::<usize>() + payload.len());
+    frame.extend_from_slice(&payload.len().to_le_bytes());
+    frame.extend_from_slice(&payload);
+    Ok(frame)
+}
+
+/// Parse a framed `SteamResponse<T>` payload (length prefix + JSON) into a
+/// `Result<T, SamError>`. The input may be either with or without the
+/// `usize` length prefix.
+pub fn parse_response_bytes<T: DeserializeOwned>(framed: &[u8]) -> Result<T, SamError> {
+    let len_size = size_of::<usize>();
+    let json_bytes = if framed.len() >= len_size {
+        &framed[len_size..]
+    } else {
+        framed
+    };
+    let response: SteamResponse<T> = serde_json::from_slice(json_bytes).map_err(|e| {
+        eprintln!("[IPC] Failed to parse response: {e}");
+        SamError::SerializationFailed
+    })?;
+    response.into()
+}
 
 impl<T> From<SteamResponse<T>> for Result<T, SamError> {
     fn from(val: SteamResponse<T>) -> Self {

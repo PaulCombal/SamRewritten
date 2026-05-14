@@ -17,77 +17,23 @@ use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::gui_frontend::DEFAULT_PROCESS;
-use crate::utils::ipc_types::{SamError, SamSerializable, SteamCommand, SteamResponse};
+use crate::utils::ipc_types::{SamError, SteamCommand};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
-use std::io::{Read, Write};
 
 pub trait Request: Into<SteamCommand> + Debug + Clone {
     type Response: DeserializeOwned;
 
     fn request(self) -> Result<Self::Response, SamError> {
-        let mut guard = DEFAULT_PROCESS.write().unwrap();
-        if let Some(ref mut bidir) = *guard {
-            let command: SteamCommand = self.clone().into();
+        let mut guard = DEFAULT_PROCESS.lock().unwrap();
+        let Some(ipc) = guard.as_mut() else {
+            eprintln!("[CLIENT] No orchestrator process");
+            return Err(SamError::SocketCommunicationFailed);
+        };
 
-            dev_println!("[CLIENT] Sending command: {:?}", command);
-
-            let command = command.sam_serialize();
-
-            bidir.tx.write_all(&command).unwrap();
-
-            // Skill issue
-            // let response: SteamResponse<Self::Response> = SteamResponse::from_recver(&mut bidir.rx).expect("Send command failed");
-
-            let mut buffer_len = [0u8; size_of::<usize>()];
-
-            match bidir.rx.read_exact(&mut buffer_len) {
-                Ok(_) => {}
-                Err(e) => {
-                    eprintln!("[CLIENT] Error reading length from pipe: {e}");
-                    // Does this actually happen? We should kill the child or something instead
-                    return Err(SamError::SocketCommunicationFailed);
-                }
-            }
-
-            let data_length = usize::from_le_bytes(buffer_len);
-            let mut buffer = vec![0u8; data_length];
-
-            match bidir.rx.read_exact(&mut buffer) {
-                Ok(_) => {}
-                Err(e) => {
-                    eprintln!("[CLIENT] Error reading message from pipe: {e}");
-                    return Err(SamError::SocketCommunicationFailed);
-                }
-            };
-
-            let message = String::from_utf8_lossy(&buffer);
-
-            serde_json::from_str::<SteamResponse<Self::Response>>(&message)
-                .map_err(|error| {
-                    eprintln!("[CLIENT] Response deserialization failed: {error}");
-
-                    let column = error.column();
-                    let idx = column.saturating_sub(1);
-
-                    let start = idx.saturating_sub(30);
-                    let end = (idx + 30).min(message.len());
-
-                    let extract = &message[start..end];
-
-                    eprintln!("[CLIENT] Message: {extract}");
-                    eprintln!(
-                        "[CLIENT] Response type {}",
-                        std::any::type_name::<Self::Response>()
-                    );
-
-                    SamError::SocketCommunicationFailed
-                })
-                .and_then(|response| response.into())
-        } else {
-            eprintln!("[CLIENT] No orchestrator process to shutdown");
-            Err(SamError::SocketCommunicationFailed)
-        }
+        let command: SteamCommand = self.into();
+        dev_println!("[CLIENT] Sending command: {:?}", command);
+        ipc.request_response::<Self::Response, _>(&command)
     }
 }
 

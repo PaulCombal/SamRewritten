@@ -17,6 +17,7 @@ use crate::backend::progress_io::{
     MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
 };
 use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::application_actions::set_bulk_actions_enabled;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::utils::export_file::{ExportFile, FORMAT_VERSION, iso8601_utc_now};
 use crate::utils::ipc_types::{AppExport, ImportSummary, SteamCommand};
@@ -132,6 +133,9 @@ pub fn create_progress_actions(
                     return;
                 };
 
+                if let Some(app) = weak_app.upgrade() {
+                    set_bulk_actions_enabled(&app, false);
+                }
                 if let Some(grid) = weak_grid.upgrade() {
                     grid.set_sensitive(false);
                 }
@@ -197,6 +201,9 @@ pub fn create_progress_actions(
 
                 let result = handle.await.expect("[CLIENT] Failed to wait for export");
 
+                if let Some(app) = weak_app.upgrade() {
+                    set_bulk_actions_enabled(&app, true);
+                }
                 if let Some(grid) = weak_grid.upgrade() {
                     grid.set_sensitive(true);
                 }
@@ -428,6 +435,9 @@ pub fn create_progress_actions(
                     }
                 }
 
+                if let Some(app) = weak_app.upgrade() {
+                    set_bulk_actions_enabled(&app, false);
+                }
                 if let Some(grid) = weak_grid.upgrade() {
                     grid.set_sensitive(false);
                 }
@@ -480,6 +490,9 @@ pub fn create_progress_actions(
                 let (applied_ach, applied_stat, skipped_protected, errors) =
                     handle.await.expect("[CLIENT] Failed to wait for import");
 
+                if let Some(app) = weak_app.upgrade() {
+                    set_bulk_actions_enabled(&app, true);
+                }
                 if let Some(grid) = weak_grid.upgrade() {
                     grid.set_sensitive(true);
                 }

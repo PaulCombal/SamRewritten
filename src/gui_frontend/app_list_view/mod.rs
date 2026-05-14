@@ -55,11 +55,10 @@ use std::rc::Rc;
 
 use crate::backend::progress_io::MAX_CONCURRENT_APPS as MAX_CONCURRENT_IDLE;
 
-/// Recount how many apps are idling and propagate the resulting "can start
-/// idling?" decision onto every app in the store. Cards bind their idle
-/// button's `sensitive` property to this; when the cap is reached, every
-/// non-idling app's idle button greys out.
-fn recompute_idle_cap(list_store: &ListStore) {
+/// Full recount: scan the store, refresh `idle_count`, and propagate the
+/// resulting "can start idling?" decision onto every app. Use this after the
+/// store is repopulated (e.g. after a library refresh).
+pub(super) fn recompute_idle_cap(list_store: &ListStore, idle_count: &Cell<usize>) {
     let mut count = 0usize;
     for i in 0..list_store.n_items() {
         if let Some(app) = list_store.item(i).and_downcast::<GSteamAppObject>()
@@ -68,7 +67,30 @@ fn recompute_idle_cap(list_store: &ListStore) {
             count += 1;
         }
     }
+    idle_count.set(count);
     let can_start = count < MAX_CONCURRENT_IDLE;
+    for i in 0..list_store.n_items() {
+        if let Some(app) = list_store.item(i).and_downcast::<GSteamAppObject>()
+            && app.can_start_idling() != can_start
+        {
+            app.set_can_start_idling(can_start);
+        }
+    }
+}
+
+/// Apply a known delta (+1 / -1) to `idle_count`. Cards' `can_start_idling`
+/// only flips when the count crosses `MAX_CONCURRENT_IDLE` — otherwise this is
+/// O(1) and avoids the per-toggle full-store walk.
+fn apply_idle_cap_delta(list_store: &ListStore, idle_count: &Cell<usize>, delta: i32) {
+    let old_count = idle_count.get();
+    let new_count = (old_count as i32 + delta).max(0) as usize;
+    idle_count.set(new_count);
+    let was_under = old_count < MAX_CONCURRENT_IDLE;
+    let now_under = new_count < MAX_CONCURRENT_IDLE;
+    if was_under == now_under {
+        return;
+    }
+    let can_start = now_under;
     for i in 0..list_store.n_items() {
         if let Some(app) = list_store.item(i).and_downcast::<GSteamAppObject>()
             && app.can_start_idling() != can_start
@@ -101,6 +123,7 @@ pub fn create_main_ui(
     let launch_app_by_id_visible = Rc::new(Cell::new(false));
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
+    let idle_count: Rc<Cell<usize>> = Rc::new(Cell::new(0));
 
     // Create the UI components for the app view
     let (
@@ -356,6 +379,8 @@ pub fn create_main_ui(
     list_factory.connect_setup(clone!(
         #[strong]
         app_id,
+        #[strong]
+        idle_count,
         #[weak]
         application,
         #[weak]
@@ -477,6 +502,8 @@ pub fn create_main_ui(
                 card,
                 #[weak]
                 list_store,
+                #[strong]
+                idle_count,
                 move |button| {
                     let Some(app) = card.app_object() else {
                         return;
@@ -490,7 +517,7 @@ pub fn create_main_ui(
 
                     let app_id = app.app_id();
                     app.set_is_idling(active);
-                    recompute_idle_cap(&list_store);
+                    apply_idle_cap_delta(&list_store, &idle_count, if active { 1 } else { -1 });
 
                     let handle = spawn_blocking(move || {
                         if active {
@@ -503,6 +530,8 @@ pub fn create_main_ui(
                     MainContext::default().spawn_local(clone!(
                         #[weak]
                         list_store,
+                        #[strong]
+                        idle_count,
                         async move {
                             if let Ok(Err(e)) = handle.await {
                                 eprintln!(
@@ -510,7 +539,11 @@ pub fn create_main_ui(
                                     if active { "Launching" } else { "Stopping" }
                                 );
                                 app.set_is_idling(!active);
-                                recompute_idle_cap(&list_store);
+                                apply_idle_cap_delta(
+                                    &list_store,
+                                    &idle_count,
+                                    if active { -1 } else { 1 },
+                                );
                             }
                         }
                     ));
@@ -739,6 +772,7 @@ pub fn create_main_ui(
         &app_list_no_result_label,
         &list_stack,
         &search_entry,
+        idle_count.clone(),
     );
 
     let action_refresh_achievements_list = create_refresh_achievements_action(

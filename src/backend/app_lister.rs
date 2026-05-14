@@ -19,11 +19,13 @@ use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steamworks_types::AppId_t;
 use crate::utils::app_paths::get_app_cache_dir;
 use crate::utils::ipc_types::SamError;
+use quick_xml::Reader;
+use quick_xml::events::Event;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::fs;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufRead, BufReader};
 use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 
@@ -80,18 +82,50 @@ impl FromStr for AppModelType {
     }
 }
 
-#[derive(Deserialize)]
-pub struct XmlGame {
-    #[serde(rename = "$text")]
-    pub app_id: u32,
-    #[serde(rename = "@type")]
-    pub app_type: Option<String>,
-}
-
-#[derive(Deserialize)]
-struct XmlGames {
-    #[serde(rename = "game")]
-    pub games: Vec<XmlGame>,
+/// Walks `<game type="...">N</game>` elements from `reader`, calling `visit`
+/// for each. Avoids loading the full ~200k-entry list into memory.
+fn for_each_xml_game<R: BufRead>(
+    reader: &mut Reader<R>,
+    mut visit: impl FnMut(u32, Option<&str>),
+) -> Result<(), SamError> {
+    let mut buf = Vec::with_capacity(256);
+    let mut in_game = false;
+    let mut game_type: Option<String> = None;
+    loop {
+        buf.clear();
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(e)) if e.name().as_ref() == b"game" => {
+                in_game = true;
+                game_type = e
+                    .attributes()
+                    .filter_map(|a| a.ok())
+                    .find(|a| a.key.as_ref() == b"type")
+                    .and_then(|a| {
+                        std::str::from_utf8(a.value.as_ref())
+                            .ok()
+                            .map(|s| s.to_owned())
+                    });
+            }
+            Ok(Event::End(e)) if e.name().as_ref() == b"game" => {
+                in_game = false;
+                game_type = None;
+            }
+            Ok(Event::Text(t)) if in_game => {
+                if let Ok(text) = t.decode()
+                    && let Ok(app_id) = text.trim().parse::<u32>()
+                {
+                    visit(app_id, game_type.as_deref());
+                }
+            }
+            Ok(Event::Eof) => break,
+            Err(e) => {
+                eprintln!("[ORCHESTRATOR] XML parse error: {e}");
+                return Err(SamError::AppListRetrievalFailed);
+            }
+            _ => {}
+        }
+    }
+    Ok(())
 }
 impl<'a> AppLister<'a> {
     pub fn new(steam_apps_001: &'a SteamApps001, steam_apps: &'a SteamApps) -> Self {
@@ -130,21 +164,9 @@ impl<'a> AppLister<'a> {
         Ok(response)
     }
 
-    fn load_app_list_file(&self) -> Result<XmlGames, SamError> {
-        let f = File::open(&self.app_list_local).map_err(|_| SamError::AppListRetrievalFailed)?;
-        let f = BufReader::new(f);
-        let xml_data: XmlGames =
-            quick_xml::de::from_reader(f).map_err(|_| SamError::AppListRetrievalFailed)?;
-        Ok(xml_data)
-    }
-
-    fn load_app_list_str(&self, source: &str) -> Result<XmlGames, SamError> {
-        let xml_data: XmlGames =
-            quick_xml::de::from_str(source).map_err(|_| SamError::AppListRetrievalFailed)?;
-        Ok(xml_data)
-    }
-
-    fn get_xml_games(&self) -> Result<XmlGames, SamError> {
+    /// Refresh the local cached file if missing or older than a week. Returns
+    /// once the file at `self.app_list_local` is up to date.
+    fn ensure_local_app_list(&self) -> Result<(), SamError> {
         let should_update = match fs::metadata(&self.app_list_local) {
             Ok(metadata) => {
                 let last_update = metadata
@@ -156,14 +178,10 @@ impl<'a> AppLister<'a> {
             Err(_) => true,
         };
 
-        let xml_games: XmlGames;
-
         if should_update {
             let app_list_str = self.download_app_list_str()?;
-            xml_games = self.load_app_list_str(&app_list_str)?;
-
             dev_println!(
-                "[ORCHESTRATOR] App list loaded. Saving in:  {}",
+                "[ORCHESTRATOR] App list downloaded. Saving in:  {}",
                 &self.app_list_local
             );
             fs::write(&self.app_list_local, &app_list_str).map_err(|e| {
@@ -172,10 +190,8 @@ impl<'a> AppLister<'a> {
             })?;
         } else {
             dev_println!("[ORCHESTRATOR] Loading app list from local location");
-            xml_games = self.load_app_list_file()?;
         }
-
-        Ok(xml_games)
+        Ok(())
     }
 
     fn get_app_image_url(&self, app_id: &AppId_t) -> Option<String> {
@@ -222,7 +238,11 @@ impl<'a> AppLister<'a> {
         None
     }
 
-    pub fn get_app(&self, app_id: AppId_t, xml_game: &XmlGame) -> Result<AppModel, SamError> {
+    fn build_app_model(
+        &self,
+        app_id: AppId_t,
+        app_type: Option<&str>,
+    ) -> Result<AppModel, SamError> {
         let app_name = self
             .steam_apps_001
             .get_app_data(&app_id, &SteamApps001AppDataKeys::Name.as_string())
@@ -241,16 +261,16 @@ impl<'a> AppLister<'a> {
             .and_then(|s| s.parse().ok());
         let image_url = self.get_app_image_url(&app_id);
 
+        let app_type = match app_type {
+            None => AppModelType::App,
+            Some(s) => AppModelType::from_str(s).map_err(|_| SamError::AppListRetrievalFailed)?,
+        };
+
         Ok(AppModel {
             app_id,
             app_name,
             image_url,
-            app_type: if xml_game.app_type.as_ref().is_none() {
-                AppModelType::App
-            } else {
-                AppModelType::from_str(xml_game.app_type.as_ref().unwrap())
-                    .map_err(|_| SamError::AppListRetrievalFailed)?
-            },
+            app_type,
             developer,
             metacritic_score,
             playtime_minutes: None,
@@ -259,22 +279,24 @@ impl<'a> AppLister<'a> {
     }
 
     pub fn get_owned_apps(&self) -> Result<Vec<AppModel>, SamError> {
-        let xml_games = self.get_xml_games()?;
+        self.ensure_local_app_list()?;
 
-        // IClientUserStats::GetNumAchievedAchievements( 291550, ) = 0,
-        // IClientUserStats::GetNumAchievements( 291550, ) = 65
+        let file =
+            File::open(&self.app_list_local).map_err(|_| SamError::AppListRetrievalFailed)?;
+        let mut reader = Reader::from_reader(BufReader::new(file));
 
-        let mut models = vec![];
-        for xml_game in xml_games.games {
-            let app_id: AppId_t = xml_game.app_id;
-
+        let mut models = Vec::new();
+        for_each_xml_game(&mut reader, |app_id, app_type| {
             if !self.steam_apps.is_subscribed_app(app_id).unwrap_or(false) {
-                continue;
+                return;
             }
-
-            let app = self.get_app(app_id, &xml_game)?;
-            models.push(app)
-        }
+            match self.build_app_model(app_id, app_type) {
+                Ok(app) => models.push(app),
+                Err(e) => {
+                    dev_println!("[ORCHESTRATOR] Skipping app {app_id}: {e}");
+                }
+            }
+        })?;
 
         Ok(models)
     }

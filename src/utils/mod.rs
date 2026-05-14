@@ -19,5 +19,6 @@ pub mod bidir_child;
 pub mod dev_println;
 pub mod export_file;
 pub mod format;
+pub mod ipc_client;
 pub mod ipc_types;
 pub mod steam_locator;

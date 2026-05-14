@@ -33,17 +33,9 @@ mod imp {
     use gtk::{Box, Image, Label, Orientation};
     use std::cell::{Cell, RefCell};
 
-    const HOVER_DURATION_MS: f64 = 800.0;
+    const HOVER_DURATION_MS: f64 = 200.0;
     const BUTTONS_OPACITY_REST: f64 = 0.85;
     const BUTTONS_OPACITY_HOVER: f64 = 1.0;
-
-    fn ease_in_out_cubic(t: f64) -> f64 {
-        if t < 0.5 {
-            4.0 * t * t * t
-        } else {
-            1.0 - (-2.0 * t + 2.0).powi(3) / 2.0
-        }
-    }
 
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::SteamAppCard)]
@@ -355,7 +347,7 @@ mod imp {
                 .size_allocate(&gtk::Allocation::new(0, 0, width, internal_h), -1);
 
             let overflow = (image_nat_h - height).max(0);
-            let eased = ease_in_out_cubic(self.hover_progress.get());
+            let eased = self.hover_progress.get();
             let y_offset = -((overflow as f64 * eased) as i32);
 
             self.button_row.set_opacity(
