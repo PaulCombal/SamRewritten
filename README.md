@@ -87,6 +87,7 @@ If issues persist, please open an issue including your distribution, version, an
 * Bulk lock/unlock achievements for all or selected apps
 * Schedule achievement unlocks over a custom period
 * Edit statistics in real-time
+* Idle apps: Appear in-game until you toggle it off
 * A light and dark theme
 
 ## Limitations
@@ -112,6 +113,7 @@ The CLI allows you to:
 * List apps, achievements, and stats
 * Lock and unlock achievements
 * Bulk lock and unlock achievements
+* Idle apps: Appear in-game until SIGINT (Ctrl+C)
 
 When using a graphical version of SamRewritten, you can use `--auto-open=X` where `X` is an AppId, to open SamRewritten
 directly on the corresponding app's details page.

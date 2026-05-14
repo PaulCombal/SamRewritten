@@ -25,7 +25,7 @@ use crate::gui_frontend::application_actions::{set_app_action_enabled, setup_app
 use crate::gui_frontend::dialogs::warn;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::gsettings::get_settings;
-use crate::gui_frontend::request::{Request, StopApp};
+use crate::gui_frontend::request::{LaunchApp, Request, StopApp};
 use crate::gui_frontend::ui_components::{
     create_about_dialog, create_context_menu_button, set_context_popover_to_app_list_context,
 };
@@ -440,6 +440,41 @@ pub fn create_main_ui(
                         .arg(format!("--auto-open={app_id_to_bind}"))
                         .spawn()
                         .expect("Could not start child process");
+                }
+            ));
+
+            card.idle_button().connect_toggled(clone!(
+                #[weak]
+                card,
+                move |button| {
+                    let Some(app) = card.app_object() else {
+                        return;
+                    };
+                    let active = button.is_active();
+                    // If the toggle already agrees with the app state, the change came from
+                    // the property-expression sync on cell rebind — not a user action.
+                    if active == app.is_idling() {
+                        return;
+                    }
+                    let app_id = app.app_id();
+                    app.set_is_idling(active);
+                    let handle = spawn_blocking(move || {
+                        if active {
+                            LaunchApp { app_id }.request().map(|_| ())
+                        } else {
+                            StopApp { app_id }.request().map(|_| ())
+                        }
+                    });
+
+                    MainContext::default().spawn_local(async move {
+                        if let Ok(Err(e)) = handle.await {
+                            eprintln!(
+                                "[CLIENT] {} app {app_id} failed: {e:?}",
+                                if active { "Launching" } else { "Stopping" }
+                            );
+                            app.set_is_idling(!active);
+                        }
+                    });
                 }
             ));
 

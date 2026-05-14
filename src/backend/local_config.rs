@@ -55,8 +55,9 @@ struct SteamSection {
 
 #[derive(Deserialize, Default)]
 struct AppEntry {
+    // Steam occasionally stores negative playtime values, so accept i32 here
     #[serde(rename = "Playtime", default)]
-    playtime: Option<u32>,
+    playtime: Option<i32>,
     #[serde(rename = "LastPlayed", default)]
     last_played: Option<u64>,
 }
@@ -77,7 +78,8 @@ pub fn parse_localconfig(path: &Path) -> Result<PlaytimeMap, SamError> {
 
     let mut map = PlaytimeMap::new();
     for (key, entry) in parsed.software.valve.steam.apps {
-        if entry.playtime.is_none() && entry.last_played.is_none() {
+        let playtime_minutes = entry.playtime.filter(|&v| v >= 0).map(|v| v as u32);
+        if playtime_minutes.is_none() && entry.last_played.is_none() {
             continue;
         }
         let Ok(app_id) = key.parse::<AppId_t>() else {
@@ -86,7 +88,7 @@ pub fn parse_localconfig(path: &Path) -> Result<PlaytimeMap, SamError> {
         map.insert(
             app_id,
             AppPlaytime {
-                playtime_minutes: entry.playtime,
+                playtime_minutes,
                 last_played: entry.last_played,
             },
         );

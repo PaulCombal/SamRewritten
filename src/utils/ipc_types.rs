@@ -57,6 +57,7 @@ pub enum SteamCommand {
     LaunchApp(u32),
     StopApp(u32),
     StopApps,
+    GetRunningApps,
     Shutdown,
     Status, // Ask for status of the process
     GetAchievements(u32),

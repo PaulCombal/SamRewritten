@@ -65,7 +65,7 @@ fn send_app_command(
 
 pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
     let mut connected_steam: Option<ConnectedSteam> = None;
-    let mut children_processes: HashMap<u32, BidirChild> = HashMap::new();
+    let mut children_processes: HashMap<u32, (BidirChild, usize)> = HashMap::new();
 
     loop {
         dev_println!("[ORCHESTRATOR] Main loop...");
@@ -113,7 +113,7 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
 fn process_command(
     command: SteamCommand,
     tx: &mut Sender,
-    children_processes: &mut HashMap<u32, BidirChild>,
+    children_processes: &mut HashMap<u32, (BidirChild, usize)>,
     connected_steam: &mut ConnectedSteam,
 ) -> bool {
     static SOCKET_ERROR_RESPONSE: LazyLock<Vec<u8>> = LazyLock::new(|| {
@@ -199,22 +199,26 @@ fn process_command(
                 return true;
             }
 
-            // 1. Check if we own a process for this app
-            if children_processes.contains_key(&app_id) {
-                eprintln!("[ORCHESTRATOR] App {} is already running", app_id);
-                let response: SteamResponse<()> = SteamResponse::Error(SamError::UnknownError);
-                let response = response.sam_serialize();
+            // 1. If a process for this app is already alive, just bump the refcount.
+            if let Some((_, refcount)) = children_processes.get_mut(&app_id) {
+                *refcount += 1;
+                dev_println!(
+                    "[ORCHESTRATOR] App {} refcount now {}",
+                    app_id,
+                    *refcount
+                );
+                let response = SteamResponse::Success(true).sam_serialize();
                 tx.write_all(&response)
                     .expect("[ORCHESTRATOR] Failed to send response");
                 return true;
             }
 
-            // 2. Launch the process
+            // 2. Otherwise launch a new process with refcount = 1.
             let current_exe = get_executable_path();
             let child = BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
                 .expect("Could not create app server process");
 
-            children_processes.insert(app_id, child);
+            children_processes.insert(app_id, (child, 1));
             let response = SteamResponse::Success(true);
             let response = response.sam_serialize();
             tx.write_all(&response)
@@ -230,16 +234,30 @@ fn process_command(
                 return true;
             }
 
-            if !children_processes.contains_key(&app_id) {
+            let Some((_, refcount)) = children_processes.get_mut(&app_id) else {
                 eprintln!("[ORCHESTRATOR] App {} is not running", app_id);
                 let response: SteamResponse<()> = SteamResponse::Error(SamError::UnknownError);
                 let response = response.sam_serialize();
                 tx.write_all(&response)
                     .expect("[ORCHESTRATOR] Failed to send response");
                 return true;
+            };
+
+            *refcount -= 1;
+            if *refcount > 0 {
+                dev_println!(
+                    "[ORCHESTRATOR] App {} still wanted, refcount now {}",
+                    app_id,
+                    *refcount
+                );
+                let response = SteamResponse::Success(true).sam_serialize();
+                tx.write_all(&response)
+                    .expect("[ORCHESTRATOR] Failed to send response");
+                return true;
             }
 
-            let mut bidir_opt = children_processes.remove(&app_id);
+            // Refcount hit zero — actually shut the process down.
+            let mut bidir_opt = children_processes.remove(&app_id).map(|(b, _)| b);
             let bidir = bidir_opt.as_mut().unwrap();
             let response = match send_app_command(bidir, SteamCommand::Shutdown) {
                 Ok(response) => response,
@@ -263,7 +281,7 @@ fn process_command(
         SteamCommand::StopApps => {
             dev_println!("[ORCHESTRATOR] StopApps");
 
-            for (app_id, child) in children_processes.iter_mut() {
+            for (app_id, (child, _)) in children_processes.iter_mut() {
                 let _ = send_app_command(child, SteamCommand::Shutdown);
                 dev_println!("[ORCHESTRATOR] Sent shutdown command to app {app_id}");
                 child
@@ -281,7 +299,7 @@ fn process_command(
         }
 
         SteamCommand::Shutdown => {
-            for (app_id, child) in children_processes.iter_mut() {
+            for (app_id, (child, _)) in children_processes.iter_mut() {
                 let _ = send_app_command(child, SteamCommand::Shutdown);
                 dev_println!("[ORCHESTRATOR] Sent shutdown command to app {app_id}");
                 child
@@ -300,6 +318,13 @@ fn process_command(
         SteamCommand::Status => {
             let response = SteamResponse::Success(true);
             let response = response.sam_serialize();
+            tx.write_all(&response)
+                .expect("[ORCHESTRATOR] Failed to send response");
+        }
+
+        SteamCommand::GetRunningApps => {
+            let running: Vec<u32> = children_processes.keys().copied().collect();
+            let response = SteamResponse::Success(running).sam_serialize();
             tx.write_all(&response)
                 .expect("[ORCHESTRATOR] Failed to send response");
         }
@@ -330,7 +355,7 @@ fn process_command(
                 return true;
             }
 
-            if let Some(bidir) = children_processes.get_mut(&app_id) {
+            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
                 match send_app_command(bidir, SteamCommand::GetAchievements(app_id)) {
                     Ok(response) => {
                         tx.write_all(&response)
@@ -359,7 +384,7 @@ fn process_command(
                 return true;
             }
 
-            if let Some(bidir) = children_processes.get_mut(&app_id) {
+            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
                 match send_app_command(bidir, SteamCommand::GetStats(app_id)) {
                     Ok(response) => {
                         tx.write_all(&response)
@@ -388,7 +413,7 @@ fn process_command(
                 return true;
             }
 
-            if let Some(bidir) = children_processes.get_mut(&app_id) {
+            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
                 match send_app_command(
                     bidir,
                     SteamCommand::SetAchievement(app_id, unlocked, achievement_id, store),
@@ -462,7 +487,7 @@ fn process_command(
                 return true;
             }
 
-            if let Some(bidir) = children_processes.get_mut(&app_id) {
+            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
                 match send_app_command(bidir, SteamCommand::StoreStatsAndAchievements(app_id)) {
                     Ok(response) => {
                         tx.write_all(&response)
@@ -483,7 +508,7 @@ fn process_command(
         }
 
         SteamCommand::SetIntStat(app_id, stat_id, value) => {
-            if let Some(bidir) = children_processes.get_mut(&app_id) {
+            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
                 match send_app_command(bidir, SteamCommand::SetIntStat(app_id, stat_id, value)) {
                     Ok(response) => {
                         tx.write_all(&response)
@@ -504,7 +529,7 @@ fn process_command(
         }
 
         SteamCommand::SetFloatStat(app_id, stat_id, value) => {
-            if let Some(bidir) = children_processes.get_mut(&app_id) {
+            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
                 match send_app_command(bidir, SteamCommand::SetFloatStat(app_id, stat_id, value)) {
                     Ok(response) => {
                         tx.write_all(&response)
@@ -525,7 +550,7 @@ fn process_command(
         }
 
         SteamCommand::ResetStats(app_id, achievements_too) => {
-            if let Some(bidir) = children_processes.get_mut(&app_id) {
+            if let Some((bidir, _)) = children_processes.get_mut(&app_id) {
                 match send_app_command(bidir, SteamCommand::ResetStats(app_id, achievements_too)) {
                     Ok(response) => {
                         tx.write_all(&response)

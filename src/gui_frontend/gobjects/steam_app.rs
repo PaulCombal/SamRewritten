@@ -176,6 +176,9 @@ mod imp {
         #[property(get, set)]
         last_played: Cell<u64>,
 
+        #[property(get, set)]
+        is_idling: Cell<bool>,
+
         // Cached for hot-path filter/sort reads (not GObject properties).
         pub(super) is_junk: Cell<bool>,
         pub(super) lowercase_name: OnceCell<Rc<String>>,

@@ -49,6 +49,8 @@ mod imp {
         pub name_label: gtk::Label,
         #[property(get)]
         pub launch_button: gtk::Button,
+        #[property(get)]
+        pub idle_button: gtk::ToggleButton,
         pub manage_button_box: gtk::Box, // Contains Manage + New
         #[property(get)]
         pub manage_button: gtk::Button,
@@ -95,6 +97,22 @@ mod imp {
             self.launch_button.add_css_class("opaque");
             self.launch_button.set_child(Some(&launch_box));
 
+            // 2b. Setup Idle Toggle Button
+            let idle_icon = Image::builder()
+                .icon_name("emoji-recent-symbolic")
+                .pixel_size(11)
+                .build();
+            let idle_label = Label::new(Some("Idle"));
+            let idle_box = Box::builder()
+                .spacing(8)
+                .margin_start(10)
+                .margin_end(10)
+                .build();
+            idle_box.append(&idle_icon);
+            idle_box.append(&idle_label);
+            self.idle_button.add_css_class("opaque");
+            self.idle_button.set_child(Some(&idle_box));
+
             // 3. Setup Manage Button (Linked)
             let manage_icon = Image::builder()
                 .icon_name("document-edit-symbolic")
@@ -118,6 +136,8 @@ mod imp {
             self.manage_button.add_css_class("suggested-action");
             self.manage_button_new.add_css_class("opaque");
             self.manage_button_new.set_icon_name("window-new-symbolic");
+            self.manage_button_new
+                .set_tooltip_text(Some("Manage this app in a new window"));
             if let Some(img) = self
                 .manage_button_new
                 .child()
@@ -156,6 +176,7 @@ mod imp {
                 .height_request(33)
                 .build();
             button_row.append(&self.manage_button_box);
+            button_row.append(&self.idle_button);
             button_row.append(&self.launch_button);
 
             self.bottom_container.set_orientation(Orientation::Vertical);
@@ -191,6 +212,9 @@ mod imp {
             app_obj_expr
                 .chain_property::<GSteamAppObject>("image_url")
                 .bind(&self.image, "url", gtk::Widget::NONE);
+            app_obj_expr
+                .chain_property::<GSteamAppObject>("is_idling")
+                .bind(&self.idle_button, "active", gtk::Widget::NONE);
 
             let opacity_closure = glib::RustClosure::new(move |values: &[glib::Value]| {
                 let is_selected = values

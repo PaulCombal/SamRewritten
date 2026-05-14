@@ -110,6 +110,9 @@ pub struct StopApp {
 }
 
 #[derive(Debug, Clone)]
+pub struct GetRunningApps;
+
+#[derive(Debug, Clone)]
 pub struct GetAchievements {
     pub app_id: u32,
 }
@@ -173,6 +176,10 @@ impl Request for StopApp {
     type Response = bool;
 }
 
+impl Request for GetRunningApps {
+    type Response = Vec<u32>;
+}
+
 impl Request for GetAchievements {
     type Response = Vec<AchievementInfo>;
 }
@@ -226,6 +233,12 @@ impl From<LaunchApp> for SteamCommand {
 impl From<StopApp> for SteamCommand {
     fn from(val: StopApp) -> Self {
         SteamCommand::StopApp(val.app_id)
+    }
+}
+
+impl From<GetRunningApps> for SteamCommand {
+    fn from(_val: GetRunningApps) -> Self {
+        SteamCommand::GetRunningApps
     }
 }
 

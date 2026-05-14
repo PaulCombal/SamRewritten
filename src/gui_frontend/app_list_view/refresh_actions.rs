@@ -19,7 +19,7 @@ use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::gobjects::stat::GStatObject;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{
-    GetAchievements, GetStats, GetSubscribedAppList, Request, ResetStats,
+    GetAchievements, GetRunningApps, GetStats, GetSubscribedAppList, Request, ResetStats,
 };
 use crate::utils::ipc_types::SamError;
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
@@ -104,6 +104,30 @@ pub fn create_refresh_app_list_action(
                                 list_scrolled_window.set_child(Some(&grid_view));
                                 list_stack.set_visible_child_name("list");
                                 app_list_no_result_label.set_text("No results. Check for spelling mistakes or try typing an App Id.");
+
+                                // Sync idle state from the orchestrator: any app it's
+                                // currently holding open should show as idling in the UI.
+                                let running = spawn_blocking(|| GetRunningApps.request());
+                                MainContext::default().spawn_local(clone!(
+                                    #[weak]
+                                    list_store,
+                                    async move {
+                                        let Ok(Ok(running)) = running.await else {
+                                            return;
+                                        };
+                                        let running: std::collections::HashSet<u32> =
+                                            running.into_iter().collect();
+                                        let n = list_store.n_items();
+                                        for i in 0..n {
+                                            if let Some(item) = list_store.item(i)
+                                                && let Ok(app) = item.downcast::<GSteamAppObject>()
+                                                && running.contains(&app.app_id())
+                                            {
+                                                app.set_is_idling(true);
+                                            }
+                                        }
+                                    }
+                                ));
                             }
                         },
                         Ok(Err(SamError::AppListRetrievalFailed)) => {

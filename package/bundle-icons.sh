@@ -2,10 +2,9 @@
 SRC=/usr/share/icons/Adwaita
 DST=assets/icons/Adwaita
 
-if [ ! -d "$DST" ]; then
-    mkdir -p "$DST/symbolic/actions" "$DST/symbolic/ui"
+mkdir -p "$DST/symbolic/actions" "$DST/symbolic/ui" "$DST/symbolic/categories"
 
-    cat <<EOF > "$DST/index.theme"
+cat <<EOF > "$DST/index.theme"
 [Icon Theme]
 Name=Adwaita
 Comment=The Only One trimmed for SamRewritten
@@ -28,7 +27,7 @@ SmallSizes=16
 PanelDefault=32
 PanelSizes=16,22,32,48,64,72,96,128
 
-Directories=symbolic/actions,symbolic/ui
+Directories=symbolic/actions,symbolic/ui,symbolic/categories
 
 [symbolic/actions]
 Context=Actions
@@ -43,19 +42,27 @@ Size=16
 MinSize=8
 MaxSize=512
 Type=Scalable
+
+[symbolic/categories]
+Context=Categories
+Size=16
+MinSize=8
+MaxSize=512
+Type=Scalable
 EOF
 
-    cp "$SRC/symbolic/actions/action-unavailable-symbolic.svg" \
-       "$SRC/symbolic/actions/document-edit-symbolic.svg" \
-       "$SRC/symbolic/actions/edit-find-symbolic.svg" \
-       "$SRC/symbolic/actions/go-previous-symbolic.svg" \
-       "$SRC/symbolic/actions/go-previous-symbolic-rtl.svg" \
-       "$SRC/symbolic/actions/go-up-symbolic.svg" \
-       "$SRC/symbolic/actions/media-playback-start-symbolic.svg" \
-       "$SRC/symbolic/actions/open-menu-symbolic.svg" \
-       "$DST/symbolic/actions/"
+cp -f "$SRC/symbolic/actions/action-unavailable-symbolic.svg" \
+      "$SRC/symbolic/actions/document-edit-symbolic.svg" \
+      "$SRC/symbolic/actions/edit-find-symbolic.svg" \
+      "$SRC/symbolic/actions/go-previous-symbolic.svg" \
+      "$SRC/symbolic/actions/go-previous-symbolic-rtl.svg" \
+      "$SRC/symbolic/actions/go-up-symbolic.svg" \
+      "$SRC/symbolic/actions/media-playback-start-symbolic.svg" \
+      "$SRC/symbolic/actions/open-menu-symbolic.svg" \
+      "$DST/symbolic/actions/"
 
-    cp "$SRC/symbolic/ui/window-new-symbolic.svg" "$DST/symbolic/ui/"
-fi
+cp -f "$SRC/symbolic/ui/window-new-symbolic.svg" "$DST/symbolic/ui/"
+
+cp -f "$SRC/symbolic/categories/emoji-recent-symbolic.svg" "$DST/symbolic/categories/"
 
 exec "$@"

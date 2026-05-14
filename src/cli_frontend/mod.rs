@@ -18,6 +18,9 @@ use crate::backend::app_manager::AppManager;
 use crate::backend::connected_steam::ConnectedSteam;
 use clap::{Args, Parser, Subcommand};
 use serde_json::json;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+static INTERRUPTED: AtomicBool = AtomicBool::new(false);
 
 #[derive(Parser)]
 #[clap(
@@ -53,6 +56,9 @@ enum Command {
         ids: Ids,
     },
     LockAll {
+        app_id: u32,
+    },
+    Idle {
         app_id: u32,
     },
 }
@@ -257,6 +263,28 @@ pub fn main() -> std::process::ExitCode {
             };
         }
 
+        Command::Idle { app_id } => {
+            let _manager = match AppManager::new_connected(app_id) {
+                Ok(manager) => manager,
+                Err(e) => {
+                    eprintln!("Failed to connect to Steam: {}", e);
+                    return std::process::ExitCode::FAILURE;
+                }
+            };
+
+            if let Err(e) = install_interrupt_handler() {
+                eprintln!("Failed to install interrupt handler: {}", e);
+                return std::process::ExitCode::FAILURE;
+            }
+
+            eprintln!("Idling app {}. Press Ctrl+C to stop.", app_id);
+            while !INTERRUPTED.load(Ordering::SeqCst) {
+                std::thread::sleep(std::time::Duration::from_millis(200));
+            }
+            eprintln!("Stopping idle for app {}...", app_id);
+            // _manager drops here → ConnectedSteam::drop releases the pipe cleanly.
+        }
+
         Command::LockAll { app_id } => {
             let manager = match AppManager::new_connected(app_id) {
                 Ok(manager) => manager,
@@ -280,4 +308,55 @@ pub fn main() -> std::process::ExitCode {
     }
 
     std::process::ExitCode::SUCCESS
+}
+
+#[cfg(unix)]
+fn install_interrupt_handler() -> Result<(), &'static str> {
+    use std::os::raw::c_int;
+
+    const SIGINT: c_int = 2;
+    const SIGTERM: c_int = 15;
+    type SigHandler = extern "C" fn(c_int);
+
+    unsafe extern "C" {
+        fn signal(signum: c_int, handler: SigHandler) -> SigHandler;
+    }
+
+    extern "C" fn on_signal(_: c_int) {
+        INTERRUPTED.store(true, Ordering::SeqCst);
+    }
+
+    unsafe {
+        signal(SIGINT, on_signal);
+        signal(SIGTERM, on_signal);
+    }
+    Ok(())
+}
+
+#[cfg(windows)]
+fn install_interrupt_handler() -> Result<(), &'static str> {
+    type Bool = i32;
+    type Dword = u32;
+    type PhandlerRoutine = unsafe extern "system" fn(Dword) -> Bool;
+
+    unsafe extern "system" {
+        fn SetConsoleCtrlHandler(handler: Option<PhandlerRoutine>, add: Bool) -> Bool;
+    }
+
+    unsafe extern "system" fn on_ctrl(ctrl_type: Dword) -> Bool {
+        // CTRL_C_EVENT, CTRL_BREAK_EVENT, CTRL_CLOSE_EVENT
+        if ctrl_type <= 2 {
+            INTERRUPTED.store(true, Ordering::SeqCst);
+            1
+        } else {
+            0
+        }
+    }
+
+    let ok = unsafe { SetConsoleCtrlHandler(Some(on_ctrl), 1) };
+    if ok == 0 {
+        Err("SetConsoleCtrlHandler returned FALSE")
+    } else {
+        Ok(())
+    }
 }
