@@ -163,6 +163,7 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
         item.set_action_and_target_value(Some("app.app-theme"), Some(&value.to_variant()));
         theme_section.append_item(&item);
     }
+    theme_section.append(Some("Disable animations"), Some("app.disable-animations"));
 
     menu_model.append_section(Some("Appearance"), &theme_section);
 }

@@ -3,6 +3,9 @@ use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use std::sync::atomic::AtomicBool;
+
+pub static ANIMATIONS_DISABLED: AtomicBool = AtomicBool::new(false);
 
 glib::wrapper! {
     pub struct SteamAppCard(ObjectSubclass<imp::SteamAppCard>)
@@ -28,7 +31,19 @@ mod imp {
     use glib::Properties;
     use gtk::glib::clone;
     use gtk::{Box, Image, Label, Orientation};
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
+
+    const HOVER_DURATION_MS: f64 = 800.0;
+    const BUTTONS_OPACITY_REST: f64 = 0.85;
+    const BUTTONS_OPACITY_HOVER: f64 = 1.0;
+
+    fn ease_in_out_cubic(t: f64) -> f64 {
+        if t < 0.5 {
+            4.0 * t * t * t
+        } else {
+            1.0 - (-2.0 * t + 2.0).powi(3) / 2.0
+        }
+    }
 
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::SteamAppCard)]
@@ -38,6 +53,11 @@ mod imp {
         #[property(get, set)]
         pub is_selected: std::cell::Cell<bool>,
 
+        pub hover_progress: Cell<f64>,
+        pub hover_target: Cell<f64>,
+        pub hover_last_frame: Cell<i64>,
+        pub hover_animating: Cell<bool>,
+
         pub overlay: gtk::Overlay,
         pub gradient: GradientOverlay,
         pub main_layout: gtk::Box,
@@ -46,6 +66,7 @@ mod imp {
 
         // UI elements over the overlay
         pub bottom_container: gtk::Box,
+        pub button_row: gtk::Box,
         pub name_label: gtk::Label,
         #[property(get)]
         pub launch_button: gtk::Button,
@@ -167,22 +188,21 @@ mod imp {
                 .set_ellipsize(gtk::pango::EllipsizeMode::Middle);
 
             // 5. Setup Bottom Overlay Container
-            let button_row = Box::builder()
-                .orientation(Orientation::Horizontal)
-                .margin_start(20)
-                .margin_bottom(20)
-                .margin_top(5)
-                .spacing(10)
-                .height_request(33)
-                .build();
-            button_row.append(&self.manage_button_box);
-            button_row.append(&self.idle_button);
-            button_row.append(&self.launch_button);
+            self.button_row.set_orientation(Orientation::Horizontal);
+            self.button_row.set_margin_start(20);
+            self.button_row.set_margin_bottom(20);
+            self.button_row.set_margin_top(5);
+            self.button_row.set_spacing(10);
+            self.button_row.set_height_request(33);
+            self.button_row.set_opacity(BUTTONS_OPACITY_REST);
+            self.button_row.append(&self.manage_button_box);
+            self.button_row.append(&self.idle_button);
+            self.button_row.append(&self.launch_button);
 
             self.bottom_container.set_orientation(Orientation::Vertical);
             self.bottom_container.set_valign(gtk::Align::End);
             self.bottom_container.append(&self.name_label);
-            self.bottom_container.append(&button_row);
+            self.bottom_container.append(&self.button_row);
 
             // 6. Setup Checkbox (Top Left)
             self.check_button.add_css_class("osd");
@@ -216,6 +236,30 @@ mod imp {
                 .chain_property::<GSteamAppObject>("is_idling")
                 .bind(&self.idle_button, "active", gtk::Widget::NONE);
 
+            // Idle button is sensitive when this app is currently idling
+            // (so it can be stopped) or when the global idle cap allows
+            // starting a new one. `can_start_idling` is kept in sync
+            // across the store by the controller code.
+            let idle_sensitive_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+                let is_idling = values
+                    .get(1)
+                    .and_then(|v| v.get::<bool>().ok())
+                    .unwrap_or(false);
+                let can_start = values
+                    .get(2)
+                    .and_then(|v| v.get::<bool>().ok())
+                    .unwrap_or(true);
+                Some((is_idling || can_start).to_value())
+            });
+            let idle_sensitive_expr = gtk::ClosureExpression::new::<bool>(
+                &[
+                    app_obj_expr.chain_property::<GSteamAppObject>("is_idling"),
+                    app_obj_expr.chain_property::<GSteamAppObject>("can_start_idling"),
+                ],
+                idle_sensitive_closure,
+            );
+            idle_sensitive_expr.bind(&self.idle_button, "sensitive", gtk::Widget::NONE);
+
             let opacity_closure = glib::RustClosure::new(move |values: &[glib::Value]| {
                 let is_selected = values
                     .get(1)
@@ -238,6 +282,23 @@ mod imp {
             opacity_expr.bind(&self.check_button, "opacity", gtk::Widget::NONE);
 
             // 9. Behavior
+            let motion = gtk::EventControllerMotion::new();
+            motion.connect_enter(clone!(
+                #[weak]
+                obj,
+                move |_, _, _| {
+                    obj.imp().start_hover_anim(1.0);
+                }
+            ));
+            motion.connect_leave(clone!(
+                #[weak]
+                obj,
+                move |_| {
+                    obj.imp().start_hover_anim(0.0);
+                }
+            ));
+            obj.add_controller(motion);
+
             let gesture = gtk::GestureClick::new();
             gesture.set_propagation_phase(gtk::PropagationPhase::Capture);
             let gesture = gtk::GestureClick::new();
@@ -292,8 +353,17 @@ mod imp {
 
             self.main_layout
                 .size_allocate(&gtk::Allocation::new(0, 0, width, internal_h), -1);
+
+            let overflow = (image_nat_h - height).max(0);
+            let eased = ease_in_out_cubic(self.hover_progress.get());
+            let y_offset = -((overflow as f64 * eased) as i32);
+
+            self.button_row.set_opacity(
+                BUTTONS_OPACITY_REST + (BUTTONS_OPACITY_HOVER - BUTTONS_OPACITY_REST) * eased,
+            );
+
             self.image
-                .size_allocate(&gtk::Allocation::new(0, 0, width, image_nat_h), -1);
+                .size_allocate(&gtk::Allocation::new(0, y_offset, width, image_nat_h), -1);
             self.filler_box.size_allocate(
                 &gtk::Allocation::new(0, image_nat_h, width, (height - image_nat_h).max(0)),
                 -1,
@@ -302,6 +372,65 @@ mod imp {
     }
 
     impl SteamAppCard {
+        fn start_hover_anim(&self, target: f64) {
+            self.hover_target.set(target);
+            if ANIMATIONS_DISABLED.load(std::sync::atomic::Ordering::Relaxed) {
+                self.hover_progress.set(0.0);
+                self.obj().queue_allocate();
+                return;
+            }
+            if self.hover_animating.get() {
+                return;
+            }
+            if (self.hover_progress.get() - target).abs() < f64::EPSILON {
+                return;
+            }
+            self.hover_animating.set(true);
+            self.hover_last_frame.set(0);
+            self.obj().add_tick_callback(|widget, clock| {
+                let Some(card) = widget.downcast_ref::<super::SteamAppCard>() else {
+                    return glib::ControlFlow::Break;
+                };
+                let imp = card.imp();
+
+                let target = imp.hover_target.get();
+                if ANIMATIONS_DISABLED.load(std::sync::atomic::Ordering::Relaxed) {
+                    imp.hover_progress.set(0.0);
+                    imp.hover_last_frame.set(0);
+                    imp.hover_animating.set(false);
+                    card.queue_allocate();
+                    return glib::ControlFlow::Break;
+                }
+
+                let now = clock.frame_time();
+                let last = imp.hover_last_frame.get();
+                let dt_ms = if last == 0 {
+                    16.0
+                } else {
+                    (now - last) as f64 / 1000.0
+                };
+                imp.hover_last_frame.set(now);
+
+                let progress = imp.hover_progress.get();
+                let step = dt_ms / HOVER_DURATION_MS;
+                let new_progress = if target > progress {
+                    (progress + step).min(target)
+                } else {
+                    (progress - step).max(target)
+                };
+                imp.hover_progress.set(new_progress);
+                card.queue_allocate();
+
+                if (new_progress - target).abs() < f64::EPSILON {
+                    imp.hover_last_frame.set(0);
+                    imp.hover_animating.set(false);
+                    glib::ControlFlow::Break
+                } else {
+                    glib::ControlFlow::Continue
+                }
+            });
+        }
+
         fn set_app_object(&self, app: Option<GSteamAppObject>) {
             if self.app_object.borrow().as_ref() == app.as_ref() {
                 return;

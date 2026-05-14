@@ -365,8 +365,7 @@ mod imp {
 
                         if let Ok(ref texture) = texture_result {
                             TEXTURE_CACHE.with(|c| {
-                                c.borrow_mut()
-                                    .insert(url_string.clone(), texture.clone())
+                                c.borrow_mut().insert(url_string.clone(), texture.clone())
                             });
                         }
 

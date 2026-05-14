@@ -126,6 +126,7 @@ pub fn create_refresh_app_list_action(
                                                 app.set_is_idling(true);
                                             }
                                         }
+                                        super::recompute_idle_cap(&list_store);
                                     }
                                 ));
                             }

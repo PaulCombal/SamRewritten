@@ -120,6 +120,7 @@ impl GSteamAppObject {
             .property("app_type", format!("{:?}", app.app_type))
             .property("playtime_minutes", app.playtime_minutes.unwrap_or(0))
             .property("last_played", app.last_played.unwrap_or(0))
+            .property("can_start_idling", true)
             .build();
 
         let imp = obj.imp();
@@ -178,6 +179,9 @@ mod imp {
 
         #[property(get, set)]
         is_idling: Cell<bool>,
+
+        #[property(get, set)]
+        can_start_idling: Cell<bool>,
 
         // Cached for hot-path filter/sort reads (not GObject properties).
         pub(super) is_junk: Cell<bool>,

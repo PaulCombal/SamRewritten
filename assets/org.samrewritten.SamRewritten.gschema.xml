@@ -18,5 +18,11 @@
             <summary>App List Sort Order</summary>
             <description>How the app list is sorted. Valid values are 'app_id', 'alphabetical', 'last_played', and 'playtime'.</description>
         </key>
+
+        <key name="disable-animations" type="b">
+            <default>false</default>
+            <summary>Disable Animations</summary>
+            <description>Whether to disable card hover animations in the app list.</description>
+        </key>
     </schema>
 </schemalist>

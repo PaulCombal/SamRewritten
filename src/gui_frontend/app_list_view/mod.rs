@@ -51,6 +51,31 @@ use std::cell::{Cell, RefCell};
 use std::process::Command;
 use std::rc::Rc;
 
+const MAX_CONCURRENT_IDLE: usize = 30;
+
+/// Recount how many apps are idling and propagate the resulting "can start
+/// idling?" decision onto every app in the store. Cards bind their idle
+/// button's `sensitive` property to this; when the cap is reached, every
+/// non-idling app's idle button greys out.
+fn recompute_idle_cap(list_store: &ListStore) {
+    let mut count = 0usize;
+    for i in 0..list_store.n_items() {
+        if let Some(app) = list_store.item(i).and_downcast::<GSteamAppObject>()
+            && app.is_idling()
+        {
+            count += 1;
+        }
+    }
+    let can_start = count < MAX_CONCURRENT_IDLE;
+    for i in 0..list_store.n_items() {
+        if let Some(app) = list_store.item(i).and_downcast::<GSteamAppObject>()
+            && app.can_start_idling() != can_start
+        {
+            app.set_can_start_idling(can_start);
+        }
+    }
+}
+
 pub fn create_main_ui(
     application: &MainApplication,
     cmd_line: &ApplicationCommandLine,
@@ -332,6 +357,8 @@ pub fn create_main_ui(
         #[weak]
         application,
         #[weak]
+        list_store,
+        #[weak]
         list_selection_model,
         #[weak]
         menu_model,
@@ -446,6 +473,8 @@ pub fn create_main_ui(
             card.idle_button().connect_toggled(clone!(
                 #[weak]
                 card,
+                #[weak]
+                list_store,
                 move |button| {
                     let Some(app) = card.app_object() else {
                         return;
@@ -456,8 +485,11 @@ pub fn create_main_ui(
                     if active == app.is_idling() {
                         return;
                     }
+
                     let app_id = app.app_id();
                     app.set_is_idling(active);
+                    recompute_idle_cap(&list_store);
+
                     let handle = spawn_blocking(move || {
                         if active {
                             LaunchApp { app_id }.request().map(|_| ())
@@ -466,15 +498,20 @@ pub fn create_main_ui(
                         }
                     });
 
-                    MainContext::default().spawn_local(async move {
-                        if let Ok(Err(e)) = handle.await {
-                            eprintln!(
-                                "[CLIENT] {} app {app_id} failed: {e:?}",
-                                if active { "Launching" } else { "Stopping" }
-                            );
-                            app.set_is_idling(!active);
+                    MainContext::default().spawn_local(clone!(
+                        #[weak]
+                        list_store,
+                        async move {
+                            if let Ok(Err(e)) = handle.await {
+                                eprintln!(
+                                    "[CLIENT] {} app {app_id} failed: {e:?}",
+                                    if active { "Launching" } else { "Stopping" }
+                                );
+                                app.set_is_idling(!active);
+                                recompute_idle_cap(&list_store);
+                            }
                         }
-                    });
+                    ));
                 }
             ));
 

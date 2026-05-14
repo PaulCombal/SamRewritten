@@ -14,12 +14,14 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::widgets::steam_app_card::ANIMATIONS_DISABLED;
 use gtk::gio::Settings;
 use gtk::glib::clone;
 use gtk::prelude::*;
 use gtk::{CustomFilter, CustomSorter, glib};
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
+use std::sync::atomic::Ordering;
 
 pub fn setup_settings_bindings(
     application: &MainApplication,
@@ -89,5 +91,12 @@ pub fn setup_settings_bindings(
     apply_theme(&settings.string("app-theme"));
     settings.connect_changed(Some("app-theme"), |s, _| {
         apply_theme(&s.string("app-theme"));
+    });
+
+    // Disable animations: cached in a global AtomicBool that SteamAppCard reads.
+    ANIMATIONS_DISABLED.store(settings.boolean("disable-animations"), Ordering::Relaxed);
+    application.add_action(&settings.create_action("disable-animations"));
+    settings.connect_changed(Some("disable-animations"), |s, _| {
+        ANIMATIONS_DISABLED.store(s.boolean("disable-animations"), Ordering::Relaxed);
     });
 }

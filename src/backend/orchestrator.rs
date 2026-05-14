@@ -202,11 +202,7 @@ fn process_command(
             // 1. If a process for this app is already alive, just bump the refcount.
             if let Some((_, refcount)) = children_processes.get_mut(&app_id) {
                 *refcount += 1;
-                dev_println!(
-                    "[ORCHESTRATOR] App {} refcount now {}",
-                    app_id,
-                    *refcount
-                );
+                dev_println!("[ORCHESTRATOR] App {} refcount now {}", app_id, *refcount);
                 let response = SteamResponse::Success(true).sam_serialize();
                 tx.write_all(&response)
                     .expect("[ORCHESTRATOR] Failed to send response");
