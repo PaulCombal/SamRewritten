@@ -60,7 +60,7 @@ impl AppManager {
 
         #[cfg(feature = "cli")]
         let silent = false;
-        #[cfg(not(feature = "cli"))]
+        #[cfg(feature = "gui")]
         let silent = true;
 
         let connected_steam = match ConnectedSteam::new(silent) {

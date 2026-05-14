@@ -104,7 +104,7 @@ jobs:
         shell: pwsh
 
       - name: Build GTK-RS application (CLI)
-        run: cargo build --release --features cli --target x86_64-pc-windows-msvc
+        run: cargo build --release --no-default-features --features cli --target x86_64-pc-windows-msvc
 
       - name: Move console executable to release archive
         run: |
@@ -146,7 +146,7 @@ jobs:
         run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-adw.AppImage
 
       - name: Build CLI AppImage version
-        run: docker run --rm -v ./:/mnt:z samrewritten-builder sh -c "cargo appimage --features cli"
+        run: docker run --rm -v ./:/mnt:z samrewritten-builder sh -c "cargo appimage --no-default-features --features cli"
 
       - name: Rename CLI AppImage
         run: mv target/appimage/samrewritten.AppImage target/appimage/samrewritten-cli.AppImage

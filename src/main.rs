@@ -16,21 +16,29 @@
 #![cfg_attr(
     all(
         target_os = "windows",
-        not(feature = "win-console"),
-        not(feature = "cli")
+        feature = "gui",
+        not(feature = "win-console")
     ),
     windows_subsystem = "windows"
 )]
 
+#[cfg(all(feature = "cli", feature = "gui"))]
+compile_error!(
+    "features `cli` and `gui` are mutually exclusive; build the CLI with `--no-default-features --features cli`"
+);
+
+#[cfg(not(any(feature = "cli", feature = "gui")))]
+compile_error!("either the `cli` or `gui` feature must be enabled");
+
 mod backend;
 #[cfg(feature = "cli")]
 mod cli_frontend;
-#[cfg(not(feature = "cli"))]
+#[cfg(feature = "gui")]
 mod gui_frontend;
 mod steam_client;
 mod utils;
 
-#[cfg(not(feature = "cli"))]
+#[cfg(feature = "gui")]
 const APP_ID: &str = "org.samrewritten.SamRewritten";
 
 #[cfg(feature = "cli")]
@@ -38,7 +46,7 @@ fn main() -> std::process::ExitCode {
     cli_frontend::main()
 }
 
-#[cfg(not(feature = "cli"))]
+#[cfg(feature = "gui")]
 fn main() -> gtk::glib::ExitCode {
     use crate::backend::app::app;
     use crate::backend::orchestrator::orchestrator;

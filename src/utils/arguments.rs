@@ -115,7 +115,7 @@ pub fn parse_cli_arguments() -> CliArguments {
     args
 }
 
-#[cfg(not(feature = "cli"))]
+#[cfg(feature = "gui")]
 pub fn parse_gui_arguments(cmd_line: &gtk::gio::ApplicationCommandLine) -> GuiArguments {
     use gtk::prelude::ApplicationCommandLineExt;
 

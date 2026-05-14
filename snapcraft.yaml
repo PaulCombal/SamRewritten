@@ -21,6 +21,11 @@ parts:
       - pkg-config
     stage-packages:
       - glib-networking
+    override-build: |
+      craftctl default
+      install -Dm644 assets/org.samrewritten.SamRewritten.gschema.xml \
+        "${CRAFT_PART_INSTALL}/usr/share/glib-2.0/schemas/org.samrewritten.SamRewritten.gschema.xml"
+      glib-compile-schemas "${CRAFT_PART_INSTALL}/usr/share/glib-2.0/schemas/"
 
 plugs:
   access-steam-folder:

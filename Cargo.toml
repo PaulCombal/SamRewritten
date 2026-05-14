@@ -22,10 +22,11 @@ libloading = "0"
 keyvalues-serde = "0"
 
 [features]
-default = ['dep:gtk']
-adwaita = ['dep:gtk', 'dep:adw']
+default = ['gui']
+gui = ['dep:gtk']
+adwaita = ['gui', 'dep:adw']
 cli = ['dep:clap']
-win-console = ['dep:gtk']
+win-console = ['gui']
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0"
