@@ -18,9 +18,7 @@ use crate::backend::progress_io::{apply_app_export, collect_app_export};
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::steam_client::steamworks_types::AppId_t;
-use crate::utils::ipc_types::{
-    AppExport, SamError, SamSerializable, SteamCommand, SteamResponse,
-};
+use crate::utils::ipc_types::{AppExport, SamError, SamSerializable, SteamCommand, SteamResponse};
 use interprocess::unnamed_pipe::{Recver, Sender};
 use std::io::Write;
 

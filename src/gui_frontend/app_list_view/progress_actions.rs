@@ -13,15 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::backend::progress_io::{
+    MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
+};
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
-use crate::gui_frontend::request::{ExportAppProgress, ImportAppProgress, Request};
 use crate::utils::export_file::{ExportFile, FORMAT_VERSION, iso8601_utc_now};
-use crate::utils::ipc_types::AppExport;
+use crate::utils::ipc_types::{AppExport, ImportSummary, SteamCommand};
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{GridView, Label, MenuButton, glib};
+use std::collections::HashMap;
 use std::collections::HashSet;
 
 fn has_protected_fields(export: &AppExport) -> bool {
@@ -141,31 +144,38 @@ pub fn create_progress_actions(
 
                 let total = apps.len();
                 let path_for_task = path.clone();
+                MainContext::default().invoke(move || {
+                    if let Some(label) = weak_progress.upgrade() {
+                        label.set_text(&format!("Exporting {} app(s)...", total));
+                    }
+                    if let Some(label) = weak_info.upgrade() {
+                        label.set_text("");
+                    }
+                });
                 let handle = spawn_blocking(move || {
-                    let mut entries: Vec<AppExport> = Vec::new();
-                    let mut failed: Vec<String> = Vec::new();
-                    for (i, (app_id, app_name)) in apps.iter().enumerate() {
-                        let current_step = (i as u32) + 1;
-                        let progress_weak = weak_progress.clone();
-                        let info_weak = weak_info.clone();
-                        let name_for_label = app_name.clone();
-                        MainContext::default().invoke(move || {
-                            if let Some(label) = progress_weak.upgrade() {
-                                label.set_text(&format!("Exporting {}/{}", current_step, total));
-                            }
-                            if let Some(label) = info_weak.upgrade() {
-                                label.set_text(&name_for_label);
-                            }
-                        });
+                    let names: HashMap<u32, String> = apps.iter().cloned().collect();
+                    let items: Vec<(u32, SteamCommand)> = apps
+                        .into_iter()
+                        .map(|(id, _)| (id, SteamCommand::ExportAppProgress(id)))
+                        .collect();
+                    let raw_results =
+                        run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
 
-                        match (ExportAppProgress { app_id: *app_id }).request() {
+                    let mut exports: Vec<AppExport> = Vec::new();
+                    let mut failed: Vec<String> = Vec::new();
+                    for (app_id, raw) in raw_results {
+                        let name = names
+                            .get(&app_id)
+                            .cloned()
+                            .unwrap_or_else(|| format!("App {app_id}"));
+                        match raw.and_then(|bytes| parse_response_bytes::<AppExport>(&bytes)) {
                             Ok(mut export) => {
-                                export.app_name = app_name.clone();
-                                entries.push(export);
+                                export.app_name = name;
+                                exports.push(export);
                             }
                             Err(e) => {
-                                eprintln!("[CLIENT] Export failed for {}: {}", app_id, e);
-                                failed.push(app_name.clone());
+                                eprintln!("[CLIENT] Export failed for {app_id}: {e}");
+                                failed.push(name);
                             }
                         }
                     }
@@ -173,7 +183,7 @@ pub fn create_progress_actions(
                     let file_struct = ExportFile {
                         format_version: FORMAT_VERSION,
                         exported_at: iso8601_utc_now(),
-                        apps: entries,
+                        apps: exports,
                     };
 
                     match serde_json::to_string_pretty(&file_struct) {
@@ -429,31 +439,28 @@ pub fn create_progress_actions(
                 }
 
                 let total = present.len();
+                MainContext::default().invoke(move || {
+                    if let Some(label) = weak_progress.upgrade() {
+                        label.set_text(&format!("Importing {} app(s)...", total));
+                    }
+                    if let Some(label) = weak_info.upgrade() {
+                        label.set_text("");
+                    }
+                });
                 let handle = spawn_blocking(move || {
+                    let items: Vec<(u32, SteamCommand)> = present
+                        .into_iter()
+                        .map(|p| (p.app_id, SteamCommand::ImportAppProgress(p.app_id, p)))
+                        .collect();
+                    let raw_results =
+                        run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
+
                     let mut total_ach: usize = 0;
                     let mut total_stat: usize = 0;
                     let mut total_skipped: usize = 0;
                     let mut errors: Vec<String> = Vec::new();
-                    for (i, payload) in present.into_iter().enumerate() {
-                        let current_step = (i as u32) + 1;
-                        let progress_weak = weak_progress.clone();
-                        let info_weak = weak_info.clone();
-                        let name_for_label = if payload.app_name.is_empty() {
-                            format!("App {}", payload.app_id)
-                        } else {
-                            payload.app_name.clone()
-                        };
-                        MainContext::default().invoke(move || {
-                            if let Some(label) = progress_weak.upgrade() {
-                                label.set_text(&format!("Importing {}/{}", current_step, total));
-                            }
-                            if let Some(label) = info_weak.upgrade() {
-                                label.set_text(&name_for_label);
-                            }
-                        });
-
-                        let app_id = payload.app_id;
-                        match (ImportAppProgress { app_id, payload }).request() {
+                    for (app_id, raw) in raw_results {
+                        match raw.and_then(|bytes| parse_response_bytes::<ImportSummary>(&bytes)) {
                             Ok(summary) => {
                                 total_ach += summary.achievements_applied;
                                 total_stat += summary.stats_applied;
@@ -503,10 +510,7 @@ pub fn create_progress_actions(
                     } else {
                         missing.join("\n")
                     };
-                    detail.push_str(&format!(
-                        "\n\nSkipped (not in your library):\n{}",
-                        listing
-                    ));
+                    detail.push_str(&format!("\n\nSkipped (not in your library):\n{}", listing));
                 }
                 if !errors.is_empty() {
                     let listing = if errors.len() > 10 {

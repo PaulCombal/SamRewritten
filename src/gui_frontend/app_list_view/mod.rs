@@ -34,7 +34,6 @@ use crate::gui_frontend::widgets::steam_app_card::SteamAppCard;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::arguments::parse_gui_arguments;
 use bulk_actions::create_bulk_actions;
-use progress_actions::create_progress_actions;
 use gtk::gio::{ApplicationCommandLine, ListStore, spawn_blocking};
 use gtk::glib::ExitCode;
 use gtk::glib::{MainContext, clone};
@@ -45,6 +44,7 @@ use gtk::{
     SignalListItemFactory, SortListModel, Spinner, Stack, StackTransitionType, Widget,
 };
 use gtk::{IconSize, glib};
+use progress_actions::create_progress_actions;
 use refresh_actions::{
     create_clear_all_action, create_refresh_achievements_action, create_refresh_app_list_action,
 };
@@ -53,7 +53,7 @@ use std::cell::{Cell, RefCell};
 use std::process::Command;
 use std::rc::Rc;
 
-const MAX_CONCURRENT_IDLE: usize = 30;
+use crate::backend::progress_io::MAX_CONCURRENT_APPS as MAX_CONCURRENT_IDLE;
 
 /// Recount how many apps are idling and propagate the resulting "can start
 /// idling?" decision onto every app in the store. Cards bind their idle

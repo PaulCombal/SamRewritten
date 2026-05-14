@@ -17,9 +17,7 @@ use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::gui_frontend::DEFAULT_PROCESS;
-use crate::utils::ipc_types::{
-    AppExport, ImportSummary, SamError, SamSerializable, SteamCommand, SteamResponse,
-};
+use crate::utils::ipc_types::{SamError, SamSerializable, SteamCommand, SteamResponse};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use std::io::{Read, Write};
@@ -162,17 +160,6 @@ pub struct ResetStats {
     pub achievements_too: bool,
 }
 
-#[derive(Debug, Clone)]
-pub struct ExportAppProgress {
-    pub app_id: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct ImportAppProgress {
-    pub app_id: u32,
-    pub payload: AppExport,
-}
-
 impl Request for GetSubscribedAppList {
     type Response = Vec<AppModel>;
 }
@@ -223,14 +210,6 @@ impl Request for SetFloatStat {
 
 impl Request for ResetStats {
     type Response = bool;
-}
-
-impl Request for ExportAppProgress {
-    type Response = AppExport;
-}
-
-impl Request for ImportAppProgress {
-    type Response = ImportSummary;
 }
 
 impl From<GetSubscribedAppList> for SteamCommand {
@@ -308,18 +287,6 @@ impl From<SetFloatStat> for SteamCommand {
 impl From<ResetStats> for SteamCommand {
     fn from(val: ResetStats) -> Self {
         SteamCommand::ResetStats(val.app_id, val.achievements_too)
-    }
-}
-
-impl From<ExportAppProgress> for SteamCommand {
-    fn from(val: ExportAppProgress) -> Self {
-        SteamCommand::ExportAppProgress(val.app_id)
-    }
-}
-
-impl From<ImportAppProgress> for SteamCommand {
-    fn from(val: ImportAppProgress) -> Self {
-        SteamCommand::ImportAppProgress(val.app_id, val.payload)
     }
 }
 

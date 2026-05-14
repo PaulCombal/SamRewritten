@@ -18,7 +18,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::io::Read;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum SamError {
     SerializationFailed,
     SteamConnectionFailed,
@@ -89,7 +89,7 @@ pub struct ImportSummary {
     pub errors: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum SteamCommand {
     GetSubscribedAppList(bool),
     LaunchApp(u32),

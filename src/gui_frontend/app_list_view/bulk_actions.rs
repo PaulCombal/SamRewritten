@@ -13,14 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::backend::progress_io::{
+    MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
+};
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
-use crate::gui_frontend::request::{Request, ResetStats, UnlockAllAchievements};
+use crate::utils::ipc_types::SteamCommand;
 use gtk::gio::{SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{GridView, Label, MenuButton, glib};
+use std::collections::HashMap;
 
 pub fn create_bulk_actions(
     application: &MainApplication,
@@ -42,11 +46,7 @@ pub fn create_bulk_actions(
                 let has_selection = !selection_model.selection().is_empty();
                 set_app_action_enabled(&application, "unlock_all_apps", has_selection);
                 set_app_action_enabled(&application, "lock_all_apps", has_selection);
-                set_app_action_enabled(
-                    &application,
-                    "export_selected_progress",
-                    has_selection,
-                );
+                set_app_action_enabled(&application, "export_selected_progress", has_selection);
             }
         }
     ));
@@ -124,31 +124,30 @@ pub fn create_bulk_actions(
             let info_label_weak =
                 glib::object::SendWeakRef::from(context_menu_button_info_label.downgrade());
 
+            MainContext::default().invoke(move || {
+                if let Some(label) = progress_label_weak.upgrade() {
+                    label.set_text(&format!("Unlocking {} app(s)...", total_apps));
+                }
+                if let Some(label) = info_label_weak.upgrade() {
+                    label.set_text("");
+                }
+            });
+
             let handle = spawn_blocking(move || {
+                let names: HashMap<u32, String> = apps_to_unlock.clone();
+                let items: Vec<(u32, SteamCommand)> = apps_to_unlock
+                    .into_iter()
+                    .map(|(id, _)| (id, SteamCommand::UnlockAllAchievements(id)))
+                    .collect();
+                let raw_results = run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
+
                 let mut failed_apps = Vec::new();
-                for (i, (app_id, app_name)) in apps_to_unlock.into_iter().enumerate() {
-                    let current_step: u32 = (i as u32) + 1;
-                    crate::dev_println!(
-                        "[CLIENT] Unlocking app {app_id} ({current_step}/{total_apps})"
-                    );
-
-                    let progress_label_weak = progress_label_weak.clone();
-                    let info_label_weak = info_label_weak.clone();
-                    let app_name_for_label = app_name.clone();
-                    MainContext::default().invoke(move || {
-                        if let Some(label) = progress_label_weak.upgrade() {
-                            label.set_text(&format!("Unlocking {}/{}", current_step, total_apps));
-                        }
-                        if let Some(label) = info_label_weak.upgrade() {
-                            label.set_text(&app_name_for_label);
-                        }
-                    });
-
-                    let res = UnlockAllAchievements { app_id }.request();
-
-                    if let Err(e) = res {
+                for (app_id, raw) in raw_results {
+                    if let Err(e) = raw.and_then(|bytes| parse_response_bytes::<bool>(&bytes)) {
                         eprintln!("[CLIENT] Error unlocking app {}: {}", app_id, e);
-                        failed_apps.push(app_name);
+                        if let Some(name) = names.get(&app_id) {
+                            failed_apps.push(name.clone());
+                        }
                     }
                 }
 
@@ -261,37 +260,27 @@ pub fn create_bulk_actions(
             let info_label_weak =
                 glib::object::SendWeakRef::from(context_menu_button_info_label.downgrade());
 
+            MainContext::default().invoke(move || {
+                if let Some(label) = progress_label_weak.upgrade() {
+                    label.set_text(&format!("Locking {} app(s)...", total_apps));
+                }
+                if let Some(label) = info_label_weak.upgrade() {
+                    label.set_text("");
+                }
+            });
+
             let handle = spawn_blocking(move || {
-                for (i, (app_id, app_name)) in apps_to_lock.into_iter().enumerate() {
-                    let current_step: u32 = (i as u32) + 1;
-                    crate::dev_println!(
-                        "[CLIENT] Locking app {app_id} ({current_step}/{total_apps})"
-                    );
+                let items: Vec<(u32, SteamCommand)> = apps_to_lock
+                    .into_iter()
+                    .map(|(id, _)| (id, SteamCommand::ResetStats(id, true)))
+                    .collect();
+                let raw_results = run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
 
-                    let progress_label_weak = progress_label_weak.clone();
-                    let info_label_weak = info_label_weak.clone();
-                    let app_name_for_label = app_name.clone();
-                    MainContext::default().invoke(move || {
-                        if let Some(label) = progress_label_weak.upgrade() {
-                            label.set_text(&format!("Locking {}/{}", current_step, total_apps));
-                        }
-                        if let Some(label) = info_label_weak.upgrade() {
-                            label.set_text(&app_name_for_label);
-                        }
-                    });
-
-                    let res = ResetStats {
-                        app_id,
-                        achievements_too: true,
-                    }
-                    .request();
-
-                    if let Err(e) = res {
+                for (app_id, raw) in raw_results {
+                    if let Err(e) = raw.and_then(|bytes| parse_response_bytes::<bool>(&bytes)) {
                         eprintln!("[CLIENT] Error locking app {}: {}", app_id, e);
-                        return Err(e);
                     }
                 }
-                Ok(())
             });
 
             MainContext::default().spawn_local(clone!(

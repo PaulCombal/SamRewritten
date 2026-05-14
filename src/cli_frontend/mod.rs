@@ -16,9 +16,11 @@
 use crate::backend::app_lister::AppLister;
 use crate::backend::app_manager::AppManager;
 use crate::backend::connected_steam::ConnectedSteam;
-use crate::backend::progress_io::{apply_app_export, collect_app_export};
+use crate::backend::progress_io::{
+    MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
+};
 use crate::utils::export_file::{ExportFile, FORMAT_VERSION, iso8601_utc_now};
-use crate::utils::ipc_types::{AppExport, ImportSummary};
+use crate::utils::ipc_types::{AppExport, ImportSummary, SteamCommand};
 use clap::{Args, Parser, Subcommand};
 use serde::Serialize;
 use serde_json::json;
@@ -325,21 +327,33 @@ pub fn main() -> std::process::ExitCode {
         }
 
         Command::Export { app_ids } => {
+            let items: Vec<(u32, SteamCommand)> = app_ids
+                .iter()
+                .map(|id| (*id, SteamCommand::ExportAppProgress(*id)))
+                .collect();
+            let results = run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
+
+            let mut by_id: std::collections::HashMap<u32, Result<AppExport, String>> = results
+                .into_iter()
+                .map(|(id, raw)| {
+                    let result = raw
+                        .and_then(|bytes| parse_response_bytes::<AppExport>(&bytes))
+                        .map_err(|e| e.to_string());
+                    (id, result)
+                })
+                .collect();
+
             let mut apps: Vec<AppExport> = Vec::new();
             let mut failed = false;
             for app_id in app_ids {
-                let mut manager = match AppManager::new_connected(app_id) {
-                    Ok(m) => m,
-                    Err(e) => {
-                        eprintln!("App {app_id}: failed to connect to Steam: {e}");
+                match by_id.remove(&app_id) {
+                    Some(Ok(export)) => apps.push(export),
+                    Some(Err(e)) => {
+                        eprintln!("App {app_id}: {e}");
                         failed = true;
-                        continue;
                     }
-                };
-                match collect_app_export(&mut manager, app_id) {
-                    Ok(export) => apps.push(export),
-                    Err(e) => {
-                        eprintln!("App {app_id}: failed to read progress: {e}");
+                    None => {
+                        eprintln!("App {app_id}: missing from batch result");
                         failed = true;
                     }
                 }
@@ -392,6 +406,8 @@ pub fn main() -> std::process::ExitCode {
                 app_id: u32,
                 #[serde(flatten)]
                 summary: ImportSummary,
+                #[serde(skip_serializing_if = "Option::is_none")]
+                error: Option<String>,
             }
 
             let apps: Vec<AppExport> = parsed
@@ -405,28 +421,55 @@ pub fn main() -> std::process::ExitCode {
                 return std::process::ExitCode::FAILURE;
             }
 
+            let app_ids: Vec<u32> = apps.iter().map(|a| a.app_id).collect();
+            let items: Vec<(u32, SteamCommand)> = apps
+                .into_iter()
+                .map(|a| (a.app_id, SteamCommand::ImportAppProgress(a.app_id, a)))
+                .collect();
+            let raw_results = run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
+
+            let mut by_id: std::collections::HashMap<u32, Result<ImportSummary, String>> =
+                raw_results
+                    .into_iter()
+                    .map(|(id, raw)| {
+                        let result = raw
+                            .and_then(|bytes| parse_response_bytes::<ImportSummary>(&bytes))
+                            .map_err(|e| e.to_string());
+                        (id, result)
+                    })
+                    .collect();
+
             let mut results: Vec<AppResult> = Vec::new();
             let mut any_failure = false;
-            for app in apps {
-                let id = app.app_id;
-                let manager = match AppManager::new_connected(id) {
-                    Ok(m) => m,
-                    Err(e) => {
-                        any_failure = true;
-                        let mut summary = ImportSummary::default();
-                        summary
-                            .errors
-                            .push(format!("Failed to connect to Steam: {e}"));
-                        results.push(AppResult { app_id: id, summary });
-                        continue;
+            for id in app_ids {
+                match by_id.remove(&id) {
+                    Some(Ok(summary)) => {
+                        if !summary.errors.is_empty() {
+                            any_failure = true;
+                        }
+                        results.push(AppResult {
+                            app_id: id,
+                            summary,
+                            error: None,
+                        });
                     }
-                };
-
-                let summary = apply_app_export(&manager, app);
-                if !summary.errors.is_empty() {
-                    any_failure = true;
+                    Some(Err(e)) => {
+                        any_failure = true;
+                        results.push(AppResult {
+                            app_id: id,
+                            summary: ImportSummary::default(),
+                            error: Some(e),
+                        });
+                    }
+                    None => {
+                        any_failure = true;
+                        results.push(AppResult {
+                            app_id: id,
+                            summary: ImportSummary::default(),
+                            error: Some("missing from batch result".to_string()),
+                        });
+                    }
                 }
-                results.push(AppResult { app_id: id, summary });
             }
 
             match serde_json::to_string_pretty(&results) {

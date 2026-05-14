@@ -39,6 +39,19 @@ const APP_ID: &str = "org.samrewritten.SamRewritten";
 
 #[cfg(feature = "cli")]
 fn main() -> std::process::ExitCode {
+    use crate::backend::app::app;
+    use crate::utils::arguments::parse_cli_arguments;
+
+    let arguments = parse_cli_arguments();
+
+    // App-server mode: a CLI child spawned by `run_command_on_apps_concurrent`.
+    if arguments.is_app > 0 {
+        let mut tx = arguments.tx.unwrap();
+        let mut rx = arguments.rx.unwrap();
+        let exit_code = app(arguments.is_app, &mut tx, &mut rx);
+        return std::process::ExitCode::from(exit_code);
+    }
+
     cli_frontend::main()
 }
 
