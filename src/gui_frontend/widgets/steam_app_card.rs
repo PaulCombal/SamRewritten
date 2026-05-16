@@ -512,6 +512,8 @@ mod tests {
                 metacritic_score: Some(90),
                 playtime_minutes: None,
                 last_played: None,
+                achievement_count: None,
+                unlocked_achievement_count: None,
             };
             list_store.append(&GSteamAppObject::new(app_model));
         }

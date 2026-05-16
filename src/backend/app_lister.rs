@@ -14,6 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
+use crate::steam_client::client_user_stats_map_wrapper::ClientUserStatsMap;
 use crate::steam_client::steam_apps_001_wrapper::{SteamApps001, SteamApps001AppDataKeys};
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steamworks_types::AppId_t;
@@ -22,12 +23,13 @@ use crate::utils::ipc_types::SamError;
 use quick_xml::Reader;
 use quick_xml::events::Event;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::fmt::Display;
 use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::str::FromStr;
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, Instant, SystemTime};
 
 pub struct AppLister<'a> {
     app_list_url: String,
@@ -47,6 +49,8 @@ pub struct AppModel {
     pub metacritic_score: Option<u8>,
     pub playtime_minutes: Option<u32>,
     pub last_played: Option<u64>,
+    pub achievement_count: Option<u32>,
+    pub unlocked_achievement_count: Option<u32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -275,10 +279,15 @@ impl<'a> AppLister<'a> {
             metacritic_score,
             playtime_minutes: None,
             last_played: None,
+            achievement_count: None,
+            unlocked_achievement_count: None,
         })
     }
 
-    pub fn get_owned_apps(&self) -> Result<Vec<AppModel>, SamError> {
+    pub fn get_owned_apps(
+        &self,
+        stats_map: Option<&ClientUserStatsMap>,
+    ) -> Result<Vec<AppModel>, SamError> {
         self.ensure_local_app_list()?;
 
         let file =
@@ -298,6 +307,53 @@ impl<'a> AppLister<'a> {
             }
         })?;
 
+        if let Some(map) = stats_map {
+            self.populate_achievement_counts(map, &mut models);
+        }
+
         Ok(models)
+    }
+
+    fn populate_achievement_counts(&self, map: &ClientUserStatsMap, models: &mut [AppModel]) {
+        const CHUNK_SIZE: usize = 200;
+        const PER_CHUNK_HARD_CAP: Duration = Duration::from_secs(45);
+        const NO_PROGRESS_CAP: Duration = Duration::from_secs(2);
+        const POLL_INTERVAL: Duration = Duration::from_millis(50);
+
+        for chunk in models.chunks_mut(CHUNK_SIZE) {
+            let mut pending: HashSet<AppId_t> = HashSet::with_capacity(chunk.len());
+            for app in chunk.iter() {
+                if map.request_current_stats(app.app_id) {
+                    pending.insert(app.app_id);
+                }
+            }
+
+            let hard_deadline = Instant::now() + PER_CHUNK_HARD_CAP;
+            let mut last_progress = Instant::now();
+            while !pending.is_empty() && Instant::now() < hard_deadline {
+                map.run_engine_frame();
+                let before = pending.len();
+                pending.retain(|&app_id| !map.is_schema_loaded(app_id));
+                if pending.len() < before {
+                    last_progress = Instant::now();
+                }
+                if pending.is_empty() || last_progress.elapsed() >= NO_PROGRESS_CAP {
+                    break;
+                }
+                std::thread::sleep(POLL_INTERVAL);
+            }
+
+            for app in chunk.iter_mut() {
+                if !pending.contains(&app.app_id) {
+                    let total = map.get_num_achievements(app.app_id);
+                    app.achievement_count = Some(total);
+                    app.unlocked_achievement_count = if total > 0 {
+                        Some(map.get_num_achieved_achievements(app.app_id))
+                    } else {
+                        Some(0)
+                    };
+                }
+            }
+        }
     }
 }

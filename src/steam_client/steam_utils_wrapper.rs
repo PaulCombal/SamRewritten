@@ -16,9 +16,7 @@
 
 use crate::dev_println;
 use crate::steam_client::steam_utils_vtable::ISteamUtils;
-use crate::steam_client::steamworks_types::{
-    AppId_t, GlobalAchievementPercentagesReady_t, SteamAPICall_t,
-};
+use crate::steam_client::steamworks_types::{AppId_t, SteamAPICall_t};
 use crate::steam_client::wrapper_types::{SteamCallbackId, SteamClientError};
 use std::ffi::{c_int, c_void};
 use std::sync::Arc;
@@ -88,7 +86,7 @@ impl SteamUtils {
                 self.inner.ptr,
                 api_call_handle,
                 &mut result as *mut T as *mut c_void,
-                size_of::<GlobalAchievementPercentagesReady_t>() as c_int,
+                size_of::<T>() as c_int,
                 callback_id as c_int,
                 &mut b_failed,
             );

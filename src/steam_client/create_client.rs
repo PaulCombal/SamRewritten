@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::steam_client::client_engine_vtable::{CLIENTENGINE_INTERFACE_VERSION, IClientEngine};
+use crate::steam_client::client_engine_wrapper::ClientEngine;
 use crate::steam_client::steam_client_vtable::{ISteamClient, STEAMCLIENT_INTERFACE_VERSION};
 use crate::steam_client::steam_client_wrapper::SteamClient;
 use crate::steam_client::steamworks_types::{
@@ -21,7 +23,7 @@ use crate::steam_client::steamworks_types::{
 use crate::utils::ipc_types::SamError;
 use crate::utils::steam_locator::SteamLocator;
 use libloading::{Library, Symbol};
-use std::os::raw::c_char;
+use std::os::raw::{c_char, c_int};
 use std::sync::OnceLock;
 
 static STEAM_CLIENT_LIB: OnceLock<Library> = OnceLock::new(); // Make the lifetime 'static
@@ -124,4 +126,33 @@ pub fn create_steam_client(silent: bool) -> Result<SteamClient, Box<dyn std::err
     let client = unsafe { SteamClient::from_raw(raw_client, callback_fn, free_callback_fn) };
 
     Ok(client)
+}
+
+pub fn create_client_engine(silent: bool) -> Result<ClientEngine, Box<dyn std::error::Error>> {
+    if STEAM_CLIENT_LIB.get().is_none() {
+        let steamclient_so = load_steamclient_library(silent)?;
+        let _ = STEAM_CLIENT_LIB.set(steamclient_so);
+    }
+    let lib = STEAM_CLIENT_LIB.get().unwrap();
+
+    unsafe {
+        type ClientEngineFactoryFn =
+            unsafe extern "C" fn(*const c_char, *mut c_int) -> *mut IClientEngine;
+        let create_interface: Symbol<ClientEngineFactoryFn> = lib.get(b"CreateInterface")?;
+
+        let mut return_code = 1;
+        let engine = create_interface(
+            CLIENTENGINE_INTERFACE_VERSION.as_ptr() as *const c_char,
+            &mut return_code,
+        );
+        if return_code != 0 {
+            return Err(Box::from(format!(
+                "IClientEngine creation failed with code {return_code}"
+            )));
+        }
+        if engine.is_null() {
+            return Err(Box::from("IClientEngine creation returned NULL"));
+        }
+        Ok(ClientEngine::from_raw(engine))
+    }
 }

@@ -7,4 +7,3 @@
 
 - Support for Flatpak installs of Steam
 - Snapcraft packaging
-- Find a solution to this problem: https://github.com/PaulCombal/achievement-poc

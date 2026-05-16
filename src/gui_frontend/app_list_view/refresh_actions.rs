@@ -71,6 +71,7 @@ pub fn create_refresh_app_list_action(
             let apps = spawn_blocking(move || {
                 GetSubscribedAppList {
                     include_playtime: true,
+                    with_achievement_counts: false,
                 }
                 .request()
             });

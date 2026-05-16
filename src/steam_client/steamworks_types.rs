@@ -314,7 +314,7 @@ pub struct SteamCallbackMessage {
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct CSteamID {
     pub m_steamid: u64,
 }

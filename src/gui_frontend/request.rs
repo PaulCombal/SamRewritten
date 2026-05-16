@@ -40,6 +40,7 @@ pub trait Request: Into<SteamCommand> + Debug + Clone {
 #[derive(Debug, Clone)]
 pub struct GetSubscribedAppList {
     pub include_playtime: bool,
+    pub with_achievement_counts: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -160,7 +161,7 @@ impl Request for ResetStats {
 
 impl From<GetSubscribedAppList> for SteamCommand {
     fn from(val: GetSubscribedAppList) -> Self {
-        SteamCommand::GetSubscribedAppList(val.include_playtime)
+        SteamCommand::GetSubscribedAppList(val.include_playtime, val.with_achievement_counts)
     }
 }
 

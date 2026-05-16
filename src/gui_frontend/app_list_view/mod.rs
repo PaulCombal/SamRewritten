@@ -650,6 +650,8 @@ pub fn create_main_ui(
                             metacritic_score: None,
                             playtime_minutes: None,
                             last_played: None,
+                            achievement_count: None,
+                            unlocked_achievement_count: None,
                         }),
                     );
                 }
@@ -674,6 +676,8 @@ pub fn create_main_ui(
                         metacritic_score: None,
                         playtime_minutes: None,
                         last_played: None,
+                        achievement_count: None,
+                        unlocked_achievement_count: None,
                     }),
                 );
             }
@@ -845,6 +849,8 @@ pub fn create_main_ui(
                             metacritic_score: None,
                             playtime_minutes: None,
                             last_played: None,
+                            achievement_count: None,
+                            unlocked_achievement_count: None,
                         })
                     });
 

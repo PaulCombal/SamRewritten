@@ -118,7 +118,9 @@ fn forward_to_child(
 }
 
 static SOCKET_ERROR_RESPONSE: LazyLock<Vec<u8>> = LazyLock::new(|| {
-    frame_message(&SteamResponse::<()>::Error(SamError::SocketCommunicationFailed))
+    frame_message(&SteamResponse::<()>::Error(
+        SamError::SocketCommunicationFailed,
+    ))
 });
 
 fn process_command(
@@ -127,21 +129,17 @@ fn process_command(
     children_processes: &mut HashMap<u32, (IpcClient, usize)>,
     connected_steam: &mut ConnectedSteam,
 ) -> bool {
-
     /// One-shot: spawn an ephemeral app server, send `command`, then shut it
     /// down. Proxies the framed response (or a `SocketCommunicationFailed`
     /// envelope) back to `tx`. Used for commands the user can issue against
     /// apps that aren't currently being held open (unlock-all, reset-stats).
     fn run_ephemeral(tx: &mut Sender, app_id: u32, command: SteamCommand, op_name: &str) {
         let current_exe = get_executable_path();
-        let child = match BidirChild::new(
-            Command::new(current_exe).arg(format!("--app={app_id}")),
-        ) {
+        let child = match BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))
+        {
             Ok(c) => c,
             Err(e) => {
-                eprintln!(
-                    "[ORCHESTRATOR] Failed to spawn app server for {op_name} {app_id}: {e}"
-                );
+                eprintln!("[ORCHESTRATOR] Failed to spawn app server for {op_name} {app_id}: {e}");
                 tx.write_all(&SOCKET_ERROR_RESPONSE)
                     .expect("[ORCHESTRATOR] Failed to send response");
                 return;
@@ -176,8 +174,10 @@ fn process_command(
     }
 
     match command {
-        SteamCommand::GetSubscribedAppList(include_playtime) => {
-            dev_println!("[ORCHESTRATOR] Received GetSubscribedAppList({include_playtime})");
+        SteamCommand::GetSubscribedAppList(include_playtime, with_achievement_counts) => {
+            dev_println!(
+                "[ORCHESTRATOR] Received GetSubscribedAppList(playtime={include_playtime}, achievements={with_achievement_counts})"
+            );
 
             let vdf_path = if include_playtime {
                 match connected_steam.user.get_steam_id() {
@@ -206,7 +206,19 @@ fn process_command(
             let apps_001 = &connected_steam.apps_001;
             let apps = &connected_steam.apps;
             let app_lister = AppLister::new(apps_001, apps);
-            let result = app_lister.get_owned_apps();
+
+            let stats_map = if with_achievement_counts {
+                match connected_steam.client_user_stats_map() {
+                    Ok(m) => Some(m),
+                    Err(e) => {
+                        dev_println!("[ORCHESTRATOR] Could not create stats map: {e}");
+                        None
+                    }
+                }
+            } else {
+                None
+            };
+            let result = app_lister.get_owned_apps(stats_map.as_ref());
 
             match result {
                 Ok(mut apps) => {
@@ -260,17 +272,16 @@ fn process_command(
 
             // 2. Otherwise launch a new process with refcount = 1.
             let current_exe = get_executable_path();
-            let child = match BidirChild::new(
-                Command::new(current_exe).arg(format!("--app={app_id}")),
-            ) {
-                Ok(c) => c,
-                Err(e) => {
-                    eprintln!("[ORCHESTRATOR] Failed to spawn app server for {app_id}: {e}");
-                    tx.write_all(&SOCKET_ERROR_RESPONSE)
-                        .expect("[ORCHESTRATOR] Failed to send response");
-                    return true;
-                }
-            };
+            let child =
+                match BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}"))) {
+                    Ok(c) => c,
+                    Err(e) => {
+                        eprintln!("[ORCHESTRATOR] Failed to spawn app server for {app_id}: {e}");
+                        tx.write_all(&SOCKET_ERROR_RESPONSE)
+                            .expect("[ORCHESTRATOR] Failed to send response");
+                        return true;
+                    }
+                };
 
             children_processes.insert(app_id, (IpcClient::new(child), 1));
             write_message(tx, &SteamResponse::Success(true))
@@ -383,8 +394,11 @@ fn process_command(
                     ach_infos.push(ach_info);
                 }
 
-                write_message(tx, &SteamResponse::<Vec<AchievementInfo>>::Success(ach_infos))
-                    .expect("[APP SERVER] Failed to send response");
+                write_message(
+                    tx,
+                    &SteamResponse::<Vec<AchievementInfo>>::Success(ach_infos),
+                )
+                .expect("[APP SERVER] Failed to send response");
                 return true;
             }
 

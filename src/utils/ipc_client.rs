@@ -40,7 +40,7 @@ impl IpcClient {
     pub fn recv<R: DeserializeOwned>(&mut self) -> Result<R, SamError> {
         read_message(&mut self.child.rx)
     }
-    
+
     pub fn recv_frame(&mut self) -> Result<Vec<u8>, SamError> {
         read_frame_raw(&mut self.child.rx)
     }
@@ -52,7 +52,7 @@ impl IpcClient {
         self.send(cmd)?;
         self.recv()
     }
-    
+
     pub fn request_response<R: DeserializeOwned, C: Serialize + ?Sized>(
         &mut self,
         cmd: &C,

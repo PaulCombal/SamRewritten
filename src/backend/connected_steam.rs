@@ -13,7 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::steam_client::create_client::create_steam_client;
+use crate::steam_client::client_engine_wrapper::ClientEngine;
+use crate::steam_client::client_user_stats_map_wrapper::ClientUserStatsMap;
+use crate::steam_client::create_client::{create_client_engine, create_steam_client};
 use crate::steam_client::steam_apps_001_wrapper::SteamApps001;
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steam_client_wrapper::SteamClient;
@@ -31,6 +33,8 @@ pub struct ConnectedSteam {
     pub user_stats: SteamUserStats,
     pub utils: SteamUtils,
     pub user: SteamUser,
+    engine: ClientEngine,
+    engine_handles: (HSteamPipe, HSteamUser),
 }
 
 impl ConnectedSteam {
@@ -44,6 +48,10 @@ impl ConnectedSteam {
         let user_stats = client.get_isteam_user_stats(h_user, h_pipe)?;
         let user = client.get_isteam_user(h_user, h_pipe)?;
 
+        let engine = create_client_engine(silent)?;
+        let engine_pipe = engine.create_steam_pipe()?;
+        let engine_user = engine.connect_to_global_user(engine_pipe)?;
+
         Ok(ConnectedSteam {
             h_pipe,
             h_user,
@@ -53,12 +61,23 @@ impl ConnectedSteam {
             user_stats,
             utils,
             user,
+            engine,
+            engine_handles: (engine_pipe, engine_user),
         })
+    }
+
+    pub fn client_user_stats_map(&self) -> Result<ClientUserStatsMap, Box<dyn std::error::Error>> {
+        let (pipe, user) = self.engine_handles;
+        Ok(self.engine.get_iclient_user_stats(user, pipe)?)
     }
 }
 
 impl Drop for ConnectedSteam {
     fn drop(&mut self) {
+        let (engine_pipe, engine_user) = self.engine_handles;
+        self.engine.release_user(engine_pipe, engine_user);
+        let _ = self.engine.release_steam_pipe(engine_pipe);
+
         self.client.release_user(self.h_pipe, self.h_user);
         self.client
             .release_steam_pipe(self.h_pipe)

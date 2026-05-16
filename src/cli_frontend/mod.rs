@@ -33,7 +33,12 @@ static INTERRUPTED: AtomicBool = AtomicBool::new(false);
 #[clap(
     author,
     version,
-    long_about = "Steam Achievements Manager Rewritten\nLicensed under GNU GPLv3, Copyright (C) 2026"
+    about = "Manage Steam achievements and stats from the command line.",
+    long_about = "Steam Achievements Manager Rewritten\n\
+                  Manage Steam achievements and stats for the apps your account owns: \
+                  list, unlock, lock, idle, and import/export progress as JSON.\n\
+                  Requires the Steam client to be running and signed in.\n\
+                  Licensed under GNU GPLv3, Copyright (C) 2026"
 )]
 struct Cli {
     #[command(subcommand)]
@@ -42,40 +47,62 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// List all achievements for an app, with their current unlock status, as JSON.
     ListAchievements {
+        /// Steam AppID of the game to query.
         app_id: u32,
     },
+    /// List all stats defined for an app, with their current values, as JSON.
     ListStatistics {
+        /// Steam AppID of the game to query.
         app_id: u32,
     },
-    ListApps,
+    /// List all apps owned by the logged-in Steam user as JSON.
+    ListApps {
+        /// Also include per-app achievement counts (total and unlocked).
+        /// Slower: requires querying stats for every owned app.
+        #[arg(long)]
+        with_achievements: bool,
+    },
+    /// Unlock one or more achievements for an app.
     Unlock {
+        /// Steam AppID of the game.
         app_id: u32,
         #[command(flatten)]
         ids: Ids,
     },
+    /// Unlock every achievement defined for an app.
     UnlockAll {
+        /// Steam AppID of the game.
         app_id: u32,
     },
+    /// Lock (re-lock) one or more achievements for an app.
     Lock {
+        /// Steam AppID of the game.
         app_id: u32,
         #[command(flatten)]
         ids: Ids,
     },
+    /// Reset every achievement and stat for an app to its locked/default state.
     LockAll {
+        /// Steam AppID of the game.
         app_id: u32,
     },
+    /// Idle an app (appear in-game) until interrupted with Ctrl+C.
     Idle {
+        /// Steam AppID of the game to idle.
         app_id: u32,
     },
     /// Export achievements and stats for one or more apps to stdout as JSON.
     Export {
+        /// One or more Steam AppIDs to export.
         #[arg(required = true)]
         app_ids: Vec<u32>,
     },
     /// Import achievements and stats from a JSON file produced by `export`
     /// (or by the GUI). Protected fields are skipped. Prints a JSON summary.
     Import {
+        /// Path to a JSON file previously produced by `export` or the GUI.
         file: PathBuf,
         /// Only import the app with this ID (skip the rest).
         #[arg(long)]
@@ -85,6 +112,7 @@ enum Command {
 
 #[derive(Args)]
 struct Ids {
+    /// One or more achievement API names to act on.
     #[arg(required = true)]
     ids: Vec<String>,
 }
@@ -144,7 +172,7 @@ pub fn main() -> std::process::ExitCode {
                 }
             };
         }
-        Command::ListApps => {
+        Command::ListApps { with_achievements } => {
             let connected_steam = match ConnectedSteam::new(false) {
                 Ok(c) => c,
                 Err(e) => {
@@ -157,7 +185,19 @@ pub fn main() -> std::process::ExitCode {
             let apps = &connected_steam.apps;
             let app_lister = AppLister::new(apps_001, apps);
 
-            match app_lister.get_owned_apps() {
+            let stats_map = if with_achievements {
+                match connected_steam.client_user_stats_map() {
+                    Ok(m) => Some(m),
+                    Err(e) => {
+                        eprintln!("Failed to acquire stats map: {e}");
+                        return std::process::ExitCode::FAILURE;
+                    }
+                }
+            } else {
+                None
+            };
+
+            match app_lister.get_owned_apps(stats_map.as_ref()) {
                 Ok(apps) => {
                     match serde_json::to_string_pretty(&apps) {
                         Ok(output) => println!("{}", output),

@@ -13,6 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+pub mod client_engine_vtable;
+pub mod client_engine_wrapper;
+pub mod client_user_stats_map_vtable;
+pub mod client_user_stats_map_wrapper;
 pub mod create_client;
 pub mod steam_app_list_vtable;
 pub mod steam_app_list_wrapper;

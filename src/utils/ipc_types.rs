@@ -90,7 +90,10 @@ pub struct ImportSummary {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum SteamCommand {
-    GetSubscribedAppList(bool),
+    /// `(include_playtime, with_achievement_counts)`. When `with_achievement_counts`
+    /// is true, each returned `AppModel` will have `achievement_count` and
+    /// `unlocked_achievement_count` populated for apps whose schema is cached locally.
+    GetSubscribedAppList(bool, bool),
     LaunchApp(u32),
     StopApp(u32),
     StopApps,
@@ -126,10 +129,7 @@ pub fn frame_message<T: Serialize + ?Sized>(msg: &T) -> Vec<u8> {
 }
 
 /// Frame `msg` and write it to `w`. Used by both ends of the pipe.
-pub fn write_message<T: Serialize + ?Sized>(
-    w: &mut impl Write,
-    msg: &T,
-) -> Result<(), SamError> {
+pub fn write_message<T: Serialize + ?Sized>(w: &mut impl Write, msg: &T) -> Result<(), SamError> {
     let frame = frame_message(msg);
     w.write_all(&frame).map_err(|e| {
         eprintln!("[IPC] Failed to write framed message: {e}");
