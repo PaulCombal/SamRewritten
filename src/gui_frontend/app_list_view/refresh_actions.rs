@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use super::achievement_loader::AchievementLoader;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
@@ -42,6 +43,7 @@ pub fn create_refresh_app_list_action(
     list_stack: &Stack,
     search_entry: &SearchEntry,
     idle_count: Rc<Cell<usize>>,
+    achievement_loader: AchievementLoader,
 ) -> SimpleAction {
     let action_refresh_app_list = SimpleAction::new("refresh_app_list", None);
     action_refresh_app_list.connect_activate(clone!(
@@ -63,6 +65,8 @@ pub fn create_refresh_app_list_action(
         application,
         #[strong]
         idle_count,
+        #[strong]
+        achievement_loader,
         move |_, _| {
             list_stack.set_visible_child_name("loading");
             set_app_action_enabled(&application, "unlock_all_apps", false);
@@ -92,6 +96,8 @@ pub fn create_refresh_app_list_action(
                 search_entry,
                 #[strong]
                 idle_count,
+                #[strong]
+                achievement_loader,
                 async move {
                     match apps.await {
                         Ok(Ok(app_vec)) => {
@@ -108,9 +114,14 @@ pub fn create_refresh_app_list_action(
                                 GSteamAppObject::rebuild_local_banner_index();
                                 let models: Vec<GSteamAppObject> =
                                     app_vec.into_iter().map(GSteamAppObject::new).collect();
+                                // Seed before extend_from_slice so bind handlers
+                                // find ids in the backlog instead of racing.
+                                achievement_loader
+                                    .reset_with(models.iter().map(|m| m.app_id()));
                                 list_store.extend_from_slice(&models);
                                 list_scrolled_window.set_child(Some(&grid_view));
                                 list_stack.set_visible_child_name("list");
+                                achievement_loader.kick(&list_store);
                                 app_list_no_result_label.set_text("No results. Check for spelling mistakes or try typing an App Id.");
 
                                 // Sync idle state from the orchestrator: any app it's

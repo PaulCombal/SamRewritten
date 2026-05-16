@@ -110,6 +110,7 @@ pub enum SteamCommand {
     StoreStatsAndAchievements(u32),
     ExportAppProgress(u32),
     ImportAppProgress(u32, AppExport),
+    GetAchievementCounts(Vec<u32>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

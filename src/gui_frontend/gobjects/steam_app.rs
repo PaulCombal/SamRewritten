@@ -111,6 +111,7 @@ impl GSteamAppObject {
         let is_junk = matches!(app.app_type, AppModelType::Junk);
         let lowercase_name = Rc::new(app.app_name.to_lowercase());
 
+        let achievements_loaded = app.achievement_count.is_some();
         let obj: Self = Object::builder()
             .property("app_id", app.app_id)
             .property("app_name", app.app_name)
@@ -121,6 +122,12 @@ impl GSteamAppObject {
             .property("playtime_minutes", app.playtime_minutes.unwrap_or(0))
             .property("last_played", app.last_played.unwrap_or(0))
             .property("can_start_idling", true)
+            .property("achievement_count", app.achievement_count.unwrap_or(0))
+            .property(
+                "unlocked_achievement_count",
+                app.unlocked_achievement_count.unwrap_or(0),
+            )
+            .property("achievements_loaded", achievements_loaded)
             .build();
 
         let imp = obj.imp();
@@ -182,6 +189,15 @@ mod imp {
 
         #[property(get, set)]
         can_start_idling: Cell<bool>,
+
+        #[property(get, set)]
+        achievement_count: Cell<u32>,
+
+        #[property(get, set)]
+        unlocked_achievement_count: Cell<u32>,
+
+        #[property(get, set)]
+        achievements_loaded: Cell<bool>,
 
         // Cached for hot-path filter/sort reads (not GObject properties).
         pub(super) is_junk: Cell<bool>,

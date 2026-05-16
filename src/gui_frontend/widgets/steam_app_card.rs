@@ -30,12 +30,14 @@ mod imp {
     use crate::gui_frontend::widgets::gradient_overlay::GradientOverlay;
     use glib::Properties;
     use gtk::glib::clone;
-    use gtk::{Box, Image, Label, Orientation};
+    use gtk::{Box, Image, Orientation};
     use std::cell::{Cell, RefCell};
 
     const HOVER_DURATION_MS: f64 = 200.0;
     const BUTTONS_OPACITY_REST: f64 = 0.85;
     const BUTTONS_OPACITY_HOVER: f64 = 1.0;
+    const BADGE_OPACITY: f64 = 0.9;
+    const BADGE_FADE_DURATION_MS: f64 = 200.0;
 
     #[derive(Default, Properties)]
     #[properties(wrapper_type = super::SteamAppCard)]
@@ -70,6 +72,9 @@ mod imp {
         #[property(get)]
         pub manage_button_new: gtk::Button,
         pub check_button: gtk::CheckButton,
+        pub achievement_badge: gtk::Label,
+        pub badge_loaded_handler: RefCell<Option<glib::SignalHandlerId>>,
+        pub badge_fade_generation: Cell<u64>,
     }
 
     #[glib::object_subclass]
@@ -99,7 +104,7 @@ mod imp {
                 .icon_name("media-playback-start-symbolic")
                 .pixel_size(11)
                 .build();
-            let launch_label = Label::new(Some("Launch"));
+            let launch_label = gtk::Label::new(Some("Launch"));
             let launch_box = Box::builder()
                 .spacing(8)
                 .margin_start(10)
@@ -115,7 +120,7 @@ mod imp {
                 .icon_name("emoji-recent-symbolic")
                 .pixel_size(11)
                 .build();
-            let idle_label = Label::new(Some("Idle"));
+            let idle_label = gtk::Label::new(Some("Idle"));
             let idle_box = Box::builder()
                 .spacing(8)
                 .margin_start(10)
@@ -131,7 +136,7 @@ mod imp {
                 .icon_name("document-edit-symbolic")
                 .pixel_size(11)
                 .build();
-            let manage_label = Label::new(Some("Manage"));
+            let manage_label = gtk::Label::new(Some("Manage"));
             let attr_list = gtk::pango::AttrList::new();
             attr_list.insert(gtk::pango::AttrInt::new_weight(
                 gtk::pango::Weight::Semibold,
@@ -203,6 +208,14 @@ mod imp {
             self.check_button.set_margin_top(15);
             self.check_button.set_margin_start(15);
 
+            // 6b. Setup Achievement Badge (Top Right)
+            self.achievement_badge.add_css_class("osd");
+            self.achievement_badge.set_halign(gtk::Align::End);
+            self.achievement_badge.set_valign(gtk::Align::Start);
+            self.achievement_badge.set_margin_top(15);
+            self.achievement_badge.set_margin_end(15);
+            self.achievement_badge.set_opacity(0.0);
+
             // 7. Final Assembly
             self.overlay.set_child(Some(&self.main_layout));
 
@@ -212,6 +225,7 @@ mod imp {
 
             self.overlay.add_overlay(&self.bottom_container);
             self.overlay.add_overlay(&self.check_button);
+            self.overlay.add_overlay(&self.achievement_badge);
 
             self.overlay.set_parent(&*obj);
             obj.set_overflow(gtk::Overflow::Hidden);
@@ -251,6 +265,37 @@ mod imp {
                 idle_sensitive_closure,
             );
             idle_sensitive_expr.bind(&self.idle_button, "sensitive", gtk::Widget::NONE);
+
+            let badge_label_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+                let loaded = values
+                    .get(1)
+                    .and_then(|v| v.get::<bool>().ok())
+                    .unwrap_or(false);
+                let total = values
+                    .get(2)
+                    .and_then(|v| v.get::<u32>().ok())
+                    .unwrap_or(0);
+                let unlocked = values
+                    .get(3)
+                    .and_then(|v| v.get::<u32>().ok())
+                    .unwrap_or(0);
+                let label = if loaded && total > 0 {
+                    let percent = (unlocked as f64 / total as f64 * 100.0).round() as u32;
+                    format!("{percent}% • {unlocked} / {total}")
+                } else {
+                    String::new()
+                };
+                Some(label.to_value())
+            });
+            let badge_label_expr = gtk::ClosureExpression::new::<String>(
+                &[
+                    app_obj_expr.chain_property::<GSteamAppObject>("achievements_loaded"),
+                    app_obj_expr.chain_property::<GSteamAppObject>("achievement_count"),
+                    app_obj_expr.chain_property::<GSteamAppObject>("unlocked_achievement_count"),
+                ],
+                badge_label_closure,
+            );
+            badge_label_expr.bind(&self.achievement_badge, "label", gtk::Widget::NONE);
 
             let opacity_closure = glib::RustClosure::new(move |values: &[glib::Value]| {
                 let is_selected = values
@@ -322,6 +367,11 @@ mod imp {
         }
 
         fn dispose(&self) {
+            if let Some(handler) = self.badge_loaded_handler.borrow_mut().take()
+                && let Some(app) = self.app_object.borrow().as_ref()
+            {
+                app.disconnect(handler);
+            }
             self.overlay.unparent();
         }
     }
@@ -423,16 +473,84 @@ mod imp {
             });
         }
 
+        pub(super) fn start_badge_fade_in(&self) {
+            self.badge_fade_generation
+                .set(self.badge_fade_generation.get().wrapping_add(1));
+            let gen_snapshot = self.badge_fade_generation.get();
+
+            self.achievement_badge.set_opacity(0.0);
+
+            if ANIMATIONS_DISABLED.load(std::sync::atomic::Ordering::Relaxed) {
+                self.achievement_badge.set_opacity(BADGE_OPACITY);
+                return;
+            }
+
+            let card_weak = self.obj().downgrade();
+            let start_time = Cell::new(0i64);
+            self.obj().add_tick_callback(move |_, clock| {
+                let Some(card) = card_weak.upgrade() else {
+                    return glib::ControlFlow::Break;
+                };
+                let imp = card.imp();
+                if imp.badge_fade_generation.get() != gen_snapshot {
+                    return glib::ControlFlow::Break;
+                }
+                let now = clock.frame_time();
+                if start_time.get() == 0 {
+                    start_time.set(now);
+                }
+                let elapsed_ms = (now - start_time.get()) as f64 / 1000.0;
+                let progress = (elapsed_ms / BADGE_FADE_DURATION_MS).min(1.0);
+                imp.achievement_badge.set_opacity(progress * BADGE_OPACITY);
+                if progress >= 1.0 {
+                    glib::ControlFlow::Break
+                } else {
+                    glib::ControlFlow::Continue
+                }
+            });
+        }
+
         fn set_app_object(&self, app: Option<GSteamAppObject>) {
             if self.app_object.borrow().as_ref() == app.as_ref() {
                 return;
             }
 
+            if let Some(handler) = self.badge_loaded_handler.borrow_mut().take()
+                && let Some(old) = self.app_object.borrow().as_ref()
+            {
+                old.disconnect(handler);
+            }
+            self.badge_fade_generation
+                .set(self.badge_fade_generation.get().wrapping_add(1));
+
             match app {
-                Some(ref _app_obj) => {}
+                Some(ref new_app) => {
+                    let loaded = new_app.achievements_loaded();
+                    let total = new_app.achievement_count();
+                    let target = if loaded && total > 0 {
+                        BADGE_OPACITY
+                    } else {
+                        0.0
+                    };
+                    self.achievement_badge.set_opacity(target);
+
+                    if !loaded {
+                        let card_weak = self.obj().downgrade();
+                        let handler = new_app.connect_achievements_loaded_notify(move |app| {
+                            let Some(card) = card_weak.upgrade() else {
+                                return;
+                            };
+                            if app.achievements_loaded() && app.achievement_count() > 0 {
+                                card.imp().start_badge_fade_in();
+                            }
+                        });
+                        *self.badge_loaded_handler.borrow_mut() = Some(handler);
+                    }
+                }
                 None => {
                     self.name_label.set_label("...");
                     self.image.set_url("");
+                    self.achievement_badge.set_opacity(0.0);
                 }
             }
 

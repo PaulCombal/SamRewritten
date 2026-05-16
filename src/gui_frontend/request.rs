@@ -107,6 +107,11 @@ pub struct ResetStats {
     pub achievements_too: bool,
 }
 
+#[derive(Debug, Clone)]
+pub struct GetAchievementCounts {
+    pub app_ids: Vec<u32>,
+}
+
 impl Request for GetSubscribedAppList {
     type Response = Vec<AppModel>;
 }
@@ -157,6 +162,10 @@ impl Request for SetFloatStat {
 
 impl Request for ResetStats {
     type Response = bool;
+}
+
+impl Request for GetAchievementCounts {
+    type Response = Vec<(u32, u32, u32)>;
 }
 
 impl From<GetSubscribedAppList> for SteamCommand {
@@ -234,6 +243,12 @@ impl From<SetFloatStat> for SteamCommand {
 impl From<ResetStats> for SteamCommand {
     fn from(val: ResetStats) -> Self {
         SteamCommand::ResetStats(val.app_id, val.achievements_too)
+    }
+}
+
+impl From<GetAchievementCounts> for SteamCommand {
+    fn from(val: GetAchievementCounts) -> Self {
+        SteamCommand::GetAchievementCounts(val.app_ids)
     }
 }
 

@@ -315,45 +315,68 @@ impl<'a> AppLister<'a> {
     }
 
     fn populate_achievement_counts(&self, map: &ClientUserStatsMap, models: &mut [AppModel]) {
-        const CHUNK_SIZE: usize = 200;
-        const PER_CHUNK_HARD_CAP: Duration = Duration::from_secs(45);
-        const NO_PROGRESS_CAP: Duration = Duration::from_secs(2);
-        const POLL_INTERVAL: Duration = Duration::from_millis(50);
-
-        for chunk in models.chunks_mut(CHUNK_SIZE) {
-            let mut pending: HashSet<AppId_t> = HashSet::with_capacity(chunk.len());
-            for app in chunk.iter() {
-                if map.request_current_stats(app.app_id) {
-                    pending.insert(app.app_id);
-                }
-            }
-
-            let hard_deadline = Instant::now() + PER_CHUNK_HARD_CAP;
-            let mut last_progress = Instant::now();
-            while !pending.is_empty() && Instant::now() < hard_deadline {
-                map.run_engine_frame();
-                let before = pending.len();
-                pending.retain(|&app_id| !map.is_schema_loaded(app_id));
-                if pending.len() < before {
-                    last_progress = Instant::now();
-                }
-                if pending.is_empty() || last_progress.elapsed() >= NO_PROGRESS_CAP {
-                    break;
-                }
-                std::thread::sleep(POLL_INTERVAL);
-            }
-
-            for app in chunk.iter_mut() {
-                if !pending.contains(&app.app_id) {
-                    let total = map.get_num_achievements(app.app_id);
-                    app.achievement_count = Some(total);
-                    app.unlocked_achievement_count = if total > 0 {
-                        Some(map.get_num_achieved_achievements(app.app_id))
-                    } else {
-                        Some(0)
-                    };
-                }
+        let app_ids: Vec<AppId_t> = models.iter().map(|m| m.app_id).collect();
+        let counts = fetch_achievement_counts(map, &app_ids);
+        let by_id: std::collections::HashMap<AppId_t, (u32, u32)> = counts
+            .into_iter()
+            .map(|(id, total, unlocked)| (id, (total, unlocked)))
+            .collect();
+        for app in models.iter_mut() {
+            if let Some(&(total, unlocked)) = by_id.get(&app.app_id) {
+                app.achievement_count = Some(total);
+                app.unlocked_achievement_count = Some(unlocked);
             }
         }
     }
+}
+
+/// Apps whose schema fails to load within the per-chunk window are omitted.
+pub fn fetch_achievement_counts(
+    map: &ClientUserStatsMap,
+    app_ids: &[AppId_t],
+) -> Vec<(AppId_t, u32, u32)> {
+    const CHUNK_SIZE: usize = 200;
+    const PER_CHUNK_HARD_CAP: Duration = Duration::from_secs(45);
+    const NO_PROGRESS_CAP: Duration = Duration::from_secs(2);
+    const POLL_INTERVAL: Duration = Duration::from_millis(50);
+
+    let mut out: Vec<(AppId_t, u32, u32)> = Vec::with_capacity(app_ids.len());
+
+    for chunk in app_ids.chunks(CHUNK_SIZE) {
+        let mut pending: HashSet<AppId_t> = HashSet::with_capacity(chunk.len());
+        for &app_id in chunk.iter() {
+            if map.request_current_stats(app_id) {
+                pending.insert(app_id);
+            }
+        }
+
+        let hard_deadline = Instant::now() + PER_CHUNK_HARD_CAP;
+        let mut last_progress = Instant::now();
+        while !pending.is_empty() && Instant::now() < hard_deadline {
+            map.run_engine_frame();
+            let before = pending.len();
+            pending.retain(|&app_id| !map.is_schema_loaded(app_id));
+            if pending.len() < before {
+                last_progress = Instant::now();
+            }
+            if pending.is_empty() || last_progress.elapsed() >= NO_PROGRESS_CAP {
+                break;
+            }
+            std::thread::sleep(POLL_INTERVAL);
+        }
+
+        for &app_id in chunk.iter() {
+            if !pending.contains(&app_id) {
+                let total = map.get_num_achievements(app_id);
+                let unlocked = if total > 0 {
+                    map.get_num_achieved_achievements(app_id)
+                } else {
+                    0
+                };
+                out.push((app_id, total, unlocked));
+            }
+        }
+    }
+
+    out
 }

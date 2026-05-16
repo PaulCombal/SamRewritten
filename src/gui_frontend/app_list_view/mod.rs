@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+mod achievement_loader;
 mod bulk_actions;
 mod progress_actions;
 mod refresh_actions;
@@ -33,6 +34,7 @@ use crate::gui_frontend::ui_components::{
 use crate::gui_frontend::widgets::steam_app_card::SteamAppCard;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::arguments::parse_gui_arguments;
+use achievement_loader::AchievementLoader;
 use bulk_actions::create_bulk_actions;
 use gtk::gio::{ApplicationCommandLine, ListStore, spawn_blocking};
 use gtk::glib::ExitCode;
@@ -124,6 +126,7 @@ pub fn create_main_ui(
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
     let idle_count: Rc<Cell<usize>> = Rc::new(Cell::new(0));
+    let achievement_loader = AchievementLoader::new();
 
     // Create the UI components for the app view
     let (
@@ -617,6 +620,29 @@ pub fn create_main_ui(
         }
     ));
 
+    list_factory.connect_bind(clone!(
+        #[strong]
+        achievement_loader,
+        #[weak]
+        list_store,
+        move |_, list_item| {
+            let list_item = list_item
+                .downcast_ref::<ListItem>()
+                .expect("Needs to be a ListItem");
+            let Some(item) = list_item.item() else {
+                return;
+            };
+            let Ok(app) = item.downcast::<GSteamAppObject>() else {
+                return;
+            };
+            if app.achievements_loaded() {
+                return;
+            }
+            achievement_loader.prioritize(app.app_id());
+            achievement_loader.kick(&list_store);
+        }
+    ));
+
     // Search entry setup
     search_entry.connect_search_changed(clone!(
         #[weak]
@@ -707,6 +733,8 @@ pub fn create_main_ui(
         #[weak]
         app_id,
         #[weak]
+        list_store,
+        #[weak]
         menu_model,
         #[weak]
         application,
@@ -715,12 +743,15 @@ pub fn create_main_ui(
         #[weak]
         app_stat_model,
         #[strong]
+        achievement_loader,
+        #[strong]
         cancel_timed_unlock,
         move |_| {
             cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
             list_stack.set_visible_child_name("list");
             set_context_popover_to_app_list_context(&menu_model, &application);
             if let Some(app_id) = app_id.take() {
+                achievement_loader.refresh_app(app_id, &list_store);
                 spawn_blocking(move || {
                     let _ = StopApp { app_id }.request();
                 });
@@ -777,6 +808,7 @@ pub fn create_main_ui(
         &list_stack,
         &search_entry,
         idle_count.clone(),
+        achievement_loader.clone(),
     );
 
     let action_refresh_achievements_list = create_refresh_achievements_action(

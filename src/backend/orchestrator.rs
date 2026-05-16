@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::backend::app_lister::AppLister;
+use crate::backend::app_lister::{AppLister, fetch_achievement_counts};
 use crate::backend::connected_steam::ConnectedSteam;
 use crate::backend::local_config::parse_localconfig;
 #[cfg(debug_assertions)]
@@ -508,6 +508,30 @@ fn process_command(
                     "reset-stats",
                 );
             }
+        }
+
+        SteamCommand::GetAchievementCounts(app_ids) => {
+            dev_println!(
+                "[ORCHESTRATOR] GetAchievementCounts ({} ids)",
+                app_ids.len()
+            );
+
+            let stats_map = match connected_steam.client_user_stats_map() {
+                Ok(m) => m,
+                Err(e) => {
+                    dev_println!("[ORCHESTRATOR] Could not create stats map: {e}");
+                    write_message(
+                        tx,
+                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                    )
+                    .expect("[ORCHESTRATOR] Failed to send response");
+                    return true;
+                }
+            };
+
+            let counts = fetch_achievement_counts(&stats_map, &app_ids);
+            write_message(tx, &SteamResponse::Success(counts))
+                .expect("[ORCHESTRATOR] Failed to send response");
         }
 
         // Child-only commands. The orchestrator dispatches these to app
