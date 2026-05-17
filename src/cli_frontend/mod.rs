@@ -185,6 +185,14 @@ pub fn main() -> std::process::ExitCode {
             let apps = &connected_steam.apps;
             let app_lister = AppLister::new(apps_001, apps);
 
+            let client_user = match connected_steam.client_user() {
+                Ok(u) => u,
+                Err(e) => {
+                    eprintln!("Failed to acquire IClientUser: {e}");
+                    return std::process::ExitCode::FAILURE;
+                }
+            };
+
             let stats_map = if with_achievements {
                 match connected_steam.client_user_stats_map() {
                     Ok(m) => Some(m),
@@ -197,7 +205,7 @@ pub fn main() -> std::process::ExitCode {
                 None
             };
 
-            match app_lister.get_owned_apps(stats_map.as_ref()) {
+            match app_lister.get_owned_apps(&client_user, stats_map.as_ref()) {
                 Ok(apps) => {
                     match serde_json::to_string_pretty(&apps) {
                         Ok(output) => println!("{}", output),

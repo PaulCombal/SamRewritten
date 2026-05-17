@@ -15,6 +15,7 @@
 
 use crate::steam_client::client_engine_wrapper::ClientEngine;
 use crate::steam_client::client_user_stats_map_wrapper::ClientUserStatsMap;
+use crate::steam_client::client_user_wrapper::ClientUser;
 use crate::steam_client::create_client::{create_client_engine, create_steam_client};
 use crate::steam_client::steam_apps_001_wrapper::SteamApps001;
 use crate::steam_client::steam_apps_wrapper::SteamApps;
@@ -69,6 +70,11 @@ impl ConnectedSteam {
     pub fn client_user_stats_map(&self) -> Result<ClientUserStatsMap, Box<dyn std::error::Error>> {
         let (pipe, user) = self.engine_handles;
         Ok(self.engine.get_iclient_user_stats(user, pipe)?)
+    }
+
+    pub fn client_user(&self) -> Result<ClientUser, Box<dyn std::error::Error>> {
+        let (pipe, user) = self.engine_handles;
+        Ok(self.engine.get_iclient_user(user, pipe)?)
     }
 }
 

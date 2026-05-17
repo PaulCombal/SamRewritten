@@ -17,6 +17,8 @@ pub mod client_engine_vtable;
 pub mod client_engine_wrapper;
 pub mod client_user_stats_map_vtable;
 pub mod client_user_stats_map_wrapper;
+pub mod client_user_vtable;
+pub mod client_user_wrapper;
 pub mod create_client;
 pub mod steam_app_list_vtable;
 pub mod steam_app_list_wrapper;

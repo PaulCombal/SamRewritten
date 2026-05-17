@@ -207,6 +207,19 @@ fn process_command(
             let apps = &connected_steam.apps;
             let app_lister = AppLister::new(apps_001, apps);
 
+            let client_user = match connected_steam.client_user() {
+                Ok(u) => u,
+                Err(e) => {
+                    dev_println!("[ORCHESTRATOR] Could not get IClientUser: {e}");
+                    write_message(
+                        tx,
+                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                    )
+                    .expect("[ORCHESTRATOR] Failed to send response");
+                    return true;
+                }
+            };
+
             let stats_map = if with_achievement_counts {
                 match connected_steam.client_user_stats_map() {
                     Ok(m) => Some(m),
@@ -218,7 +231,7 @@ fn process_command(
             } else {
                 None
             };
-            let result = app_lister.get_owned_apps(stats_map.as_ref());
+            let result = app_lister.get_owned_apps(&client_user, stats_map.as_ref());
 
             match result {
                 Ok(mut apps) => {

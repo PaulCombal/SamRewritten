@@ -16,6 +16,7 @@
 use std::os::raw::{c_char, c_void};
 
 use crate::steam_client::client_user_stats_map_vtable::IClientUserStatsMap;
+use crate::steam_client::client_user_vtable::IClientUser;
 use crate::steam_client::steamworks_types::{HSteamPipe, HSteamUser};
 
 #[repr(C)]
@@ -33,7 +34,8 @@ pub struct IClientEngineVTable {
     pub _vt5: *const c_void,
     pub release_user: unsafe extern "C" fn(*mut IClientEngine, HSteamPipe, HSteamUser),
     pub _vt7_is_valid_pipe: *const c_void,
-    pub _vt8_get_iclient_user: *const c_void,
+    pub get_iclient_user:
+        unsafe extern "C" fn(*mut IClientEngine, HSteamUser, HSteamPipe) -> *mut IClientUser,
     pub _vt9_get_iclient_game_server: *const c_void,
     pub _vt10: *const c_void,
     pub _vt11_set_local_ip_binding: *const c_void,

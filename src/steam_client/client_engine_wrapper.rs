@@ -16,6 +16,8 @@
 use crate::steam_client::client_engine_vtable::IClientEngine;
 use crate::steam_client::client_user_stats_map_vtable::IClientUserStatsMap;
 use crate::steam_client::client_user_stats_map_wrapper::ClientUserStatsMap;
+use crate::steam_client::client_user_vtable::IClientUser;
+use crate::steam_client::client_user_wrapper::ClientUser;
 use crate::steam_client::steamworks_types::{HSteamPipe, HSteamUser};
 use crate::steam_client::wrapper_types::SteamClientError;
 use std::sync::Arc;
@@ -115,6 +117,27 @@ impl ClientEngine {
                 ))
             } else {
                 Ok(ClientUserStatsMap::from_raw(ptr, self.inner.clone()))
+            }
+        }
+    }
+
+    pub fn get_iclient_user(
+        &self,
+        user: HSteamUser,
+        pipe: HSteamPipe,
+    ) -> Result<ClientUser, SteamClientError> {
+        unsafe {
+            let vt = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+            let ptr: *mut IClientUser = (vt.get_iclient_user)(self.inner.ptr, user, pipe);
+            if ptr.is_null() {
+                Err(SteamClientError::InterfaceCreationFailed(
+                    "IClientUser".to_owned(),
+                ))
+            } else {
+                Ok(ClientUser::from_raw(ptr, self.inner.clone()))
             }
         }
     }

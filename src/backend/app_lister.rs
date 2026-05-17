@@ -15,6 +15,7 @@
 
 use crate::dev_println;
 use crate::steam_client::client_user_stats_map_wrapper::ClientUserStatsMap;
+use crate::steam_client::client_user_wrapper::ClientUser;
 use crate::steam_client::steam_apps_001_wrapper::{SteamApps001, SteamApps001AppDataKeys};
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steamworks_types::AppId_t;
@@ -36,7 +37,6 @@ pub struct AppLister<'a> {
     app_list_local: String,
     current_language: String,
     steam_apps_001: &'a SteamApps001,
-    steam_apps: &'a SteamApps,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -144,7 +144,6 @@ impl<'a> AppLister<'a> {
             app_list_local: cache_dir + &app_list_local,
             current_language,
             steam_apps_001,
-            steam_apps,
         }
     }
 
@@ -286,9 +285,12 @@ impl<'a> AppLister<'a> {
 
     pub fn get_owned_apps(
         &self,
+        client_user: &ClientUser,
         stats_map: Option<&ClientUserStatsMap>,
     ) -> Result<Vec<AppModel>, SamError> {
         self.ensure_local_app_list()?;
+
+        let owned_set: HashSet<AppId_t> = client_user.get_subscribed_apps().into_iter().collect();
 
         let file =
             File::open(&self.app_list_local).map_err(|_| SamError::AppListRetrievalFailed)?;
@@ -296,7 +298,7 @@ impl<'a> AppLister<'a> {
 
         let mut models = Vec::new();
         for_each_xml_game(&mut reader, |app_id, app_type| {
-            if !self.steam_apps.is_subscribed_app(app_id).unwrap_or(false) {
+            if !owned_set.contains(&app_id) {
                 return;
             }
             match self.build_app_model(app_id, app_type) {

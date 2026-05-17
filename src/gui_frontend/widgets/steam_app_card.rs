@@ -271,14 +271,8 @@ mod imp {
                     .get(1)
                     .and_then(|v| v.get::<bool>().ok())
                     .unwrap_or(false);
-                let total = values
-                    .get(2)
-                    .and_then(|v| v.get::<u32>().ok())
-                    .unwrap_or(0);
-                let unlocked = values
-                    .get(3)
-                    .and_then(|v| v.get::<u32>().ok())
-                    .unwrap_or(0);
+                let total = values.get(2).and_then(|v| v.get::<u32>().ok()).unwrap_or(0);
+                let unlocked = values.get(3).and_then(|v| v.get::<u32>().ok()).unwrap_or(0);
                 let label = if loaded && total > 0 {
                     let percent = (unlocked as f64 / total as f64 * 100.0).round() as u32;
                     format!("{percent}% • {unlocked} / {total}")

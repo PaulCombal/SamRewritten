@@ -13,9 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use gtk::ApplicationWindow;
+
+#[cfg(unix)]
 use gtk::glib::clone;
+#[cfg(unix)]
 use gtk::prelude::*;
-use gtk::{Align, ApplicationWindow, Orientation, glib};
+#[cfg(unix)]
+use gtk::{Align, Orientation, glib};
 
 #[cfg(unix)]
 fn show_markup_warning(parent: &ApplicationWindow, title: &str, markup: &str) {
