@@ -296,9 +296,30 @@ fn process_command(
                     }
                 };
 
-            children_processes.insert(app_id, (IpcClient::new(child), 1));
-            write_message(tx, &SteamResponse::Success(true))
-                .expect("[ORCHESTRATOR] Failed to send response");
+            // Probe the child to verify it actually connected to Steam. The
+            // app server's connect attempt happens before its main loop runs,
+            // so a Status reply distinguishes a healthy child from one that
+            // failed to attach (e.g. user-entered AppId they don't own).
+            let mut ipc = IpcClient::new(child);
+            match ipc.request_response::<bool, _>(&SteamCommand::Status) {
+                Ok(true) => {
+                    children_processes.insert(app_id, (ipc, 1));
+                    write_message(tx, &SteamResponse::Success(true))
+                        .expect("[ORCHESTRATOR] Failed to send response");
+                }
+                Ok(false) | Err(_) => {
+                    dev_println!(
+                        "[ORCHESTRATOR] App server for {app_id} failed Steam handshake, tearing down"
+                    );
+                    let _ = send_app_command(&mut ipc, SteamCommand::Shutdown);
+                    let _ = ipc.wait();
+                    write_message(
+                        tx,
+                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                    )
+                    .expect("[ORCHESTRATOR] Failed to send response");
+                }
+            }
         }
 
         SteamCommand::StopApp(app_id) => {

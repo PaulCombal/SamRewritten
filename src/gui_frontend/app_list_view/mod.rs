@@ -553,38 +553,6 @@ pub fn create_main_ui(
                 }
             ));
 
-            card.launch_button().connect_clicked(clone!(
-                #[weak]
-                card,
-                move |_| {
-                    let Some(app) = card.app_object() else {
-                        return;
-                    };
-                    let app_id_to_bind = app.app_id();
-                    #[cfg(unix)]
-                    {
-                        Command::new("xdg-open")
-                            .arg(format!("steam://run/{app_id_to_bind}"))
-                            .spawn()
-                            .expect("Could not start child process")
-                            .wait()
-                            .expect("Failed to wait on child process");
-                    }
-
-                    #[cfg(windows)]
-                    {
-                        Command::new("cmd")
-                            .arg("/C")
-                            .arg("start")
-                            .arg(&format!("steam://run/{app_id_to_bind}"))
-                            .spawn()
-                            .expect("Could not start child process")
-                            .wait()
-                            .expect("Failed to wait on child process");
-                    }
-                }
-            ));
-
             card.connect_is_selected_notify(clone!(
                 #[weak]
                 list_item,
@@ -665,21 +633,20 @@ pub fn create_main_ui(
             if launch_app_by_id_visible.take() {
                 if let Some(app_id) = text.as_ref().and_then(|t| t.parse::<u32>().ok()) {
                     launch_app_by_id_visible.set(true);
-                    list_store.insert(
-                        1,
-                        &GSteamAppObject::new(AppModel {
-                            app_id,
-                            app_name: format!("App {app_id}"),
-                            app_type: AppModelType::App,
-                            developer: "Unknown".to_string(),
-                            image_url: None,
-                            metacritic_score: None,
-                            playtime_minutes: None,
-                            last_played: None,
-                            achievement_count: None,
-                            unlocked_achievement_count: None,
-                        }),
-                    );
+                    let synthetic = GSteamAppObject::new(AppModel {
+                        app_id,
+                        app_name: format!("App {app_id}"),
+                        app_type: AppModelType::App,
+                        developer: "Unknown".to_string(),
+                        image_url: None,
+                        metacritic_score: None,
+                        playtime_minutes: None,
+                        last_played: None,
+                        achievement_count: None,
+                        unlocked_achievement_count: None,
+                    });
+                    synthetic.set_is_synthetic(true);
+                    list_store.insert(1, &synthetic);
                 }
 
                 app_achievement_string_filter.set_search(text.as_deref());
@@ -691,21 +658,20 @@ pub fn create_main_ui(
 
             if let Some(app_id) = text.clone().and_then(|t| t.parse::<u32>().ok()) {
                 launch_app_by_id_visible.set(true);
-                list_store.insert(
-                    0,
-                    &GSteamAppObject::new(AppModel {
-                        app_id,
-                        app_name: format!("App {app_id}"),
-                        app_type: AppModelType::App,
-                        developer: "Unknown".to_string(),
-                        image_url: None,
-                        metacritic_score: None,
-                        playtime_minutes: None,
-                        last_played: None,
-                        achievement_count: None,
-                        unlocked_achievement_count: None,
-                    }),
-                );
+                let synthetic = GSteamAppObject::new(AppModel {
+                    app_id,
+                    app_name: format!("App {app_id}"),
+                    app_type: AppModelType::App,
+                    developer: "Unknown".to_string(),
+                    image_url: None,
+                    metacritic_score: None,
+                    playtime_minutes: None,
+                    last_played: None,
+                    achievement_count: None,
+                    unlocked_achievement_count: None,
+                });
+                synthetic.set_is_synthetic(true);
+                list_store.insert(0, &synthetic);
             }
 
             app_achievement_string_filter.set_search(text.as_deref());

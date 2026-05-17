@@ -63,8 +63,6 @@ mod imp {
         pub button_row: gtk::Box,
         pub name_label: gtk::Label,
         #[property(get)]
-        pub launch_button: gtk::Button,
-        #[property(get)]
         pub idle_button: gtk::ToggleButton,
         pub manage_button_box: gtk::Box, // Contains Manage + New
         #[property(get)]
@@ -99,23 +97,7 @@ mod imp {
             self.main_layout.append(&self.image);
             self.main_layout.append(&self.filler_box);
 
-            // 2. Setup Launch Button
-            let launch_icon = Image::builder()
-                .icon_name("media-playback-start-symbolic")
-                .pixel_size(11)
-                .build();
-            let launch_label = gtk::Label::new(Some("Launch"));
-            let launch_box = Box::builder()
-                .spacing(8)
-                .margin_start(10)
-                .margin_end(10)
-                .build();
-            launch_box.append(&launch_icon);
-            launch_box.append(&launch_label);
-            self.launch_button.add_css_class("opaque");
-            self.launch_button.set_child(Some(&launch_box));
-
-            // 2b. Setup Idle Toggle Button
+            // 2. Setup Idle Toggle Button
             let idle_icon = Image::builder()
                 .icon_name("emoji-recent-symbolic")
                 .pixel_size(11)
@@ -130,6 +112,14 @@ mod imp {
             idle_box.append(&idle_label);
             self.idle_button.add_css_class("opaque");
             self.idle_button.set_child(Some(&idle_box));
+
+            self.idle_button.connect_toggled(|btn| {
+                if btn.is_active() {
+                    btn.add_css_class("suggested-action");
+                } else {
+                    btn.remove_css_class("suggested-action");
+                }
+            });
 
             // 3. Setup Manage Button (Linked)
             let manage_icon = Image::builder()
@@ -194,7 +184,6 @@ mod imp {
             self.button_row.set_opacity(BUTTONS_OPACITY_REST);
             self.button_row.append(&self.manage_button_box);
             self.button_row.append(&self.idle_button);
-            self.button_row.append(&self.launch_button);
 
             self.bottom_container.set_orientation(Orientation::Vertical);
             self.bottom_container.set_valign(gtk::Align::End);
@@ -265,6 +254,22 @@ mod imp {
                 idle_sensitive_closure,
             );
             idle_sensitive_expr.bind(&self.idle_button, "sensitive", gtk::Widget::NONE);
+
+            // Synthetic (search-typed) AppId cards: hide the idle toggle,
+            // since the card is recreated on every search change and its
+            // initial idle state can't be trusted.
+            let idle_visible_closure = glib::RustClosure::new(|values: &[glib::Value]| {
+                let is_synthetic = values
+                    .get(1)
+                    .and_then(|v| v.get::<bool>().ok())
+                    .unwrap_or(false);
+                Some((!is_synthetic).to_value())
+            });
+            let idle_visible_expr = gtk::ClosureExpression::new::<bool>(
+                &[app_obj_expr.chain_property::<GSteamAppObject>("is_synthetic")],
+                idle_visible_closure,
+            );
+            idle_visible_expr.bind(&self.idle_button, "visible", gtk::Widget::NONE);
 
             let badge_label_closure = glib::RustClosure::new(|values: &[glib::Value]| {
                 let loaded = values

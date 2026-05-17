@@ -55,6 +55,23 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                 return 1;
             }
         };
+        
+        match &command {
+            SteamCommand::Shutdown => {
+                send_response(parent_tx, &SteamResponse::Success(true));
+                break;
+            }
+            SteamCommand::Status => {
+                let resp: SteamResponse<bool> = if app_manager.is_ok() {
+                    SteamResponse::Success(true)
+                } else {
+                    SteamResponse::Error(SamError::SteamConnectionFailed)
+                };
+                send_response(parent_tx, &resp);
+                continue;
+            }
+            _ => {}
+        }
 
         if app_manager.as_ref().is_err() {
             send_response::<()>(
@@ -67,15 +84,6 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
         let app_manager = app_manager.as_mut().unwrap();
 
         match command {
-            SteamCommand::Status => {
-                send_response(parent_tx, &SteamResponse::Success(true));
-            }
-
-            SteamCommand::Shutdown => {
-                send_response(parent_tx, &SteamResponse::Success(true));
-                break;
-            }
-
             SteamCommand::GetAchievements(app_id_param) => {
                 if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;

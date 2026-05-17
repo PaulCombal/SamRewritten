@@ -187,6 +187,10 @@ mod imp {
         #[property(get, set)]
         is_idling: Cell<bool>,
 
+        // True for the placeholder card shown when the user types an AppId into the search bar
+        #[property(get, set)]
+        is_synthetic: Cell<bool>,
+
         #[property(get, set)]
         can_start_idling: Cell<bool>,
 
