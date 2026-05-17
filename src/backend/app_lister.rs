@@ -337,9 +337,9 @@ pub fn fetch_achievement_counts(
     map: &ClientUserStatsMap,
     app_ids: &[AppId_t],
 ) -> Vec<(AppId_t, u32, u32)> {
-    const CHUNK_SIZE: usize = 200;
+    const CHUNK_SIZE: usize = 50;
     const PER_CHUNK_HARD_CAP: Duration = Duration::from_secs(45);
-    const NO_PROGRESS_CAP: Duration = Duration::from_secs(2);
+    const NO_PROGRESS_CAP: Duration = Duration::from_secs(3);
     const POLL_INTERVAL: Duration = Duration::from_millis(50);
 
     let mut out: Vec<(AppId_t, u32, u32)> = Vec::with_capacity(app_ids.len());

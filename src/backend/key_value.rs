@@ -20,12 +20,10 @@
  *    distribution.
  */
 
-use crate::backend::types::KeyValueEncoding;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
-use std::fs::File;
-use std::io::{Read, Seek};
+use std::io::{BufRead, Cursor};
 use std::path::Path;
 use std::sync::LazyLock;
 
@@ -198,13 +196,14 @@ impl KeyValue {
     }
 
     pub fn load_as_binary<P: AsRef<Path>>(path: P) -> Result<Self, KeyValueError> {
-        let mut file = File::open(path)?;
+        let bytes = std::fs::read(path)?;
+        let mut cursor = Cursor::new(bytes);
         let mut kv = Self::root();
-        kv.read_as_binary(&mut file)?;
+        kv.read_as_binary(&mut cursor)?;
         Ok(kv)
     }
 
-    pub fn read_as_binary<R: Read + Seek>(&mut self, input: &mut R) -> Result<(), KeyValueError> {
+    pub fn read_as_binary<R: BufRead>(&mut self, input: &mut R) -> Result<(), KeyValueError> {
         loop {
             let mut type_byte = [0u8];
             input.read_exact(&mut type_byte)?;
@@ -265,55 +264,21 @@ impl KeyValue {
         Ok(())
     }
 
-    fn read_string_internal_dynamic(
-        input: &mut dyn Read,
-        encoding: KeyValueEncoding,
-        end: char,
-    ) -> Result<String, KeyValueError> {
-        let character_size = match encoding {
-            KeyValueEncoding::Utf8 => 1,
-        };
-
-        let character_end = end.to_string();
-        let mut i = 0;
-        let mut data = vec![0u8; 128 * character_size];
-
-        loop {
-            if i + character_size > data.len() {
-                data.resize(data.len() + (128 * character_size), 0);
-            }
-
-            let read = input.read(&mut data[i..i + character_size])?;
-            if read != character_size {
-                return Err(KeyValueError::Io(std::io::Error::new(
-                    std::io::ErrorKind::UnexpectedEof,
-                    "Failed to read expected number of bytes",
-                )));
-            }
-
-            let slice = &data[i..i + character_size];
-            let s = match encoding {
-                KeyValueEncoding::Utf8 => std::str::from_utf8(slice).unwrap_or(""),
-            };
-
-            if s == character_end {
-                break;
-            }
-
-            i += character_size;
+    pub fn read_string_unicode(input: &mut dyn BufRead) -> Result<String, KeyValueError> {
+        let mut buf = Vec::with_capacity(32);
+        let n = input.read_until(b'\0', &mut buf)?;
+        if n == 0 {
+            return Err(KeyValueError::Io(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "EOF reading null-terminated string",
+            )));
         }
-
-        if i == 0 {
-            return Ok(String::new());
+        // Drop the trailing null, then decode as UTF-8.
+        if buf.last() == Some(&b'\0') {
+            buf.pop();
         }
-
-        match encoding {
-            KeyValueEncoding::Utf8 => Ok(String::from_utf8(data[..i].to_vec()).unwrap_or_default()),
-        }
-    }
-
-    pub fn read_string_unicode(input: &mut dyn Read) -> Result<String, KeyValueError> {
-        Self::read_string_internal_dynamic(input, KeyValueEncoding::Utf8, '\0')
+        String::from_utf8(buf)
+            .map_err(|e| KeyValueError::Format(format!("invalid utf-8 in string: {e}")))
     }
 }
 

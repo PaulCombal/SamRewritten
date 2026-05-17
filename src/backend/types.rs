@@ -16,10 +16,6 @@
 use std::convert::TryFrom;
 use std::str::FromStr;
 
-pub enum KeyValueEncoding {
-    Utf8,
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UserStatType {
     Invalid = 0,

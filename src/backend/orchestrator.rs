@@ -16,6 +16,7 @@
 use crate::backend::app_lister::{AppLister, fetch_achievement_counts};
 use crate::backend::connected_steam::ConnectedSteam;
 use crate::backend::local_config::parse_localconfig;
+use crate::backend::local_stats::LocalIndex;
 #[cfg(debug_assertions)]
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
@@ -545,25 +546,43 @@ fn process_command(
         }
 
         SteamCommand::GetAchievementCounts(app_ids) => {
-            dev_println!(
-                "[ORCHESTRATOR] GetAchievementCounts ({} ids)",
-                app_ids.len()
-            );
+            // Local-disk fast path; IPC fallback for misses.
+            let local_index = connected_steam
+                .user
+                .get_steam_id()
+                .ok()
+                .map(|sid| (sid.m_steamid & 0xFFFF_FFFF) as u32)
+                .and_then(LocalIndex::build);
 
-            let stats_map = match connected_steam.client_user_stats_map() {
-                Ok(m) => m,
-                Err(e) => {
-                    dev_println!("[ORCHESTRATOR] Could not create stats map: {e}");
-                    write_message(
-                        tx,
-                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
-                    )
-                    .expect("[ORCHESTRATOR] Failed to send response");
-                    return true;
+            let mut counts: Vec<(u32, u32, u32)> = Vec::with_capacity(app_ids.len());
+            let mut remaining: Vec<u32> = Vec::new();
+            if let Some(index) = &local_index {
+                for &app_id in &app_ids {
+                    match index.try_read(app_id) {
+                        Some((total, unlocked)) => counts.push((app_id, total, unlocked)),
+                        None => remaining.push(app_id),
+                    }
                 }
-            };
+            } else {
+                remaining = app_ids.clone();
+            }
 
-            let counts = fetch_achievement_counts(&stats_map, &app_ids);
+            if !remaining.is_empty() {
+                let stats_map = match connected_steam.client_user_stats_map() {
+                    Ok(m) => m,
+                    Err(e) => {
+                        dev_println!("[ORCHESTRATOR] Could not create stats map: {e}");
+                        write_message(
+                            tx,
+                            &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                        )
+                        .expect("[ORCHESTRATOR] Failed to send response");
+                        return true;
+                    }
+                };
+                counts.extend(fetch_achievement_counts(&stats_map, &remaining));
+            }
+
             write_message(tx, &SteamResponse::Success(counts))
                 .expect("[ORCHESTRATOR] Failed to send response");
         }

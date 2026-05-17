@@ -19,16 +19,70 @@ use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::MainContext;
 use gtk::prelude::*;
 use std::cell::{Cell, RefCell};
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::rc::Rc;
 
 // Must match CHUNK_SIZE in backend::app_lister::fetch_achievement_counts.
-const CHUNK_SIZE: usize = 200;
+const CHUNK_SIZE: usize = 50;
+
+// Insertion-ordered set: drains in FIFO order so "visible first" prioritization
+// and library order are preserved. A plain HashSet would scramble both.
+#[derive(Default)]
+struct OrderedSet {
+    order: VecDeque<u32>,
+    set: HashSet<u32>,
+}
+
+impl OrderedSet {
+    fn insert(&mut self, id: u32) -> bool {
+        if self.set.insert(id) {
+            self.order.push_back(id);
+            true
+        } else {
+            false
+        }
+    }
+
+    fn remove(&mut self, id: u32) -> bool {
+        if !self.set.remove(&id) {
+            return false;
+        }
+        if let Some(pos) = self.order.iter().position(|&x| x == id) {
+            self.order.remove(pos);
+        }
+        true
+    }
+
+    fn contains(&self, id: u32) -> bool {
+        self.set.contains(&id)
+    }
+
+    fn is_empty(&self) -> bool {
+        self.order.is_empty()
+    }
+
+    fn clear(&mut self) {
+        self.order.clear();
+        self.set.clear();
+    }
+
+    fn drain_front(&mut self, n: usize) -> Vec<u32> {
+        let take = n.min(self.order.len());
+        let mut out = Vec::with_capacity(take);
+        for _ in 0..take {
+            if let Some(id) = self.order.pop_front() {
+                self.set.remove(&id);
+                out.push(id);
+            }
+        }
+        out
+    }
+}
 
 #[derive(Default, Clone)]
 pub struct AchievementLoader {
-    priority: Rc<RefCell<HashSet<u32>>>,
-    backlog: Rc<RefCell<HashSet<u32>>>,
+    priority: Rc<RefCell<OrderedSet>>,
+    backlog: Rc<RefCell<OrderedSet>>,
     in_flight: Rc<RefCell<HashSet<u32>>>,
     worker_running: Rc<Cell<bool>>,
     generation: Rc<Cell<u64>>,
@@ -39,12 +93,14 @@ impl AchievementLoader {
         Self::default()
     }
 
-    pub fn reset_with(&self, app_ids: impl IntoIterator<Item = u32>) {
+    /// Drop all queued work and bump the generation so any in-flight worker
+    /// bails out. Schemas are fetched lazily via `prioritize` as cards scroll
+    /// into view; no startup batch (Steam's stats queue can't keep up).
+    pub fn reset(&self) {
         self.generation.set(self.generation.get().wrapping_add(1));
         self.priority.borrow_mut().clear();
         self.backlog.borrow_mut().clear();
         self.in_flight.borrow_mut().clear();
-        self.backlog.borrow_mut().extend(app_ids);
         self.worker_running.set(false);
     }
 
@@ -52,17 +108,17 @@ impl AchievementLoader {
         if self.in_flight.borrow().contains(&app_id) {
             return;
         }
-        if self.priority.borrow().contains(&app_id) {
+        if self.priority.borrow().contains(app_id) {
             return;
         }
-        self.backlog.borrow_mut().remove(&app_id);
+        self.backlog.borrow_mut().remove(app_id);
         self.priority.borrow_mut().insert(app_id);
     }
 
     /// Re-fetch even if loaded or in-flight: caller has reason to believe the
     /// current counts are stale (e.g. user just edited achievements).
     pub fn refresh_app(&self, app_id: u32, list_store: &ListStore) {
-        self.backlog.borrow_mut().remove(&app_id);
+        self.backlog.borrow_mut().remove(app_id);
         self.priority.borrow_mut().insert(app_id);
         self.kick(list_store);
     }
@@ -134,23 +190,10 @@ impl AchievementLoader {
     }
 
     fn drain_chunk(&self) -> Vec<u32> {
-        let mut chunk = Vec::with_capacity(CHUNK_SIZE);
-        {
-            let mut priority = self.priority.borrow_mut();
-            let take: Vec<u32> = priority.iter().take(CHUNK_SIZE).copied().collect();
-            for id in &take {
-                priority.remove(id);
-            }
-            chunk.extend(take);
-        }
+        let mut chunk = self.priority.borrow_mut().drain_front(CHUNK_SIZE);
         if chunk.len() < CHUNK_SIZE {
-            let mut backlog = self.backlog.borrow_mut();
             let remaining = CHUNK_SIZE - chunk.len();
-            let take: Vec<u32> = backlog.iter().take(remaining).copied().collect();
-            for id in &take {
-                backlog.remove(id);
-            }
-            chunk.extend(take);
+            chunk.extend(self.backlog.borrow_mut().drain_front(remaining));
         }
         chunk
     }
