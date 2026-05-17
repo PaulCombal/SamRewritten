@@ -114,14 +114,13 @@ pub fn create_refresh_app_list_action(
                                 GSteamAppObject::rebuild_local_banner_index();
                                 let models: Vec<GSteamAppObject> =
                                     app_vec.into_iter().map(GSteamAppObject::new).collect();
-                                // Seed before extend_from_slice so bind handlers
-                                // find ids in the backlog instead of racing.
-                                achievement_loader
-                                    .reset_with(models.iter().map(|m| m.app_id()));
+                                // Drop any prior loader state; cards will
+                                // re-queue themselves via `prioritize()` from
+                                // the cell-bind callback as they scroll in.
+                                achievement_loader.reset();
                                 list_store.extend_from_slice(&models);
                                 list_scrolled_window.set_child(Some(&grid_view));
                                 list_stack.set_visible_child_name("list");
-                                achievement_loader.kick(&list_store);
                                 app_list_no_result_label.set_text("No results. Check for spelling mistakes or try typing an App Id.");
 
                                 // Sync idle state from the orchestrator: any app it's

@@ -332,19 +332,21 @@ impl<'a> AppLister<'a> {
     }
 }
 
+/// Chunk size shared by the backend pump loop and the GUI achievement loader.
+pub const ACHIEVEMENT_COUNT_CHUNK_SIZE: usize = 15;
+
 /// Apps whose schema fails to load within the per-chunk window are omitted.
 pub fn fetch_achievement_counts(
     map: &ClientUserStatsMap,
     app_ids: &[AppId_t],
 ) -> Vec<(AppId_t, u32, u32)> {
-    const CHUNK_SIZE: usize = 200;
     const PER_CHUNK_HARD_CAP: Duration = Duration::from_secs(45);
-    const NO_PROGRESS_CAP: Duration = Duration::from_secs(2);
+    const NO_PROGRESS_CAP: Duration = Duration::from_secs(3);
     const POLL_INTERVAL: Duration = Duration::from_millis(50);
 
     let mut out: Vec<(AppId_t, u32, u32)> = Vec::with_capacity(app_ids.len());
 
-    for chunk in app_ids.chunks(CHUNK_SIZE) {
+    for chunk in app_ids.chunks(ACHIEVEMENT_COUNT_CHUNK_SIZE) {
         let mut pending: HashSet<AppId_t> = HashSet::with_capacity(chunk.len());
         for &app_id in chunk.iter() {
             if map.request_current_stats(app_id) {
