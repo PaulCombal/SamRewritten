@@ -20,8 +20,8 @@ use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use gtk::gio::ListStore;
 use gtk::prelude::*;
 use gtk::{
-    Adjustment, Button, CustomSorter, FilterListModel, Label, NoSelection, SortListModel,
-    SpinButton, Stack, StackTransitionType, StringFilter, StringFilterMatchMode,
+    CustomSorter, FilterListModel, Label, NoSelection, SortListModel, Stack, StackTransitionType,
+    StringFilter, StringFilterMatchMode,
 };
 use std::cell::Cell;
 use std::cmp::Ordering;
@@ -34,15 +34,7 @@ pub fn create_achievements_view(
     app_unlocked_achievements_count: Rc<Cell<usize>>,
     application: &MainApplication,
     app_achievement_count_value: &Label,
-) -> (
-    Stack,
-    ListStore,
-    StringFilter,
-    Adjustment,
-    SpinButton,
-    Button,
-    Arc<AtomicBool>,
-) {
+) -> (Stack, ListStore, StringFilter, Arc<AtomicBool>) {
     let app_achievements_model = ListStore::new::<GAchievementObject>();
     let app_timed_achievements_model = ListStore::new::<GAchievementObject>();
 
@@ -85,13 +77,7 @@ pub fn create_achievements_view(
     let achievement_views_stack = Stack::builder()
         .transition_type(StackTransitionType::SlideLeftRight)
         .build();
-    let (
-        achievements_manual_frame,
-        achievements_manual_adjustment,
-        achievements_manual_spinbox,
-        achievements_manual_start,
-        cancel_timed_unlock,
-    ) = create_achievements_manual_view(
+    let (achievements_manual_frame, cancel_timed_unlock) = create_achievements_manual_view(
         &app_id,
         &app_unlocked_achievements_count,
         &app_achievement_selection_model,
@@ -111,22 +97,7 @@ pub fn create_achievements_view(
         achievement_views_stack,
         app_achievements_model,
         app_achievement_string_filter,
-        achievements_manual_adjustment,
-        achievements_manual_spinbox,
-        achievements_manual_start,
         cancel_timed_unlock,
     )
 }
 
-pub fn count_unlocked_achievements(model: &ListStore) -> u32 {
-    let mut count = 0;
-    for obj in model.into_iter().flatten() {
-        let g_achievement = obj
-            .downcast::<GAchievementObject>()
-            .expect("Not a GAchievementObject");
-        if g_achievement.is_achieved() {
-            count += 1;
-        }
-    }
-    count
-}

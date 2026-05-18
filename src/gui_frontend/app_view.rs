@@ -22,8 +22,8 @@ use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};
 use gtk::prelude::*;
 use gtk::{
-    Adjustment, Align, Box, Button, Label, Orientation, Separator, SpinButton, Spinner, Stack,
-    StackTransitionType, StringFilter, ToggleButton,
+    Align, Box, Label, Orientation, Separator, Spinner, Stack, StackTransitionType, StringFilter,
+    ToggleButton,
 };
 use gtk::{Paned, glib};
 use std::cell::Cell;
@@ -46,6 +46,7 @@ pub fn create_app_view(
     Label,
     Label,
     Label,
+    Label,
     Box,
     Box,
     ListStore,
@@ -53,9 +54,6 @@ pub fn create_app_view(
     ListStore,
     StringFilter,
     Paned,
-    Adjustment,
-    SpinButton,
-    Button,
     Arc<AtomicBool>,
     Stack,
 ) {
@@ -92,6 +90,20 @@ pub fn create_app_view(
     app_stats_count_box.append(&app_stats_count_label);
     app_stats_count_box.append(&app_stats_count_spacer);
     app_stats_count_box.append(&app_stats_count_value);
+
+    let app_playtime_label = Label::builder()
+        .label("Last playtime:")
+        .halign(Align::Start)
+        .build();
+    let app_playtime_spacer = Box::builder().hexpand(true).build();
+    let app_playtime_value = Label::builder().halign(Align::End).build();
+    let app_playtime_box = Box::builder()
+        .orientation(Orientation::Horizontal)
+        .margin_top(10)
+        .build();
+    app_playtime_box.append(&app_playtime_label);
+    app_playtime_box.append(&app_playtime_spacer);
+    app_playtime_box.append(&app_playtime_value);
 
     let app_type_label = Label::builder().label("Type:").halign(Align::Start).build();
     let app_type_spacer = Box::builder().hexpand(true).build();
@@ -196,15 +208,13 @@ pub fn create_app_view(
     app_sidebar.append(&app_metacritic_box);
     app_sidebar.append(&app_achievement_count_box);
     app_sidebar.append(&app_stats_count_box);
+    app_sidebar.append(&app_playtime_box);
     app_sidebar.append(&app_type_box);
 
     let (
         app_achievements_stack,
         app_achievements_model,
         app_achievement_string_filter,
-        achievements_manual_adjustement,
-        achievements_manual_spinbox,
-        achievements_manual_start,
         cancel_timed_unlock,
     ) = create_achievements_view(
         app_id.clone(),
@@ -229,21 +239,24 @@ pub fn create_app_view(
         app_achievements_button,
         #[weak]
         app_stats_button,
-        move |stack| {
-            if stack.visible_child_name().as_deref() == Some("loading") {
+        move |stack| match stack.visible_child_name().as_deref() {
+            Some("loading") | Some("failed") => {
                 app_achievements_button.set_sensitive(false);
                 app_stats_button.set_sensitive(false);
-            } else if stack.visible_child_name().as_deref() == Some("failed") {
-                app_achievements_button.set_sensitive(false);
-                app_stats_button.set_sensitive(false);
-            } else if stack.visible_child_name().as_deref() == Some("achievements") {
+            }
+            Some("achievements") => {
                 app_achievements_button.set_active(true);
                 app_stats_button.set_active(false);
                 app_achievements_button.set_sensitive(true);
                 app_stats_button.set_sensitive(true);
-            } else {
+            }
+            Some("stats") => {
                 app_achievements_button.set_active(false);
                 app_stats_button.set_active(true);
+                app_achievements_button.set_sensitive(true);
+                app_stats_button.set_sensitive(true);
+            }
+            _ => {
                 app_achievements_button.set_sensitive(true);
                 app_stats_button.set_sensitive(true);
             }
@@ -300,6 +313,7 @@ pub fn create_app_view(
         app_type_value,
         app_developer_value,
         app_metacritic_value,
+        app_playtime_value,
         app_metacritic_box,
         app_sidebar,
         app_achievements_model,
@@ -307,9 +321,6 @@ pub fn create_app_view(
         app_stat_model,
         app_stat_string_filter,
         app_pane,
-        achievements_manual_adjustement,
-        achievements_manual_spinbox,
-        achievements_manual_start,
         cancel_timed_unlock,
         app_achievements_stack,
     )

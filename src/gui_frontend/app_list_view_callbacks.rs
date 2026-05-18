@@ -19,6 +19,7 @@ use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{LaunchApp, Request};
 use crate::gui_frontend::ui_components::set_context_popover_to_app_details_context;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
+use crate::utils::format::format_playtime_minutes;
 use gtk::gio::{Menu, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::WidgetExt;
@@ -39,6 +40,7 @@ pub(crate) fn switch_from_app_list_to_app(
     app_id: &Rc<Cell<Option<u32>>>,
     app_metacritic_box: &Box,
     app_metacritic_value_label: &Label,
+    app_playtime_value_label: &Label,
     app_shimmer_image: &ShimmerImage,
     app_label: &Label,
     menu_model: &Menu,
@@ -53,6 +55,8 @@ pub(crate) fn switch_from_app_list_to_app(
     app_id.set(Some(steam_app_object.app_id()));
     app_metacritic_box.set_visible(steam_app_object.metacritic_score() != u8::MAX);
     app_metacritic_value_label.set_label(&format!("{}", steam_app_object.metacritic_score()));
+    app_playtime_value_label
+        .set_label(&format_playtime_minutes(steam_app_object.playtime_minutes()));
 
     if let Some(url) = steam_app_object.image_url() {
         app_shimmer_image.set_url(url.as_str());

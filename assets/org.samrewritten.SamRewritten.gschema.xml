@@ -24,5 +24,41 @@
             <summary>Disable Animations</summary>
             <description>Whether to disable card hover animations in the app list.</description>
         </key>
+
+        <key name="unlock-mode" type="s">
+            <default>'autocommit'</default>
+            <summary>Achievement Unlock Mode</summary>
+            <description>How the achievement view commits toggles. Valid values are 'autocommit' (each switch commits immediately) and 'deferred' (toggles build an ordered queue that the user fires later).</description>
+        </key>
+
+        <key name="auto-fill-unit" type="s">
+            <default>'percent'</default>
+            <summary>Auto-fill Target Unit</summary>
+            <description>Which unit the Auto-fill target is expressed in. Valid values are 'count' (number of achievements) and 'percent' (target completion percentage).</description>
+        </key>
+
+        <key name="auto-fill-count" type="i">
+            <default>12</default>
+            <summary>Auto-fill Count Target</summary>
+            <description>Last value used for the count-based auto-fill target.</description>
+        </key>
+
+        <key name="auto-fill-percent" type="d">
+            <default>70.0</default>
+            <summary>Auto-fill Percent Target</summary>
+            <description>Last value used for the percent-based auto-fill target (0 to 100).</description>
+        </key>
+
+        <key name="unlock-duration-minutes" type="i">
+            <default>30</default>
+            <summary>Unlock Duration (Minutes)</summary>
+            <description>Total time window over which deferred unlocks are spread.</description>
+        </key>
+
+        <key name="unlock-spacing" type="s">
+            <default>'even'</default>
+            <summary>Unlock Spacing</summary>
+            <description>How deferred unlocks are spread over the duration. Valid values are 'even' (equally spaced) and 'random' (first and last pinned to even positions, middle jittered).</description>
+        </key>
     </schema>
 </schemalist>

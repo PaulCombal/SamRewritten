@@ -27,6 +27,8 @@ mod gsettings;
 mod request;
 mod stat_view;
 mod ui_components;
+mod unlock_queue;
+mod unlock_scheduler;
 mod widgets;
 
 use crate::APP_ID;

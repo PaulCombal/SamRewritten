@@ -22,11 +22,12 @@ use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{
     GetAchievements, GetRunningApps, GetStats, GetSubscribedAppList, Request, ResetStats,
 };
+use crate::utils::format::format_achievement_progress;
 use crate::utils::ipc_types::SamError;
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
-use gtk::{Adjustment, Button, GridView, Label, ScrolledWindow, SearchEntry, Stack, glib};
+use gtk::{GridView, Label, ScrolledWindow, SearchEntry, Stack, glib};
 use std::cell::Cell;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -185,8 +186,6 @@ pub fn create_refresh_achievements_action(
     app_achievement_count_value: &Label,
     app_stats_count_value: &Label,
     app_stack: &Stack,
-    achievements_manual_adjustement: &Adjustment,
-    achievements_manual_start: &Button,
     app_achievements_stack: &Stack,
     cancel_timed_unlock: &Arc<AtomicBool>,
 ) -> SimpleAction {
@@ -209,10 +208,6 @@ pub fn create_refresh_achievements_action(
         app_stats_count_value,
         #[weak]
         app_stack,
-        #[weak]
-        achievements_manual_adjustement,
-        #[weak]
-        achievements_manual_start,
         #[weak]
         app_achievements_stack,
         #[strong]
@@ -247,13 +242,16 @@ pub fn create_refresh_achievements_action(
                     };
 
                     let achievement_len = achievements.len();
+                    let stat_len = stats.len();
                     let achievement_unlocked_len =
                         achievements.iter().filter(|ach| ach.is_achieved).count();
                     app_unlocked_achievements_count.set(achievement_unlocked_len);
 
-                    app_stats_count_value.set_label(&format!("{}", stats.len()));
-                    app_achievement_count_value
-                        .set_label(&format!("{achievement_unlocked_len} / {achievement_len}"));
+                    app_stats_count_value.set_label(&format!("{stat_len}"));
+                    app_achievement_count_value.set_label(&format_achievement_progress(
+                        achievement_unlocked_len,
+                        achievement_len,
+                    ));
 
                     let objects: Vec<GAchievementObject> = achievements
                         .into_iter()
@@ -267,17 +265,11 @@ pub fn create_refresh_achievements_action(
 
                     if achievement_len > 0 {
                         app_stack.set_visible_child_name("achievements");
+                    } else if stat_len > 0 {
+                        app_stack.set_visible_child_name("stats");
                     } else {
                         app_stack.set_visible_child_name("empty");
                     }
-
-                    achievements_manual_start
-                        .set_sensitive(achievement_unlocked_len != achievement_len);
-
-                    let lower = std::cmp::min(achievement_unlocked_len + 1, achievement_len);
-                    achievements_manual_adjustement.set_lower(lower as f64);
-                    achievements_manual_adjustement.set_upper(achievement_len as f64);
-                    achievements_manual_adjustement.set_value(achievement_len as f64);
 
                     set_app_action_enabled(&application, "refresh_achievements_list", true);
                     set_app_action_enabled(&application, "clear_all_stats_and_achievements", true);

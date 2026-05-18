@@ -49,7 +49,7 @@ Downloads are available on the [release tab](https://github.com/PaulCombal/SamRe
 <summary>Click here for detailed Windows instructions</summary>
 
 The recommended way to run SamRewritten on Windows is via the official installer.
-You can download it from the Releases page. This is the only file you need; the other listed assets are not intended for general Windows use.
+You can download it from the Releases page. Alternatively, you can download a portable version in the zip format. 
 Once installed, you can find and launch SamRewritten through the Start menu.
 
 If the installation fails or behaves unexpectedly, please report the issue by opening a GitHub issue with as much detail as possible, including your Windows version.

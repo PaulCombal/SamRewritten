@@ -140,6 +140,7 @@ pub fn create_main_ui(
         app_type_value,
         app_developer_value,
         app_metacritic_value,
+        app_playtime_value,
         app_metacritic_box,
         _app_sidebar,
         app_achievements_model,
@@ -147,9 +148,6 @@ pub fn create_main_ui(
         app_stat_model,
         app_stat_string_filter,
         app_pane,
-        achievements_manual_adjustement,
-        _achievements_manual_spinbox,
-        achievements_manual_start,
         cancel_timed_unlock,
         app_achievements_stack,
     ) = create_app_view(
@@ -338,6 +336,8 @@ pub fn create_main_ui(
         #[weak]
         app_metacritic_value,
         #[weak]
+        app_playtime_value,
+        #[weak]
         app_metacritic_box,
         #[weak]
         app_stack,
@@ -366,6 +366,7 @@ pub fn create_main_ui(
                 &app_id,
                 &app_metacritic_box,
                 &app_metacritic_value,
+                &app_playtime_value,
                 &app_shimmer_image,
                 &app_label,
                 &menu_model,
@@ -402,6 +403,8 @@ pub fn create_main_ui(
         app_developer_value,
         #[weak]
         app_metacritic_value,
+        #[weak]
+        app_playtime_value,
         #[weak]
         app_metacritic_box,
         #[weak]
@@ -452,6 +455,8 @@ pub fn create_main_ui(
                 #[weak]
                 app_metacritic_value,
                 #[weak]
+                app_playtime_value,
+                #[weak]
                 app_metacritic_box,
                 #[weak]
                 app_stack,
@@ -476,6 +481,7 @@ pub fn create_main_ui(
                         &app_id,
                         &app_metacritic_box,
                         &app_metacritic_value,
+                        &app_playtime_value,
                         &app_shimmer_image,
                         &app_label,
                         &menu_model,
@@ -789,8 +795,6 @@ pub fn create_main_ui(
         &app_achievement_count_value,
         &app_stats_count_value,
         &app_stack,
-        &achievements_manual_adjustement,
-        &achievements_manual_start,
         &app_achievements_stack,
         &cancel_timed_unlock,
     );
@@ -866,6 +870,7 @@ pub fn create_main_ui(
                         &app_id,
                         &app_metacritic_box,
                         &app_metacritic_value,
+                        &app_playtime_value,
                         &app_shimmer_image,
                         &app_label,
                         &menu_model,

@@ -14,7 +14,6 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use gtk::glib::clone;
@@ -117,11 +116,8 @@ pub fn create_achievements_automatic_view(
             .build();
         let remaining_time_label = Label::builder().build();
         let label_box = Box::builder().orientation(Orientation::Vertical).build();
-        let global_percentage_progress_bar = CustomProgressBar::new();
-        global_percentage_progress_bar.set_height_request(2);
         label_box.append(&name_label);
         label_box.append(&description_label);
-        let entry_box = Box::builder().orientation(Orientation::Vertical).build();
         let achievement_box = Box::builder()
             .orientation(Orientation::Horizontal)
             .margin_top(8)
@@ -133,9 +129,7 @@ pub fn create_achievements_automatic_view(
         achievement_box.append(&label_box);
         achievement_box.append(&spacer);
         achievement_box.append(&remaining_time_label);
-        entry_box.append(&achievement_box);
-        entry_box.append(&global_percentage_progress_bar);
-        list_item.set_child(Some(&entry_box));
+        list_item.set_child(Some(&achievement_box));
 
         list_item
             .property_expression("item")
@@ -156,16 +150,6 @@ pub fn create_achievements_automatic_view(
             .property_expression("item")
             .chain_property::<GAchievementObject>("icon-locked")
             .bind(&locked_icon, "url", Widget::NONE);
-
-        list_item
-            .property_expression("item")
-            .chain_property::<GAchievementObject>("global-achieved-percent")
-            .bind(&global_percentage_progress_bar, "value", Widget::NONE);
-
-        list_item
-            .property_expression("item")
-            .chain_property::<GAchievementObject>("global-achieved-percent-ok")
-            .bind(&global_percentage_progress_bar, "visible", Widget::NONE);
 
         list_item
             .property_expression("item")
