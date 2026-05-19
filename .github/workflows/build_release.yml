@@ -86,12 +86,17 @@ jobs:
           Copy-Item -Path "$originalShareIconsFolder" -Destination $tempShareFolder -Recurse -Force
           Write-Host "Copied icons to $tempShareFolder"
           
-          Copy-Item -Path "$originalLibFolder" -Destination $tempArchiveRoot -Recurse -Force
-          Write-Host "Copied lib to $tempArchiveRoot"
+          # If something breaks after an gvsbuild update, maybe we need to pull more from here
+          $tempLibFolder = "$tempArchiveRoot/lib"
+          New-Item -ItemType Directory -Path $tempLibFolder -Force | Out-Null
+          Copy-Item -Path "$originalLibFolder\gdk-pixbuf-2.0" -Destination $tempLibFolder -Recurse -Force
+          Write-Host "Copied lib/gdk-pixbuf-2.0 to $tempLibFolder"
           
+          $originalSchemaFolder = "C:\gtk\share\glib-2.0\schemas"
+          Copy-Item -Path "$originalSchemaFolder\*.gschema.xml" -Destination $tempSchemaFolder -Force
           Copy-Item -Path "assets/org.samrewritten.SamRewritten.gschema.xml" -Destination $tempSchemaFolder -Force
-          Copy-Item -Path "assets/gschemas.compiled" -Destination $tempSchemaFolder -Force
-          Write-Host "Copied GSettings schemas to $tempSchemaFolder"
+          & "C:\gtk\bin\glib-compile-schemas.exe" $tempSchemaFolder
+          Write-Host "Compiled merged GSettings schemas into $tempSchemaFolder"
         shell: pwsh
 
       - name: Build GTK-RS application (debug, console)
