@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use super::achievement_loader::AchievementLoader;
 use crate::backend::progress_io::{
     MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
 };
@@ -20,7 +21,7 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::{set_app_action_enabled, set_bulk_actions_enabled};
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::utils::ipc_types::SteamCommand;
-use gtk::gio::{SimpleAction, spawn_blocking};
+use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{GridView, Label, MenuButton, glib};
@@ -29,6 +30,8 @@ use std::collections::HashMap;
 pub fn create_bulk_actions(
     application: &MainApplication,
     grid_view: &GridView,
+    list_store: &ListStore,
+    achievement_loader: AchievementLoader,
     context_menu_button: &MenuButton,
     context_menu_button_loading: &MenuButton,
     context_menu_button_loading_progress_label: &Label,
@@ -75,6 +78,10 @@ pub fn create_bulk_actions(
         #[weak]
         application,
         #[weak]
+        list_store,
+        #[strong]
+        achievement_loader,
+        #[weak]
         context_menu_button,
         #[weak]
         context_menu_button_loading,
@@ -116,6 +123,7 @@ pub fn create_bulk_actions(
             grid_view.set_sensitive(false);
 
             let total_apps = apps_to_unlock.len();
+            let affected_ids: Vec<u32> = apps_to_unlock.keys().copied().collect();
             let progress_label_weak = glib::object::SendWeakRef::from(
                 context_menu_button_loading_progress_label.downgrade(),
             );
@@ -158,6 +166,10 @@ pub fn create_bulk_actions(
                 #[weak]
                 application,
                 #[weak]
+                list_store,
+                #[strong]
+                achievement_loader,
+                #[weak]
                 context_menu_button_loading,
                 #[weak]
                 context_menu_button,
@@ -194,6 +206,10 @@ pub fn create_bulk_actions(
                     context_menu_button_loading.set_visible(false);
                     context_menu_button.set_visible(true);
                     grid_view.set_sensitive(true);
+
+                    for id in affected_ids {
+                        achievement_loader.refresh_app(id, &list_store);
+                    }
                 }
             ));
         }
@@ -206,6 +222,10 @@ pub fn create_bulk_actions(
         grid_view,
         #[weak]
         application,
+        #[weak]
+        list_store,
+        #[strong]
+        achievement_loader,
         #[weak]
         context_menu_button,
         #[weak]
@@ -248,6 +268,7 @@ pub fn create_bulk_actions(
             grid_view.set_sensitive(false);
 
             let total_apps = apps_to_lock.len();
+            let affected_ids: Vec<u32> = apps_to_lock.keys().copied().collect();
             let progress_label_weak = glib::object::SendWeakRef::from(
                 context_menu_button_loading_progress_label.downgrade(),
             );
@@ -283,6 +304,10 @@ pub fn create_bulk_actions(
                 #[weak]
                 application,
                 #[weak]
+                list_store,
+                #[strong]
+                achievement_loader,
+                #[weak]
                 context_menu_button_loading,
                 #[weak]
                 context_menu_button,
@@ -292,6 +317,10 @@ pub fn create_bulk_actions(
                     context_menu_button_loading.set_visible(false);
                     context_menu_button.set_visible(true);
                     grid_view.set_sensitive(true);
+
+                    for id in affected_ids {
+                        achievement_loader.refresh_app(id, &list_store);
+                    }
                 }
             ));
         }

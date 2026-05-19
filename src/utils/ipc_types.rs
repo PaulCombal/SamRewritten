@@ -26,6 +26,7 @@ pub enum SamError {
     StatStoreFailed,
     LockUnlockAchievementFailed,
     AppMismatchError,
+    Timeout,
     UnknownError,
 }
 
@@ -44,6 +45,7 @@ impl std::fmt::Display for SamError {
             SamError::LockUnlockAchievementFailed => {
                 write!(f, "SAM: Lock/unlock achievement failed")
             }
+            SamError::Timeout => write!(f, "SAM: Steam is busy, try again with a smaller batch"),
         }
     }
 }
@@ -85,7 +87,9 @@ pub struct ImportSummary {
     pub achievements_applied: usize,
     pub stats_applied: usize,
     pub skipped_protected: Vec<String>,
+    pub skipped_unwriteable: Vec<String>,
     pub errors: Vec<String>,
+    pub reset_would_help: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

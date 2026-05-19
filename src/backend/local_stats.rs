@@ -44,13 +44,17 @@ impl LocalIndex {
                 continue;
             };
             if let Some(rest) = name.strip_prefix("UserGameStatsSchema_")
-                && let Some(id) = rest.strip_suffix(".bin").and_then(|s| s.parse::<u32>().ok())
+                && let Some(id) = rest
+                    .strip_suffix(".bin")
+                    .and_then(|s| s.parse::<u32>().ok())
             {
                 schemas_present.insert(id);
                 continue;
             }
             if let Some(rest) = name.strip_prefix(&user_prefix)
-                && let Some(id) = rest.strip_suffix(".bin").and_then(|s| s.parse::<u32>().ok())
+                && let Some(id) = rest
+                    .strip_suffix(".bin")
+                    .and_then(|s| s.parse::<u32>().ok())
             {
                 user_stats_present.insert(id);
             }
@@ -71,7 +75,9 @@ impl LocalIndex {
             return None;
         }
 
-        let schema_path = self.stats_dir.join(format!("UserGameStatsSchema_{app_id}.bin"));
+        let schema_path = self
+            .stats_dir
+            .join(format!("UserGameStatsSchema_{app_id}.bin"));
         let user_path = self
             .stats_dir
             .join(format!("UserGameStats_{}_{app_id}.bin", self.account_id));

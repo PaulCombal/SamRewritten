@@ -182,6 +182,8 @@ pub struct FloatStatInfo {
     pub permission: i32,
     pub original_value: f32,
     pub float_value: f32,
+    pub min_value: f32,
+    pub max_value: f32,
 }
 
 impl FloatStatInfo {
@@ -225,6 +227,8 @@ pub struct IntStatInfo {
     pub permission: i32,
     pub original_value: i32,
     pub int_value: i32,
+    pub min_value: i32,
+    pub max_value: i32,
 }
 
 impl IntStatInfo {

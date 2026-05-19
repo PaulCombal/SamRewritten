@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::backend::app_manager::AppManager;
+use crate::backend::app_manager::{AppManager, StatState};
 use crate::backend::stat_definitions::StatInfo;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
@@ -23,10 +23,12 @@ use crate::utils::ipc_types::{
     AppAchievementExport, AppExport, AppStatExport, AppStatValue, ImportSummary, SamError,
     SteamCommand,
 };
+use serde::de::IgnoredAny;
+use std::fmt::Display;
 use std::process::Command;
 use std::sync::{Arc, Mutex};
 
-pub const MAX_CONCURRENT_APPS: usize = 30;
+pub const MAX_CONCURRENT_APPS: usize = 8;
 
 /// Spawn one short-lived `samrewritten --app=X` child per `(app_id, command)`
 /// item, run them in parallel with up to `max_concurrent` workers continuously
@@ -82,6 +84,17 @@ pub fn run_command_on_apps_concurrent(
 }
 
 fn run_one(app_id: u32, command: SteamCommand) -> Result<Vec<u8>, SamError> {
+    let first = run_one_attempt(app_id, command.clone());
+    if let Ok(bytes) = &first {
+        if response_is_timeout(bytes) {
+            eprintln!("[CLIENT] Timeout for app {app_id}, retrying once");
+            return run_one_attempt(app_id, command);
+        }
+    }
+    first
+}
+
+fn run_one_attempt(app_id: u32, command: SteamCommand) -> Result<Vec<u8>, SamError> {
     let current_exe = get_executable_path();
     let child = BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))?;
     let mut ipc = IpcClient::new(child);
@@ -97,6 +110,13 @@ fn run_one(app_id: u32, command: SteamCommand) -> Result<Vec<u8>, SamError> {
     let _ = ipc.wait();
 
     response
+}
+
+fn response_is_timeout(bytes: &[u8]) -> bool {
+    matches!(
+        parse_response_bytes::<IgnoredAny>(bytes),
+        Err(SamError::Timeout)
+    )
 }
 
 /// Snapshot every achievement and stat for `app_id` into an `AppExport`.
@@ -134,27 +154,127 @@ pub fn collect_app_export(manager: &mut AppManager, app_id: u32) -> Result<AppEx
     })
 }
 
-/// Apply an `AppExport` payload through `manager`. Protected fields
-/// (stat permission & 2, achievement permission != 0) are skipped
-/// client-side. Stats are written before achievements; a single
-/// `store_stats_and_achievements()` is issued at the end.
-pub fn apply_app_export(manager: &AppManager, payload: AppExport) -> ImportSummary {
+enum WriteDecision<T> {
+    Write,
+    OutOfRangeHigh { max: T },
+    OutOfRangeLow { min: T },
+    IncrementOnlyResetFixable { current: T },
+    IncrementOnlyHard { default: T },
+}
+
+fn classify_stat<T: Copy + PartialOrd>(target: T, state: &StatState<T>) -> WriteDecision<T> {
+    if target > state.max {
+        return WriteDecision::OutOfRangeHigh { max: state.max };
+    }
+    if target < state.min {
+        return WriteDecision::OutOfRangeLow { min: state.min };
+    }
+    if state.increment_only
+        && let Some(cur) = state.current
+        && target < cur
+    {
+        return if target >= state.default {
+            WriteDecision::IncrementOnlyResetFixable { current: cur }
+        } else {
+            WriteDecision::IncrementOnlyHard {
+                default: state.default,
+            }
+        };
+    }
+    WriteDecision::Write
+}
+
+fn apply_stat_decision<T: Display>(
+    id: &str,
+    target: T,
+    decision: WriteDecision<T>,
+    write: impl FnOnce() -> Result<bool, SamError>,
+    summary: &mut ImportSummary,
+    had_reset_fixable: &mut bool,
+    had_hard_block: &mut bool,
+) {
+    match decision {
+        WriteDecision::Write => match write() {
+            Ok(_) => summary.stats_applied += 1,
+            Err(e) => {
+                summary.errors.push(format!("stat:{} failed: {}", id, e));
+                *had_hard_block = true;
+            }
+        },
+        WriteDecision::OutOfRangeHigh { max } => {
+            summary.skipped_unwriteable.push(format!(
+                "stat:{} skipped: target {} > max {}",
+                id, target, max
+            ));
+            *had_hard_block = true;
+        }
+        WriteDecision::OutOfRangeLow { min } => {
+            summary.skipped_unwriteable.push(format!(
+                "stat:{} skipped: target {} < min {}",
+                id, target, min
+            ));
+            *had_hard_block = true;
+        }
+        WriteDecision::IncrementOnlyResetFixable { current } => {
+            summary.skipped_unwriteable.push(format!(
+                "stat:{} skipped: increment-only, target {} < current {} (reset would fix)",
+                id, target, current
+            ));
+            *had_reset_fixable = true;
+        }
+        WriteDecision::IncrementOnlyHard { default } => {
+            summary.skipped_unwriteable.push(format!(
+                "stat:{} skipped: increment-only, target {} < default {} (reset would NOT fix)",
+                id, target, default
+            ));
+            *had_hard_block = true;
+        }
+    }
+}
+
+/// Apply an `AppExport` through `manager`. Stats Steam would reject
+/// deterministically (out of range, increment-only with target < current) are
+/// recorded in `skipped_unwriteable` rather than attempted.
+pub fn apply_app_export(manager: &mut AppManager, payload: AppExport) -> ImportSummary {
     let mut summary = ImportSummary::default();
+    let _ = manager.load_definitions();
+
+    let mut had_reset_fixable = false;
+    let mut had_hard_block = false;
 
     for stat in payload.stats {
         if (stat.permission & 2) != 0 {
             summary.skipped_protected.push(format!("stat:{}", stat.id));
             continue;
         }
-        let res = match stat.value {
-            AppStatValue::Int(v) => manager.set_stat_i32(&stat.id, v),
-            AppStatValue::Float(v) => manager.set_stat_f32(&stat.id, v),
-        };
-        match res {
-            Ok(_) => summary.stats_applied += 1,
-            Err(e) => summary
-                .errors
-                .push(format!("stat:{} failed: {}", stat.id, e)),
+
+        match stat.value {
+            AppStatValue::Int(target) => {
+                let state = manager.read_int_stat_state(&stat.id);
+                let decision = classify_stat(target, &state);
+                apply_stat_decision(
+                    &stat.id,
+                    target,
+                    decision,
+                    || manager.set_stat_i32(&stat.id, target),
+                    &mut summary,
+                    &mut had_reset_fixable,
+                    &mut had_hard_block,
+                );
+            }
+            AppStatValue::Float(target) => {
+                let state = manager.read_float_stat_state(&stat.id);
+                let decision = classify_stat(target, &state);
+                apply_stat_decision(
+                    &stat.id,
+                    target,
+                    decision,
+                    || manager.set_stat_f32(&stat.id, target),
+                    &mut summary,
+                    &mut had_reset_fixable,
+                    &mut had_hard_block,
+                );
+            }
         }
     }
 
@@ -165,13 +285,18 @@ pub fn apply_app_export(manager: &AppManager, payload: AppExport) -> ImportSumma
         }
         match manager.set_achievement(&ach.id, ach.is_achieved, false) {
             Ok(_) => summary.achievements_applied += 1,
-            Err(e) => summary.errors.push(format!("ach:{} failed: {}", ach.id, e)),
+            Err(e) => {
+                summary.errors.push(format!("ach:{} failed: {}", ach.id, e));
+                had_hard_block = true;
+            }
         }
     }
 
     if let Err(e) = manager.store_stats_and_achievements() {
         summary.errors.push(format!("store failed: {}", e));
+        had_hard_block = true;
     }
 
+    summary.reset_would_help = had_reset_fixable && !had_hard_block;
     summary
 }

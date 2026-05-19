@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use super::achievement_loader::AchievementLoader;
 use crate::backend::progress_io::{
     MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
 };
@@ -48,6 +49,7 @@ pub fn create_progress_actions(
     application: &MainApplication,
     grid_view: &GridView,
     list_store: &ListStore,
+    achievement_loader: AchievementLoader,
     context_menu_button: &MenuButton,
     context_menu_button_loading: &MenuButton,
     context_menu_button_loading_progress_label: &Label,
@@ -261,6 +263,8 @@ pub fn create_progress_actions(
         grid_view,
         #[weak]
         list_store,
+        #[strong]
+        achievement_loader,
         #[weak]
         application,
         #[weak]
@@ -303,6 +307,7 @@ pub fn create_progress_actions(
                 }
             }
 
+            let achievement_loader = achievement_loader.clone();
             MainContext::default().spawn_local(async move {
                 let file = match dialog.open_future(parent_window.as_ref()).await {
                     Ok(f) => f,
@@ -457,6 +462,18 @@ pub fn create_progress_actions(
                         label.set_text("");
                     }
                 });
+                let affected_ids: Vec<u32> = present.iter().map(|a| a.app_id).collect();
+                let names_by_id: HashMap<u32, String> = present
+                    .iter()
+                    .map(|a| {
+                        let label = if a.app_name.is_empty() {
+                            format!("App {}", a.app_id)
+                        } else {
+                            a.app_name.clone()
+                        };
+                        (a.app_id, label)
+                    })
+                    .collect();
                 let handle = spawn_blocking(move || {
                     let items: Vec<(u32, SteamCommand)> = present
                         .into_iter()
@@ -467,28 +484,51 @@ pub fn create_progress_actions(
 
                     let mut total_ach: usize = 0;
                     let mut total_stat: usize = 0;
-                    let mut total_skipped: usize = 0;
+                    let mut total_skipped_protected: usize = 0;
+                    let mut total_skipped_unwriteable: usize = 0;
                     let mut errors: Vec<String> = Vec::new();
+                    let mut reset_candidates: Vec<String> = Vec::new();
                     for (app_id, raw) in raw_results {
+                        let label = names_by_id
+                            .get(&app_id)
+                            .cloned()
+                            .unwrap_or_else(|| format!("App {}", app_id));
                         match raw.and_then(|bytes| parse_response_bytes::<ImportSummary>(&bytes)) {
                             Ok(summary) => {
                                 total_ach += summary.achievements_applied;
                                 total_stat += summary.stats_applied;
-                                total_skipped += summary.skipped_protected.len();
+                                total_skipped_protected += summary.skipped_protected.len();
+                                total_skipped_unwriteable += summary.skipped_unwriteable.len();
                                 for err in summary.errors {
-                                    errors.push(format!("App {}: {}", app_id, err));
+                                    errors.push(format!("{}: {}", label, err));
+                                }
+                                if summary.reset_would_help {
+                                    reset_candidates.push(label);
                                 }
                             }
                             Err(e) => {
-                                errors.push(format!("App {}: {}", app_id, e));
+                                errors.push(format!("{}: {}", label, e));
                             }
                         }
                     }
-                    (total_ach, total_stat, total_skipped, errors)
+                    (
+                        total_ach,
+                        total_stat,
+                        total_skipped_protected,
+                        total_skipped_unwriteable,
+                        errors,
+                        reset_candidates,
+                    )
                 });
 
-                let (applied_ach, applied_stat, skipped_protected, errors) =
-                    handle.await.expect("[CLIENT] Failed to wait for import");
+                let (
+                    applied_ach,
+                    applied_stat,
+                    skipped_protected,
+                    skipped_unwriteable,
+                    errors,
+                    reset_candidates,
+                ) = handle.await.expect("[CLIENT] Failed to wait for import");
 
                 if let Some(app) = weak_app.upgrade() {
                     set_bulk_actions_enabled(&app, true);
@@ -511,6 +551,27 @@ pub fn create_progress_actions(
                     detail.push_str(&format!(
                         "\nSkipped {} protected field(s).",
                         skipped_protected
+                    ));
+                }
+                if skipped_unwriteable > 0 {
+                    detail.push_str(&format!(
+                        "\nSkipped {} unwriteable stat(s) (out of range or increment-only).",
+                        skipped_unwriteable
+                    ));
+                }
+                if !reset_candidates.is_empty() {
+                    let listing = if reset_candidates.len() > 10 {
+                        format!(
+                            "{}\n... and {} more",
+                            reset_candidates[..10].join("\n"),
+                            reset_candidates.len() - 10
+                        )
+                    } else {
+                        reset_candidates.join("\n")
+                    };
+                    detail.push_str(&format!(
+                        "\n\nWould succeed if you reset stats first:\n{}",
+                        listing
                     ));
                 }
                 if !missing.is_empty() {
@@ -539,6 +600,10 @@ pub fn create_progress_actions(
                 }
 
                 show_alert(weak_app.upgrade().as_ref(), "Import complete", &detail).await;
+
+                for id in affected_ids {
+                    achievement_loader.refresh_app(id, &list_store);
+                }
             });
         }
     ));

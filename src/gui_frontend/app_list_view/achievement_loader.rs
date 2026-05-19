@@ -188,7 +188,10 @@ impl AchievementLoader {
     }
 
     fn drain_chunk(&self) -> Vec<u32> {
-        let mut chunk = self.priority.borrow_mut().drain_front(ACHIEVEMENT_COUNT_CHUNK_SIZE);
+        let mut chunk = self
+            .priority
+            .borrow_mut()
+            .drain_front(ACHIEVEMENT_COUNT_CHUNK_SIZE);
         if chunk.len() < ACHIEVEMENT_COUNT_CHUNK_SIZE {
             let remaining = ACHIEVEMENT_COUNT_CHUNK_SIZE - chunk.len();
             chunk.extend(self.backlog.borrow_mut().drain_front(remaining));

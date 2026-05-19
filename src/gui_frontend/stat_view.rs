@@ -121,6 +121,16 @@ pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
 
         list_item
             .property_expression("item")
+            .chain_property::<GStatObject>("min-value")
+            .bind(&adjustment, "lower", Widget::NONE);
+
+        list_item
+            .property_expression("item")
+            .chain_property::<GStatObject>("max-value")
+            .bind(&adjustment, "upper", Widget::NONE);
+
+        list_item
+            .property_expression("item")
             .chain_property::<GStatObject>("is-increment-only")
             .bind(&icon_increment_only, "visible", Widget::NONE);
 

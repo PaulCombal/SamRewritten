@@ -748,6 +748,8 @@ pub fn create_main_ui(
     ) = create_bulk_actions(
         application,
         &grid_view,
+        &list_store,
+        achievement_loader.clone(),
         &context_menu_button,
         &context_menu_button_loading,
         &context_menu_button_loading_progress_label,
@@ -758,6 +760,7 @@ pub fn create_main_ui(
         application,
         &grid_view,
         &list_store,
+        achievement_loader.clone(),
         &context_menu_button,
         &context_menu_button_loading,
         &context_menu_button_loading_progress_label,

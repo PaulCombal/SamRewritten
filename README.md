@@ -77,9 +77,10 @@ If issues persist, please open an issue including your distribution, version, an
 </details>
 
 > [!NOTE]
-> For Arch Linux and its derivatives, you can install SamRewritten with yay:
+> Arch users can install SamRewritten from the AUR using any helper (like yay or paru):
 >
 > `yay -S samrewritten-git`
+> `paru -S samrewritten-git`
 
 ## Features
 

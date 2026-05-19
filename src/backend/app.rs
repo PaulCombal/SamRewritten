@@ -55,7 +55,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                 return 1;
             }
         };
-        
+
         match &command {
             SteamCommand::Shutdown => {
                 send_response(parent_tx, &SteamResponse::Success(true));
@@ -212,7 +212,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                 if !check_app_id(app_id_param, app_id, parent_tx) {
                     continue;
                 }
-                let summary = apply_app_export(app_manager, payload);
+                let summary = apply_app_export(&mut *app_manager, payload);
                 send_response(parent_tx, &SteamResponse::Success(summary));
             }
 

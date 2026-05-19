@@ -39,6 +39,14 @@ pub struct AppManager {
     stat_definitions: Vec<StatDefinition>,
 }
 
+pub struct StatState<T> {
+    pub min: T,
+    pub max: T,
+    pub increment_only: bool,
+    pub default: T,
+    pub current: Option<T>,
+}
+
 #[cfg(any(debug_assertions, test))]
 fn adler32(data: &[u8]) -> u32 {
     let mut a: u32 = 1;
@@ -106,8 +114,10 @@ impl AppManager {
             }
         };
 
-        // Try for 10 seconds at 60 fps
-        for _ in 0..600 {
+        // Try for 30 seconds at ~60 fps. Bulk operations spawn many workers
+        // that all queue user-stats requests through Steam's single IPC, so a
+        // single request can wait a while before Steam services it.
+        for _ in 0..1800 {
             let completed = match self
                 .connected_steam
                 .utils
@@ -154,7 +164,7 @@ impl AppManager {
         }
 
         eprintln!("[APP MANAGER] Requesting user stats for current user timed out");
-        Err(SamError::UnknownError)
+        Err(SamError::Timeout)
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs
@@ -500,6 +510,8 @@ impl AppManager {
                         original_value: stat_value,
                         is_increment_only: definition.increment_only,
                         permission: definition.base.permission,
+                        min_value: definition.min_value,
+                        max_value: definition.max_value,
                     }));
                 }
 
@@ -531,6 +543,8 @@ impl AppManager {
                         original_value: stat_value,
                         is_increment_only: definition.increment_only,
                         permission: definition.base.permission,
+                        min_value: definition.min_value,
+                        max_value: definition.max_value,
                     }));
                 }
             };
@@ -590,6 +604,46 @@ impl AppManager {
             .store_stats()
             .map_err(|_| SamError::StatStoreFailed)?;
         Ok(())
+    }
+
+    pub fn read_int_stat_state(&self, id: &str) -> StatState<i32> {
+        let (min, max, increment_only, default) = self
+            .stat_definitions
+            .iter()
+            .find_map(|d| match d {
+                StatDefinition::Integer(def) if def.base.id == id => Some(def),
+                _ => None,
+            })
+            .map(|d| (d.min_value, d.max_value, d.increment_only, d.default_value))
+            .unwrap_or((i32::MIN, i32::MAX, false, 0));
+        let current = self.connected_steam.user_stats.get_stat_i32(id).ok();
+        StatState {
+            min,
+            max,
+            increment_only,
+            default,
+            current,
+        }
+    }
+
+    pub fn read_float_stat_state(&self, id: &str) -> StatState<f32> {
+        let (min, max, increment_only, default) = self
+            .stat_definitions
+            .iter()
+            .find_map(|d| match d {
+                StatDefinition::Float(def) if def.base.id == id => Some(def),
+                _ => None,
+            })
+            .map(|d| (d.min_value, d.max_value, d.increment_only, d.default_value))
+            .unwrap_or((f32::MIN, f32::MAX, false, 0.0));
+        let current = self.connected_steam.user_stats.get_stat_float(id).ok();
+        StatState {
+            min,
+            max,
+            increment_only,
+            default,
+            current,
+        }
     }
 
     pub fn unlock_all_achievements(&mut self) -> Result<(), SamError> {

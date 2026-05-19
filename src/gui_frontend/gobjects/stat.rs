@@ -33,6 +33,8 @@ impl GStatObject {
                 .property("is-increment-only", info.is_increment_only)
                 .property("permission", info.permission)
                 .property("is-integer", false)
+                .property("min-value", info.min_value as f64)
+                .property("max-value", info.max_value as f64)
                 .build(),
             StatInfo::Integer(info) => Object::builder()
                 .property("id", info.id)
@@ -43,6 +45,8 @@ impl GStatObject {
                 .property("is-increment-only", info.is_increment_only)
                 .property("permission", info.permission)
                 .property("is-integer", true)
+                .property("min-value", info.min_value as f64)
+                .property("max-value", info.max_value as f64)
                 .build(),
         }
     }
@@ -81,6 +85,12 @@ mod imp {
 
         #[property(get, set)]
         permission: Cell<i32>,
+
+        #[property(get, set)]
+        min_value: Cell<f64>,
+
+        #[property(get, set)]
+        max_value: Cell<f64>,
     }
 
     #[glib::object_subclass]
