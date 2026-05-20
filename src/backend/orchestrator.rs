@@ -17,7 +17,6 @@ use crate::backend::app_lister::{AppLister, fetch_achievement_counts};
 use crate::backend::connected_steam::ConnectedSteam;
 use crate::backend::local_config::parse_localconfig;
 use crate::backend::local_stats::LocalIndex;
-#[cfg(debug_assertions)]
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::utils::app_paths::get_executable_path;
@@ -88,6 +87,59 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
             break 0;
         }
     }
+}
+
+fn ensure_app_launched(
+    app_id: u32,
+    children_processes: &mut HashMap<u32, (IpcClient, usize)>,
+) -> Result<(), SamError> {
+    // If a process for this app is already alive, just bump the refcount.
+    if let Some((_, refcount)) = children_processes.get_mut(&app_id) {
+        *refcount += 1;
+        dev_println!("ORCH", "App {} refcount now {}", app_id, *refcount);
+        return Ok(());
+    }
+
+    // Otherwise launch a new process with refcount = 1.
+    let current_exe = get_executable_path();
+    let child =
+        BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}"))).map_err(|e| {
+            eprintln!("[ORCHESTRATOR] Failed to spawn app server for {app_id}: {e}");
+            SamError::SocketCommunicationFailed
+        })?;
+
+    // Probe the child to verify it actually connected to Steam. The app
+    // server's connect attempt happens before its main loop runs, so a Status
+    // reply distinguishes a healthy child from one that failed to attach (e.g.
+    // user-entered AppId they don't own).
+    let mut ipc = IpcClient::new(child);
+    match ipc.request_response::<bool, _>(&SteamCommand::Status) {
+        Ok(true) => {
+            children_processes.insert(app_id, (ipc, 1));
+            Ok(())
+        }
+        Ok(false) | Err(_) => {
+            dev_println!(
+                "ORCH",
+                "App server for {app_id} failed Steam handshake, tearing down"
+            );
+            let _ = send_app_command(&mut ipc, SteamCommand::Shutdown);
+            let _ = ipc.wait();
+            Err(SamError::SteamConnectionFailed)
+        }
+    }
+}
+
+/// Fetch a running child's achievements and stats in a single back-to-back
+/// exchange, so nothing can interleave between the two on the parent channel.
+fn fetch_child_progress(
+    ipc: &mut IpcClient,
+    app_id: u32,
+) -> Result<(Vec<AchievementInfo>, Vec<StatInfo>), SamError> {
+    let achievements =
+        ipc.request_response::<Vec<AchievementInfo>, _>(&SteamCommand::GetAchievements(app_id))?;
+    let stats = ipc.request_response::<Vec<StatInfo>, _>(&SteamCommand::GetStats(app_id))?;
+    Ok((achievements, stats))
 }
 
 /// Forward `command` to the per-app child process for `app_id` and proxy its
@@ -277,52 +329,62 @@ fn process_command(
                 return true;
             }
 
-            // 1. If a process for this app is already alive, just bump the refcount.
-            if let Some((_, refcount)) = children_processes.get_mut(&app_id) {
-                *refcount += 1;
-                dev_println!("ORCH", "App {} refcount now {}", app_id, *refcount);
-                write_message(tx, &SteamResponse::Success(true))
-                    .expect("[ORCHESTRATOR] Failed to send response");
+            match ensure_app_launched(app_id, children_processes) {
+                Ok(()) => write_message(tx, &SteamResponse::Success(true))
+                    .expect("[ORCHESTRATOR] Failed to send response"),
+                Err(e) => write_message(tx, &SteamResponse::<bool>::Error(e))
+                    .expect("[ORCHESTRATOR] Failed to send response"),
+            }
+        }
+
+        SteamCommand::GetAchievementsAndStats(app_id, launch) => {
+            dev_println!(
+                "ORCH",
+                "GetAchievementsAndStats {} (launch={launch})",
+                app_id
+            );
+
+            #[cfg(debug_assertions)]
+            if app_id == 0 {
+                write_message(
+                    tx,
+                    &SteamResponse::Success((
+                        Vec::<AchievementInfo>::new(),
+                        Vec::<StatInfo>::new(),
+                    )),
+                )
+                .expect("[APP SERVER] Failed to send response");
                 return true;
             }
 
-            // 2. Otherwise launch a new process with refcount = 1.
-            let current_exe = get_executable_path();
-            let child =
-                match BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}"))) {
-                    Ok(c) => c,
-                    Err(e) => {
-                        eprintln!("[ORCHESTRATOR] Failed to spawn app server for {app_id}: {e}");
-                        tx.write_all(&SOCKET_ERROR_RESPONSE)
-                            .expect("[ORCHESTRATOR] Failed to send response");
-                        return true;
-                    }
-                };
+            if launch && let Err(e) = ensure_app_launched(app_id, children_processes) {
+                write_message(
+                    tx,
+                    &SteamResponse::<(Vec<AchievementInfo>, Vec<StatInfo>)>::Error(e),
+                )
+                .expect("[ORCHESTRATOR] Failed to send response");
+                return true;
+            }
 
-            // Probe the child to verify it actually connected to Steam. The
-            // app server's connect attempt happens before its main loop runs,
-            // so a Status reply distinguishes a healthy child from one that
-            // failed to attach (e.g. user-entered AppId they don't own).
-            let mut ipc = IpcClient::new(child);
-            match ipc.request_response::<bool, _>(&SteamCommand::Status) {
-                Ok(true) => {
-                    children_processes.insert(app_id, (ipc, 1));
-                    write_message(tx, &SteamResponse::Success(true))
-                        .expect("[ORCHESTRATOR] Failed to send response");
-                }
-                Ok(false) | Err(_) => {
-                    dev_println!(
-                        "ORCH",
-                        "App server for {app_id} failed Steam handshake, tearing down"
-                    );
-                    let _ = send_app_command(&mut ipc, SteamCommand::Shutdown);
-                    let _ = ipc.wait();
-                    write_message(
-                        tx,
-                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
-                    )
-                    .expect("[ORCHESTRATOR] Failed to send response");
-                }
+            // One orchestrator command holds the channel for both fetches, so no
+            // other command can wedge in between them.
+            let Some((ipc, _)) = children_processes.get_mut(&app_id) else {
+                write_message(
+                    tx,
+                    &SteamResponse::<(Vec<AchievementInfo>, Vec<StatInfo>)>::Error(
+                        SamError::AppMismatchError,
+                    ),
+                )
+                .expect("[ORCHESTRATOR] Failed to send response");
+                return true;
+            };
+
+            match fetch_child_progress(ipc, app_id) {
+                Ok(progress) => write_message(tx, &SteamResponse::Success(progress))
+                    .expect("[ORCHESTRATOR] Failed to send response"),
+                Err(_) => tx
+                    .write_all(&SOCKET_ERROR_RESPONSE)
+                    .expect("[ORCHESTRATOR] Failed to send response"),
             }
         }
 

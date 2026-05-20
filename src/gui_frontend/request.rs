@@ -21,6 +21,9 @@ use crate::utils::ipc_types::{SamError, SteamCommand};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 
+/// An app's achievements and stats, fetched together.
+pub type AppProgress = (Vec<AchievementInfo>, Vec<StatInfo>);
+
 pub trait Request: Into<SteamCommand> + Debug + Clone {
     type Response: DeserializeOwned;
 
@@ -58,16 +61,6 @@ pub struct StopApp {
 
 #[derive(Debug, Clone)]
 pub struct GetRunningApps;
-
-#[derive(Debug, Clone)]
-pub struct GetAchievements {
-    pub app_id: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct GetStats {
-    pub app_id: u32,
-}
 
 #[derive(Debug, Clone)]
 pub struct SetAchievement {
@@ -112,6 +105,12 @@ pub struct GetAchievementCounts {
     pub app_ids: Vec<u32>,
 }
 
+#[derive(Debug, Clone)]
+pub struct GetAchievementsAndStats {
+    pub app_id: u32,
+    pub launch: bool,
+}
+
 impl Request for GetSubscribedAppList {
     type Response = Vec<AppModel>;
 }
@@ -130,14 +129,6 @@ impl Request for StopApp {
 
 impl Request for GetRunningApps {
     type Response = Vec<u32>;
-}
-
-impl Request for GetAchievements {
-    type Response = Vec<AchievementInfo>;
-}
-
-impl Request for GetStats {
-    type Response = Vec<StatInfo>;
 }
 
 impl Request for SetAchievement {
@@ -168,6 +159,10 @@ impl Request for GetAchievementCounts {
     type Response = Vec<(u32, u32, u32)>;
 }
 
+impl Request for GetAchievementsAndStats {
+    type Response = AppProgress;
+}
+
 impl From<GetSubscribedAppList> for SteamCommand {
     fn from(val: GetSubscribedAppList) -> Self {
         SteamCommand::GetSubscribedAppList(val.include_playtime, val.with_achievement_counts)
@@ -195,18 +190,6 @@ impl From<StopApp> for SteamCommand {
 impl From<GetRunningApps> for SteamCommand {
     fn from(_val: GetRunningApps) -> Self {
         SteamCommand::GetRunningApps
-    }
-}
-
-impl From<GetAchievements> for SteamCommand {
-    fn from(val: GetAchievements) -> Self {
-        SteamCommand::GetAchievements(val.app_id)
-    }
-}
-
-impl From<GetStats> for SteamCommand {
-    fn from(val: GetStats) -> Self {
-        SteamCommand::GetStats(val.app_id)
     }
 }
 
@@ -249,6 +232,12 @@ impl From<ResetStats> for SteamCommand {
 impl From<GetAchievementCounts> for SteamCommand {
     fn from(val: GetAchievementCounts) -> Self {
         SteamCommand::GetAchievementCounts(val.app_ids)
+    }
+}
+
+impl From<GetAchievementsAndStats> for SteamCommand {
+    fn from(val: GetAchievementsAndStats) -> Self {
+        SteamCommand::GetAchievementsAndStats(val.app_id, val.launch)
     }
 }
 

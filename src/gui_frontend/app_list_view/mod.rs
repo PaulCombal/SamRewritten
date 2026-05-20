@@ -27,7 +27,7 @@ use crate::gui_frontend::application_actions::{set_app_action_enabled, setup_app
 use crate::gui_frontend::dialogs::warn;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::gsettings::get_settings;
-use crate::gui_frontend::request::{LaunchApp, Request, StopApp};
+use crate::gui_frontend::request::{AppProgress, LaunchApp, Request, StopApp};
 use crate::gui_frontend::ui_components::{
     create_about_dialog, create_context_menu_button, set_context_popover_to_app_list_context,
 };
@@ -125,6 +125,7 @@ pub fn create_main_ui(
     let launch_app_by_id_visible = Rc::new(Cell::new(false));
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
+    let prefetched_progress: Rc<RefCell<Option<AppProgress>>> = Rc::new(RefCell::new(None));
     let idle_count: Rc<Cell<usize>> = Rc::new(Cell::new(0));
     let achievement_loader = AchievementLoader::new();
 
@@ -347,6 +348,8 @@ pub fn create_main_ui(
         app_label,
         #[weak]
         app_shimmer_image,
+        #[strong]
+        prefetched_progress,
         move |list_view, position| {
             let Some(model) = list_view.model() else {
                 return;
@@ -371,6 +374,7 @@ pub fn create_main_ui(
                 &app_label,
                 &menu_model,
                 &list_stack,
+                &prefetched_progress,
             );
         }
     ));
@@ -385,6 +389,8 @@ pub fn create_main_ui(
         app_id,
         #[strong]
         idle_count,
+        #[strong]
+        prefetched_progress,
         #[weak]
         application,
         #[weak]
@@ -466,6 +472,8 @@ pub fn create_main_ui(
                 app_label,
                 #[weak]
                 app_shimmer_image,
+                #[strong]
+                prefetched_progress,
                 move |_| {
                     let Some(steam_app_object) = card.app_object() else {
                         return;
@@ -486,6 +494,7 @@ pub fn create_main_ui(
                         &app_label,
                         &menu_model,
                         &list_stack,
+                        &prefetched_progress,
                     );
                 }
             ));
@@ -797,6 +806,7 @@ pub fn create_main_ui(
         &app_stack,
         &app_achievements_stack,
         &cancel_timed_unlock,
+        &prefetched_progress,
     );
 
     let action_clear_all_stats_and_achievements = create_clear_all_action(
@@ -819,6 +829,8 @@ pub fn create_main_ui(
         search_entry,
         #[weak]
         action_refresh_app_list,
+        #[strong]
+        prefetched_progress,
         move |stack| {
             if stack.visible_child_name().as_deref() == Some("loading") {
                 back_button.set_sensitive(false);
@@ -875,6 +887,7 @@ pub fn create_main_ui(
                         &app_label,
                         &menu_model,
                         stack,
+                        &prefetched_progress,
                     );
                 }
             }

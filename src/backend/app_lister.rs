@@ -331,7 +331,7 @@ impl<'a> AppLister<'a> {
 }
 
 /// Chunk size shared by the backend pump loop and the GUI achievement loader.
-pub const ACHIEVEMENT_COUNT_CHUNK_SIZE: usize = 15;
+pub const ACHIEVEMENT_COUNT_CHUNK_SIZE: usize = 8;
 
 /// Apps whose schema fails to load within the per-chunk window are omitted.
 pub fn fetch_achievement_counts(

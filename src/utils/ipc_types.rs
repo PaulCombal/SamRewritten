@@ -115,6 +115,12 @@ pub enum SteamCommand {
     ExportAppProgress(u32),
     ImportAppProgress(u32, AppExport),
     GetAchievementCounts(Vec<u32>),
+    /// Fetch `app_id`'s achievements and stats in a single round-trip, so an
+    /// unrelated batch command can't interleave between the two fetches on the
+    /// serial channel. When `launch` is true the app is launched (or its
+    /// refcount bumped) first; otherwise it must already be running. Returns
+    /// `(achievements, stats)`.
+    GetAchievementsAndStats(u32, bool),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

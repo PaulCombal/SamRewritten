@@ -16,7 +16,7 @@
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
-use crate::gui_frontend::request::{LaunchApp, Request};
+use crate::gui_frontend::request::{AppProgress, GetAchievementsAndStats, Request};
 use crate::gui_frontend::ui_components::set_context_popover_to_app_details_context;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use crate::utils::format::format_playtime_minutes;
@@ -25,7 +25,7 @@ use gtk::glib::{MainContext, clone};
 use gtk::prelude::WidgetExt;
 use gtk::prelude::*;
 use gtk::{Box, Label, Stack};
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 #[inline]
@@ -45,6 +45,7 @@ pub(crate) fn switch_from_app_list_to_app(
     app_label: &Label,
     menu_model: &Menu,
     list_stack: &Stack,
+    prefetched_progress: &Rc<RefCell<Option<AppProgress>>>,
 ) {
     set_app_action_enabled(&application, "refresh_achievements_list", false);
     app_type_value_label.set_label(&steam_app_object.app_type());
@@ -72,22 +73,26 @@ pub(crate) fn switch_from_app_list_to_app(
 
     let app_id_copy = steam_app_object.app_id();
     let handle = spawn_blocking(move || {
-        LaunchApp {
+        GetAchievementsAndStats {
             app_id: app_id_copy,
+            launch: true,
         }
         .request()
     });
 
     set_context_popover_to_app_details_context(menu_model, &application);
 
+    let prefetched_progress = prefetched_progress.clone();
     MainContext::default().spawn_local(clone!(async move {
+        // Launch and the achievement/stats fetch ride in one round-trip; hand
+        // the result to the refresh action so no second fetch is needed.
         match handle.await {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("[LAUNCH APP] Failed to launch app: {:?}", e);
+            Ok(Ok(progress)) => prefetched_progress.replace(Some(progress)),
+            other => {
+                eprintln!("[LAUNCH APP] Failed to launch app: {other:?}");
                 return app_stack.set_visible_child_name("failed");
             }
-        }
+        };
 
         set_app_action_enabled(&application, "refresh_achievements_list", true);
         set_app_action_enabled(&application, "clear_all_stats_and_achievements", true);

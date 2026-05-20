@@ -20,7 +20,7 @@ use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::gobjects::stat::GStatObject;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{
-    GetAchievements, GetRunningApps, GetStats, GetSubscribedAppList, Request, ResetStats,
+    AppProgress, GetAchievementsAndStats, GetRunningApps, GetSubscribedAppList, Request, ResetStats,
 };
 use crate::utils::format::format_achievement_progress;
 use crate::utils::ipc_types::SamError;
@@ -28,7 +28,7 @@ use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{GridView, Label, ScrolledWindow, SearchEntry, Stack, glib};
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -188,6 +188,7 @@ pub fn create_refresh_achievements_action(
     app_stack: &Stack,
     app_achievements_stack: &Stack,
     cancel_timed_unlock: &Arc<AtomicBool>,
+    prefetched_progress: &Rc<RefCell<Option<AppProgress>>>,
 ) -> SimpleAction {
     let action_refresh_achievements_list = SimpleAction::new("refresh_achievements_list", None);
     action_refresh_achievements_list.set_enabled(false);
@@ -212,6 +213,8 @@ pub fn create_refresh_achievements_action(
         app_achievements_stack,
         #[strong]
         cancel_timed_unlock,
+        #[strong]
+        prefetched_progress,
         move |_, _| {
             app_stack.set_visible_child_name("loading");
             set_app_action_enabled(&application, "refresh_achievements_list", false);
@@ -220,24 +223,22 @@ pub fn create_refresh_achievements_action(
             cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
             app_achievements_stack.set_visible_child_name("manual");
 
+            let prefetched = prefetched_progress.borrow_mut().take();
             let app_id_copy = app_id.get().unwrap();
-            let handle = spawn_blocking(move || {
-                let achievements = GetAchievements {
+            let handle = spawn_blocking(move || match prefetched {
+                Some(progress) => Ok(progress),
+                None => GetAchievementsAndStats {
                     app_id: app_id_copy,
+                    launch: false,
                 }
-                .request();
-                let stats = GetStats {
-                    app_id: app_id_copy,
-                }
-                .request();
-                (achievements, stats)
+                .request(),
             });
 
             MainContext::default().spawn_local(clone!(
                 #[strong]
                 app_unlocked_achievements_count,
                 async move {
-                    let Ok((Ok(achievements), Ok(stats))) = handle.await else {
+                    let Ok(Ok((achievements, stats))) = handle.await else {
                         return app_stack.set_visible_child_name("failed");
                     };
 
