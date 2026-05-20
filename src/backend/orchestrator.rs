@@ -45,7 +45,7 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
     let mut children_processes: HashMap<u32, (IpcClient, usize)> = HashMap::new();
 
     loop {
-        dev_println!("[ORCHESTRATOR] Main loop...");
+        dev_println!("ORCH", "Main loop...");
 
         let message: SteamCommand = match read_message(parent_rx) {
             Ok(m) => m,
@@ -59,19 +59,19 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
             }
         };
 
-        dev_println!("[ORCHESTRATOR] Received message: {message:?}");
+        dev_println!("ORCH", "Received message: {message:?}");
 
         if connected_steam.as_ref().is_none() {
             if message == SteamCommand::Shutdown {
                 let _ = write_message(parent_tx, &SteamResponse::Success(true));
-                dev_println!("[ORCHESTRATOR] Exiting");
+                dev_println!("ORCH", "Exiting");
                 break 0;
             }
 
             connected_steam = match ConnectedSteam::new(false) {
                 Ok(c) => Some(c),
                 Err(e) => {
-                    dev_println!("[ORCHESTRATOR] Error connecting to Steam: {e}");
+                    dev_println!("ORCH", "Error connecting to Steam: {e}");
                     let _ = write_message(
                         parent_tx,
                         &SteamResponse::<String>::Error(SamError::SteamConnectionFailed),
@@ -108,7 +108,7 @@ fn forward_to_child(
                     .expect("[ORCHESTRATOR] Failed to send response");
             }
             Err(_) => {
-                dev_println!("[ORCHESTRATOR] Failed to {op_name} for app {app_id}");
+                dev_println!("ORCH", "Failed to {op_name} for app {app_id}");
                 tx.write_all(&SOCKET_ERROR_RESPONSE)
                     .expect("[ORCHESTRATOR] Failed to send response");
             }
@@ -155,7 +155,7 @@ fn process_command(
         std::thread::sleep(std::time::Duration::from_millis(10));
 
         if send_app_command(&mut ipc, SteamCommand::Shutdown).is_err() {
-            dev_println!("[ORCHESTRATOR] Error sending shutdown to {op_name} app {app_id}");
+            dev_println!("ORCH", "Error sending shutdown to {op_name} app {app_id}");
             tx.write_all(&SOCKET_ERROR_RESPONSE)
                 .expect("[ORCHESTRATOR] Failed to send response");
             return;
@@ -177,7 +177,8 @@ fn process_command(
     match command {
         SteamCommand::GetSubscribedAppList(include_playtime, with_achievement_counts) => {
             dev_println!(
-                "[ORCHESTRATOR] Received GetSubscribedAppList(playtime={include_playtime}, achievements={with_achievement_counts})"
+                "ORCH",
+                "Received GetSubscribedAppList(playtime={include_playtime}, achievements={with_achievement_counts})"
             );
 
             let vdf_path = if include_playtime {
@@ -187,13 +188,14 @@ fn process_command(
                         let path = SteamLocator::get_local_config_path(account_id);
                         if path.is_none() {
                             dev_println!(
-                                "[ORCHESTRATOR] localconfig.vdf not found for account {account_id}"
+                                "ORCH",
+                                "localconfig.vdf not found for account {account_id}"
                             );
                         }
                         path
                     }
                     Err(e) => {
-                        dev_println!("[ORCHESTRATOR] Failed to get Steam ID: {e:?}");
+                        dev_println!("ORCH", "Failed to get Steam ID: {e:?}");
                         None
                     }
                 }
@@ -211,7 +213,7 @@ fn process_command(
             let client_user = match connected_steam.client_user() {
                 Ok(u) => u,
                 Err(e) => {
-                    dev_println!("[ORCHESTRATOR] Could not get IClientUser: {e}");
+                    dev_println!("ORCH", "Could not get IClientUser: {e}");
                     write_message(
                         tx,
                         &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
@@ -225,7 +227,7 @@ fn process_command(
                 match connected_steam.client_user_stats_map() {
                     Ok(m) => Some(m),
                     Err(e) => {
-                        dev_println!("[ORCHESTRATOR] Could not create stats map: {e}");
+                        dev_println!("ORCH", "Could not create stats map: {e}");
                         None
                     }
                 }
@@ -258,7 +260,7 @@ fn process_command(
                         .expect("[ORCHESTRATOR] Failed to send response");
                 }
                 Err(e) => {
-                    dev_println!("[ORCHESTRATOR] Error getting owned apps: {e}");
+                    dev_println!("ORCH", "Error getting owned apps: {e}");
                     write_message(tx, &SteamResponse::<()>::Error(e))
                         .expect("[ORCHESTRATOR] Failed to send response");
                 }
@@ -266,7 +268,7 @@ fn process_command(
         }
 
         SteamCommand::LaunchApp(app_id) => {
-            dev_println!("[ORCHESTRATOR] LaunchApp {}", app_id);
+            dev_println!("ORCH", "LaunchApp {}", app_id);
 
             #[cfg(debug_assertions)]
             if app_id == 0 {
@@ -278,7 +280,7 @@ fn process_command(
             // 1. If a process for this app is already alive, just bump the refcount.
             if let Some((_, refcount)) = children_processes.get_mut(&app_id) {
                 *refcount += 1;
-                dev_println!("[ORCHESTRATOR] App {} refcount now {}", app_id, *refcount);
+                dev_println!("ORCH", "App {} refcount now {}", app_id, *refcount);
                 write_message(tx, &SteamResponse::Success(true))
                     .expect("[ORCHESTRATOR] Failed to send response");
                 return true;
@@ -310,7 +312,8 @@ fn process_command(
                 }
                 Ok(false) | Err(_) => {
                     dev_println!(
-                        "[ORCHESTRATOR] App server for {app_id} failed Steam handshake, tearing down"
+                        "ORCH",
+                        "App server for {app_id} failed Steam handshake, tearing down"
                     );
                     let _ = send_app_command(&mut ipc, SteamCommand::Shutdown);
                     let _ = ipc.wait();
@@ -341,7 +344,8 @@ fn process_command(
             *refcount -= 1;
             if *refcount > 0 {
                 dev_println!(
-                    "[ORCHESTRATOR] App {} still wanted, refcount now {}",
+                    "ORCH",
+                    "App {} still wanted, refcount now {}",
                     app_id,
                     *refcount
                 );
@@ -356,7 +360,7 @@ fn process_command(
             let response = match send_app_command(ipc, SteamCommand::Shutdown) {
                 Ok(response) => response,
                 Err(_) => {
-                    dev_println!("[ORCHESTRATOR] Error sending shutdown command to app {app_id}");
+                    dev_println!("ORCH", "Error sending shutdown command to app {app_id}");
                     tx.write_all(&SOCKET_ERROR_RESPONSE)
                         .expect("[ORCHESTRATOR] Failed to send response");
                     return true;
@@ -371,11 +375,11 @@ fn process_command(
         }
 
         SteamCommand::StopApps => {
-            dev_println!("[ORCHESTRATOR] StopApps");
+            dev_println!("ORCH", "StopApps");
 
             for (app_id, (ipc, _)) in children_processes.iter_mut() {
                 let _ = send_app_command(ipc, SteamCommand::Shutdown);
-                dev_println!("[ORCHESTRATOR] Sent shutdown command to app {app_id}");
+                dev_println!("ORCH", "Sent shutdown command to app {app_id}");
                 ipc.wait()
                     .expect("[ORCHESTRATOR] Failed to wait child process");
             }
@@ -389,7 +393,7 @@ fn process_command(
         SteamCommand::Shutdown => {
             for (app_id, (ipc, _)) in children_processes.iter_mut() {
                 let _ = send_app_command(ipc, SteamCommand::Shutdown);
-                dev_println!("[ORCHESTRATOR] Sent shutdown command to app {app_id}");
+                dev_println!("ORCH", "Sent shutdown command to app {app_id}");
                 ipc.wait()
                     .expect("[ORCHESTRATOR] Failed to wait child process");
             }
@@ -571,7 +575,7 @@ fn process_command(
                 let stats_map = match connected_steam.client_user_stats_map() {
                     Ok(m) => m,
                     Err(e) => {
-                        dev_println!("[ORCHESTRATOR] Could not create stats map: {e}");
+                        dev_println!("ORCH", "Could not create stats map: {e}");
                         write_message(
                             tx,
                             &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
@@ -591,7 +595,7 @@ fn process_command(
         // server children via `run_command_on_apps_concurrent`; receiving
         // one here means a caller mistakenly addressed the orchestrator.
         SteamCommand::ExportAppProgress(_) | SteamCommand::ImportAppProgress(_, _) => {
-            dev_println!("[ORCHESTRATOR] Received child-only command");
+            dev_println!("ORCH", "Received child-only command");
             tx.write_all(&SOCKET_ERROR_RESPONSE)
                 .expect("[ORCHESTRATOR] Failed to send response");
         }

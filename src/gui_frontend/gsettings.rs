@@ -16,7 +16,7 @@ pub fn get_settings() -> Settings {
         && snap_name != "samrewritten"
     {
         // Dev config
-        dev_println!("[CLIENT] Loading settings from dev config..");
+        dev_println!("CLIENT", "Loading settings from dev config..");
         let schema_dir = "./assets";
         let source = gtk::gio::SettingsSchemaSource::from_directory(schema_dir, None, false)
             .expect("Could not find the 'gschemas.compiled' file in the assets folder.");

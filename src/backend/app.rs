@@ -30,7 +30,7 @@ fn send_response<T: Serialize>(tx: &mut Sender, resp: &SteamResponse<T>) {
 
 fn check_app_id(passed: u32, expected: u32, tx: &mut Sender) -> bool {
     if passed != expected {
-        dev_println!("[APP SERVER] App ID mismatch: {passed} != {expected}");
+        dev_println!("APPSRV", "App ID mismatch: {passed} != {expected}");
         send_response::<()>(tx, &SteamResponse::Error(SamError::AppMismatchError));
         return false;
     }
@@ -42,11 +42,11 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
 
     #[cfg(debug_assertions)]
     if app_manager.as_ref().is_err() {
-        dev_println!("[APP SERVER] Failed to connect to Steam");
+        dev_println!("APPSRV", "Failed to connect to Steam");
     }
 
     loop {
-        dev_println!("[APP SERVER] Main loop...");
+        dev_println!("APPSRV", "Main loop...");
 
         let command: SteamCommand = match read_message(parent_rx) {
             Ok(c) => c,
@@ -115,7 +115,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                     match app_manager.set_achievement(&achievement_id, unlocked, store) {
                         Ok(_) => SteamResponse::Success(true),
                         Err(e) => {
-                            dev_println!("[APP SERVER] Error setting achievement: {e}");
+                            dev_println!("APPSRV", "Error setting achievement: {e}");
                             SteamResponse::Error(e)
                         }
                     };
@@ -130,7 +130,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                 {
                     Ok(result) => SteamResponse::Success(result),
                     Err(e) => {
-                        dev_println!("[APP SERVER] Error setting int stat: {e}");
+                        dev_println!("APPSRV", "Error setting int stat: {e}");
                         SteamResponse::Error(e)
                     }
                 };
@@ -145,7 +145,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                 {
                     Ok(result) => SteamResponse::Success(result),
                     Err(e) => {
-                        dev_println!("[APP SERVER] Error setting float stat: {e}");
+                        dev_println!("APPSRV", "Error setting float stat: {e}");
                         SteamResponse::Error(e)
                     }
                 };
@@ -160,7 +160,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                 {
                     Ok(_) => SteamResponse::Success(true),
                     Err(e) => {
-                        dev_println!("[APP SERVER] Error storing stats and achievements: {e}");
+                        dev_println!("APPSRV", "Error storing stats and achievements: {e}");
                         SteamResponse::Error(e)
                     }
                 };
@@ -175,7 +175,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                     match app_manager.reset_all_stats(achievements_too) {
                         Ok(result) => SteamResponse::Success(result),
                         Err(e) => {
-                            dev_println!("[APP SERVER] Error resetting stats: {e}");
+                            dev_println!("APPSRV", "Error resetting stats: {e}");
                             SteamResponse::Error(e)
                         }
                     };
@@ -189,7 +189,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                 let response: SteamResponse<bool> = match app_manager.unlock_all_achievements() {
                     Ok(_) => SteamResponse::Success(true),
                     Err(e) => {
-                        dev_println!("[APP SERVER] Error unlocking all achievements: {e}");
+                        dev_println!("APPSRV", "Error unlocking all achievements: {e}");
                         SteamResponse::Error(e)
                     }
                 };
@@ -217,13 +217,13 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
             }
 
             _ => {
-                dev_println!("[APP SERVER] Received unknown command {command:?}");
+                dev_println!("APPSRV", "Received unknown command {command:?}");
                 send_response::<()>(parent_tx, &SteamResponse::Error(SamError::UnknownError));
             }
         }
     }
 
-    dev_println!("[APP SERVER] Exiting");
+    dev_println!("APPSRV", "Exiting");
 
     0
 }

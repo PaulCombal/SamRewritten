@@ -100,7 +100,7 @@ pub async fn run_timed_unlock(
         let tick_start = std::time::Instant::now();
 
         if cancelled.load(std::sync::atomic::Ordering::Relaxed) {
-            dev_println!("[CLIENT] Timed unlock task cancelled");
+            dev_println!("CLIENT", "Timed unlock task cancelled");
             timed_raw_model.remove_all();
             return;
         }
@@ -109,7 +109,7 @@ pub async fn run_timed_unlock(
 
         while next_index < achievements.len() && elapsed_ms >= times_ms[next_index] {
             let achievement = &achievements[next_index];
-            dev_println!("[CLIENT] Timed unlock of {}", achievement.name());
+            dev_println!("CLIENT", "Timed unlock of {}", achievement.name());
             achievement.set_is_achieved(true);
 
             let achievement_id = achievement.id();
@@ -125,7 +125,7 @@ pub async fn run_timed_unlock(
             .await;
 
             match result {
-                Ok(response) => dev_println!("[CLIENT] Achievement result: {:?}", response),
+                Ok(response) => dev_println!("CLIENT", "Achievement result: {:?}", response),
                 Err(e) => eprintln!("[CLIENT] Achievement failed: {:?}", e),
             }
 
@@ -147,7 +147,7 @@ pub async fn run_timed_unlock(
         glib::timeout_future(sleep).await;
     }
 
-    dev_println!("[CLIENT] Timed unlock task finished");
+    dev_println!("CLIENT", "Timed unlock task finished");
 }
 
 pub fn unlock_all_immediately(app_id: u32, achievements: &[GAchievementObject]) {
@@ -181,9 +181,7 @@ impl SeededRng {
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_nanos() as u64)
             .unwrap_or(0x9E3779B97F4A7C15);
-        Self {
-            state: seed | 1,
-        }
+        Self { state: seed | 1 }
     }
 
     fn next_u64(&mut self) -> u64 {

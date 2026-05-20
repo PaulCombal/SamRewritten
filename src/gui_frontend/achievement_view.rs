@@ -100,4 +100,3 @@ pub fn create_achievements_view(
         cancel_timed_unlock,
     )
 }
-

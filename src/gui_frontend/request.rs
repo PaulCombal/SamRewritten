@@ -32,7 +32,7 @@ pub trait Request: Into<SteamCommand> + Debug + Clone {
         };
 
         let command: SteamCommand = self.into();
-        dev_println!("[CLIENT] Sending command: {:?}", command);
+        dev_println!("CLIENT", "Sending command: {:?}", command);
         ipc.request_response::<Self::Response, _>(&command)
     }
 }

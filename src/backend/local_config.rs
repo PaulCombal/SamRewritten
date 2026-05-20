@@ -65,14 +65,15 @@ struct AppEntry {
 pub fn parse_localconfig(path: &Path) -> Result<PlaytimeMap, SamError> {
     let contents = fs::read_to_string(path).map_err(|e| {
         dev_println!(
-            "[ORCHESTRATOR] Failed to read localconfig.vdf at {}: {e}",
+            "ORCH",
+            "Failed to read localconfig.vdf at {}: {e}",
             path.display()
         );
         SamError::UnknownError
     })?;
 
     let parsed: LocalConfig = keyvalues_serde::from_str(&contents).map_err(|e| {
-        dev_println!("[ORCHESTRATOR] Failed to parse localconfig.vdf: {e}");
+        dev_println!("ORCH", "Failed to parse localconfig.vdf: {e}");
         SamError::UnknownError
     })?;
 

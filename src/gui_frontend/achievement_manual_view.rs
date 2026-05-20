@@ -583,7 +583,8 @@ pub fn create_achievements_manual_view(
             let desired_minutes = duration_spin.value_as_int().max(0) as u64;
             if desired_minutes == 0 {
                 dev_println!(
-                    "[CLIENT] Instant unlock of {} achievements",
+                    "CLIENT",
+                    "Instant unlock of {} achievements",
                     achievements.len()
                 );
                 unlock_all_immediately(app_id_val, &achievements);
@@ -973,7 +974,8 @@ fn install_row_factory(
                     };
                     if !cancelled_task.load(std::sync::atomic::Ordering::Relaxed) {
                         dev_println!(
-                            "[CLIENT] Skipping switch toggle during timed unlock: {}",
+                            "CLIENT",
+                            "Skipping switch toggle during timed unlock: {}",
                             achievement_object.name()
                         );
                         return;

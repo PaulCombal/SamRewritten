@@ -25,9 +25,7 @@ glib::wrapper! {
 
 impl Default for GUnlockModeState {
     fn default() -> Self {
-        Object::builder()
-            .property("mode", MODE_AUTOCOMMIT)
-            .build()
+        Object::builder().property("mode", MODE_AUTOCOMMIT).build()
     }
 }
 

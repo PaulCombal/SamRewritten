@@ -102,7 +102,8 @@ impl AppManager {
         };
 
         dev_println!(
-            "[APP SERVER] Requesting current stats for current user: {:?}",
+            "APPSRV",
+            "Requesting current stats for current user: {:?}",
             steam_id
         );
 
@@ -151,7 +152,7 @@ impl AppManager {
                     }
                 };
 
-                dev_println!("[APP SERVER] User stats received callback result: {result:?}");
+                dev_println!("APPSRV", "User stats received callback result: {result:?}");
 
                 if result.m_eResult == EResult::k_EResultOK {
                     self.user_stats_received = true;
@@ -186,13 +187,14 @@ impl AppManager {
             match std::fs::read(&bin_file) {
                 Ok(bytes) => {
                     dev_println!(
-                        "[APP MANAGER] Loading user game stats file {} (Checksum: {:08x})",
+                        "APPMAN",
+                        "Loading user game stats file {} (Checksum: {:08x})",
                         bin_file.display(),
                         adler32(&bytes)
                     );
                 }
                 Err(e) => {
-                    dev_println!("[APP MANAGER] Error loading user game stats file: {}", e);
+                    dev_println!("APPMAN", "Error loading user game stats file: {}", e);
                 }
             };
         }
@@ -303,7 +305,7 @@ impl AppManager {
                         }
 
                         if !bits.1.valid || bits.1.children.is_empty() {
-                            dev_println!("[APP MANAGER] Invalid achievements bits.1: {:?}", bits.1);
+                            dev_println!("APPMAN", "Invalid achievements bits.1: {:?}", bits.1);
                             continue;
                         }
 
@@ -374,7 +376,8 @@ impl AppManager {
                         .map_err(|_| SamError::UnknownError)?;
                     global_stats_fetched = result.m_eResult;
                     dev_println!(
-                        "[APP SERVER] Global achievement percentages callback result: {result:?}"
+                        "APPSRV",
+                        "Global achievement percentages callback result: {result:?}"
                     );
                     break;
                 }
@@ -391,7 +394,7 @@ impl AppManager {
 
         for def in self.achievement_definitions.iter() {
             if def.id.is_empty() {
-                dev_println!("[APP MANAGER] Achievement definition ID is empty:");
+                dev_println!("APPMAN", "Achievement definition ID is empty:");
                 dev_println!("{def:?}");
                 continue;
             }
@@ -415,7 +418,8 @@ impl AppManager {
                             Ok(percent) => Some(percent),
                             Err(_) => {
                                 dev_println!(
-                                    "[APP SERVER] Failed to get achievement percent for achievement: {def_id}"
+                                    "APPSRV",
+                                    "Failed to get achievement percent for achievement: {def_id}"
                                 );
                                 None
                             }
@@ -445,7 +449,8 @@ impl AppManager {
                 }
                 Err(_) => {
                     dev_println!(
-                        "[APP SERVER] Failed to get achievement info for achievement: {def_id}"
+                        "APPSRV",
+                        "Failed to get achievement info for achievement: {def_id}"
                     );
                     continue;
                 }
@@ -453,7 +458,8 @@ impl AppManager {
         }
 
         dev_println!(
-            "[APP MANAGER] Loaded {} achievement definitions for {} achievements for app {}",
+            "APPMAN",
+            "Loaded {} achievement definitions for {} achievements for app {}",
             self.achievement_definitions.len(),
             achievement_infos.len(),
             self.app_id
@@ -485,7 +491,8 @@ impl AppManager {
                         Ok(value) => {
                             if value.is_nan() {
                                 dev_println!(
-                                    "[APP MANAGER] Converting NAN stat float value to 0: {}",
+                                    "APPMAN",
+                                    "Converting NAN stat float value to 0: {}",
                                     &definition.base.id
                                 );
                                 0f32
@@ -496,7 +503,8 @@ impl AppManager {
                         Err(_) => {
                             let stat_id = definition.base.id.to_string();
                             dev_println!(
-                                "[APP SERVER] Failed to get float stat info for stat: {stat_id}"
+                                "APPSRV",
+                                "Failed to get float stat info for stat: {stat_id}"
                             );
                             continue;
                         }
@@ -529,7 +537,8 @@ impl AppManager {
                         Err(_) => {
                             let stat_id = definition.base.id.to_string();
                             dev_println!(
-                                "[APP SERVER] Failed to get int stat info for stat: {stat_id}"
+                                "APPSRV",
+                                "Failed to get int stat info for stat: {stat_id}"
                             );
                             continue;
                         }

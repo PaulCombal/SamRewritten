@@ -55,8 +55,9 @@ pub(crate) fn switch_from_app_list_to_app(
     app_id.set(Some(steam_app_object.app_id()));
     app_metacritic_box.set_visible(steam_app_object.metacritic_score() != u8::MAX);
     app_metacritic_value_label.set_label(&format!("{}", steam_app_object.metacritic_score()));
-    app_playtime_value_label
-        .set_label(&format_playtime_minutes(steam_app_object.playtime_minutes()));
+    app_playtime_value_label.set_label(&format_playtime_minutes(
+        steam_app_object.playtime_minutes(),
+    ));
 
     if let Some(url) = steam_app_object.image_url() {
         app_shimmer_image.set_url(url.as_str());

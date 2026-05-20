@@ -148,10 +148,7 @@ impl<'a> AppLister<'a> {
     }
 
     fn download_app_list_str(&self) -> Result<String, SamError> {
-        dev_println!(
-            "[ORCHESTRATOR] Downloading app list from:  {}",
-            &self.app_list_url
-        );
+        dev_println!("ORCH", "Downloading app list from:  {}", &self.app_list_url);
 
         let response = reqwest::blocking::get(&self.app_list_url)
             .map_err(|e| {
@@ -184,7 +181,8 @@ impl<'a> AppLister<'a> {
         if should_update {
             let app_list_str = self.download_app_list_str()?;
             dev_println!(
-                "[ORCHESTRATOR] App list downloaded. Saving in:  {}",
+                "ORCH",
+                "App list downloaded. Saving in:  {}",
                 &self.app_list_local
             );
             fs::write(&self.app_list_local, &app_list_str).map_err(|e| {
@@ -192,7 +190,7 @@ impl<'a> AppLister<'a> {
                 SamError::AppListRetrievalFailed
             })?;
         } else {
-            dev_println!("[ORCHESTRATOR] Loading app list from local location");
+            dev_println!("ORCH", "Loading app list from local location");
         }
         Ok(())
     }
@@ -236,7 +234,7 @@ impl<'a> AppLister<'a> {
             ));
         }
 
-        dev_println!("[ORCHESTRATOR] Failed to find image for app {}", app_id);
+        dev_println!("ORCH", "Failed to find image for app {}", app_id);
 
         None
     }
@@ -304,7 +302,7 @@ impl<'a> AppLister<'a> {
             match self.build_app_model(app_id, app_type) {
                 Ok(app) => models.push(app),
                 Err(e) => {
-                    dev_println!("[ORCHESTRATOR] Skipping app {app_id}: {e}");
+                    dev_println!("ORCH", "Skipping app {app_id}: {e}");
                 }
             }
         })?;

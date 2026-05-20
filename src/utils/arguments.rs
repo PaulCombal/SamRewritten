@@ -107,7 +107,8 @@ pub fn parse_cli_arguments() -> CliArguments {
     }
 
     dev_println!(
-        "[PID {}] New process launched with arguments: {:?}",
+        "PROC",
+        "New process {} launched with arguments: {:?}",
         std::process::id(),
         args
     );

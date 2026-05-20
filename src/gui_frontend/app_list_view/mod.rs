@@ -112,7 +112,7 @@ pub fn create_main_ui(
             let theme = gtk::IconTheme::for_display(&display);
 
             if !theme.has_icon("open-menu-symbolic") {
-                crate::dev_println!("[CLIENT] Icon not found in system theme. Using fallback.");
+                crate::dev_println!("CLIENT", "Icon not found in system theme. Using fallback.");
 
                 let fallback_path = std::path::Path::new(&appdir).join("icons");
                 theme.add_search_path(fallback_path);

@@ -74,7 +74,7 @@ pub fn set_app_action_enabled(application: &MainApplication, action_name: &str, 
             .unwrap()
             .set_enabled(enabled);
     } else {
-        dev_println!("[CLIENT] Action not found {action_name}");
+        dev_println!("CLIENT", "Action not found {action_name}");
     }
 }
 
