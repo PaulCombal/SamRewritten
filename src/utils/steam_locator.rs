@@ -77,12 +77,6 @@ impl SteamLocator {
             return Some(Path::new(&path_str).to_owned());
         }
 
-        if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
-            let path_str =
-                real_home + "/snap/steam/common/.local/share/Steam/linux64/steamclient.so";
-            return Some(Path::new(&path_str).to_owned());
-        }
-
         let steam_install_paths: Vec<PathBuf> = Self::get_local_steam_install_root_folders()
             .into_iter()
             .map(|path| path.join("linux64/steamclient.so"))
@@ -131,12 +125,8 @@ impl SteamLocator {
 
     #[cfg(target_os = "linux")]
     fn get_user_game_stats_schema_prefix() -> Option<String> {
-        if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
-            let full_path = real_home
-                + "/snap/steam/common/.local/share/Steam/appcache/stats/UserGameStatsSchema_";
-            return Some(full_path);
-        }
-
+        // Defers to the install-root resolution so SAM_* / SNAP_REAL_HOME /
+        // default precedence stays in one place.
         let dirs = Self::get_local_steam_install_root_folders();
 
         if dirs.is_empty() {
@@ -163,19 +153,22 @@ impl SteamLocator {
     pub fn get_local_steam_install_root_folders() -> Vec<PathBuf> {
         use std::path::PathBuf;
 
-        if let Ok(real_home) = std::env::var("SNAP_REAL_HOME") {
-            let prefix = PathBuf::from(real_home).join("snap/steam/common/.local/share/Steam");
-            return vec![prefix];
-        }
-
+        // Explicit override wins over everything.
         if let Ok(path) = std::env::var("SAM_STEAM_INSTALL_ROOT") {
             return vec![PathBuf::from(path)];
         }
 
-        let home = std::env::var("HOME").expect("Failed to get home dir");
+        // When SAM itself runs as a snap, the real home (with the user's Steam
+        // installs) is exposed via SNAP_REAL_HOME rather than HOME.
+        let home = std::env::var("SNAP_REAL_HOME")
+            .or_else(|_| std::env::var("HOME"))
+            .expect("Failed to get home dir");
         let home_path = PathBuf::from(home);
 
+        // Flatpak first: it requires the PID-namespace join, so we prefer it when
+        // present. The GUI surfaces a warning when more than one install is found.
         let potential_dirs = [
+            home_path.join(".var/app/com.valvesoftware.Steam/.local/share/Steam"),
             home_path.join("snap/steam/common/.local/share/Steam"),
             home_path.join(".local/share/Steam"),
             home_path.join(".steam/steam"),

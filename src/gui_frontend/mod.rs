@@ -32,34 +32,12 @@ mod unlock_scheduler;
 mod widgets;
 
 use crate::APP_ID;
-use crate::gui_frontend::request::Request;
+use crate::backend::orchestrator_client::{set_orchestrator, shutdown_and_wait};
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_client::IpcClient;
 use app_list_view::create_main_ui;
 use gtk::glib::ExitCode;
 use gtk::prelude::{ApplicationExt, ApplicationExtManual};
-use request::Shutdown;
-use std::sync::Mutex;
-
-// Frontend's handle to the orchestrator IPC. Structurally a Mutex (not an
-// RwLock) because every caller needs `&mut IpcClient` to drive a request —
-// there are no concurrent readers to optimize for.
-pub(crate) static DEFAULT_PROCESS: Mutex<Option<IpcClient>> = Mutex::new(None);
-
-fn shutdown() {
-    if let Err(err) = Shutdown.request() {
-        eprintln!("[CLIENT] Failed to send shutdown message: {}", err);
-        return;
-    };
-
-    let mut guard = DEFAULT_PROCESS.lock().unwrap();
-    if let Some(ref mut ipc) = *guard {
-        ipc.wait()
-            .expect("[CLIENT] Failed to wait on orchestrator to shutdown");
-    } else {
-        panic!("[CLIENT] No orchestrator process to shutdown");
-    }
-}
 
 #[cfg(not(feature = "adwaita"))]
 pub type MainApplication = gtk::Application;
@@ -67,10 +45,7 @@ pub type MainApplication = gtk::Application;
 pub type MainApplication = adw::Application;
 
 pub fn main_ui(orchestrator: BidirChild) -> ExitCode {
-    {
-        let mut guard = DEFAULT_PROCESS.lock().unwrap();
-        *guard = Some(IpcClient::new(orchestrator));
-    }
+    set_orchestrator(IpcClient::new(orchestrator));
 
     let main_app = MainApplication::builder()
         .application_id(APP_ID)
@@ -81,6 +56,6 @@ pub fn main_ui(orchestrator: BidirChild) -> ExitCode {
         .build();
 
     main_app.connect_command_line(create_main_ui);
-    main_app.connect_shutdown(move |_| shutdown());
+    main_app.connect_shutdown(move |_| shutdown_and_wait());
     main_app.run()
 }

@@ -31,8 +31,8 @@ use gtk::glib::{MainContext, clone};
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::*;
 use gtk::{
-    Adjustment, Align, Box, Button, ClosureExpression, ConstantExpression, Frame, Grid,
-    Label, ListBox, ListBoxRow, ListItem, ListView, NoSelection, Orientation, Overlay, Popover,
+    Adjustment, Align, Box, Button, ClosureExpression, ConstantExpression, Frame, Grid, Label,
+    ListBox, ListBoxRow, ListItem, ListView, NoSelection, Orientation, Overlay, Popover,
     ScrolledWindow, SelectionMode, SignalListItemFactory, SpinButton, Stack, StackTransitionType,
     Switch, ToggleButton, Widget, glib,
 };
@@ -320,11 +320,7 @@ fn create_config_popover(settings: &gtk::gio::Settings) -> Config {
         #[weak]
         target_stack,
         move |btn| {
-            let val = if btn.is_active() {
-                "percent"
-            } else {
-                "count"
-            };
+            let val = if btn.is_active() { "percent" } else { "count" };
             let _ = settings.set_string("auto-fill-unit", val);
             target_stack.set_visible_child_name(val);
         }

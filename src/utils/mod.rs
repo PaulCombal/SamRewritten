@@ -22,3 +22,5 @@ pub mod format;
 pub mod ipc_client;
 pub mod ipc_types;
 pub mod steam_locator;
+#[cfg(target_os = "linux")]
+pub mod steam_ns;

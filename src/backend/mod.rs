@@ -21,6 +21,7 @@ pub mod key_value;
 pub mod local_config;
 pub mod local_stats;
 pub mod orchestrator;
+pub mod orchestrator_client;
 pub mod progress_io;
 pub mod stat_definitions;
 mod tests;

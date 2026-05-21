@@ -15,12 +15,9 @@
 
 use crate::backend::app_manager::AppManager;
 use crate::backend::progress_io::{apply_app_export, collect_app_export};
-use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::steam_client::steamworks_types::AppId_t;
-use crate::utils::ipc_types::{
-    AppExport, SamError, SteamCommand, SteamResponse, read_message, write_message,
-};
+use crate::utils::ipc_types::{SamError, SteamCommand, SteamResponse, read_message, write_message};
 use interprocess::unnamed_pipe::{Recver, Sender};
 use serde::Serialize;
 
@@ -28,13 +25,25 @@ fn send_response<T: Serialize>(tx: &mut Sender, resp: &SteamResponse<T>) {
     write_message(tx, resp).expect("[APP SERVER] Failed to send response");
 }
 
-fn check_app_id(passed: u32, expected: u32, tx: &mut Sender) -> bool {
-    if passed != expected {
-        dev_println!("APPSRV", "App ID mismatch: {passed} != {expected}");
+/// Guard `app_id_param == expected`, then run `f` and send its `Result` as a
+/// `SteamResponse`. Centralizes the four-step pattern (check id, call, wrap,
+/// send) the per-command arms used to repeat.
+fn dispatch<T: Serialize>(
+    tx: &mut Sender,
+    app_id_param: u32,
+    expected: u32,
+    f: impl FnOnce() -> Result<T, SamError>,
+) {
+    if app_id_param != expected {
+        dev_println!("APPSRV", "App ID mismatch: {app_id_param} != {expected}");
         send_response::<()>(tx, &SteamResponse::Error(SamError::AppMismatchError));
-        return false;
+        return;
     }
-    true
+    let result = f();
+    if let Err(e) = &result {
+        dev_println!("APPSRV", "Command failed: {e}");
+    }
+    send_response(tx, &SteamResponse::<T>::from(result));
 }
 
 pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
@@ -81,140 +90,41 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
             continue;
         }
 
-        let app_manager = app_manager.as_mut().unwrap();
+        let am = app_manager.as_mut().unwrap();
 
         match command {
-            SteamCommand::GetAchievements(app_id_param) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let response: SteamResponse<Vec<AchievementInfo>> =
-                    match app_manager.get_achievements(true) {
-                        Ok(achievements) => SteamResponse::Success(achievements),
-                        Err(e) => SteamResponse::Error(e),
-                    };
-                send_response(parent_tx, &response);
+            SteamCommand::GetAchievements(id) => {
+                dispatch(parent_tx, id, app_id, || am.get_achievements(true))
             }
-
-            SteamCommand::GetStats(app_id_param) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let response: SteamResponse<Vec<StatInfo>> = match app_manager.get_statistics() {
-                    Ok(statistics) => SteamResponse::Success(statistics),
-                    Err(e) => SteamResponse::Error(e),
-                };
-                send_response(parent_tx, &response);
+            SteamCommand::GetStats(id) => dispatch(parent_tx, id, app_id, || am.get_statistics()),
+            SteamCommand::SetAchievement(id, unlocked, ach_id, store) => {
+                dispatch(parent_tx, id, app_id, || {
+                    am.set_achievement(&ach_id, unlocked, store)
+                })
             }
-
-            SteamCommand::SetAchievement(app_id_param, unlocked, achievement_id, store) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let response: SteamResponse<bool> =
-                    match app_manager.set_achievement(&achievement_id, unlocked, store) {
-                        Ok(_) => SteamResponse::Success(true),
-                        Err(e) => {
-                            dev_println!("APPSRV", "Error setting achievement: {e}");
-                            SteamResponse::Error(e)
-                        }
-                    };
-                send_response(parent_tx, &response);
+            SteamCommand::SetIntStat(id, stat_id, value) => {
+                dispatch(parent_tx, id, app_id, || am.set_stat_i32(&stat_id, value))
             }
-
-            SteamCommand::SetIntStat(app_id_param, stat_id, value) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let response: SteamResponse<bool> = match app_manager.set_stat_i32(&stat_id, value)
-                {
-                    Ok(result) => SteamResponse::Success(result),
-                    Err(e) => {
-                        dev_println!("APPSRV", "Error setting int stat: {e}");
-                        SteamResponse::Error(e)
-                    }
-                };
-                send_response(parent_tx, &response);
+            SteamCommand::SetFloatStat(id, stat_id, value) => {
+                dispatch(parent_tx, id, app_id, || am.set_stat_f32(&stat_id, value))
             }
-
-            SteamCommand::SetFloatStat(app_id_param, stat_id, value) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let response: SteamResponse<bool> = match app_manager.set_stat_f32(&stat_id, value)
-                {
-                    Ok(result) => SteamResponse::Success(result),
-                    Err(e) => {
-                        dev_println!("APPSRV", "Error setting float stat: {e}");
-                        SteamResponse::Error(e)
-                    }
-                };
-                send_response(parent_tx, &response);
+            SteamCommand::StoreStatsAndAchievements(id) => dispatch(parent_tx, id, app_id, || {
+                am.store_stats_and_achievements().map(|_| true)
+            }),
+            SteamCommand::ResetStats(id, achievements_too) => {
+                dispatch(parent_tx, id, app_id, || {
+                    am.reset_all_stats(achievements_too)
+                })
             }
-
-            SteamCommand::StoreStatsAndAchievements(app_id_param) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let response: SteamResponse<bool> = match app_manager.store_stats_and_achievements()
-                {
-                    Ok(_) => SteamResponse::Success(true),
-                    Err(e) => {
-                        dev_println!("APPSRV", "Error storing stats and achievements: {e}");
-                        SteamResponse::Error(e)
-                    }
-                };
-                send_response(parent_tx, &response);
+            SteamCommand::UnlockAllAchievements(id) => dispatch(parent_tx, id, app_id, || {
+                am.unlock_all_achievements().map(|_| true)
+            }),
+            SteamCommand::ExportAppProgress(id) => {
+                dispatch(parent_tx, id, app_id, || collect_app_export(am, app_id))
             }
-
-            SteamCommand::ResetStats(app_id_param, achievements_too) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let response: SteamResponse<bool> =
-                    match app_manager.reset_all_stats(achievements_too) {
-                        Ok(result) => SteamResponse::Success(result),
-                        Err(e) => {
-                            dev_println!("APPSRV", "Error resetting stats: {e}");
-                            SteamResponse::Error(e)
-                        }
-                    };
-                send_response(parent_tx, &response);
-            }
-
-            SteamCommand::UnlockAllAchievements(app_id_param) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let response: SteamResponse<bool> = match app_manager.unlock_all_achievements() {
-                    Ok(_) => SteamResponse::Success(true),
-                    Err(e) => {
-                        dev_println!("APPSRV", "Error unlocking all achievements: {e}");
-                        SteamResponse::Error(e)
-                    }
-                };
-                send_response(parent_tx, &response);
-            }
-
-            SteamCommand::ExportAppProgress(app_id_param) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let response: SteamResponse<AppExport> =
-                    match collect_app_export(app_manager, app_id) {
-                        Ok(export) => SteamResponse::Success(export),
-                        Err(e) => SteamResponse::Error(e),
-                    };
-                send_response(parent_tx, &response);
-            }
-
-            SteamCommand::ImportAppProgress(app_id_param, payload) => {
-                if !check_app_id(app_id_param, app_id, parent_tx) {
-                    continue;
-                }
-                let summary = apply_app_export(&mut *app_manager, payload);
-                send_response(parent_tx, &SteamResponse::Success(summary));
-            }
+            SteamCommand::ImportAppProgress(id, payload) => dispatch(parent_tx, id, app_id, || {
+                Ok::<_, SamError>(apply_app_export(am, payload))
+            }),
 
             _ => {
                 dev_println!("APPSRV", "Received unknown command {command:?}");
