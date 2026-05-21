@@ -14,13 +14,10 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use super::achievement_loader::AchievementLoader;
-use crate::backend::progress_io::{
-    MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
-};
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::{set_app_action_enabled, set_bulk_actions_enabled};
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
-use crate::utils::ipc_types::SteamCommand;
+use crate::gui_frontend::request::{Request, ResetApps, UnlockAllApps};
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
@@ -141,15 +138,18 @@ pub fn create_bulk_actions(
 
             let handle = spawn_blocking(move || {
                 let names: HashMap<u32, String> = apps_to_unlock.clone();
-                let items: Vec<(u32, SteamCommand)> = apps_to_unlock
-                    .into_iter()
-                    .map(|(id, _)| (id, SteamCommand::UnlockAllAchievements(id)))
-                    .collect();
-                let raw_results = run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
+                let app_ids: Vec<u32> = apps_to_unlock.into_keys().collect();
+                let results = match (UnlockAllApps { app_ids }).request() {
+                    Ok(results) => results,
+                    Err(e) => {
+                        eprintln!("[CLIENT] Bulk unlock failed: {e}");
+                        return names.into_values().collect::<Vec<_>>();
+                    }
+                };
 
                 let mut failed_apps = Vec::new();
-                for (app_id, raw) in raw_results {
-                    if let Err(e) = raw.and_then(|bytes| parse_response_bytes::<bool>(&bytes)) {
+                for (app_id, res) in results {
+                    if let Err(e) = res {
                         eprintln!("[CLIENT] Error unlocking app {}: {}", app_id, e);
                         if let Some(name) = names.get(&app_id) {
                             failed_apps.push(name.clone());
@@ -285,16 +285,21 @@ pub fn create_bulk_actions(
             });
 
             let handle = spawn_blocking(move || {
-                let items: Vec<(u32, SteamCommand)> = apps_to_lock
-                    .into_iter()
-                    .map(|(id, _)| (id, SteamCommand::ResetStats(id, true)))
-                    .collect();
-                let raw_results = run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
-
-                for (app_id, raw) in raw_results {
-                    if let Err(e) = raw.and_then(|bytes| parse_response_bytes::<bool>(&bytes)) {
-                        eprintln!("[CLIENT] Error locking app {}: {}", app_id, e);
+                let app_ids: Vec<u32> = apps_to_lock.into_keys().collect();
+                match (ResetApps {
+                    app_ids,
+                    achievements_too: true,
+                })
+                .request()
+                {
+                    Ok(results) => {
+                        for (app_id, res) in results {
+                            if let Err(e) = res {
+                                eprintln!("[CLIENT] Error locking app {}: {}", app_id, e);
+                            }
+                        }
                     }
+                    Err(e) => eprintln!("[CLIENT] Bulk lock failed: {e}"),
                 }
             });
 

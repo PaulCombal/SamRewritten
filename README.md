@@ -92,18 +92,16 @@ If issues persist, please open an issue including your distribution, version, an
 * Idle apps: Appear in-game until you toggle it off
 * A light and dark theme
 
-## Limitations
+## Steam compatibility
 
-⚠️ On Linux, this tool is **only** compatible with:
-* Snap installations of Steam
-* Ubuntu/Debian multiarch installations with apt
-* Ubuntu/Debian installations with the .deb file from the official Steam website
-* Distribution installations that use the Steam runtime (Gentoo, Arch, `~/.steam/root` exists)
+On Linux, SamRewritten supports all of these Steam installation types:
+* ✅ Snap installations of Steam
+* ✅ Ubuntu/Debian multiarch installations with apt
+* ✅ Ubuntu/Debian installations with the .deb file from the official Steam website
+* ✅ Distribution installations that use the Steam runtime (Gentoo, Arch, `~/.steam/root` exists)
+* ✅ Flatpak installations of Steam
 
 If you would like to see your specific distribution supported, please open an issue.
-
-> [!TIP]
-> Flatpak support is a significant technical challenge. If you are familiar with Flatpak internals and would like to help, please reach out!
 
 ## CLI
 

@@ -18,7 +18,7 @@ use crate::backend::stat_definitions::StatInfo;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_client::IpcClient;
-pub use crate::utils::ipc_types::parse_response_bytes;
+use crate::utils::ipc_types::parse_response_bytes;
 use crate::utils::ipc_types::{
     AppAchievementExport, AppExport, AppStatExport, AppStatValue, ImportSummary, SamError,
     SteamCommand,

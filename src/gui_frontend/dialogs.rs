@@ -94,19 +94,7 @@ pub fn warn(window: &ApplicationWindow) {
 
         show_markup_warning(window, "WARNING", &full_message);
     } else if dirs.is_empty() {
-        let home = std::env::var("HOME").unwrap_or_else(|_| "/home/user".to_string());
-        let flatpak_path = std::path::PathBuf::from(home)
-            .join(".var/app/com.valvesoftware.Steam/.local/share/Steam");
-
-        let full_message = if flatpak_path.exists() {
-            "<b>We couldn't find a supported Steam installation on your system.</b>\n\n\
-            It looks like you're using the <b>Flatpak</b> version of Steam. While Flatpak is great, \
-            its security mechanisms prevents SamRewritten from talking to Steam safely.\n\n\
-            <b>How to fix this:</b>\n\
-            Please open your App Center (or Package Manager) and look for a different version of Steam \
-            to install (common labels include 'System', 'Snap', 'package', or '.deb/.rpm').\n\n\
-            Need help? Reach out to us on the <a href=\"https://github.com/PaulCombal/SamRewritten\">GitHub page.</a>"
-        } else {
+        let full_message =
             "<b>No Steam installations were found on your system.</b>\n\n\
             SamRewritten couldn't find Steam in any of the standard locations. \
             If you haven't installed Steam yet, please install it through your \
@@ -115,8 +103,7 @@ pub fn warn(window: &ApplicationWindow) {
             If you've installed Steam in a custom location, you can point SamRewritten \
             to it using environment variables. Please check the \
             <a href=\"https://github.com/PaulCombal/SamRewritten\">GitHub page</a> \
-            for instructions, or to report your issue."
-        };
+            for instructions, or to report your issue.";
 
         show_markup_warning(window, "No compatible version of Steam found", full_message);
     }

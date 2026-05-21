@@ -14,14 +14,12 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use super::achievement_loader::AchievementLoader;
-use crate::backend::progress_io::{
-    MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
-};
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_bulk_actions_enabled;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
+use crate::gui_frontend::request::{ExportApps, ImportApps, Request};
 use crate::utils::export_file::{ExportFile, FORMAT_VERSION, iso8601_utc_now};
-use crate::utils::ipc_types::{AppExport, ImportSummary, SteamCommand};
+use crate::utils::ipc_types::AppExport;
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
@@ -160,21 +158,20 @@ pub fn create_progress_actions(
                 });
                 let handle = spawn_blocking(move || {
                     let names: HashMap<u32, String> = apps.iter().cloned().collect();
-                    let items: Vec<(u32, SteamCommand)> = apps
-                        .into_iter()
-                        .map(|(id, _)| (id, SteamCommand::ExportAppProgress(id)))
-                        .collect();
-                    let raw_results =
-                        run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
+                    let app_ids: Vec<u32> = apps.into_iter().map(|(id, _)| id).collect();
+                    let results = match (ExportApps { app_ids }).request() {
+                        Ok(results) => results,
+                        Err(e) => return Err(format!("Export failed: {e}")),
+                    };
 
                     let mut exports: Vec<AppExport> = Vec::new();
                     let mut failed: Vec<String> = Vec::new();
-                    for (app_id, raw) in raw_results {
+                    for (app_id, res) in results {
                         let name = names
                             .get(&app_id)
                             .cloned()
                             .unwrap_or_else(|| format!("App {app_id}"));
-                        match raw.and_then(|bytes| parse_response_bytes::<AppExport>(&bytes)) {
+                        match res {
                             Ok(mut export) => {
                                 export.app_name = name;
                                 exports.push(export);
@@ -475,12 +472,12 @@ pub fn create_progress_actions(
                     })
                     .collect();
                 let handle = spawn_blocking(move || {
-                    let items: Vec<(u32, SteamCommand)> = present
-                        .into_iter()
-                        .map(|p| (p.app_id, SteamCommand::ImportAppProgress(p.app_id, p)))
-                        .collect();
-                    let raw_results =
-                        run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
+                    let results = match (ImportApps { apps: present }).request() {
+                        Ok(results) => results,
+                        Err(e) => {
+                            return (0, 0, 0, 0, vec![format!("Import failed: {e}")], Vec::new());
+                        }
+                    };
 
                     let mut total_ach: usize = 0;
                     let mut total_stat: usize = 0;
@@ -488,12 +485,12 @@ pub fn create_progress_actions(
                     let mut total_skipped_unwriteable: usize = 0;
                     let mut errors: Vec<String> = Vec::new();
                     let mut reset_candidates: Vec<String> = Vec::new();
-                    for (app_id, raw) in raw_results {
+                    for (app_id, res) in results {
                         let label = names_by_id
                             .get(&app_id)
                             .cloned()
                             .unwrap_or_else(|| format!("App {}", app_id));
-                        match raw.and_then(|bytes| parse_response_bytes::<ImportSummary>(&bytes)) {
+                        match res {
                             Ok(summary) => {
                                 total_ach += summary.achievements_applied;
                                 total_stat += summary.stats_applied;

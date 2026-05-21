@@ -114,6 +114,12 @@ pub enum SteamCommand {
     StoreStatsAndAchievements(u32),
     ExportAppProgress(u32),
     ImportAppProgress(u32, AppExport),
+    /// Multi-app fan-out: the orchestrator spawns one child per id, so they
+    /// inherit its namespace. Progress reporting is intentionally not surfaced yet.
+    ExportApps(Vec<u32>),
+    ImportApps(Vec<AppExport>),
+    UnlockAllApps(Vec<u32>),
+    ResetApps(Vec<u32>, bool),
     GetAchievementCounts(Vec<u32>),
     /// Fetch `app_id`'s achievements and stats in a single round-trip, so an
     /// unrelated batch command can't interleave between the two fetches on the

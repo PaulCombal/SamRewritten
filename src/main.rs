@@ -40,11 +40,26 @@ const APP_ID: &str = "org.samrewritten.SamRewritten";
 #[cfg(feature = "cli")]
 fn main() -> std::process::ExitCode {
     use crate::backend::app::app;
+    use crate::backend::orchestrator::orchestrator;
     use crate::utils::arguments::parse_cli_arguments;
 
     let arguments = parse_cli_arguments();
 
-    // App-server mode: a CLI child spawned by `run_command_on_apps_concurrent`.
+    // Orchestrator mode: the single Steam-owning process the CLI frontend spawns
+    // and drives over IPC. It also owns every app-server child (so they share
+    // its namespace).
+    if arguments.is_orchestrator {
+        let mut tx = arguments.tx.unwrap();
+        let mut rx = arguments.rx.unwrap();
+        #[cfg(target_os = "linux")]
+        if let Some(code) = crate::utils::steam_ns::enter_flatpak_steam_ns_if_needed() {
+            return std::process::ExitCode::from(code);
+        }
+        let exit_code = orchestrator(&mut tx, &mut rx);
+        return std::process::ExitCode::from(exit_code);
+    }
+
+    // App-server mode: a per-app child spawned by the orchestrator.
     if arguments.is_app > 0 {
         let mut tx = arguments.tx.unwrap();
         let mut rx = arguments.rx.unwrap();
@@ -69,6 +84,10 @@ fn main() -> gtk::glib::ExitCode {
     if arguments.is_orchestrator {
         let mut tx = arguments.tx.unwrap();
         let mut rx = arguments.rx.unwrap();
+        #[cfg(target_os = "linux")]
+        if let Some(code) = crate::utils::steam_ns::enter_flatpak_steam_ns_if_needed() {
+            return gtk::glib::ExitCode::from(code);
+        }
         let exit_code = orchestrator(&mut tx, &mut rx);
         return gtk::glib::ExitCode::from(exit_code);
     }

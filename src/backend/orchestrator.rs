@@ -17,16 +17,19 @@ use crate::backend::app_lister::{AppLister, fetch_achievement_counts};
 use crate::backend::connected_steam::ConnectedSteam;
 use crate::backend::local_config::parse_localconfig;
 use crate::backend::local_stats::LocalIndex;
+use crate::backend::progress_io::{MAX_CONCURRENT_APPS, run_command_on_apps_concurrent};
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_client::IpcClient;
 use crate::utils::ipc_types::{
-    SamError, SteamCommand, SteamResponse, frame_message, read_message, write_message,
+    AppExport, ImportSummary, SamError, SteamCommand, SteamResponse, frame_message,
+    parse_response_bytes, read_message, write_message,
 };
 use crate::utils::steam_locator::SteamLocator;
 use interprocess::unnamed_pipe::{Recver, Sender};
+use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::io::Write;
 use std::process::Command;
@@ -40,6 +43,9 @@ fn send_app_command(ipc: &mut IpcClient, command: SteamCommand) -> Result<Vec<u8
 }
 
 pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
+    // Lazy: only the app-list and achievement-count commands use the
+    // orchestrator's own connection. Per-app commands go to child processes, so
+    // a one-shot CLI call that forwards to a child pays for one handshake, not two.
     let mut connected_steam: Option<ConnectedSteam> = None;
     let mut children_processes: HashMap<u32, (IpcClient, usize)> = HashMap::new();
 
@@ -60,33 +66,29 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
 
         dev_println!("ORCH", "Received message: {message:?}");
 
-        if connected_steam.as_ref().is_none() {
-            if message == SteamCommand::Shutdown {
-                let _ = write_message(parent_tx, &SteamResponse::Success(true));
-                dev_println!("ORCH", "Exiting");
-                break 0;
-            }
-
-            connected_steam = match ConnectedSteam::new(false) {
-                Ok(c) => Some(c),
-                Err(e) => {
-                    dev_println!("ORCH", "Error connecting to Steam: {e}");
-                    let _ = write_message(
-                        parent_tx,
-                        &SteamResponse::<String>::Error(SamError::SteamConnectionFailed),
-                    );
-                    continue;
-                }
-            };
-        }
-
-        let cs = connected_steam.as_mut();
-        let cs = cs.unwrap();
-        let continue_running = process_command(message, parent_tx, &mut children_processes, cs);
+        let continue_running = process_command(
+            message,
+            parent_tx,
+            &mut children_processes,
+            &mut connected_steam,
+        );
         if !continue_running {
             break 0;
         }
     }
+}
+
+fn ensure_connected(slot: &mut Option<ConnectedSteam>) -> Result<&mut ConnectedSteam, ()> {
+    if slot.is_none() {
+        match ConnectedSteam::new(false) {
+            Ok(c) => *slot = Some(c),
+            Err(e) => {
+                dev_println!("ORCH", "Error connecting to Steam: {e}");
+                return Err(());
+            }
+        }
+    }
+    Ok(slot.as_mut().unwrap())
 }
 
 fn ensure_app_launched(
@@ -176,11 +178,22 @@ static SOCKET_ERROR_RESPONSE: LazyLock<Vec<u8>> = LazyLock::new(|| {
     ))
 });
 
+/// Children are spawned by us, so they inherit our namespace. Results come back
+/// in completion order, not input order; callers key them by app id.
+fn fan_out<T: DeserializeOwned>(
+    items: Vec<(u32, SteamCommand)>,
+) -> Vec<(u32, Result<T, SamError>)> {
+    run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None)
+        .into_iter()
+        .map(|(id, res)| (id, res.and_then(|bytes| parse_response_bytes::<T>(&bytes))))
+        .collect()
+}
+
 fn process_command(
     command: SteamCommand,
     tx: &mut Sender,
     children_processes: &mut HashMap<u32, (IpcClient, usize)>,
-    connected_steam: &mut ConnectedSteam,
+    connected_steam: &mut Option<ConnectedSteam>,
 ) -> bool {
     /// One-shot: spawn an ephemeral app server, send `command`, then shut it
     /// down. Proxies the framed response (or a `SocketCommunicationFailed`
@@ -232,6 +245,18 @@ fn process_command(
                 "ORCH",
                 "Received GetSubscribedAppList(playtime={include_playtime}, achievements={with_achievement_counts})"
             );
+
+            let connected_steam = match ensure_connected(connected_steam) {
+                Ok(cs) => cs,
+                Err(()) => {
+                    write_message(
+                        tx,
+                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                    )
+                    .expect("[ORCHESTRATOR] Failed to send response");
+                    return true;
+                }
+            };
 
             let vdf_path = if include_playtime {
                 match connected_steam.user.get_steam_id() {
@@ -612,6 +637,18 @@ fn process_command(
         }
 
         SteamCommand::GetAchievementCounts(app_ids) => {
+            let connected_steam = match ensure_connected(connected_steam) {
+                Ok(cs) => cs,
+                Err(()) => {
+                    write_message(
+                        tx,
+                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                    )
+                    .expect("[ORCHESTRATOR] Failed to send response");
+                    return true;
+                }
+            };
+
             // Local-disk fast path; IPC fallback for misses.
             let local_index = connected_steam
                 .user
@@ -650,6 +687,50 @@ fn process_command(
             }
 
             write_message(tx, &SteamResponse::Success(counts))
+                .expect("[ORCHESTRATOR] Failed to send response");
+        }
+
+        SteamCommand::ExportApps(app_ids) => {
+            dev_println!("ORCH", "ExportApps {:?}", app_ids);
+            let items = app_ids
+                .into_iter()
+                .map(|id| (id, SteamCommand::ExportAppProgress(id)))
+                .collect();
+            let results: Vec<(u32, Result<AppExport, SamError>)> = fan_out(items);
+            write_message(tx, &SteamResponse::Success(results))
+                .expect("[ORCHESTRATOR] Failed to send response");
+        }
+
+        SteamCommand::ImportApps(apps) => {
+            dev_println!("ORCH", "ImportApps ({} apps)", apps.len());
+            let items = apps
+                .into_iter()
+                .map(|a| (a.app_id, SteamCommand::ImportAppProgress(a.app_id, a)))
+                .collect();
+            let results: Vec<(u32, Result<ImportSummary, SamError>)> = fan_out(items);
+            write_message(tx, &SteamResponse::Success(results))
+                .expect("[ORCHESTRATOR] Failed to send response");
+        }
+
+        SteamCommand::UnlockAllApps(app_ids) => {
+            dev_println!("ORCH", "UnlockAllApps {:?}", app_ids);
+            let items = app_ids
+                .into_iter()
+                .map(|id| (id, SteamCommand::UnlockAllAchievements(id)))
+                .collect();
+            let results: Vec<(u32, Result<bool, SamError>)> = fan_out(items);
+            write_message(tx, &SteamResponse::Success(results))
+                .expect("[ORCHESTRATOR] Failed to send response");
+        }
+
+        SteamCommand::ResetApps(app_ids, achievements_too) => {
+            dev_println!("ORCH", "ResetApps {:?}", app_ids);
+            let items = app_ids
+                .into_iter()
+                .map(|id| (id, SteamCommand::ResetStats(id, achievements_too)))
+                .collect();
+            let results: Vec<(u32, Result<bool, SamError>)> = fan_out(items);
+            write_message(tx, &SteamResponse::Success(results))
                 .expect("[ORCHESTRATOR] Failed to send response");
         }
 

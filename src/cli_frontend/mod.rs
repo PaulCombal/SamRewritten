@@ -13,18 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::backend::app_lister::AppLister;
-use crate::backend::app_manager::AppManager;
-use crate::backend::connected_steam::ConnectedSteam;
-use crate::backend::progress_io::{
-    MAX_CONCURRENT_APPS, parse_response_bytes, run_command_on_apps_concurrent,
+use crate::backend::orchestrator_client::{
+    ExportApps, GetAchievementsAndStats, GetSubscribedAppList, ImportApps, LaunchApp, Request,
+    ResetStats, SetAchievement, StoreStatsAndAchievements, UnlockAllAchievements, set_orchestrator,
+    shutdown_and_wait,
 };
+use crate::utils::app_paths::get_executable_path;
+use crate::utils::bidir_child::BidirChild;
 use crate::utils::export_file::{ExportFile, FORMAT_VERSION, iso8601_utc_now};
-use crate::utils::ipc_types::{AppExport, ImportSummary, SteamCommand};
+use crate::utils::ipc_client::IpcClient;
+use crate::utils::ipc_types::{AppExport, ImportSummary, SamError};
 use clap::{Args, Parser, Subcommand};
 use serde::Serialize;
 use serde_json::json;
 use std::path::PathBuf;
+use std::process::{Command as ProcessCommand, ExitCode};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 static INTERRUPTED: AtomicBool = AtomicBool::new(false);
@@ -117,232 +120,118 @@ struct Ids {
     ids: Vec<String>,
 }
 
+/// The orchestrator owns every Steam connection, so the CLI process itself
+/// never loads `steamclient.so`.
+fn spawn_orchestrator() -> Result<(), SamError> {
+    let child = BidirChild::new(ProcessCommand::new(get_executable_path()).arg("--orchestrator"))?;
+    set_orchestrator(IpcClient::new(child));
+    Ok(())
+}
+
 /// Decorated main function.
-pub fn main() -> std::process::ExitCode {
+pub fn main() -> ExitCode {
     let cli = Cli::parse();
 
-    match cli.command {
+    if let Err(e) = spawn_orchestrator() {
+        eprintln!("Failed to start the backend process: {e}");
+        return ExitCode::FAILURE;
+    }
+
+    let code = run_command(cli.command);
+    shutdown_and_wait();
+    code
+}
+
+fn run_command(command: Command) -> ExitCode {
+    match command {
         Command::ListAchievements { app_id } => {
-            let mut manager = match AppManager::new_connected(app_id) {
-                Ok(manager) => manager,
+            let (achievements, _stats) = match (GetAchievementsAndStats {
+                app_id,
+                launch: true,
+            })
+            .request()
+            {
+                Ok(progress) => progress,
                 Err(e) => {
-                    eprintln!("Failed to connect to Steam: {}", e);
-                    return std::process::ExitCode::FAILURE;
+                    eprintln!("Failed to get achievements: {e}");
+                    return ExitCode::FAILURE;
                 }
             };
-
-            let achievements = match manager.get_achievements(true) {
-                Ok(achievements) => achievements,
-                Err(e) => {
-                    eprintln!("Failed to get achievements: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-
-            match serde_json::to_string_pretty(&achievements) {
-                Ok(output) => println!("{}", output),
-                Err(e) => {
-                    eprintln!("Failed to serialize achievements: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
+            print_json(&achievements)
         }
+
         Command::ListStatistics { app_id } => {
-            let mut manager = match AppManager::new_connected(app_id) {
-                Ok(manager) => manager,
+            let (_achievements, statistics) = match (GetAchievementsAndStats {
+                app_id,
+                launch: true,
+            })
+            .request()
+            {
+                Ok(progress) => progress,
                 Err(e) => {
-                    eprintln!("Failed to connect to Steam: {}", e);
-                    return std::process::ExitCode::FAILURE;
+                    eprintln!("Failed to get statistics: {e}");
+                    return ExitCode::FAILURE;
                 }
             };
-
-            let statistics = match manager.get_statistics() {
-                Ok(statistics) => statistics,
-                Err(e) => {
-                    eprintln!("Failed to get statistics: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-
-            match serde_json::to_string_pretty(&statistics) {
-                Ok(output) => println!("{}", output),
-                Err(e) => {
-                    eprintln!("Failed to serialize statistics: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
+            print_json(&statistics)
         }
+
         Command::ListApps { with_achievements } => {
-            let connected_steam = match ConnectedSteam::new(false) {
-                Ok(c) => c,
+            let apps = match (GetSubscribedAppList {
+                include_playtime: false,
+                with_achievement_counts: with_achievements,
+            })
+            .request()
+            {
+                Ok(apps) => apps,
                 Err(e) => {
-                    eprintln!("Failed to connect to Steam: {}", e);
-                    return std::process::ExitCode::FAILURE;
+                    eprintln!("Failed to get owned apps: {e}");
+                    return ExitCode::FAILURE;
                 }
             };
-
-            let apps_001 = &connected_steam.apps_001;
-            let apps = &connected_steam.apps;
-            let app_lister = AppLister::new(apps_001, apps);
-
-            let client_user = match connected_steam.client_user() {
-                Ok(u) => u,
-                Err(e) => {
-                    eprintln!("Failed to acquire IClientUser: {e}");
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-
-            let stats_map = if with_achievements {
-                match connected_steam.client_user_stats_map() {
-                    Ok(m) => Some(m),
-                    Err(e) => {
-                        eprintln!("Failed to acquire stats map: {e}");
-                        return std::process::ExitCode::FAILURE;
-                    }
-                }
-            } else {
-                None
-            };
-
-            match app_lister.get_owned_apps(&client_user, stats_map.as_ref()) {
-                Ok(apps) => {
-                    match serde_json::to_string_pretty(&apps) {
-                        Ok(output) => println!("{}", output),
-                        Err(e) => {
-                            eprintln!("Failed to serialize apps: {}", e);
-                            return std::process::ExitCode::FAILURE;
-                        }
-                    };
-                }
-                Err(e) => {
-                    eprintln!("Failed to get owned apps: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
+            print_json(&apps)
         }
 
-        Command::Unlock { app_id, ids } => {
-            let manager = match AppManager::new_connected(app_id) {
-                Ok(manager) => manager,
-                Err(e) => {
-                    eprintln!("Failed to connect to Steam: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
+        Command::Unlock { app_id, ids } => set_achievements(app_id, ids.ids, true),
 
-            #[derive(serde::Serialize)]
-            struct AchievedResult {
-                id: String,
-                success: bool,
+        Command::Lock { app_id, ids } => set_achievements(app_id, ids.ids, false),
+
+        Command::UnlockAll { app_id } => match (UnlockAllAchievements { app_id }).request() {
+            Ok(_) => {
+                println!("{}", json!({"success": true}));
+                ExitCode::SUCCESS
             }
-
-            let mut results: Vec<AchievedResult> = vec![];
-
-            for id in ids.ids {
-                match manager.set_achievement(&id, true, false) {
-                    Ok(_) => results.push(AchievedResult { id, success: true }),
-                    Err(e) => {
-                        println!("Failed to unlock achievement {}: {}", id, e);
-                        results.push(AchievedResult { id, success: false });
-                    }
-                };
+            Err(e) => {
+                eprintln!("Failed to unlock all achievements: {e}");
+                ExitCode::FAILURE
             }
+        },
 
-            match manager.store_stats_and_achievements() {
-                Ok(_) => {}
-                Err(e) => {
-                    eprintln!("Failed to store stats and achievements: {e:?}");
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-
-            match serde_json::to_string_pretty(&results) {
-                Ok(output) => println!("{}", output),
-                Err(e) => {
-                    eprintln!("Failed to serialize achievements unlock result: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-        }
-
-        Command::UnlockAll { app_id } => {
-            let mut manager = match AppManager::new_connected(app_id) {
-                Ok(manager) => manager,
-                Err(e) => {
-                    eprintln!("Failed to connect to Steam: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-
-            match manager.unlock_all_achievements() {
-                Ok(_) => {}
-                Err(e) => {
-                    println!("Failed to unlock all achievements: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
+        Command::LockAll { app_id } => match (ResetStats {
+            app_id,
+            achievements_too: true,
+        })
+        .request()
+        {
+            Ok(_) => {
+                println!("{}", json!({"success": true}));
+                ExitCode::SUCCESS
             }
-
-            let status = json!({"success": true});
-            println!("{}", status);
-        }
-
-        Command::Lock { app_id, ids } => {
-            let manager = match AppManager::new_connected(app_id) {
-                Ok(manager) => manager,
-                Err(e) => {
-                    eprintln!("Failed to connect to Steam: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-
-            #[derive(serde::Serialize)]
-            struct AchievedResult {
-                id: String,
-                success: bool,
+            Err(e) => {
+                eprintln!("Failed to reset all achievements: {e}");
+                ExitCode::FAILURE
             }
-
-            let mut results: Vec<AchievedResult> = vec![];
-
-            for id in ids.ids {
-                match manager.set_achievement(&id, false, false) {
-                    Ok(_) => results.push(AchievedResult { id, success: true }),
-                    Err(e) => {
-                        println!("Failed to lock achievement {}: {}", id, e);
-                        results.push(AchievedResult { id, success: false });
-                    }
-                };
-            }
-
-            match manager.store_stats_and_achievements() {
-                Ok(_) => {}
-                Err(e) => {
-                    eprintln!("Failed to store stats and achievements: {e:?}");
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-
-            match serde_json::to_string_pretty(&results) {
-                Ok(output) => println!("{}", output),
-                Err(e) => {
-                    eprintln!("Failed to serialize achievements lock result: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-        }
+        },
 
         Command::Idle { app_id } => {
-            let _manager = match AppManager::new_connected(app_id) {
-                Ok(manager) => manager,
-                Err(e) => {
-                    eprintln!("Failed to connect to Steam: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
+            if let Err(e) = (LaunchApp { app_id }).request() {
+                eprintln!("Failed to connect to Steam: {e}");
+                return ExitCode::FAILURE;
+            }
 
             if let Err(e) = install_interrupt_handler() {
                 eprintln!("Failed to install interrupt handler: {}", e);
-                return std::process::ExitCode::FAILURE;
+                return ExitCode::FAILURE;
             }
 
             eprintln!("Idling app {}. Press Ctrl+C to stop.", app_id);
@@ -350,191 +239,221 @@ pub fn main() -> std::process::ExitCode {
                 std::thread::sleep(std::time::Duration::from_millis(200));
             }
             eprintln!("Stopping idle for app {}...", app_id);
-            // _manager drops here → ConnectedSteam::drop releases the pipe cleanly.
+            // The app-server child is torn down by the orchestrator shutdown in main().
+            ExitCode::SUCCESS
         }
 
-        Command::LockAll { app_id } => {
-            let manager = match AppManager::new_connected(app_id) {
-                Ok(manager) => manager,
-                Err(e) => {
-                    eprintln!("Failed to connect to Steam: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
+        Command::Export { app_ids } => export(app_ids),
 
-            match manager.reset_all_stats(true) {
-                Ok(_) => {}
-                Err(e) => {
-                    println!("Failed to reset all achievements: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            }
+        Command::Import { file, app_id } => import(file, app_id),
+    }
+}
 
-            let status = json!({"success": true});
-            println!("{}", status);
+/// Output mirrors the legacy in-process CLI: a JSON array of `{id, success}`.
+fn set_achievements(app_id: u32, ids: Vec<String>, unlocked: bool) -> ExitCode {
+    #[derive(Serialize)]
+    struct AchievedResult {
+        id: String,
+        success: bool,
+    }
+    let verb = if unlocked { "unlock" } else { "lock" };
+
+    if let Err(e) = (LaunchApp { app_id }).request() {
+        eprintln!("Failed to connect to Steam: {e}");
+        return ExitCode::FAILURE;
+    }
+
+    let mut results: Vec<AchievedResult> = vec![];
+    for id in ids {
+        let success = (SetAchievement {
+            app_id,
+            achievement_id: id.clone(),
+            unlocked,
+            store: false,
+        })
+        .request()
+        .is_ok();
+        if !success {
+            println!("Failed to {verb} achievement {id}");
         }
+        results.push(AchievedResult { id, success });
+    }
 
-        Command::Export { app_ids } => {
-            let items: Vec<(u32, SteamCommand)> = app_ids
-                .iter()
-                .map(|id| (*id, SteamCommand::ExportAppProgress(*id)))
-                .collect();
-            let results = run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
+    if let Err(e) = (StoreStatsAndAchievements { app_id }).request() {
+        eprintln!("Failed to store stats and achievements: {e:?}");
+        return ExitCode::FAILURE;
+    }
 
-            let mut by_id: std::collections::HashMap<u32, Result<AppExport, String>> = results
-                .into_iter()
-                .map(|(id, raw)| {
-                    let result = raw
-                        .and_then(|bytes| parse_response_bytes::<AppExport>(&bytes))
-                        .map_err(|e| e.to_string());
-                    (id, result)
-                })
-                .collect();
+    print_json(&results)
+}
 
-            let mut apps: Vec<AppExport> = Vec::new();
-            let mut failed = false;
-            for app_id in app_ids {
-                match by_id.remove(&app_id) {
-                    Some(Ok(export)) => apps.push(export),
-                    Some(Err(e)) => {
-                        eprintln!("App {app_id}: {e}");
-                        failed = true;
-                    }
-                    None => {
-                        eprintln!("App {app_id}: missing from batch result");
-                        failed = true;
-                    }
-                }
-            }
-
-            let file = ExportFile {
-                format_version: FORMAT_VERSION,
-                exported_at: iso8601_utc_now(),
-                apps,
-            };
-
-            match serde_json::to_string_pretty(&file) {
-                Ok(out) => println!("{}", out),
-                Err(e) => {
-                    eprintln!("Failed to serialize export: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            }
-
-            if failed {
-                return std::process::ExitCode::FAILURE;
-            }
+fn export(app_ids: Vec<u32>) -> ExitCode {
+    let results = match (ExportApps {
+        app_ids: app_ids.clone(),
+    })
+    .request()
+    {
+        Ok(results) => results,
+        Err(e) => {
+            eprintln!("Failed to export: {e}");
+            return ExitCode::FAILURE;
         }
+    };
 
-        Command::Import { file, app_id } => {
-            let contents = match std::fs::read_to_string(&file) {
-                Ok(c) => c,
-                Err(e) => {
-                    eprintln!("Failed to read {}: {}", file.display(), e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-            let parsed: ExportFile = match serde_json::from_str(&contents) {
-                Ok(p) => p,
-                Err(e) => {
-                    eprintln!("Failed to parse {}: {}", file.display(), e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            };
-            if parsed.format_version != FORMAT_VERSION {
-                eprintln!(
-                    "Unsupported format version: {} (this build expects {})",
-                    parsed.format_version, FORMAT_VERSION
-                );
-                return std::process::ExitCode::FAILURE;
+    let mut by_id: std::collections::HashMap<u32, Result<AppExport, SamError>> =
+        results.into_iter().collect();
+
+    let mut apps: Vec<AppExport> = Vec::new();
+    let mut failed = false;
+    for app_id in app_ids {
+        match by_id.remove(&app_id) {
+            Some(Ok(export)) => apps.push(export),
+            Some(Err(e)) => {
+                eprintln!("App {app_id}: {e}");
+                failed = true;
             }
-
-            #[derive(Serialize)]
-            struct AppResult {
-                app_id: u32,
-                #[serde(flatten)]
-                summary: ImportSummary,
-                #[serde(skip_serializing_if = "Option::is_none")]
-                error: Option<String>,
-            }
-
-            let apps: Vec<AppExport> = parsed
-                .apps
-                .into_iter()
-                .filter(|a| app_id.map(|wanted| wanted == a.app_id).unwrap_or(true))
-                .collect();
-
-            if apps.is_empty() {
-                eprintln!("No matching apps to import.");
-                return std::process::ExitCode::FAILURE;
-            }
-
-            let app_ids: Vec<u32> = apps.iter().map(|a| a.app_id).collect();
-            let items: Vec<(u32, SteamCommand)> = apps
-                .into_iter()
-                .map(|a| (a.app_id, SteamCommand::ImportAppProgress(a.app_id, a)))
-                .collect();
-            let raw_results = run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None);
-
-            let mut by_id: std::collections::HashMap<u32, Result<ImportSummary, String>> =
-                raw_results
-                    .into_iter()
-                    .map(|(id, raw)| {
-                        let result = raw
-                            .and_then(|bytes| parse_response_bytes::<ImportSummary>(&bytes))
-                            .map_err(|e| e.to_string());
-                        (id, result)
-                    })
-                    .collect();
-
-            let mut results: Vec<AppResult> = Vec::new();
-            let mut any_failure = false;
-            for id in app_ids {
-                match by_id.remove(&id) {
-                    Some(Ok(summary)) => {
-                        if !summary.errors.is_empty() {
-                            any_failure = true;
-                        }
-                        results.push(AppResult {
-                            app_id: id,
-                            summary,
-                            error: None,
-                        });
-                    }
-                    Some(Err(e)) => {
-                        any_failure = true;
-                        results.push(AppResult {
-                            app_id: id,
-                            summary: ImportSummary::default(),
-                            error: Some(e),
-                        });
-                    }
-                    None => {
-                        any_failure = true;
-                        results.push(AppResult {
-                            app_id: id,
-                            summary: ImportSummary::default(),
-                            error: Some("missing from batch result".to_string()),
-                        });
-                    }
-                }
-            }
-
-            match serde_json::to_string_pretty(&results) {
-                Ok(out) => println!("{}", out),
-                Err(e) => {
-                    eprintln!("Failed to serialize import summary: {}", e);
-                    return std::process::ExitCode::FAILURE;
-                }
-            }
-
-            if any_failure {
-                return std::process::ExitCode::FAILURE;
+            None => {
+                eprintln!("App {app_id}: missing from batch result");
+                failed = true;
             }
         }
     }
 
-    std::process::ExitCode::SUCCESS
+    let file = ExportFile {
+        format_version: FORMAT_VERSION,
+        exported_at: iso8601_utc_now(),
+        apps,
+    };
+
+    match serde_json::to_string_pretty(&file) {
+        Ok(out) => println!("{}", out),
+        Err(e) => {
+            eprintln!("Failed to serialize export: {}", e);
+            return ExitCode::FAILURE;
+        }
+    }
+
+    if failed {
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
+    }
+}
+
+fn import(file: PathBuf, app_id: Option<u32>) -> ExitCode {
+    let contents = match std::fs::read_to_string(&file) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Failed to read {}: {}", file.display(), e);
+            return ExitCode::FAILURE;
+        }
+    };
+    let parsed: ExportFile = match serde_json::from_str(&contents) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("Failed to parse {}: {}", file.display(), e);
+            return ExitCode::FAILURE;
+        }
+    };
+    if parsed.format_version != FORMAT_VERSION {
+        eprintln!(
+            "Unsupported format version: {} (this build expects {})",
+            parsed.format_version, FORMAT_VERSION
+        );
+        return ExitCode::FAILURE;
+    }
+
+    #[derive(Serialize)]
+    struct AppResult {
+        app_id: u32,
+        #[serde(flatten)]
+        summary: ImportSummary,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        error: Option<String>,
+    }
+
+    let apps: Vec<AppExport> = parsed
+        .apps
+        .into_iter()
+        .filter(|a| app_id.map(|wanted| wanted == a.app_id).unwrap_or(true))
+        .collect();
+
+    if apps.is_empty() {
+        eprintln!("No matching apps to import.");
+        return ExitCode::FAILURE;
+    }
+
+    let app_ids: Vec<u32> = apps.iter().map(|a| a.app_id).collect();
+    let results = match (ImportApps { apps }).request() {
+        Ok(results) => results,
+        Err(e) => {
+            eprintln!("Failed to import: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let mut by_id: std::collections::HashMap<u32, Result<ImportSummary, SamError>> =
+        results.into_iter().collect();
+
+    let mut results: Vec<AppResult> = Vec::new();
+    let mut any_failure = false;
+    for id in app_ids {
+        match by_id.remove(&id) {
+            Some(Ok(summary)) => {
+                if !summary.errors.is_empty() {
+                    any_failure = true;
+                }
+                results.push(AppResult {
+                    app_id: id,
+                    summary,
+                    error: None,
+                });
+            }
+            Some(Err(e)) => {
+                any_failure = true;
+                results.push(AppResult {
+                    app_id: id,
+                    summary: ImportSummary::default(),
+                    error: Some(e.to_string()),
+                });
+            }
+            None => {
+                any_failure = true;
+                results.push(AppResult {
+                    app_id: id,
+                    summary: ImportSummary::default(),
+                    error: Some("missing from batch result".to_string()),
+                });
+            }
+        }
+    }
+
+    match serde_json::to_string_pretty(&results) {
+        Ok(out) => println!("{}", out),
+        Err(e) => {
+            eprintln!("Failed to serialize import summary: {}", e);
+            return ExitCode::FAILURE;
+        }
+    }
+
+    if any_failure {
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
+    }
+}
+
+fn print_json<T: Serialize>(value: &T) -> ExitCode {
+    match serde_json::to_string_pretty(value) {
+        Ok(output) => {
+            println!("{}", output);
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            eprintln!("Failed to serialize output: {}", e);
+            ExitCode::FAILURE
+        }
+    }
 }
 
 #[cfg(unix)]
