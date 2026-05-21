@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SamRewritten — Steam Achievement Manager for Linux &amp; Windows</title>
+<meta name="description" content="SamRewritten is a free, open-source Steam Achievement Manager (SAM) for Linux and Windows. Unlock and relock Steam achievements, edit game stats, schedule unlocks, and idle apps — with a GTK GUI and a CLI.">
+<meta name="keywords" content="Steam Achievement Manager, SAM, Steam achievements Linux, unlock Steam achievements, Steam stats editor, SamRewritten, Steam achievement unlocker, GTK, Rust, AppImage, AUR">
+<meta name="author" content="Paul Combal and SamRewritten contributors">
+<meta name="robots" content="index, follow">
+<meta name="google-site-verification" content="GwUHy4H_OSGQ7yAjX4geR9iGU3nc9KHW69StkL1db0I">
+<link rel="canonical" href="https://paulcombal.github.io/SamRewritten/">
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="SamRewritten — Steam Achievement Manager for Linux &amp; Windows">
+<meta property="og:description" content="Free, open-source Steam Achievement Manager for Linux and Windows. Unlock/relock achievements, edit stats, schedule unlocks, idle apps. GUI + CLI.">
+<meta property="og:url" content="https://paulcombal.github.io/SamRewritten/">
+<meta property="og:image" content="https://paulcombal.github.io/SamRewritten/img/screenshot1.png">
+<meta property="og:site_name" content="SamRewritten">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SamRewritten — Steam Achievement Manager for Linux &amp; Windows">
+<meta name="twitter:description" content="Free, open-source Steam Achievement Manager for Linux and Windows. Unlock/relock achievements, edit stats, schedule unlocks, idle apps.">
+<meta name="twitter:image" content="https://paulcombal.github.io/SamRewritten/img/screenshot1.png">
+
+<!-- Structured data: the application -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "SamRewritten",
+  "alternateName": "Steam Achievement Manager Rewritten",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Linux, Windows",
+  "description": "A free, open-source Steam Achievement Manager for Linux and Windows. Unlock and relock Steam achievements, edit game stats in real time, schedule achievement unlocks, and idle apps. Includes a GTK graphical interface and a command-line tool.",
+  "url": "https://paulcombal.github.io/SamRewritten/",
+  "downloadUrl": "https://github.com/PaulCombal/SamRewritten/releases",
+  "softwareVersion": "1.3.5",
+  "license": "https://github.com/PaulCombal/SamRewritten/blob/master/LICENSE",
+  "image": "https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png",
+  "author": {
+    "@type": "Person",
+    "name": "Paul Combal"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+
+<!-- Structured data: FAQ (eligible for rich results & heavily used by LLMs) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does SamRewritten work on Linux?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. SamRewritten provides Linux AppImages and is available on the Arch User Repository (samrewritten-git). It supports Snap installations of Steam, Ubuntu/Debian multiarch and .deb installations, and distributions that use the Steam runtime such as Gentoo and Arch."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is a Steam Achievement Manager?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A Steam Achievement Manager (SAM) is a tool that lets you unlock and relock achievements on your Steam account and edit game statistics. SamRewritten is a modern, open-source SAM for Linux and Windows."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is SamRewritten free and open source?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. SamRewritten is free and open source, hosted on GitHub. It is not affiliated with Valve Corporation or Microsoft."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does SamRewritten support Flatpak?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not yet. Flatpak support is a significant technical challenge. Contributors familiar with Flatpak internals are encouraged to help via the GitHub repository."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use SamRewritten from the command line?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. SamRewritten includes a CLI that does not require GTK. It can list apps, achievements and stats, lock/unlock achievements in bulk, import/export as JSON, and idle apps."
+      }
+    }
+  ]
+}
+</script>
+
+<style>
+  :root {
+    --bg: #0d0d12;
+    --surface: #15151d;
+    --surface-2: #1b1b25;
+    --border: #25252f;
+    --border-soft: #1f1f29;
+    --text: #ededf2;
+    --muted: #9a9aab;
+    --accent: #7c93ff;
+    --accent-hover: #93a6ff;
+    --accent-soft: rgba(124, 147, 255, .14);
+    --btn: #4361ee;
+    --btn-hover: #5470f5;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.25);
+    --maxw: 960px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  /* Nav */
+  .nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(13,13,18,.72);
+    backdrop-filter: saturate(160%) blur(12px);
+    -webkit-backdrop-filter: saturate(160%) blur(12px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .nav .wrap { display: flex; align-items: center; gap: 16px; height: 60px; }
+  .nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+  .nav .brand img { width: 26px; height: 26px; }
+  .nav .links { margin-left: auto; display: flex; align-items: center; gap: 22px; }
+  .nav .links a:not(.btn) { color: var(--muted); font-size: .94rem; font-weight: 500; }
+  .nav .links a:not(.btn):hover { color: var(--text); }
+  .nav .links .btn { padding: 8px 16px; font-size: .9rem; }
+  @media (max-width: 600px) { .nav .links .nav-link { display: none; } }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--btn); color: #fff;
+    padding: 12px 22px; border-radius: 10px;
+    font-weight: 600; font-size: 1rem; line-height: 1;
+    border: 1px solid transparent;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .btn:hover { background: var(--btn-hover); color: #fff; transform: translateY(-1px); }
+  .btn svg { width: 18px; height: 18px; }
+  .btn.secondary { background: transparent; color: var(--text); border-color: var(--border); }
+  .btn.secondary:hover { background: var(--surface-2); color: var(--text); border-color: #34344a; }
+
+  /* Hero */
+  .hero { position: relative; text-align: center; padding: 88px 0 64px; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background:
+      radial-gradient(60% 70% at 50% -10%, var(--accent-soft), transparent 70%),
+      radial-gradient(40% 50% at 85% 10%, rgba(124,147,255,.06), transparent 70%);
+  }
+  .hero .logo { width: 104px; height: 104px; filter: drop-shadow(0 8px 28px rgba(124,147,255,.28)); }
+  .hero h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 18px 0 10px; letter-spacing: -.03em; line-height: 1.05; }
+  .hero .tagline { font-size: clamp(1.05rem, 2.5vw, 1.3rem); color: var(--muted); margin: 0 auto 18px; max-width: 560px; }
+  .badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 28px; }
+  .badge {
+    font-size: .82rem; font-weight: 500; color: var(--muted);
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 5px 12px; border-radius: 999px;
+  }
+  .cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+  /* Sections */
+  section.block { padding: 56px 0; }
+  [id] { scroll-margin-top: 76px; }
+  section.block + section.block { border-top: 1px solid var(--border-soft); }
+  h2 { font-size: clamp(1.5rem, 3vw, 1.9rem); margin: 0 0 8px; letter-spacing: -.02em; }
+  .lead { color: var(--muted); margin: 0 0 28px; max-width: 640px; }
+  .section-head { margin-bottom: 28px; }
+
+  /* Screenshots */
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .shots figure { margin: 0; }
+  .shots img {
+    width: 100%; border-radius: var(--radius); border: 1px solid var(--border);
+    display: block; box-shadow: var(--shadow); transition: transform .2s ease;
+  }
+  .shots img { cursor: pointer; }
+  .shots figure:hover img { transform: translateY(-3px); }
+  .shots figcaption { color: var(--muted); font-size: .9rem; text-align: center; margin-top: 10px; }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center; padding: 32px;
+    background: rgba(6,6,10,.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease;
+    cursor: zoom-out;
+  }
+  .lightbox.open { opacity: 1; visibility: visible; }
+  .lightbox img {
+    max-width: 100%; max-height: 88vh; border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: 0 20px 60px rgba(0,0,0,.5); cursor: default;
+  }
+  .lightbox .close {
+    position: absolute; top: 18px; right: 22px;
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px; cursor: pointer;
+    font-size: 1.4rem; line-height: 1; transition: background .15s ease;
+  }
+  .lightbox .close:hover { background: var(--surface-2); }
+
+  /* Features */
+  ul.features { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  ul.features li {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: var(--radius); padding: 16px 18px; transition: border-color .15s ease;
+  }
+  ul.features li:hover { border-color: var(--border); }
+  ul.features svg { flex: none; width: 20px; height: 20px; margin-top: 1px; color: var(--accent); }
+
+  /* Install + cards */
+  .install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 22px; }
+  .card h3 { margin: 0 0 10px; display: flex; align-items: center; gap: 10px; }
+  .card h3 svg { width: 20px; height: 20px; color: var(--muted); }
+  .card p { margin: 0; color: var(--muted); }
+  .card p + pre { margin-bottom: 0; }
+  .note { color: var(--muted); margin: 18px 0 0; font-size: .95rem; }
+  code, pre { background: #0a0a0f; border: 1px solid var(--border); border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code { padding: 2px 7px; font-size: .88em; }
+  pre { padding: 12px 14px; margin: 14px 0 0; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0; }
+
+  /* FAQ */
+  details {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: var(--radius); padding: 4px 18px; margin-bottom: 12px;
+    transition: border-color .15s ease;
+  }
+  details:hover { border-color: var(--border); }
+  summary {
+    cursor: pointer; font-weight: 600; padding: 14px 0; list-style: none;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: ""; flex: none; width: 9px; height: 9px;
+    border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+    transform: rotate(45deg); transition: transform .2s ease; margin-right: 4px;
+  }
+  details[open] summary::after { transform: rotate(225deg); }
+  details > p { margin: 0 0 16px; color: var(--muted); }
+
+  /* Footer */
+  footer { border-top: 1px solid var(--border-soft); padding: 40px 0 56px; }
+  footer .wrap { text-align: center; color: var(--muted); font-size: .85rem; }
+  footer .links { margin-top: 12px; }
+  footer .links a { color: var(--muted); }
+  footer .links a:hover { color: var(--text); }
+
+  @media (max-width: 640px) {
+    .shots, ul.features, .install-grid { grid-template-columns: 1fr; }
+    .hero { padding: 56px 0 44px; }
+    section.block { padding: 44px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <img src="https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png" alt="">
+      SamRewritten
+    </a>
+    <div class="links">
+      <a class="nav-link" href="#features">Features</a>
+      <a class="nav-link" href="#install">Install</a>
+      <a class="nav-link" href="#faq">FAQ</a>
+      <a class="btn" href="https://github.com/PaulCombal/SamRewritten/releases">Download</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <img class="logo" src="https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png" alt="SamRewritten logo">
+    <h1>SamRewritten</h1>
+    <p class="tagline">A free, open-source Steam Achievement Manager for Linux &amp; Windows.</p>
+    <div class="badges">
+      <span class="badge">Free &amp; open source</span>
+      <span class="badge">Linux</span>
+      <span class="badge">Windows</span>
+      <span class="badge">GUI + CLI</span>
+    </div>
+    <div class="cta">
+      <a class="btn" href="https://github.com/PaulCombal/SamRewritten/releases">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg>
+        Download
+      </a>
+      <a class="btn secondary" href="https://github.com/PaulCombal/SamRewritten">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7 0-.7 0-.7 1.2 0 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2 0-.3-.5-1.5.2-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>What is SamRewritten?</h2>
+      </div>
+      <p class="lead">
+        SamRewritten is a tool that lets you <strong>unlock and relock achievements</strong> on your Steam account.
+        It can also edit statistics for games and apps that expose them. While achievements carry no financial value,
+        they are widely used for collection progress and bragging rights. SamRewritten ships with both a polished
+        <strong>GTK graphical interface</strong> and a scriptable <strong>command-line tool</strong>.
+      </p>
+      <div class="shots">
+        <figure>
+          <img class="zoomable" src="img/screenshot1.png" alt="SamRewritten GTK interface showing a Steam game's achievement list with unlock toggles" role="button" tabindex="0" aria-label="Enlarge GTK version screenshot">
+          <figcaption>GTK version preview</figcaption>
+        </figure>
+        <figure>
+          <img class="zoomable" src="img/screenshot2.png" alt="SamRewritten Adwaita interface preview with light and dark themes" role="button" tabindex="0" aria-label="Enlarge Adwaita version screenshot">
+          <figcaption>Adwaita version preview</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="features">
+    <div class="wrap">
+      <div class="section-head"><h2>Features</h2></div>
+      <ul class="features">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Lock and unlock specific achievements with a single click</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Bulk lock/unlock achievements for all or selected apps</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Schedule achievement unlocks over a custom period</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Edit game statistics in real time</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Per-app or bulk import/export of achievements and stats (JSON)</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Idle apps: appear in-game until you toggle it off</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Light and dark themes</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Full-featured CLI that does not require GTK</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block" id="install">
+    <div class="wrap">
+      <div class="section-head"><h2>Installation</h2></div>
+      <div class="install-grid">
+        <div class="card">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10 4.4v7.1H3V5.5Zm0 13L10 19.6v-7H3v6Zm8 1.3L21 21V12.5h-10v7.3Zm0-15.7v7.4h10V3l-10 1.4Z"/></svg>
+            Windows
+          </h3>
+          <p>Download the official installer from the
+            <a href="https://github.com/PaulCombal/SamRewritten/releases">Releases page</a>
+            and launch SamRewritten from the Start menu. A portable ZIP is also available.</p>
+        </div>
+        <div class="card">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4a3 3 0 0 1 6 0c0 2 1 3 1 6s2 5 2 7-3 2-6 2-6 0-6-2 2-4 2-7 1-4 1-6Z"/><path d="M9.5 9h.01M14.5 9h.01"/></svg>
+            Linux
+          </h3>
+          <p>Download the latest <strong>AppImage</strong> from the
+            <a href="https://github.com/PaulCombal/SamRewritten/releases">Releases page</a>,
+            mark it executable, and run it. Arch users can install from the AUR:</p>
+          <pre><code>yay -S samrewritten-git</code></pre>
+        </div>
+      </div>
+      <p class="note">
+        On Linux, SamRewritten supports Snap installations of Steam, Ubuntu/Debian multiarch and <code>.deb</code>
+        installations, and distributions using the Steam runtime (Gentoo, Arch, where <code>~/.steam/root</code> exists).
+      </p>
+    </div>
+  </section>
+
+  <section class="block" id="faq">
+    <div class="wrap">
+      <div class="section-head"><h2>Frequently asked questions</h2></div>
+
+      <details open>
+        <summary>Does SamRewritten work on Linux?</summary>
+        <p>Yes. It provides Linux AppImages and is on the AUR (<code>samrewritten-git</code>). It supports Snap Steam,
+          Ubuntu/Debian multiarch and <code>.deb</code> installs, and Steam-runtime distros such as Gentoo and Arch.</p>
+      </details>
+
+      <details>
+        <summary>What is a Steam Achievement Manager?</summary>
+        <p>A Steam Achievement Manager (SAM) lets you unlock and relock achievements on your Steam account and edit
+          game statistics. SamRewritten is a modern, open-source SAM for Linux and Windows.</p>
+      </details>
+
+      <details>
+        <summary>Is SamRewritten free and open source?</summary>
+        <p>Yes — it is free and open source, hosted on GitHub. It is not affiliated with Valve Corporation or Microsoft.</p>
+      </details>
+
+      <details>
+        <summary>Does SamRewritten support Flatpak?</summary>
+        <p>Not yet. Flatpak support is a significant technical challenge. Contributors familiar with Flatpak internals
+          are welcome to help via the GitHub repository.</p>
+      </details>
+
+      <details>
+        <summary>Can I use SamRewritten from the command line?</summary>
+        <p>Yes. The CLI does not require GTK and can list apps/achievements/stats, lock/unlock in bulk,
+          import/export JSON, and idle apps.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="section-head"><h2>Acknowledgements</h2></div>
+      <p class="lead">
+        SamRewritten is heavily inspired by
+        <a href="https://github.com/gibbed/SteamAchievementManager">Steam Achievement Manager by Gibbed</a> and
+        <a href="https://github.com/jsnli/Samira">Samira by jsnli</a>, and by
+        <a href="https://github.com/PaulCombal/SamRewritten-legacy">the legacy version of SamRewritten</a>.
+        Thank you to all contributors, users, and stargazers.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>
+      SamRewritten and its contributors are not affiliated with Valve Corporation or Microsoft.
+      Steam and Windows are trademarks of their respective owners. This software is provided as a Proof-of-Concept;
+      you alone are responsible for the management of your Steam account.
+    </p>
+    <p class="links"><a href="https://github.com/PaulCombal/SamRewritten">GitHub</a> &middot;
+       <a href="https://github.com/PaulCombal/SamRewritten/releases">Download</a> &middot;
+       <a href="https://github.com/PaulCombal/SamRewritten/issues">Report an issue</a></p>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot viewer">
+  <button class="close" type="button" aria-label="Close">&times;</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+  (function () {
+    var box = document.getElementById('lightbox');
+    var boxImg = document.getElementById('lightbox-img');
+    var closeBtn = box.querySelector('.close');
+    var lastFocus = null;
+
+    function open(src, alt) {
+      lastFocus = document.activeElement;
+      boxImg.src = src;
+      boxImg.alt = alt || '';
+      box.classList.add('open');
+      closeBtn.focus();
+    }
+    function close() {
+      box.classList.remove('open');
+      boxImg.src = '';
+      if (lastFocus) lastFocus.focus();
+    }
+
+    document.querySelectorAll('.zoomable').forEach(function (img) {
+      img.addEventListener('click', function () { open(img.src, img.alt); });
+      img.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(img.src, img.alt); }
+      });
+    });
+
+    closeBtn.addEventListener('click', close);
+    box.addEventListener('click', function (e) { if (e.target !== boxImg) close(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && box.classList.contains('open')) close();
+    });
+  })();
+</script>
+
+</body>
+</html>

@@ -6,12 +6,12 @@ SamRewritten
 </p>
 
 <p align=center>
-    <img src="/assets/screenshot1.png" alt="SamRewritten screenshot">
+    <img src="/docs/img/screenshot1.png" alt="SamRewritten screenshot">
     <em>GTK version preview</em>
 </p>
 
 <p align=center>
-    <img src="/assets/screenshot2.png" alt="SamRewritten screenshot">
+    <img src="/docs/img/screenshot2.png" alt="SamRewritten screenshot">
     <em>Adwaita version preview</em>
 </p>
 
