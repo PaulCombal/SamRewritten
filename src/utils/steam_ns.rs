@@ -37,6 +37,7 @@ use crate::utils::steam_locator::SteamLocator;
 use std::fs;
 use std::os::fd::AsRawFd;
 use std::os::raw::c_int;
+use std::path::{Path, PathBuf};
 
 const CLONE_NEWUSER: c_int = 0x1000_0000;
 const CLONE_NEWPID: c_int = 0x2000_0000;
@@ -84,6 +85,74 @@ pub fn enter_flatpak_steam_ns_if_needed() -> Option<u8> {
             None
         }
     }
+}
+
+/// Install roots a Steam client is currently running from, read from the
+/// `steamclient.so` each `steam` process has mapped (host-visible for native,
+/// Flatpak and Snap alike).
+pub fn running_steam_install_roots() -> Vec<PathBuf> {
+    let mut roots: Vec<PathBuf> = Vec::new();
+
+    let Ok(entries) = fs::read_dir("/proc") else {
+        return roots;
+    };
+    for entry in entries.flatten() {
+        let Some(pid) = entry
+            .file_name()
+            .to_str()
+            .and_then(|n| n.parse::<i32>().ok())
+        else {
+            continue;
+        };
+
+        if fs::read_to_string(format!("/proc/{pid}/comm"))
+            .unwrap_or_default()
+            .trim()
+            != "steam"
+        {
+            continue;
+        }
+
+        if let Some(root) = steam_root_from_maps(pid)
+            && !roots.contains(&root)
+        {
+            roots.push(root);
+        }
+    }
+
+    roots
+}
+
+// `steamclient.so` lives at `<root>/<arch>/steamclient.so`, so the root is two
+// levels up from the path the process has mapped.
+fn steam_root_from_maps(pid: i32) -> Option<PathBuf> {
+    let maps = fs::read_to_string(format!("/proc/{pid}/maps")).ok()?;
+    for line in maps.lines() {
+        if !line.contains("steamclient.so") {
+            continue;
+        }
+        let path = Path::new(&line[line.find('/')?..]);
+        if path.file_name()?.to_str()? != "steamclient.so" {
+            continue;
+        }
+        return fs::canonicalize(path.parent()?.parent()?).ok();
+    }
+    None
+}
+
+/// Whether Steam is currently running from the install we'd load. Connecting to
+/// any other install half-succeeds over Steam's shared loopback IPC and then
+/// crashes on the first app-manager call, so this is the check that keeps us on
+/// the clean `SteamConnectionFailed` path instead.
+pub fn loaded_install_is_running() -> bool {
+    let Some(target) = SteamLocator::get_steamclient_lib_path(true)
+        .and_then(|lib| lib.parent()?.parent().map(Path::to_path_buf))
+        .and_then(|root| fs::canonicalize(root).ok())
+    else {
+        return false;
+    };
+
+    running_steam_install_roots().contains(&target)
 }
 
 /// A match is a process named `steam`, in a different PID namespace than us,

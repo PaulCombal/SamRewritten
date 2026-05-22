@@ -32,9 +32,7 @@ mod unlock_scheduler;
 mod widgets;
 
 use crate::APP_ID;
-use crate::backend::orchestrator_client::{set_orchestrator, shutdown_and_wait};
-use crate::utils::bidir_child::BidirChild;
-use crate::utils::ipc_client::IpcClient;
+use crate::backend::orchestrator_client::shutdown_and_wait;
 use app_list_view::create_main_ui;
 use gtk::glib::ExitCode;
 use gtk::prelude::{ApplicationExt, ApplicationExtManual};
@@ -44,9 +42,7 @@ pub type MainApplication = gtk::Application;
 #[cfg(feature = "adwaita")]
 pub type MainApplication = adw::Application;
 
-pub fn main_ui(orchestrator: BidirChild) -> ExitCode {
-    set_orchestrator(IpcClient::new(orchestrator));
-
+pub fn main_ui() -> ExitCode {
     let main_app = MainApplication::builder()
         .application_id(APP_ID)
         .flags(

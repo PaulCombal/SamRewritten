@@ -80,6 +80,12 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
 
 fn ensure_connected(slot: &mut Option<ConnectedSteam>) -> Result<&mut ConnectedSteam, ()> {
     if slot.is_none() {
+        // Refuse to connect unless Steam is running from our install
+        // connecting to another live Steam crashes on the first app call.
+        #[cfg(target_os = "linux")]
+        if !crate::utils::steam_ns::loaded_install_is_running() {
+            return Err(());
+        }
         match ConnectedSteam::new(false) {
             Ok(c) => *slot = Some(c),
             Err(e) => {
@@ -245,6 +251,11 @@ fn process_command(
                 "ORCH",
                 "Received GetSubscribedAppList(playtime={include_playtime}, achievements={with_achievement_counts})"
             );
+            
+            #[cfg(target_os = "linux")]
+            if connected_steam.is_some() && !crate::utils::steam_ns::loaded_install_is_running() {
+                *connected_steam = None;
+            }
 
             let connected_steam = match ensure_connected(connected_steam) {
                 Ok(cs) => cs,

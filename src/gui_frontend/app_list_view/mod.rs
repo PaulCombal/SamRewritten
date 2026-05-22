@@ -24,7 +24,7 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::app_list_view_callbacks::switch_from_app_list_to_app;
 use crate::gui_frontend::app_view::create_app_view;
 use crate::gui_frontend::application_actions::{set_app_action_enabled, setup_app_actions};
-use crate::gui_frontend::dialogs::warn;
+use crate::gui_frontend::dialogs::choose_steam_install_then;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::gsettings::get_settings;
 use crate::gui_frontend::request::{AppProgress, LaunchApp, Request, StopApp};
@@ -894,11 +894,6 @@ pub fn create_main_ui(
         }
     ));
 
-    app_stack.set_visible_child_name("loading");
-    list_stack.set_visible_child_name("loading");
-    action_refresh_app_list.activate(None);
-    action_refresh_app_list.set_enabled(false);
-
     setup_app_actions(
         application,
         &about_dialog,
@@ -930,9 +925,29 @@ pub fn create_main_ui(
 
     window.add_controller(key_controller);
 
-    warn(&window);
-
-    window.present();
+    choose_steam_install_then(
+        &window,
+        clone!(
+            #[strong]
+            app_stack,
+            #[strong]
+            list_stack,
+            #[strong]
+            action_refresh_app_list,
+            #[strong]
+            window,
+            move |chosen| {
+                if let Err(e) = crate::backend::orchestrator_client::spawn_orchestrator(chosen) {
+                    eprintln!("[CLIENT] Failed to start orchestrator: {e}");
+                }
+                app_stack.set_visible_child_name("loading");
+                list_stack.set_visible_child_name("loading");
+                action_refresh_app_list.activate(None);
+                action_refresh_app_list.set_enabled(false);
+                window.present();
+            }
+        ),
+    );
 
     ExitCode::SUCCESS
 }

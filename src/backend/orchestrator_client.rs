@@ -22,10 +22,18 @@
 use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
+#[cfg(feature = "gui")]
+use crate::utils::app_paths::get_executable_path;
+#[cfg(feature = "gui")]
+use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_client::IpcClient;
 use crate::utils::ipc_types::{AppExport, ImportSummary, SamError, SteamCommand};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
+#[cfg(feature = "gui")]
+use std::path::PathBuf;
+#[cfg(feature = "gui")]
+use std::process::Command;
 use std::sync::Mutex;
 
 /// The frontend's handle to the orchestrator IPC. Structurally a `Mutex` (not an
@@ -35,6 +43,28 @@ pub static ORCHESTRATOR: Mutex<Option<IpcClient>> = Mutex::new(None);
 
 pub fn set_orchestrator(ipc: IpcClient) {
     *ORCHESTRATOR.lock().unwrap() = Some(ipc);
+}
+
+/// Spawn the orchestrator and install it as the global IPC handle. `chosen` pins
+/// the Steam install via `SAM_STEAM_INSTALL_ROOT`; `None` uses the locator default.
+#[cfg(feature = "gui")]
+pub fn spawn_orchestrator(chosen: Option<PathBuf>) -> Result<(), SamError> {
+    let mut command = Command::new(get_executable_path());
+    command.arg("--orchestrator");
+    if let Some(root) = chosen.as_ref() {
+        command.env("SAM_STEAM_INSTALL_ROOT", root);
+    }
+
+    match BidirChild::new(&mut command) {
+        Ok(child) => {
+            set_orchestrator(IpcClient::new(child));
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("[CLIENT] Failed to spawn orchestrator: {e}");
+            Err(SamError::SocketCommunicationFailed)
+        }
+    }
 }
 
 /// Tolerates an already-broken orchestrator pipe (e.g. Flatpak Steam quit and
