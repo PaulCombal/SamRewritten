@@ -435,15 +435,15 @@ impl AppManager {
                         } else {
                             None
                         },
-                        icon_normal: def.clone().icon_normal,
+                        icon_normal: def.icon_normal.clone(),
                         icon_locked: if def.icon_locked.is_empty() {
-                            def.clone().icon_normal
+                            def.icon_normal.clone()
                         } else {
-                            def.clone().icon_locked
+                            def.icon_locked.clone()
                         },
-                        permission: def.clone().permission,
-                        name: def.clone().name,
-                        description: def.clone().description,
+                        permission: def.permission,
+                        name: def.name.clone(),
+                        description: def.description.clone(),
                         global_achieved_percent,
                     });
                 }

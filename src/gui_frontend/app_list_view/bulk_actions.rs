@@ -16,6 +16,7 @@
 use super::achievement_loader::AchievementLoader;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::{set_app_action_enabled, set_bulk_actions_enabled};
+use crate::gui_frontend::dialogs::show_list_dialog;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{Request, ResetApps, UnlockAllApps};
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
@@ -127,9 +128,10 @@ pub fn create_bulk_actions(
             let info_label_weak =
                 glib::object::SendWeakRef::from(context_menu_button_info_label.downgrade());
 
+            let progress_label_for_thread = progress_label_weak.clone();
             MainContext::default().invoke(move || {
                 if let Some(label) = progress_label_weak.upgrade() {
-                    label.set_text(&format!("Unlocking {} app(s)...", total_apps));
+                    label.set_text(&format!("Unlocking 0 / {} app(s)…", total_apps));
                 }
                 if let Some(label) = info_label_weak.upgrade() {
                     label.set_text("");
@@ -139,13 +141,26 @@ pub fn create_bulk_actions(
             let handle = spawn_blocking(move || {
                 let names: HashMap<u32, String> = apps_to_unlock.clone();
                 let app_ids: Vec<u32> = apps_to_unlock.into_keys().collect();
-                let results = match (UnlockAllApps { app_ids }).request() {
-                    Ok(results) => results,
-                    Err(e) => {
-                        eprintln!("[CLIENT] Bulk unlock failed: {e}");
-                        return names.into_values().collect::<Vec<_>>();
-                    }
-                };
+                let mut last_done = 0usize;
+                let results =
+                    match (UnlockAllApps { app_ids }).request_with_progress(|done, total| {
+                        if done == last_done {
+                            return;
+                        }
+                        last_done = done;
+                        let label = progress_label_for_thread.clone();
+                        MainContext::default().invoke(move || {
+                            if let Some(l) = label.upgrade() {
+                                l.set_text(&format!("Unlocking {done} / {total} app(s)…"));
+                            }
+                        });
+                    }) {
+                        Ok(results) => results,
+                        Err(e) => {
+                            eprintln!("[CLIENT] Bulk unlock failed: {e}");
+                            return names.into_values().collect::<Vec<_>>();
+                        }
+                    };
 
                 let mut failed_apps = Vec::new();
                 for (app_id, res) in results {
@@ -178,28 +193,15 @@ pub fn create_bulk_actions(
                         .await
                         .expect("[CLIENT] Failed to wait for unlock thread to finish");
 
-                    if !failed_apps.is_empty() {
-                        let total_failed = failed_apps.len();
-                        let display_text = if total_failed > 10 {
-                            let first_ten = failed_apps[..10].join("\n");
-                            let remaining = total_failed - 10;
-                            format!("{}\n\n... and {} more", first_ten, remaining)
-                        } else {
-                            failed_apps.join("\n")
-                        };
-
-                        let dialog = gtk::AlertDialog::builder()
-                            .modal(true)
-                            .message("Unlock Incomplete")
-                            .detail(format!(
-                                "Failed to unlock achievements for the following apps:\n\n{}",
-                                display_text
-                            ))
-                            .buttons(["OK"])
-                            .build();
-
-                        let parent = application.active_window();
-                        let _ = dialog.choose_future(parent.as_ref()).await;
+                    if !failed_apps.is_empty()
+                        && let Some(parent) = application.active_window()
+                    {
+                        show_list_dialog(
+                            &parent,
+                            "Unlock Incomplete",
+                            "Failed to unlock achievements for the following apps:",
+                            &failed_apps.join("\n"),
+                        );
                     }
 
                     set_bulk_actions_enabled(&application, true);
@@ -275,9 +277,10 @@ pub fn create_bulk_actions(
             let info_label_weak =
                 glib::object::SendWeakRef::from(context_menu_button_info_label.downgrade());
 
+            let progress_label_for_thread = progress_label_weak.clone();
             MainContext::default().invoke(move || {
                 if let Some(label) = progress_label_weak.upgrade() {
-                    label.set_text(&format!("Locking {} app(s)...", total_apps));
+                    label.set_text(&format!("Locking 0 / {} app(s)…", total_apps));
                 }
                 if let Some(label) = info_label_weak.upgrade() {
                     label.set_text("");
@@ -286,12 +289,23 @@ pub fn create_bulk_actions(
 
             let handle = spawn_blocking(move || {
                 let app_ids: Vec<u32> = apps_to_lock.into_keys().collect();
+                let mut last_done = 0usize;
                 match (ResetApps {
                     app_ids,
                     achievements_too: true,
                 })
-                .request()
-                {
+                .request_with_progress(|done, total| {
+                    if done == last_done {
+                        return;
+                    }
+                    last_done = done;
+                    let label = progress_label_for_thread.clone();
+                    MainContext::default().invoke(move || {
+                        if let Some(l) = label.upgrade() {
+                            l.set_text(&format!("Locking {done} / {total} app(s)…"));
+                        }
+                    });
+                }) {
                     Ok(results) => {
                         for (app_id, res) in results {
                             if let Err(e) = res {

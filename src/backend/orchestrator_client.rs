@@ -22,10 +22,20 @@
 use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::dev_println;
+#[cfg(feature = "gui")]
+use crate::utils::app_paths::get_executable_path;
+#[cfg(feature = "gui")]
+use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_client::IpcClient;
-use crate::utils::ipc_types::{AppExport, ImportSummary, SamError, SteamCommand};
+use crate::utils::ipc_types::{
+    AppExport, ImportSummary, ProgressMsg, SamError, SteamCommand, SteamResponse,
+};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
+#[cfg(feature = "gui")]
+use std::path::PathBuf;
+#[cfg(feature = "gui")]
+use std::process::Command;
 use std::sync::Mutex;
 
 /// The frontend's handle to the orchestrator IPC. Structurally a `Mutex` (not an
@@ -35,6 +45,28 @@ pub static ORCHESTRATOR: Mutex<Option<IpcClient>> = Mutex::new(None);
 
 pub fn set_orchestrator(ipc: IpcClient) {
     *ORCHESTRATOR.lock().unwrap() = Some(ipc);
+}
+
+/// Spawn the orchestrator and install it as the global IPC handle. `chosen` pins
+/// the Steam install via `SAM_STEAM_INSTALL_ROOT`; `None` uses the locator default.
+#[cfg(feature = "gui")]
+pub fn spawn_orchestrator(chosen: Option<PathBuf>) -> Result<(), SamError> {
+    let mut command = Command::new(get_executable_path());
+    command.arg("--orchestrator");
+    if let Some(root) = chosen.as_ref() {
+        command.env("SAM_STEAM_INSTALL_ROOT", root);
+    }
+
+    match BidirChild::new(&mut command) {
+        Ok(child) => {
+            set_orchestrator(IpcClient::new(child));
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("[CLIENT] Failed to spawn orchestrator: {e}");
+            Err(SamError::SocketCommunicationFailed)
+        }
+    }
 }
 
 /// Tolerates an already-broken orchestrator pipe (e.g. Flatpak Steam quit and
@@ -66,266 +98,107 @@ pub trait Request: Into<SteamCommand> + Debug + Clone {
         dev_println!("CLIENT", "Sending command: {:?}", command);
         ipc.request_response::<Self::Response, _>(&command)
     }
-}
 
-#[derive(Debug, Clone)]
-pub struct GetSubscribedAppList {
-    pub include_playtime: bool,
-    pub with_achievement_counts: bool,
-}
+    /// Streaming variant for bulk fan-out commands: reads `ProgressMsg::Progress`
+    /// frames into `on_progress(done, total)` until the terminal
+    /// `ProgressMsg::Done(SteamResponse<Self::Response>)` arrives. Non-bulk
+    /// commands should keep using `request()`
+    fn request_with_progress<F>(self, mut on_progress: F) -> Result<Self::Response, SamError>
+    where
+        F: FnMut(usize, usize),
+    {
+        let mut guard = ORCHESTRATOR.lock().unwrap();
+        let Some(ipc) = guard.as_mut() else {
+            eprintln!("[CLIENT] No orchestrator process");
+            return Err(SamError::SocketCommunicationFailed);
+        };
 
-#[derive(Debug, Clone)]
-pub struct Shutdown;
-
-#[derive(Debug, Clone)]
-pub struct LaunchApp {
-    pub app_id: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct StopApp {
-    pub app_id: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct GetRunningApps;
-
-#[derive(Debug, Clone)]
-pub struct SetAchievement {
-    pub app_id: u32,
-    pub achievement_id: String,
-    pub unlocked: bool,
-    pub store: bool,
-}
-
-#[derive(Debug, Clone)]
-pub struct StoreStatsAndAchievements {
-    pub app_id: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct UnlockAllAchievements {
-    pub app_id: u32,
-}
-
-#[derive(Debug, Clone)]
-pub struct SetIntStat {
-    pub app_id: u32,
-    pub stat_id: String,
-    pub value: i32,
-}
-
-#[derive(Debug, Clone)]
-pub struct SetFloatStat {
-    pub app_id: u32,
-    pub stat_id: String,
-    pub value: f32,
-}
-
-#[derive(Debug, Clone)]
-pub struct ResetStats {
-    pub app_id: u32,
-    pub achievements_too: bool,
-}
-
-#[derive(Debug, Clone)]
-pub struct GetAchievementCounts {
-    pub app_ids: Vec<u32>,
-}
-
-#[derive(Debug, Clone)]
-pub struct GetAchievementsAndStats {
-    pub app_id: u32,
-    pub launch: bool,
-}
-
-#[derive(Debug, Clone)]
-pub struct ExportApps {
-    pub app_ids: Vec<u32>,
-}
-
-#[derive(Debug, Clone)]
-pub struct ImportApps {
-    pub apps: Vec<AppExport>,
-}
-
-#[derive(Debug, Clone)]
-pub struct UnlockAllApps {
-    pub app_ids: Vec<u32>,
-}
-
-#[derive(Debug, Clone)]
-pub struct ResetApps {
-    pub app_ids: Vec<u32>,
-    pub achievements_too: bool,
-}
-
-impl Request for GetSubscribedAppList {
-    type Response = Vec<AppModel>;
-}
-
-impl Request for Shutdown {
-    type Response = bool;
-}
-
-impl Request for LaunchApp {
-    type Response = bool;
-}
-
-impl Request for StopApp {
-    type Response = bool;
-}
-
-impl Request for GetRunningApps {
-    type Response = Vec<u32>;
-}
-
-impl Request for SetAchievement {
-    type Response = bool;
-}
-
-impl Request for UnlockAllAchievements {
-    type Response = bool;
-}
-
-impl Request for StoreStatsAndAchievements {
-    type Response = bool;
-}
-
-impl Request for SetIntStat {
-    type Response = bool;
-}
-
-impl Request for SetFloatStat {
-    type Response = bool;
-}
-
-impl Request for ResetStats {
-    type Response = bool;
-}
-
-impl Request for GetAchievementCounts {
-    type Response = Vec<(u32, u32, u32)>;
-}
-
-impl Request for GetAchievementsAndStats {
-    type Response = AppProgress;
-}
-
-impl Request for ExportApps {
-    type Response = Vec<(u32, Result<AppExport, SamError>)>;
-}
-
-impl Request for ImportApps {
-    type Response = Vec<(u32, Result<ImportSummary, SamError>)>;
-}
-
-impl Request for UnlockAllApps {
-    type Response = Vec<(u32, Result<bool, SamError>)>;
-}
-
-impl Request for ResetApps {
-    type Response = Vec<(u32, Result<bool, SamError>)>;
-}
-
-impl From<GetSubscribedAppList> for SteamCommand {
-    fn from(val: GetSubscribedAppList) -> Self {
-        SteamCommand::GetSubscribedAppList(val.include_playtime, val.with_achievement_counts)
+        let command: SteamCommand = self.into();
+        dev_println!("CLIENT", "Sending streaming command: {:?}", command);
+        ipc.send(&command)?;
+        loop {
+            let msg: ProgressMsg<SteamResponse<Self::Response>> = ipc.recv()?;
+            match msg {
+                ProgressMsg::Progress { done, total } => on_progress(done, total),
+                ProgressMsg::Done(resp) => return resp.into(),
+            }
+        }
     }
 }
 
-impl From<Shutdown> for SteamCommand {
-    fn from(_val: Shutdown) -> Self {
-        SteamCommand::Shutdown
-    }
+/// Declares a request type: the struct, its `Request` impl (response type),
+/// and the `From<X> for SteamCommand` mapping. Two forms — unit, and struct
+/// with fields. The `=> SteamCommand::...` expression sees the struct's fields
+/// as bindings, so it can reorder them when the wire variant's tuple shape
+/// differs from the struct's field order (see `SetAchievement`).
+macro_rules! request {
+    ($name:ident -> $resp:ty => $variant:expr) => {
+        #[derive(Debug, Clone)]
+        pub struct $name;
+        impl Request for $name {
+            type Response = $resp;
+        }
+        impl From<$name> for SteamCommand {
+            fn from(_: $name) -> Self {
+                $variant
+            }
+        }
+    };
+    ($name:ident { $($field:ident : $ty:ty),* $(,)? } -> $resp:ty => $variant:expr) => {
+        #[derive(Debug, Clone)]
+        pub struct $name {
+            $(pub $field: $ty,)*
+        }
+        impl Request for $name {
+            type Response = $resp;
+        }
+        impl From<$name> for SteamCommand {
+            fn from(val: $name) -> Self {
+                let $name { $($field,)* } = val;
+                $variant
+            }
+        }
+    };
 }
 
-impl From<LaunchApp> for SteamCommand {
-    fn from(val: LaunchApp) -> Self {
-        SteamCommand::LaunchApp(val.app_id)
-    }
-}
+request!(Shutdown -> bool => SteamCommand::Shutdown);
+request!(GetRunningApps -> Vec<u32> => SteamCommand::GetRunningApps);
 
-impl From<StopApp> for SteamCommand {
-    fn from(val: StopApp) -> Self {
-        SteamCommand::StopApp(val.app_id)
-    }
-}
+request!(GetSubscribedAppList { include_playtime: bool, with_achievement_counts: bool }
+    -> Vec<AppModel>
+    => SteamCommand::GetSubscribedAppList(include_playtime, with_achievement_counts));
 
-impl From<GetRunningApps> for SteamCommand {
-    fn from(_val: GetRunningApps) -> Self {
-        SteamCommand::GetRunningApps
-    }
-}
+request!(LaunchApp { app_id: u32 } -> bool => SteamCommand::LaunchApp(app_id));
+request!(StopApp { app_id: u32 } -> bool => SteamCommand::StopApp(app_id));
 
-impl From<SetAchievement> for SteamCommand {
-    fn from(val: SetAchievement) -> Self {
-        SteamCommand::SetAchievement(val.app_id, val.unlocked, val.achievement_id, val.store)
-    }
-}
+request!(SetAchievement { app_id: u32, achievement_id: String, unlocked: bool, store: bool }
+    -> bool
+    => SteamCommand::SetAchievement(app_id, unlocked, achievement_id, store));
 
-impl From<StoreStatsAndAchievements> for SteamCommand {
-    fn from(val: StoreStatsAndAchievements) -> Self {
-        SteamCommand::StoreStatsAndAchievements(val.app_id)
-    }
-}
+request!(StoreStatsAndAchievements { app_id: u32 } -> bool
+    => SteamCommand::StoreStatsAndAchievements(app_id));
+request!(UnlockAllAchievements { app_id: u32 } -> bool
+    => SteamCommand::UnlockAllAchievements(app_id));
 
-impl From<UnlockAllAchievements> for SteamCommand {
-    fn from(val: UnlockAllAchievements) -> Self {
-        SteamCommand::UnlockAllAchievements(val.app_id)
-    }
-}
+request!(SetIntStat { app_id: u32, stat_id: String, value: i32 } -> bool
+    => SteamCommand::SetIntStat(app_id, stat_id, value));
+request!(SetFloatStat { app_id: u32, stat_id: String, value: f32 } -> bool
+    => SteamCommand::SetFloatStat(app_id, stat_id, value));
 
-impl From<SetIntStat> for SteamCommand {
-    fn from(val: SetIntStat) -> Self {
-        SteamCommand::SetIntStat(val.app_id, val.stat_id, val.value)
-    }
-}
+request!(ResetStats { app_id: u32, achievements_too: bool } -> bool
+    => SteamCommand::ResetStats(app_id, achievements_too));
 
-impl From<SetFloatStat> for SteamCommand {
-    fn from(val: SetFloatStat) -> Self {
-        SteamCommand::SetFloatStat(val.app_id, val.stat_id, val.value)
-    }
-}
+request!(GetAchievementCounts { app_ids: Vec<u32> } -> Vec<(u32, u32, u32)>
+    => SteamCommand::GetAchievementCounts(app_ids));
 
-impl From<ResetStats> for SteamCommand {
-    fn from(val: ResetStats) -> Self {
-        SteamCommand::ResetStats(val.app_id, val.achievements_too)
-    }
-}
+request!(GetAchievementsAndStats { app_id: u32, launch: bool } -> AppProgress
+    => SteamCommand::GetAchievementsAndStats(app_id, launch));
 
-impl From<GetAchievementCounts> for SteamCommand {
-    fn from(val: GetAchievementCounts) -> Self {
-        SteamCommand::GetAchievementCounts(val.app_ids)
-    }
-}
-
-impl From<GetAchievementsAndStats> for SteamCommand {
-    fn from(val: GetAchievementsAndStats) -> Self {
-        SteamCommand::GetAchievementsAndStats(val.app_id, val.launch)
-    }
-}
-
-impl From<ExportApps> for SteamCommand {
-    fn from(val: ExportApps) -> Self {
-        SteamCommand::ExportApps(val.app_ids)
-    }
-}
-
-impl From<ImportApps> for SteamCommand {
-    fn from(val: ImportApps) -> Self {
-        SteamCommand::ImportApps(val.apps)
-    }
-}
-
-impl From<UnlockAllApps> for SteamCommand {
-    fn from(val: UnlockAllApps) -> Self {
-        SteamCommand::UnlockAllApps(val.app_ids)
-    }
-}
-
-impl From<ResetApps> for SteamCommand {
-    fn from(val: ResetApps) -> Self {
-        SteamCommand::ResetApps(val.app_ids, val.achievements_too)
-    }
-}
+request!(ExportApps { app_ids: Vec<u32> } -> Vec<(u32, Result<AppExport, SamError>)>
+    => SteamCommand::ExportApps(app_ids));
+request!(ImportApps { apps: Vec<AppExport> } -> Vec<(u32, Result<ImportSummary, SamError>)>
+    => SteamCommand::ImportApps(apps));
+request!(UnlockAllApps { app_ids: Vec<u32> } -> Vec<(u32, Result<bool, SamError>)>
+    => SteamCommand::UnlockAllApps(app_ids));
+request!(ResetApps { app_ids: Vec<u32>, achievements_too: bool } -> Vec<(u32, Result<bool, SamError>)>
+    => SteamCommand::ResetApps(app_ids, achievements_too));

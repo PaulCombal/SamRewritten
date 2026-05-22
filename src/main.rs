@@ -75,9 +75,6 @@ fn main() -> gtk::glib::ExitCode {
     use crate::backend::app::app;
     use crate::backend::orchestrator::orchestrator;
     use crate::utils::arguments::parse_cli_arguments;
-    use crate::utils::bidir_child::BidirChild;
-    use std::process::Command;
-    use utils::app_paths::get_executable_path;
 
     let arguments = parse_cli_arguments();
 
@@ -99,9 +96,5 @@ fn main() -> gtk::glib::ExitCode {
         return gtk::glib::ExitCode::from(exit_code);
     }
 
-    let current_exe = get_executable_path();
-    let orchestrator = BidirChild::new(Command::new(current_exe).arg("--orchestrator"))
-        .expect("Failed to spawn orchestrator process");
-
-    gui_frontend::main_ui(orchestrator)
+    gui_frontend::main_ui()
 }
