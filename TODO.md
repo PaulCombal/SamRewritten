@@ -1,11 +1,3 @@
-### Medium priority
-
-- Replace the truncated "... and N more" lists with a scrollable, selectable
-  view. Several dialogs (bulk unlock failures, export/import results, reset
-  candidates) cut lists off at 10 entries inside a plain `AlertDialog` detail
-  string. Add one reusable dialog backed by a `TextView` in a `ScrolledWindow`
-  so the full list is visible and copyable.
-
 ### Low priority
 
 - Recover when Flatpak Steam is started *after* SamRewritten. The orchestrator

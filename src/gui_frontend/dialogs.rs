@@ -14,19 +14,95 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use gtk::ApplicationWindow;
-
-#[cfg(unix)]
+use gtk::glib;
 use gtk::glib::clone;
-#[cfg(unix)]
 use gtk::prelude::*;
-#[cfg(unix)]
-use gtk::{Align, Orientation, glib};
+use gtk::{Align, Orientation};
+
 #[cfg(unix)]
 use std::cell::Cell;
 #[cfg(unix)]
 use std::path::PathBuf;
 #[cfg(unix)]
 use std::rc::Rc;
+
+/// Scrollable, selectable, copyable list dialog. Use when the body may contain
+/// more than ~10 entries — the plain `AlertDialog` detail string can't scroll.
+/// `intro` is a static header above the scroll area; pass `""` to omit.
+pub fn show_list_dialog(
+    parent: &impl gtk::glib::object::IsA<gtk::Window>,
+    title: &str,
+    intro: &str,
+    body: &str,
+) {
+    let dialog = gtk::Window::builder()
+        .transient_for(parent)
+        .modal(true)
+        .title(title)
+        .destroy_with_parent(true)
+        .default_width(560)
+        .default_height(420)
+        .build();
+
+    let content = gtk::Box::builder()
+        .orientation(Orientation::Vertical)
+        .margin_top(16)
+        .margin_bottom(16)
+        .margin_start(16)
+        .margin_end(16)
+        .spacing(12)
+        .build();
+
+    if !intro.is_empty() {
+        let intro_label = gtk::Label::builder()
+            .label(intro)
+            .wrap(true)
+            .selectable(true)
+            .xalign(0.0)
+            .build();
+        content.append(&intro_label);
+    }
+
+    let text_view = gtk::TextView::builder()
+        .editable(false)
+        .cursor_visible(false)
+        .monospace(true)
+        .wrap_mode(gtk::WrapMode::WordChar)
+        .top_margin(8)
+        .bottom_margin(8)
+        .left_margin(8)
+        .right_margin(8)
+        .build();
+    text_view.buffer().set_text(body);
+
+    let scroller = gtk::ScrolledWindow::builder()
+        .vexpand(true)
+        .hexpand(true)
+        .min_content_height(200)
+        .propagate_natural_height(true)
+        .has_frame(true)
+        .child(&text_view)
+        .build();
+    content.append(&scroller);
+
+    let ok_button = gtk::Button::with_label("OK");
+    ok_button.add_css_class("suggested-action");
+    ok_button.connect_clicked(clone!(
+        #[weak]
+        dialog,
+        move |_| dialog.close()
+    ));
+
+    let button_box = gtk::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .halign(Align::End)
+        .build();
+    button_box.append(&ok_button);
+    content.append(&button_box);
+
+    dialog.set_child(Some(&content));
+    dialog.present();
+}
 
 #[cfg(unix)]
 fn show_markup_warning(parent: &ApplicationWindow, title: &str, markup: &str) {

@@ -108,11 +108,7 @@ fn run_one_attempt(app_id: u32, command: SteamCommand) -> Result<Vec<u8>, SamErr
     let child = BidirChild::new(Command::new(current_exe).arg(format!("--app={app_id}")))?;
     let mut ipc = IpcClient::new(child);
 
-    std::thread::sleep(std::time::Duration::from_millis(10));
-
     let response = ipc.send(&command).and_then(|_| ipc.recv_frame());
-
-    std::thread::sleep(std::time::Duration::from_millis(10));
 
     let _ = ipc.send(&SteamCommand::Shutdown);
     let _ = ipc.recv_frame();

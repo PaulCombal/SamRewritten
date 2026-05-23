@@ -16,6 +16,7 @@
 use super::achievement_loader::AchievementLoader;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::{set_app_action_enabled, set_bulk_actions_enabled};
+use crate::gui_frontend::dialogs::show_list_dialog;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{Request, ResetApps, UnlockAllApps};
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
@@ -192,28 +193,15 @@ pub fn create_bulk_actions(
                         .await
                         .expect("[CLIENT] Failed to wait for unlock thread to finish");
 
-                    if !failed_apps.is_empty() {
-                        let total_failed = failed_apps.len();
-                        let display_text = if total_failed > 10 {
-                            let first_ten = failed_apps[..10].join("\n");
-                            let remaining = total_failed - 10;
-                            format!("{}\n\n... and {} more", first_ten, remaining)
-                        } else {
-                            failed_apps.join("\n")
-                        };
-
-                        let dialog = gtk::AlertDialog::builder()
-                            .modal(true)
-                            .message("Unlock Incomplete")
-                            .detail(format!(
-                                "Failed to unlock achievements for the following apps:\n\n{}",
-                                display_text
-                            ))
-                            .buttons(["OK"])
-                            .build();
-
-                        let parent = application.active_window();
-                        let _ = dialog.choose_future(parent.as_ref()).await;
+                    if !failed_apps.is_empty()
+                        && let Some(parent) = application.active_window()
+                    {
+                        show_list_dialog(
+                            &parent,
+                            "Unlock Incomplete",
+                            "Failed to unlock achievements for the following apps:",
+                            &failed_apps.join("\n"),
+                        );
                     }
 
                     set_bulk_actions_enabled(&application, true);

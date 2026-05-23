@@ -16,6 +16,7 @@
 use super::achievement_loader::AchievementLoader;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_bulk_actions_enabled;
+use crate::gui_frontend::dialogs::show_list_dialog;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::request::{ExportApps, ImportApps, Request};
 use crate::utils::export_file::{ExportFile, FORMAT_VERSION, iso8601_utc_now};
@@ -227,42 +228,33 @@ pub fn create_progress_actions(
                     loading.set_visible(false);
                 }
 
-                let (message, detail) = match result {
-                    Ok(failed) if failed.is_empty() => (
-                        "Export complete".to_string(),
-                        format!("Exported {} app(s) to {}", total, path.display()),
-                    ),
-                    Ok(failed) => {
-                        let listing = if failed.len() > 10 {
-                            format!(
-                                "{}\n\n... and {} more",
-                                failed[..10].join("\n"),
-                                failed.len() - 10
-                            )
-                        } else {
-                            failed.join("\n")
-                        };
-                        (
-                            "Export partially complete".to_string(),
-                            format!(
-                                "Wrote {}\n\nFailed to read data for:\n\n{}",
-                                path.display(),
-                                listing
-                            ),
+                let app = weak_app.upgrade();
+                let parent = app.as_ref().and_then(|a| a.active_window());
+                match result {
+                    Ok(failed) if failed.is_empty() => {
+                        show_alert(
+                            app.as_ref(),
+                            "Export complete",
+                            &format!("Exported {} app(s) to {}", total, path.display()),
                         )
+                        .await;
                     }
-                    Err(e) => ("Export failed".to_string(), e),
-                };
-
-                if let Some(app) = weak_app.upgrade() {
-                    let summary = gtk::AlertDialog::builder()
-                        .modal(true)
-                        .message(&message)
-                        .detail(&detail)
-                        .buttons(["OK"])
-                        .build();
-                    let parent = app.active_window();
-                    let _ = summary.choose_future(parent.as_ref()).await;
+                    Ok(failed) => {
+                        if let Some(parent) = parent {
+                            show_list_dialog(
+                                &parent,
+                                "Export partially complete",
+                                &format!(
+                                    "Wrote {}\n\nFailed to read data for these apps:",
+                                    path.display()
+                                ),
+                                &failed.join("\n"),
+                            );
+                        }
+                    }
+                    Err(e) => {
+                        show_alert(app.as_ref(), "Export failed", &e).await;
+                    }
                 }
             });
         }
@@ -575,63 +567,46 @@ pub fn create_progress_actions(
                     loading.set_visible(false);
                 }
 
-                let mut detail = format!(
+                let mut intro = format!(
                     "Applied {} achievement(s) and {} stat(s).",
                     applied_ach, applied_stat
                 );
                 if skipped_protected > 0 {
-                    detail.push_str(&format!(
+                    intro.push_str(&format!(
                         "\nSkipped {} protected field(s).",
                         skipped_protected
                     ));
                 }
                 if skipped_unwriteable > 0 {
-                    detail.push_str(&format!(
+                    intro.push_str(&format!(
                         "\nSkipped {} unwriteable stat(s) (out of range or increment-only).",
                         skipped_unwriteable
                     ));
                 }
+
+                let mut sections: Vec<String> = Vec::new();
                 if !reset_candidates.is_empty() {
-                    let listing = if reset_candidates.len() > 10 {
-                        format!(
-                            "{}\n... and {} more",
-                            reset_candidates[..10].join("\n"),
-                            reset_candidates.len() - 10
-                        )
-                    } else {
+                    sections.push(format!(
+                        "Would succeed if you reset stats first:\n{}",
                         reset_candidates.join("\n")
-                    };
-                    detail.push_str(&format!(
-                        "\n\nWould succeed if you reset stats first:\n{}",
-                        listing
                     ));
                 }
                 if !missing.is_empty() {
-                    let listing = if missing.len() > 10 {
-                        format!(
-                            "{}\n... and {} more",
-                            missing[..10].join("\n"),
-                            missing.len() - 10
-                        )
-                    } else {
+                    sections.push(format!(
+                        "Skipped (not in your library):\n{}",
                         missing.join("\n")
-                    };
-                    detail.push_str(&format!("\n\nSkipped (not in your library):\n{}", listing));
+                    ));
                 }
                 if !errors.is_empty() {
-                    let listing = if errors.len() > 10 {
-                        format!(
-                            "{}\n... and {} more",
-                            errors[..10].join("\n"),
-                            errors.len() - 10
-                        )
-                    } else {
-                        errors.join("\n")
-                    };
-                    detail.push_str(&format!("\n\nErrors:\n{}", listing));
+                    sections.push(format!("Errors:\n{}", errors.join("\n")));
                 }
 
-                show_alert(weak_app.upgrade().as_ref(), "Import complete", &detail).await;
+                let app = weak_app.upgrade();
+                if sections.is_empty() {
+                    show_alert(app.as_ref(), "Import complete", &intro).await;
+                } else if let Some(parent) = app.as_ref().and_then(|a| a.active_window()) {
+                    show_list_dialog(&parent, "Import complete", &intro, &sections.join("\n\n"));
+                }
 
                 for id in affected_ids {
                     achievement_loader.refresh_app(id, &list_store);

@@ -224,3 +224,12 @@ impl<T> From<SteamResponse<T>> for Result<T, SamError> {
         }
     }
 }
+
+impl<T> From<Result<T, SamError>> for SteamResponse<T> {
+    fn from(r: Result<T, SamError>) -> Self {
+        match r {
+            Ok(v) => SteamResponse::Success(v),
+            Err(e) => SteamResponse::Error(e),
+        }
+    }
+}
