@@ -24,16 +24,17 @@ use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_client::IpcClient;
 use crate::utils::ipc_types::{
-    AppExport, ImportSummary, SamError, SteamCommand, SteamResponse, frame_message,
+    AppExport, ImportSummary, ProgressMsg, SamError, SteamCommand, SteamResponse, frame_message,
     parse_response_bytes, read_message, write_message,
 };
 use crate::utils::steam_locator::SteamLocator;
 use interprocess::unnamed_pipe::{Recver, Sender};
+use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::io::Write;
 use std::process::Command;
-use std::sync::LazyLock;
+use std::sync::{LazyLock, Mutex};
 
 /// Forward `command` to the app server and return the framed response bytes
 /// (length prefix + JSON) suitable for proxying straight back to the parent.
@@ -184,15 +185,27 @@ static SOCKET_ERROR_RESPONSE: LazyLock<Vec<u8>> = LazyLock::new(|| {
     ))
 });
 
-/// Children are spawned by us, so they inherit our namespace. Results come back
-/// in completion order, not input order; callers key them by app id.
-fn fan_out<T: DeserializeOwned>(
-    items: Vec<(u32, SteamCommand)>,
-) -> Vec<(u32, Result<T, SamError>)> {
-    run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, None)
+/// Children are spawned by us, so they inherit our namespace. Streams a
+/// `ProgressMsg::Progress { done, total }` frame as each child completes, then
+/// writes a single terminal `ProgressMsg::Done(SteamResponse::Success(results))`
+/// — the GUI's `request_with_progress` reads frames in a loop until `Done`.
+fn fan_out_streaming<T>(items: Vec<(u32, SteamCommand)>, tx: &mut Sender)
+where
+    T: DeserializeOwned + Serialize,
+{
+    let tx_lock = Mutex::new(tx);
+    let progress = |done: usize, total: usize, _app_id: u32| {
+        let mut guard = tx_lock.lock().unwrap();
+        let _ = write_message(&mut **guard, &ProgressMsg::<()>::Progress { done, total });
+    };
+    let raw = run_command_on_apps_concurrent(items, MAX_CONCURRENT_APPS, Some(&progress));
+    let results: Vec<(u32, Result<T, SamError>)> = raw
         .into_iter()
         .map(|(id, res)| (id, res.and_then(|bytes| parse_response_bytes::<T>(&bytes))))
-        .collect()
+        .collect();
+    let tx = tx_lock.into_inner().unwrap();
+    write_message(tx, &ProgressMsg::Done(SteamResponse::Success(results)))
+        .expect("[ORCHESTRATOR] Failed to send response");
 }
 
 fn process_command(
@@ -251,7 +264,7 @@ fn process_command(
                 "ORCH",
                 "Received GetSubscribedAppList(playtime={include_playtime}, achievements={with_achievement_counts})"
             );
-            
+
             #[cfg(target_os = "linux")]
             if connected_steam.is_some() && !crate::utils::steam_ns::loaded_install_is_running() {
                 *connected_steam = None;
@@ -707,9 +720,7 @@ fn process_command(
                 .into_iter()
                 .map(|id| (id, SteamCommand::ExportAppProgress(id)))
                 .collect();
-            let results: Vec<(u32, Result<AppExport, SamError>)> = fan_out(items);
-            write_message(tx, &SteamResponse::Success(results))
-                .expect("[ORCHESTRATOR] Failed to send response");
+            fan_out_streaming::<AppExport>(items, tx);
         }
 
         SteamCommand::ImportApps(apps) => {
@@ -718,9 +729,7 @@ fn process_command(
                 .into_iter()
                 .map(|a| (a.app_id, SteamCommand::ImportAppProgress(a.app_id, a)))
                 .collect();
-            let results: Vec<(u32, Result<ImportSummary, SamError>)> = fan_out(items);
-            write_message(tx, &SteamResponse::Success(results))
-                .expect("[ORCHESTRATOR] Failed to send response");
+            fan_out_streaming::<ImportSummary>(items, tx);
         }
 
         SteamCommand::UnlockAllApps(app_ids) => {
@@ -729,9 +738,7 @@ fn process_command(
                 .into_iter()
                 .map(|id| (id, SteamCommand::UnlockAllAchievements(id)))
                 .collect();
-            let results: Vec<(u32, Result<bool, SamError>)> = fan_out(items);
-            write_message(tx, &SteamResponse::Success(results))
-                .expect("[ORCHESTRATOR] Failed to send response");
+            fan_out_streaming::<bool>(items, tx);
         }
 
         SteamCommand::ResetApps(app_ids, achievements_too) => {
@@ -740,9 +747,7 @@ fn process_command(
                 .into_iter()
                 .map(|id| (id, SteamCommand::ResetStats(id, achievements_too)))
                 .collect();
-            let results: Vec<(u32, Result<bool, SamError>)> = fan_out(items);
-            write_message(tx, &SteamResponse::Success(results))
-                .expect("[ORCHESTRATOR] Failed to send response");
+            fan_out_streaming::<bool>(items, tx);
         }
 
         // Child-only commands. The orchestrator dispatches these to app

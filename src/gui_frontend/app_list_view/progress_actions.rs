@@ -148,9 +148,10 @@ pub fn create_progress_actions(
 
                 let total = apps.len();
                 let path_for_task = path.clone();
+                let weak_progress_for_thread = weak_progress.clone();
                 MainContext::default().invoke(move || {
                     if let Some(label) = weak_progress.upgrade() {
-                        label.set_text(&format!("Exporting {} app(s)...", total));
+                        label.set_text(&format!("Exporting 0 / {} app(s)…", total));
                     }
                     if let Some(label) = weak_info.upgrade() {
                         label.set_text("");
@@ -159,10 +160,23 @@ pub fn create_progress_actions(
                 let handle = spawn_blocking(move || {
                     let names: HashMap<u32, String> = apps.iter().cloned().collect();
                     let app_ids: Vec<u32> = apps.into_iter().map(|(id, _)| id).collect();
-                    let results = match (ExportApps { app_ids }).request() {
-                        Ok(results) => results,
-                        Err(e) => return Err(format!("Export failed: {e}")),
-                    };
+                    let mut last_done = 0usize;
+                    let results =
+                        match (ExportApps { app_ids }).request_with_progress(|done, total| {
+                            if done == last_done {
+                                return;
+                            }
+                            last_done = done;
+                            let label = weak_progress_for_thread.clone();
+                            MainContext::default().invoke(move || {
+                                if let Some(l) = label.upgrade() {
+                                    l.set_text(&format!("Exporting {done} / {total} app(s)…"));
+                                }
+                            });
+                        }) {
+                            Ok(results) => results,
+                            Err(e) => return Err(format!("Export failed: {e}")),
+                        };
 
                     let mut exports: Vec<AppExport> = Vec::new();
                     let mut failed: Vec<String> = Vec::new();
@@ -451,9 +465,10 @@ pub fn create_progress_actions(
                 }
 
                 let total = present.len();
+                let weak_progress_for_thread = weak_progress.clone();
                 MainContext::default().invoke(move || {
                     if let Some(label) = weak_progress.upgrade() {
-                        label.set_text(&format!("Importing {} app(s)...", total));
+                        label.set_text(&format!("Importing 0 / {} app(s)…", total));
                     }
                     if let Some(label) = weak_info.upgrade() {
                         label.set_text("");
@@ -472,12 +487,32 @@ pub fn create_progress_actions(
                     })
                     .collect();
                 let handle = spawn_blocking(move || {
-                    let results = match (ImportApps { apps: present }).request() {
-                        Ok(results) => results,
-                        Err(e) => {
-                            return (0, 0, 0, 0, vec![format!("Import failed: {e}")], Vec::new());
-                        }
-                    };
+                    let mut last_done = 0usize;
+                    let results =
+                        match (ImportApps { apps: present }).request_with_progress(|done, total| {
+                            if done == last_done {
+                                return;
+                            }
+                            last_done = done;
+                            let label = weak_progress_for_thread.clone();
+                            MainContext::default().invoke(move || {
+                                if let Some(l) = label.upgrade() {
+                                    l.set_text(&format!("Importing {done} / {total} app(s)…"));
+                                }
+                            });
+                        }) {
+                            Ok(results) => results,
+                            Err(e) => {
+                                return (
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    vec![format!("Import failed: {e}")],
+                                    Vec::new(),
+                                );
+                            }
+                        };
 
                     let mut total_ach: usize = 0;
                     let mut total_stat: usize = 0;

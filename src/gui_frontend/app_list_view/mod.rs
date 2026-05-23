@@ -55,7 +55,11 @@ use std::cell::{Cell, RefCell};
 use std::process::Command;
 use std::rc::Rc;
 
-use crate::backend::progress_io::MAX_CONCURRENT_APPS as MAX_CONCURRENT_IDLE;
+/// Maximum number of apps the GUI lets the user idle simultaneously. Unrelated
+/// to bulk fan-out concurrency: idle sessions are long-running app-server
+/// children that hold a Steam connection open, so this is a UX cap on
+/// "fake-running" games, not an IPC throughput tuning.
+const MAX_CONCURRENT_IDLE: usize = 8;
 
 /// Full recount: scan the store, refresh `idle_count`, and propagate the
 /// resulting "can start idling?" decision onto every app. Use this after the

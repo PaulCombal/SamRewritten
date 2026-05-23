@@ -27,7 +27,9 @@ use crate::utils::app_paths::get_executable_path;
 #[cfg(feature = "gui")]
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::ipc_client::IpcClient;
-use crate::utils::ipc_types::{AppExport, ImportSummary, SamError, SteamCommand};
+use crate::utils::ipc_types::{
+    AppExport, ImportSummary, ProgressMsg, SamError, SteamCommand, SteamResponse,
+};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 #[cfg(feature = "gui")]
@@ -95,6 +97,32 @@ pub trait Request: Into<SteamCommand> + Debug + Clone {
         let command: SteamCommand = self.into();
         dev_println!("CLIENT", "Sending command: {:?}", command);
         ipc.request_response::<Self::Response, _>(&command)
+    }
+
+    /// Streaming variant for bulk fan-out commands: reads `ProgressMsg::Progress`
+    /// frames into `on_progress(done, total)` until the terminal
+    /// `ProgressMsg::Done(SteamResponse<Self::Response>)` arrives. Non-bulk
+    /// commands should keep using `request()`
+    fn request_with_progress<F>(self, mut on_progress: F) -> Result<Self::Response, SamError>
+    where
+        F: FnMut(usize, usize),
+    {
+        let mut guard = ORCHESTRATOR.lock().unwrap();
+        let Some(ipc) = guard.as_mut() else {
+            eprintln!("[CLIENT] No orchestrator process");
+            return Err(SamError::SocketCommunicationFailed);
+        };
+
+        let command: SteamCommand = self.into();
+        dev_println!("CLIENT", "Sending streaming command: {:?}", command);
+        ipc.send(&command)?;
+        loop {
+            let msg: ProgressMsg<SteamResponse<Self::Response>> = ipc.recv()?;
+            match msg {
+                ProgressMsg::Progress { done, total } => on_progress(done, total),
+                ProgressMsg::Done(resp) => return resp.into(),
+            }
+        }
     }
 }
 

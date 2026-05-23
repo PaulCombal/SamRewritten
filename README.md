@@ -95,11 +95,12 @@ If issues persist, please open an issue including your distribution, version, an
 ## Steam compatibility
 
 On Linux, SamRewritten supports all of these Steam installation types:
-* ✅ Snap installations of Steam
-* ✅ Ubuntu/Debian multiarch installations with apt
-* ✅ Ubuntu/Debian installations with the .deb file from the official Steam website
-* ✅ Distribution installations that use the Steam runtime (Gentoo, Arch, `~/.steam/root` exists)
-* ✅ Flatpak installations of Steam
+
+✅ Snap installations of Steam <br>
+✅ Flatpak installations of Steam <br>
+✅ Ubuntu/Debian multiarch installations with apt <br>
+✅ Ubuntu/Debian installations with the .deb file from the official Steam website <br>
+✅ Distribution installations that use the Steam runtime (Gentoo, Arch, `~/.steam/root` exists)
 
 If you would like to see your specific distribution supported, please open an issue.
 

@@ -135,6 +135,16 @@ pub enum SteamResponse<T> {
     Error(SamError),
 }
 
+/// Streaming wrapper used by bulk fan-out commands. The orchestrator emits
+/// zero or more `Progress` frames as workers complete, then exactly one `Done`
+/// frame carrying the terminal `SteamResponse<T>`. Non-bulk commands keep
+/// using `SteamResponse<T>` directly on the wire.
+#[derive(Serialize, Deserialize, Debug)]
+pub enum ProgressMsg<T> {
+    Progress { done: usize, total: usize },
+    Done(T),
+}
+
 /// Serialize a message as a length-prefixed (`usize` little-endian) JSON frame.
 pub fn frame_message<T: Serialize + ?Sized>(msg: &T) -> Vec<u8> {
     let serialized = serde_json::to_vec(msg).expect("Serializing IPC message must not fail");

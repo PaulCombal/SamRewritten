@@ -1,12 +1,3 @@
-### High priority
-
-- Surface progress during bulk operations. Export/Import/UnlockAll/Reset fan out
-  across many apps in the orchestrator but the GUI just shows a static
-  "Working on N app(s)..." label and appears frozen for several seconds on large
-  libraries. The plumbing already exists: `run_command_on_apps_concurrent` takes
-  a `progress` callback that the orchestrator currently passes as `None`. Wire it
-  to a progress IPC message and a determinate progress bar (step/total).
-
 ### Medium priority
 
 - Replace the truncated "... and N more" lists with a scrollable, selectable
