@@ -267,7 +267,10 @@ fn process_command(
             let connected_steam = match ensure_connected(connected_steam) {
                 Ok(cs) => cs,
                 Err(()) => {
-                    send(tx, &SteamResponse::<()>::Error(SamError::SteamConnectionFailed));
+                    send(
+                        tx,
+                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                    );
                     return true;
                 }
             };
@@ -305,7 +308,10 @@ fn process_command(
                 Ok(u) => u,
                 Err(e) => {
                     dev_println!("ORCH", "Could not get IClientUser: {e}");
-                    send(tx, &SteamResponse::<()>::Error(SamError::SteamConnectionFailed));
+                    send(
+                        tx,
+                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                    );
                     return true;
                 }
             };
@@ -626,7 +632,10 @@ fn process_command(
             let connected_steam = match ensure_connected(connected_steam) {
                 Ok(cs) => cs,
                 Err(()) => {
-                    send(tx, &SteamResponse::<()>::Error(SamError::SteamConnectionFailed));
+                    send(
+                        tx,
+                        &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                    );
                     return true;
                 }
             };
@@ -657,7 +666,10 @@ fn process_command(
                     Ok(m) => m,
                     Err(e) => {
                         dev_println!("ORCH", "Could not create stats map: {e}");
-                        send(tx, &SteamResponse::<()>::Error(SamError::SteamConnectionFailed));
+                        send(
+                            tx,
+                            &SteamResponse::<()>::Error(SamError::SteamConnectionFailed),
+                        );
                         return true;
                     }
                 };

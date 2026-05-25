@@ -22,9 +22,22 @@
 //! loads `steamclient.so` into Steam's PID namespace.
 //!
 //! The Flatpak's PID namespace is owned by an unprivileged user namespace our
-//! own uid created, so we can join it without root: `setns` into the user
-//! namespace (granting CAP_SYS_ADMIN there), then the PID namespace, then
-//! `fork` (a PID-namespace `setns` only takes effect for children). We keep the
+//! own uid created, so we can join it without root. Two paths exist:
+//!
+//! * **Preferred (Linux 5.8+):** open a pidfd for the Flatpak Steam process and
+//!   ask the kernel to install both namespaces atomically with
+//!   `setns(pidfd, CLONE_NEWUSER | CLONE_NEWPID)`. The kernel installs the new
+//!   credentials and then the PID namespace within a single transaction. Newer
+//!   kernels (notably Fedora's) require this — they refuse the separate
+//!   `setns(CLONE_NEWPID)` step below with EPERM even when we hold
+//!   CAP_SYS_ADMIN in the joined user namespace. This is the path modern
+//!   `nsenter` uses.
+//! * **Fallback:** the historical two-step — `setns` into the user namespace
+//!   (granting CAP_SYS_ADMIN there), then the PID namespace. Kept for kernels
+//!   that don't accept the multi-flag form.
+//!
+//! Either way the PID-namespace switch only takes effect for children, so we
+//! `fork` after joining and the child becomes the orchestrator. We keep the
 //! host mount namespace, so our binary and the Flatpak `steamclient.so` stay
 //! reachable, and the network namespace is already shared (Steam's IPC is
 //! loopback TCP).
@@ -35,17 +48,22 @@
 use crate::dev_println;
 use crate::utils::steam_locator::SteamLocator;
 use std::fs;
-use std::os::fd::AsRawFd;
-use std::os::raw::c_int;
+use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+use std::os::raw::{c_int, c_long};
 use std::path::{Path, PathBuf};
 
 const CLONE_NEWUSER: c_int = 0x1000_0000;
 const CLONE_NEWPID: c_int = 0x2000_0000;
 
+// pidfd_open(2). Same syscall number across Linux's modern uniform table
+// (x86_64, aarch64, riscv64, arm, i386, ppc64, s390x, …); Linux 5.3+.
+const SYS_PIDFD_OPEN: c_long = 434;
+
 unsafe extern "C" {
     fn setns(fd: c_int, nstype: c_int) -> c_int;
     fn fork() -> c_int;
     fn waitpid(pid: c_int, status: *mut c_int, options: c_int) -> c_int;
+    fn syscall(num: c_long, ...) -> c_long;
 }
 
 enum NsOutcome {
@@ -190,6 +208,48 @@ fn detect_flatpak_steam() -> Option<i32> {
 }
 
 fn enter_namespace(pid: i32) -> NsOutcome {
+    if try_atomic_join(pid) {
+        return fork_after_join();
+    }
+    try_two_step_join(pid)
+}
+
+/// Preferred path: install user+pid namespaces atomically via a pidfd. Returns
+/// `true` on success; logs the reason and returns `false` on any failure so the
+/// caller can try the legacy two-step path. The pidfd is closed on return
+/// (success or failure) via `OwnedFd`'s `Drop`.
+fn try_atomic_join(pid: i32) -> bool {
+    let raw = unsafe { syscall(SYS_PIDFD_OPEN, pid as c_long, 0 as c_long) };
+    if raw < 0 {
+        dev_println!(
+            "STEAM NS",
+            "pidfd_open({pid}) unavailable ({}); trying two-step setns",
+            std::io::Error::last_os_error()
+        );
+        return false;
+    }
+    // SAFETY: `raw` is a valid fd we just received from a successful
+    // `pidfd_open` syscall; nothing else owns it.
+    let pidfd = unsafe { OwnedFd::from_raw_fd(raw as c_int) };
+    let rc = unsafe { setns(pidfd.as_raw_fd(), CLONE_NEWUSER | CLONE_NEWPID) };
+    if rc != 0 {
+        dev_println!(
+            "STEAM NS",
+            "atomic setns(NEWUSER|NEWPID) failed ({}); trying two-step setns",
+            std::io::Error::last_os_error()
+        );
+        return false;
+    }
+    true
+}
+
+/// Legacy path for kernels that don't accept multi-flag `setns`: enter the
+/// user namespace first (gaining CAP_SYS_ADMIN there), then the PID namespace.
+/// On newer kernels that reject the second call (e.g. Fedora 44), this leaves
+/// us in the new user namespace with the host PID namespace — same partial
+/// state as before this dispatcher existed; the caller surfaces `Unavailable`
+/// and the IPC pipe will then fail with the old broken-pipe symptom.
+fn try_two_step_join(pid: i32) -> NsOutcome {
     let user_fd = match fs::File::open(format!("/proc/{pid}/ns/user")) {
         Ok(f) => f,
         Err(e) => {
@@ -220,7 +280,17 @@ fn enter_namespace(pid: i32) -> NsOutcome {
             );
             return NsOutcome::Unavailable;
         }
+    }
+    fork_after_join()
+}
 
+/// `setns(CLONE_NEWPID)` only takes effect for new children, so we fork once
+/// the namespaces are installed; the child becomes the orchestrator. The
+/// parent stub stays in the host PID namespace and exits with the child's
+/// status — its inherited copy of the IPC pipe FDs closes on exit, signaling
+/// EOF to the frontend.
+fn fork_after_join() -> NsOutcome {
+    unsafe {
         let child = fork();
         if child < 0 {
             eprintln!(
@@ -229,12 +299,9 @@ fn enter_namespace(pid: i32) -> NsOutcome {
             );
             return NsOutcome::Unavailable;
         }
-
         if child == 0 {
             NsOutcome::Entered
         } else {
-            // The parent stub stays in the host PID namespace; its inherited copy
-            // of the IPC pipe FDs closes when it exits, signaling EOF to the frontend.
             let mut status: c_int = 0;
             waitpid(child, &mut status, 0);
             let code = if status & 0x7f == 0 {

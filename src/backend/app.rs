@@ -17,9 +17,7 @@ use crate::backend::app_manager::AppManager;
 use crate::backend::progress_io::{apply_app_export, collect_app_export};
 use crate::dev_println;
 use crate::steam_client::steamworks_types::AppId_t;
-use crate::utils::ipc_types::{
-    SamError, SteamCommand, SteamResponse, read_message, write_message,
-};
+use crate::utils::ipc_types::{SamError, SteamCommand, SteamResponse, read_message, write_message};
 use interprocess::unnamed_pipe::{Recver, Sender};
 use serde::Serialize;
 
@@ -118,11 +116,9 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                     am.reset_all_stats(achievements_too)
                 })
             }
-            SteamCommand::UnlockAllAchievements(id) => {
-                dispatch(parent_tx, id, app_id, || {
-                    am.unlock_all_achievements().map(|_| true)
-                })
-            }
+            SteamCommand::UnlockAllAchievements(id) => dispatch(parent_tx, id, app_id, || {
+                am.unlock_all_achievements().map(|_| true)
+            }),
             SteamCommand::ExportAppProgress(id) => {
                 dispatch(parent_tx, id, app_id, || collect_app_export(am, app_id))
             }
