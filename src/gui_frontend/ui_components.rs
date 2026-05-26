@@ -215,6 +215,13 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
         gtk::gio::MenuItem::new(Some(tr("Filter junk").as_str()), Some("app.filter-junk"));
     menu_model.append_item(&check_item);
     menu_model.append(Some(tr("About").as_str()), Some("app.about"));
+    #[cfg(unix)]
+    if crate::utils::snap::is_snap() {
+        menu_model.append(
+            Some(tr("Change Steam folder…").as_str()),
+            Some("app.change-steam-folder"),
+        );
+    }
 
     let sort_section = gtk::gio::Menu::new();
     // tr_noop marks labels for extraction; the second element is the action target.

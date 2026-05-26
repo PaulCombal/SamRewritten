@@ -39,7 +39,7 @@
   "description": "A free, open-source Steam Achievement Manager for Linux and Windows. Unlock and relock Steam achievements, edit game stats in real time, schedule achievement unlocks, and idle apps. Includes a GTK graphical interface and a command-line tool.",
   "url": "https://paulcombal.github.io/SamRewritten/",
   "downloadUrl": "https://github.com/PaulCombal/SamRewritten/releases",
-  "softwareVersion": "1.3.5",
+  "softwareVersion": "1.4.2",
   "license": "https://github.com/PaulCombal/SamRewritten/blob/master/LICENSE",
   "image": "https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png",
   "author": {
@@ -192,7 +192,7 @@
   [id] { scroll-margin-top: 76px; }
   section.block + section.block { border-top: 1px solid var(--border-soft); }
   h2 { font-size: clamp(1.5rem, 3vw, 1.9rem); margin: 0 0 8px; letter-spacing: -.02em; }
-  .lead { color: var(--muted); margin: 0 0 28px; max-width: 640px; }
+  .lead { color: var(--muted); margin: 0 0 28px; }
   .section-head { margin-bottom: 28px; }
 
   /* Screenshots */
@@ -271,6 +271,29 @@
   details[open] summary::after { transform: rotate(225deg); }
   details > p { margin: 0 0 16px; color: var(--muted); }
 
+  /* Comparison */
+  .compare-wrap { overflow-x: auto; border: 1px solid var(--border-soft); border-radius: var(--radius); -webkit-overflow-scrolling: touch; }
+  table.compare { border-collapse: collapse; width: 100%; min-width: 780px; }
+  table.compare caption { caption-side: bottom; text-align: left; color: var(--muted); font-size: .9rem; padding: 14px 14px 0; }
+  table.compare th, table.compare td { padding: 11px 12px; text-align: center; border-bottom: 1px solid var(--border-soft); font-weight: 500; }
+  table.compare thead th { color: var(--muted); font-weight: 600; font-size: .9rem; background: var(--surface); white-space: nowrap; }
+  table.compare thead tr:first-child th { border-bottom: 1px solid var(--border); }
+  table.compare th.tool, table.compare td.tool { text-align: left; white-space: nowrap; }
+  table.compare th.tool a { color: var(--text); font-weight: 600; }
+  table.compare th.tool a:hover { color: var(--accent); }
+  table.compare tbody tr:hover { background: var(--surface); }
+  table.compare tr.me { background: var(--accent-soft); }
+  table.compare tr.me th.tool a { color: var(--accent); }
+  table.compare .grp { border-left: 1px solid var(--border-soft); }
+  table.compare td.meta { color: var(--muted); white-space: nowrap; }
+  table.compare svg.ico { width: 18px; height: 18px; vertical-align: middle; color: var(--muted); }
+  table.compare sup { font-size: .68em; color: var(--muted); }
+  table.compare th[title] { cursor: help; }
+  table.compare thead tr:first-child th[title] { text-decoration: underline dotted var(--muted); text-underline-offset: 4px; }
+  .yes { color: var(--accent); font-weight: 700; }
+  .no { color: #55556a; }
+  .partial { color: #d9a441; font-weight: 700; }
+
   /* Footer */
   footer { border-top: 1px solid var(--border-soft); padding: 40px 0 56px; }
   footer .wrap { text-align: center; color: var(--muted); font-size: .85rem; }
@@ -299,6 +322,7 @@
     </a>
     <div class="links">
       <a class="nav-link" href="#features">Features</a>
+      <a class="nav-link" href="#compare">Compare</a>
       <a class="nav-link" href="#install">Install</a>
       <a class="nav-link" href="#faq">FAQ</a>
       <a class="btn" href="https://github.com/PaulCombal/SamRewritten/releases">Download</a>
@@ -369,6 +393,86 @@
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Light and dark themes</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Full-featured CLI that does not require GTK</li>
       </ul>
+    </div>
+  </section>
+
+  <section class="block" id="compare">
+    <div class="wrap">
+      <div class="section-head"><h2>How SamRewritten compares to other Steam Achievement Managers</h2></div>
+      <p class="lead">
+        How SamRewritten stacks up against other Steam Achievement Managers and unlockers — the original
+        <a href="https://github.com/gibbed/SteamAchievementManager">Steam Achievement Manager (SAM) by Gibbed</a>,
+        <a href="https://github.com/jsnli/Samira">Samira</a>, and
+        <a href="https://github.com/zevnda/steam-game-idler">Steam Game Idler</a>.
+      </p>
+      <div class="compare-wrap">
+        <table class="compare">
+          <caption>SamRewritten vs other Steam Achievement Managers. <span class="yes">✓</span> yes · <span class="no">✕</span> no. Compiled June 2026 from each project's own documentation.</caption>
+          <thead>
+            <tr>
+              <th class="tool" rowspan="2">Tool</th>
+              <th class="grp" colspan="4" title="Which Steam packaging formats the tool can read and modify: Windows, Snap, Flatpak, or a native distro package (apt/.deb).">Supported Steam installs</th>
+              <th class="grp" rowspan="2" title="Unlock achievements gradually over a chosen time period instead of all at once.">Timed unlocks</th>
+              <th rowspan="2" title="Copy another user's unlock order and delays">Copy user timings</th>
+              <th rowspan="2" title="Back up and restore achievements and stats as JSON files.">Import/Export</th>
+              <th rowspan="2" title="Offers a command-line interface for automation, without needing the GUI.">Scriptable</th>
+              <th class="grp" rowspan="2" title="The graphical toolkit or framework the app's interface is built with.">GUI stack</th>
+              <th rowspan="2" title="The open-source license the project is released under.">License</th>
+            </tr>
+            <tr>
+              <th class="grp" title="Windows Steam"><svg class="ico" viewBox="0 0 24 24" role="img" aria-label="Windows Steam"><rect x="2.5" y="2.5" width="8.5" height="8.5" rx="0.6" fill="#0078d4"/><rect x="13" y="2.5" width="8.5" height="8.5" rx="0.6" fill="#0078d4"/><rect x="2.5" y="13" width="8.5" height="8.5" rx="0.6" fill="#0078d4"/><rect x="13" y="13" width="8.5" height="8.5" rx="0.6" fill="#0078d4"/></svg></th>
+              <th title="Snap Steam"><svg class="ico" viewBox="7.87 -0.04 114.07 109.18" role="img" aria-label="Snap Steam"><path d="m72.2 24.74v35.05l24.28-24.27-24.28-10.78z" fill="#82bea0"/><path d="m55.61 50.33l-29.76 55.8 42.82-42.83-13.06-12.97z" fill="#82bea0"/><path d="m70.13 23.1l-61.26-22.14 61.26 60.88v-38.74z" fill="#82bea0"/><path d="m118.94 43.26l-10.04-20.16h-35.3l45.34 20.16z" fill="#fa6441"/></svg></th>
+              <th title="Flatpak Steam"><svg class="ico" viewBox="101 47 191 212" role="img" aria-label="Flatpak Steam"><g transform="translate(-1108.5714,-122.85715)"><g transform="matrix(0.65355666,0,0,0.65355666,1083.9554,58.477411)" fill="#4a90d9"><path d="m 474.6092,255.1181 1e-5,151.18111 -130.92667,75.59055 v -151.1811 z"/><path d="M 343.68252,330.70866 V 179.52756 L 212.75586,255.1181 Z"/><path d="m 218.61226,233.26169 c -13.54108,7.81795 -21.85641,22.22052 -21.85641,37.85641 v 119.18111 c 0,15.63589 8.31533,30.03846 21.85641,37.85641 l 103.21385,59.59055 c 13.54108,7.81794 30.17174,7.81794 43.71282,0 l 103.21386,-59.59055 c 13.54108,-7.81795 21.85641,-22.22052 21.85641,-37.85641 V 271.1181 c 0,-15.63589 -8.31533,-30.03846 -21.85641,-37.85641 L 365.53893,173.67115 c -13.54108,-7.81794 -30.17174,-7.81794 -43.71282,0 z m 130.92667,-31.87772 103.21386,59.59054 c 3.60767,2.08289 5.85641,5.97781 5.85641,10.14359 v 119.18111 c 0,4.16578 -2.24874,8.0607 -5.85641,10.14359 l -103.21386,59.59055 c -3.60767,2.08289 -8.10515,2.08289 -11.71282,0 L 234.61226,400.4428 c -3.60767,-2.08289 -5.85641,-5.97781 -5.85641,-10.14359 V 271.1181 c 0,-4.16578 2.24874,-8.0607 5.85641,-10.14359 l 103.21385,-59.59054 c 3.60767,-2.08289 8.10515,-2.08289 11.71282,0 z"/></g></g></svg></th>
+              <th title="Native / package Steam (apt, .deb)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#c08440" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Native or package Steam (apt, .deb)"><path d="M16.5 9.4 7.5 4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="me">
+              <th class="tool"><a href="https://github.com/PaulCombal/SamRewritten">SamRewritten</a></th>
+              <td class="grp"><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td>
+              <td class="grp"><span class="yes">✓</span></td>
+              <td><span class="no">✕</span></td>
+              <td><span class="yes">✓</span></td>
+              <td><span class="yes">✓</span></td>
+              <td class="meta grp">GTK 4 / libadwaita</td>
+              <td class="meta">GPL-3.0</td>
+            </tr>
+            <tr>
+              <th class="tool"><a href="https://github.com/gibbed/SteamAchievementManager">SAM (Gibbed)</a></th>
+              <td class="grp"><span class="yes">✓</span></td><td><span class="no">✕</span></td><td><span class="no">✕</span></td><td><span class="no">✕</span></td>
+              <td class="grp"><span class="no">✕</span></td>
+              <td><span class="no">✕</span></td>
+              <td><span class="no">✕</span></td>
+              <td><span class="no">✕</span></td>
+              <td class="meta grp">WinForms (.NET)</td>
+              <td class="meta">zlib</td>
+            </tr>
+            <tr>
+              <th class="tool"><a href="https://github.com/jsnli/Samira">Samira</a></th>
+              <td class="grp"><span class="no">✕</span></td><td><span class="no">✕</span></td><td><span class="no">✕</span></td><td><span class="yes">✓</span></td>
+              <td class="grp"><span class="no">✕</span></td>
+              <td><span class="no">✕</span></td>
+              <td><span class="no">✕</span></td>
+              <td><span class="no">✕</span></td>
+              <td class="meta grp">Tauri (React)</td>
+              <td class="meta">GPL-3.0</td>
+            </tr>
+            <tr>
+              <th class="tool"><a href="https://github.com/zevnda/steam-game-idler">Steam Game Idler</a></th>
+              <td class="grp"><span class="yes">✓</span></td><td><span class="no">✕</span></td><td><span class="no">✕</span></td><td><span class="no">✕</span></td>
+              <td class="grp"><span class="yes">✓</span></td>
+              <td><span class="yes">✓</span></td>
+              <td><span class="no">✕</span></td>
+              <td><span class="yes">✓</span><sup>1</sup></td>
+              <td class="meta grp">Tauri (Next.js)</td>
+              <td class="meta">MIT</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">
+        <sup>1</sup> Steam Game Idler is a graphical app; its engine, <a href="https://github.com/zevnda/steam-utility">SteamUtility</a>, is a separate standalone CLI.
+      </p>
     </div>
   </section>
 

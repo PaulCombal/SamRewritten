@@ -20,6 +20,14 @@ SamRewritten
     <a href="https://github.com/PaulCombal/SamRewritten/releases">DOWNLOAD</a>
 </p>
 
+<p align="center">
+    <a href="#installation">Installation</a> ·
+    <a href="#features">Features</a> ·
+    <a href="#steam-compatibility">Steam compatibility</a> ·
+    <a href="#cli">CLI</a> ·
+    <a href="#translations">Translations</a>
+</p>
+
 <p align=center>
     <em>
         This project and its contributors are not affiliated with Valve Corporation or Microsoft.
@@ -27,7 +35,7 @@ SamRewritten
     </em>
 </p>
 
-## Thank you
+## Acknowledgments
 
 SamRewritten is heavily inspired by other wonderful projects such
 as [Steam Achievements Manager by Gibbed](https://github.com/gibbed/SteamAchievementManager)
@@ -43,44 +51,71 @@ SamRewritten is a tool that allows you to unlock and relock achievements on your
 
 ## Installation
 
-Downloads are available on the [release tab](https://github.com/PaulCombal/SamRewritten/releases) for Windows (installer) and Linux (AppImage).
-
 <details>
-<summary>Click here for detailed Windows instructions</summary>
+<summary><b>Arch Linux (AUR)</b></summary>
 
-The recommended way to run SamRewritten on Windows is via the official installer.
-You can download it from the Releases page. Alternatively, you can download a portable version in the zip format. 
-Once installed, you can find and launch SamRewritten through the Start menu.
+SamRewritten is available on the [AUR](https://aur.archlinux.org/packages/samrewritten-git). Install it with any AUR helper:
 
-If the installation fails or behaves unexpectedly, please report the issue by opening a GitHub issue with as much detail as possible, including your Windows version.
-
-</details>
-
-<details>
-<summary>Click here for detailed Linux instructions</summary>
-
-If your distribution does not provide a native package for SamRewritten, you can use our AppImages.
-AppImages are self-contained executables designed to run on almost any Linux distribution.
-Download the latest AppImage from the Releases page. To run it, ensure the file has execution permissions. You can usually do this by right-clicking the file, navigating to "Permissions," and checking the "Allow executing file as program" box.
-You can then double-click the file to start the app.
-
-If SamRewritten fails to launch, you can troubleshoot by running the AppImage from a terminal to see the logs.
-To do this, open a terminal in your download folder and run the file directly (e.g., ./SamRewritten-gtk.AppImage).
-
-If you see an error regarding "FUSE" or "libfuse," you may need to install the library:
 ```bash
-sudo apt install libfuse2 # Example for Ubuntu/Debian
+yay -S samrewritten-git
+# or
+paru -S samrewritten-git
 ```
 
-If issues persist, please open an issue including your distribution, version, and the console output from your terminal.
+</details>
+
+<details>
+<summary><b>Ubuntu Linux (Snap - Soon!)</b></summary>
+
+**⚠️ Important:** The Snap version of SamRewritten cannot be used with the Flatpak version of Steam.
+
+SamRewritten is published on the Snap Store and works on Ubuntu and any distribution with `snapd` installed:
+
+```bash
+sudo snap install samrewritten
+```
+
+[![Get it from the Snap Store](https://snapcraft.io/en/dark/install.svg)](https://snapcraft.io/samrewritten)
+
+The snap ships three commands: `samrewritten` (GTK), `samrewritten.samrewritten-adw` (libadwaita), and `samrewritten.samrewritten-cli`. The CLI reuses the Steam folder granted by the GUI, so run a GUI command once first.
 
 </details>
 
-> [!NOTE]
-> Arch users can install SamRewritten from the AUR using any helper (like yay or paru):
->
-> `yay -S samrewritten-git`
-> `paru -S samrewritten-git`
+<details>
+<summary><b>All Linux distributions (AppImage)</b></summary>
+
+For any Linux distribution, you can use the AppImage. AppImages are self-contained executables that run on almost any Linux distribution.
+
+1. Download the latest AppImage from the [Releases page](https://github.com/PaulCombal/SamRewritten/releases).
+2. Make it executable. You can either right-click the file → "Permissions" → check "Allow executing file as program", or run:
+   ```bash
+   chmod +x SamRewritten-gtk.AppImage
+   ```
+3. Double-click the file to launch, or run it from a terminal:
+   ```bash
+   ./SamRewritten-gtk.AppImage
+   ```
+
+If SamRewritten fails to launch, run it from a terminal to see the logs. If you see an error mentioning "FUSE" or "libfuse", install the library:
+
+```bash
+sudo apt install libfuse2   # Ubuntu/Debian
+```
+
+If issues persist, please open an issue including your distribution, version, and the console output.
+
+</details>
+
+<details>
+<summary><b>Windows</b></summary>
+
+The recommended way to run SamRewritten on Windows is via the official installer, available on the [Releases page](https://github.com/PaulCombal/SamRewritten/releases). Once installed, you can find and launch SamRewritten through the Start menu.
+
+A portable ZIP build is also provided on the Releases page if you prefer not to run an installer.
+
+If the installation fails or behaves unexpectedly, please open a GitHub issue with as much detail as possible, including your Windows version.
+
+</details>
 
 ## Features
 
@@ -109,6 +144,9 @@ On Linux, SamRewritten supports all of these Steam installation types:
 ✅ Ubuntu/Debian multiarch installations with apt <br>
 ✅ Ubuntu/Debian installations with the .deb file from the official Steam website <br>
 ✅ Distribution installations that use the Steam runtime (Gentoo, Arch, `~/.steam/root` exists)
+
+> [!NOTE]
+> The Snap package supports every type above **except Flatpak Steam**. For a Flatpak Steam install, use the AppImage or [AUR](https://aur.archlinux.org/packages/samrewritten-git) package.
 
 If you would like to see your specific distribution supported, please open an issue.
 

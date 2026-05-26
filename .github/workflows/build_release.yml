@@ -189,6 +189,30 @@ jobs:
           path: target/appimage
           retention-days: 1
 
+  build_snap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - name: Upload snap artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: samrewritten-snap
+          path: ${{ steps.snapcraft.outputs.snap }}
+          retention-days: 7
+
+      - name: Publish to Snap Store (candidate)
+        uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        with:
+          snap: ${{ steps.snapcraft.outputs.snap }}
+          release: candidate
+
   create_release:
     runs-on: ubuntu-latest
     needs: [ build_windows, build_appimage ] # This job depends on both build jobs
@@ -236,3 +260,9 @@ jobs:
             release_artifacts/linux/samrewritten-gtk.AppImage
             release_artifacts/linux/samrewritten-adw.AppImage
             release_artifacts/linux/samrewritten-cli.AppImage
+
+      - name: Reminder - promote snap to stable after review
+        run: |
+          echo "The snap was published to the 'candidate' channel."
+          echo "Once you've reviewed this release, promote it to stable with:"
+          echo "  snapcraft promote samrewritten --from-channel candidate --to-channel stable"

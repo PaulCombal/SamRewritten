@@ -21,6 +21,8 @@ pub mod export_file;
 pub mod format;
 pub mod ipc_client;
 pub mod ipc_types;
+#[cfg(all(unix, feature = "gui"))]
+pub mod snap;
 pub mod steam_locator;
 #[cfg(target_os = "linux")]
 pub mod steam_ns;

@@ -1,3 +1,7 @@
+### VERY HIGH
+
+Add the install form snap store buttons in readme and docs/index.html
+
 ### Low priority
 
 - Recover when Flatpak Steam is started *after* SamRewritten. The orchestrator

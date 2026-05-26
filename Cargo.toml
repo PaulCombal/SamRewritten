@@ -1,6 +1,6 @@
 [package]
 name = "SamRewritten"
-version = "1.4.1"
+version = "1.4.2"
 description = "Steam Achievement Manager Rewritten"
 edition = "2024"
 rust-version = "1.95"

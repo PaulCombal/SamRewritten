@@ -163,14 +163,49 @@ fn steam_root_from_maps(pid: i32) -> Option<PathBuf> {
 /// crashes on the first app-manager call, so this is the check that keeps us on
 /// the clean `SteamConnectionFailed` path instead.
 pub fn loaded_install_is_running() -> bool {
-    let Some(target) = SteamLocator::get_steamclient_lib_path(true)
-        .and_then(|lib| lib.parent()?.parent().map(Path::to_path_buf))
+    // Resolve via the install root, not the loaded steamclient.so path: the snap
+    // dlopens a copy from $SNAP_USER_COMMON, so the .so path isn't the real
+    // install. Skip dirs without a steamclient.so to match prior behaviour.
+    let Some(target) = SteamLocator::get_local_steam_install_root_folders()
+        .into_iter()
+        .find(|root| root.join("linux64/steamclient.so").exists())
         .and_then(|root| fs::canonicalize(root).ok())
     else {
         return false;
     };
 
-    running_steam_install_roots().contains(&target)
+    let roots = running_steam_install_roots();
+    if !roots.is_empty() {
+        return roots.contains(&target);
+    }
+
+    // No install identifiable — typically the snap, where AppArmor allows
+    // /proc/<pid>/comm but denies /proc/<pid>/maps for other snaps' processes.
+    // Fall back to "a steam process exists"; plug scoping keeps us to one install.
+    any_steam_process_running()
+}
+
+fn any_steam_process_running() -> bool {
+    let Ok(entries) = fs::read_dir("/proc") else {
+        return false;
+    };
+    for entry in entries.flatten() {
+        let Some(pid) = entry
+            .file_name()
+            .to_str()
+            .and_then(|n| n.parse::<i32>().ok())
+        else {
+            continue;
+        };
+        if fs::read_to_string(format!("/proc/{pid}/comm"))
+            .unwrap_or_default()
+            .trim()
+            == "steam"
+        {
+            return true;
+        }
+    }
+    false
 }
 
 /// A match is a process named `steam`, in a different PID namespace than us,

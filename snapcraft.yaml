@@ -1,12 +1,16 @@
-# If you want to help packaging SamRewritten for Snap, please refer to the notes from previous work in the doc folder first
-
 name: samrewritten
-version: '1.0'
+title: SamRewritten
+version: '1.4.2'
 summary: Steam achievements and stats manager
 description: Unlock achievements and stats on your Steam account
 confinement: strict
 base: core24
 license: GPL-3.0-only
+contact: https://github.com/PaulCombal/SamRewritten/issues
+issues: https://github.com/PaulCombal/SamRewritten/issues
+source-code: https://github.com/PaulCombal/SamRewritten
+website: https://paulcombal.github.io/SamRewritten/
+
 parts:
   samrewritten:
     plugin: rust
@@ -22,16 +26,24 @@ parts:
     stage-packages:
       - glib-networking
     override-build: |
-      craftctl default
+      # Default GTK GUI build.
+      cargo build --release --no-default-features --features gui
+      install -Dm755 target/release/samrewritten "$CRAFT_PART_INSTALL/bin/samrewritten"
+      # Adwaita variant (GTK + libadwaita widgets).
+      cargo build --release --no-default-features --features adwaita
+      install -Dm755 target/release/samrewritten "$CRAFT_PART_INSTALL/bin/samrewritten-adw"
+      cargo build --release --no-default-features --features cli
+      install -Dm755 target/release/samrewritten "$CRAFT_PART_INSTALL/bin/samrewritten-cli"
+      # GSettings schema (used by both GUI variants).
       install -Dm644 assets/org.samrewritten.SamRewritten.gschema.xml \
         "${CRAFT_PART_INSTALL}/usr/share/glib-2.0/schemas/org.samrewritten.SamRewritten.gschema.xml"
       glib-compile-schemas "${CRAFT_PART_INSTALL}/usr/share/glib-2.0/schemas/"
 
-plugs:
-  access-steam-folder:
-    interface: personal-files
-    read:
-      - $HOME/snap/steam/common/.local/share/Steam/linux64/steamclient.so
+  launcher:
+    plugin: nil
+    source: package
+    override-build: |
+      install -Dm755 sam-launcher.sh "$CRAFT_PART_INSTALL/bin/sam-launcher.sh"
 
 slots:
   dbus-samrewritten:
@@ -43,13 +55,34 @@ apps:
   samrewritten:
     environment:
       LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy # remove when this is in stable https://github.com/canonical/snapcraft-desktop-integration/pull/27
+    command-chain: [bin/sam-launcher.sh]
     command: bin/samrewritten
-    extensions: [ gnome ]
+    extensions: [gnome]
     plugs:
-      - access-steam-folder
       - network
       - wayland
       - x11
       - home
     slots:
       - dbus-samrewritten
+
+  samrewritten-adw:
+    environment:
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy
+    command-chain: [bin/sam-launcher.sh]
+    command: bin/samrewritten-adw
+    extensions: [gnome]
+    plugs:
+      - network
+      - wayland
+      - x11
+      - home
+    slots:
+      - dbus-samrewritten
+
+  samrewritten-cli:
+    command-chain: [bin/sam-launcher.sh]
+    command: bin/samrewritten-cli
+    plugs:
+      - network
+      - home

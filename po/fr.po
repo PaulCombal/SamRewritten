@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-03 19:32+0200\n"
+"POT-Creation-Date: 2026-06-04 23:36+0200\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -47,67 +47,71 @@ msgstr "Actualiser la liste des apps"
 msgid "Filter junk"
 msgstr "Filtrer les éléments superflus"
 
-#: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:298
+#: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:307
 msgid "About"
 msgstr "À propos"
 
-#: src/gui_frontend/ui_components.rs:222
+#: src/gui_frontend/ui_components.rs:221
+msgid "Change Steam folder…"
+msgstr "Changer le dossier Steam…"
+
+#: src/gui_frontend/ui_components.rs:229
 msgid "App ID"
 msgstr "App ID"
 
-#: src/gui_frontend/ui_components.rs:223
+#: src/gui_frontend/ui_components.rs:230
 msgid "Alphabetical"
 msgstr "Alphabétique"
 
-#: src/gui_frontend/ui_components.rs:224
+#: src/gui_frontend/ui_components.rs:231
 msgid "Recently played"
 msgstr "Lancé récemment"
 
-#: src/gui_frontend/ui_components.rs:225
+#: src/gui_frontend/ui_components.rs:232
 msgid "Time played"
 msgstr "Temps de jeu"
 
-#: src/gui_frontend/ui_components.rs:232
+#: src/gui_frontend/ui_components.rs:239
 msgid "Sort by"
 msgstr "Trier par"
 
-#: src/gui_frontend/ui_components.rs:234
+#: src/gui_frontend/ui_components.rs:241
 msgid "Bulk process"
 msgstr "Traitement par lot"
 
-#: src/gui_frontend/ui_components.rs:239
+#: src/gui_frontend/ui_components.rs:246
 msgid "System"
 msgstr "Système"
 
-#: src/gui_frontend/ui_components.rs:240
+#: src/gui_frontend/ui_components.rs:247
 msgid "Light"
 msgstr "Clair"
 
-#: src/gui_frontend/ui_components.rs:241
+#: src/gui_frontend/ui_components.rs:248
 msgid "Dark"
 msgstr "Sombre"
 
-#: src/gui_frontend/ui_components.rs:250
+#: src/gui_frontend/ui_components.rs:257
 msgid "Disable animations"
 msgstr "Désactiver les animations"
 
-#: src/gui_frontend/ui_components.rs:254
+#: src/gui_frontend/ui_components.rs:261
 msgid "Appearance"
 msgstr "Apparence"
 
-#: src/gui_frontend/ui_components.rs:259
+#: src/gui_frontend/ui_components.rs:266
 msgid "System default"
 msgstr "Système par défaut"
 
-#: src/gui_frontend/ui_components.rs:267
+#: src/gui_frontend/ui_components.rs:276
 msgid "Language"
 msgstr "Langue"
 
-#: src/gui_frontend/ui_components.rs:291
+#: src/gui_frontend/ui_components.rs:300
 msgid "Refresh achievements & stats"
 msgstr "Actualiser les succès et statistiques"
 
-#: src/gui_frontend/ui_components.rs:295
+#: src/gui_frontend/ui_components.rs:304
 msgid "Reset everything"
 msgstr "Tout réinitialiser"
 
@@ -118,11 +122,11 @@ msgstr "Tout réinitialiser"
 msgid "OK"
 msgstr "OK"
 
-#: src/gui_frontend/dialogs.rs:229
+#: src/gui_frontend/dialogs.rs:235
 msgid "<b>No Steam installations were found on your system.</b>"
 msgstr "<b>Aucune installation de Steam n'a été trouvée sur votre système.</b>"
 
-#: src/gui_frontend/dialogs.rs:230
+#: src/gui_frontend/dialogs.rs:237
 msgid ""
 "SamRewritten couldn't find Steam in any of the standard locations. If you "
 "haven't installed Steam yet, please install it through your distribution's "
@@ -132,11 +136,11 @@ msgstr ""
 "n'avez pas encore installé Steam, veuillez l'installer depuis le dépôt "
 "officiel de votre distribution ou votre logithèque."
 
-#: src/gui_frontend/dialogs.rs:231
+#: src/gui_frontend/dialogs.rs:239
 msgid "<b>Already have Steam installed?</b>"
 msgstr "<b>Steam est déjà installé ?</b>"
 
-#: src/gui_frontend/dialogs.rs:232
+#: src/gui_frontend/dialogs.rs:241
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
 "to it using environment variables. Please check the <a href=\"https://github."
@@ -148,15 +152,19 @@ msgstr ""
 "la <a href=\"https://github.com/PaulCombal/SamRewritten\">page GitHub</a> "
 "pour obtenir des instructions ou signaler votre problème."
 
-#: src/gui_frontend/dialogs.rs:236
+#: src/gui_frontend/dialogs.rs:246
 msgid "No compatible version of Steam found"
 msgstr "Aucune version compatible de Steam trouvée"
 
-#: src/gui_frontend/dialogs.rs:251
-msgid "Choose a Steam installation"
-msgstr "Choisir une installation de Steam"
+#: src/gui_frontend/dialogs.rs:282
+msgid "    (Steam is running here)"
+msgstr "    (Steam est lancé ici)"
 
-#: src/gui_frontend/dialogs.rs:258
+#: src/gui_frontend/dialogs.rs:284
+msgid "    (Steam not running here)"
+msgstr "    (Steam n'est pas lancé ici)"
+
+#: src/gui_frontend/dialogs.rs:307
 msgid ""
 "SamRewritten found more than one Steam installation. The one Steam is "
 "currently running from is preselected — the others won't work unless you "
@@ -166,15 +174,7 @@ msgstr ""
 "laquelle Steam est actuellement lancé est présélectionnée — les autres ne "
 "fonctionneront pas tant que vous n'aurez pas démarré Steam depuis celles-ci."
 
-#: src/gui_frontend/dialogs.rs:283
-msgid "    (Steam is running here)"
-msgstr "    (Steam est lancé ici)"
-
-#: src/gui_frontend/dialogs.rs:285
-msgid "    (Steam not running here)"
-msgstr "    (Steam n'est pas lancé ici)"
-
-#: src/gui_frontend/dialogs.rs:300
+#: src/gui_frontend/dialogs.rs:312
 msgid ""
 "You'll be asked again next launch. To skip this for good, set the "
 "<tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install you want "
@@ -187,9 +187,72 @@ msgstr ""
 "href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
 "file#environment-variables\">README</a>."
 
-#: src/gui_frontend/dialogs.rs:341
+#: src/gui_frontend/dialogs.rs:328 src/gui_frontend/dialogs.rs:377
+msgid "Choose a Steam installation"
+msgstr "Choisir une installation de Steam"
+
+#: src/gui_frontend/dialogs.rs:340 src/gui_frontend/dialogs.rs:504
+msgid "Quit"
+msgstr "Quitter"
+
+#: src/gui_frontend/dialogs.rs:341 src/gui_frontend/dialogs.rs:417
 msgid "Use this installation"
 msgstr "Utiliser cette installation"
+
+#: src/gui_frontend/dialogs.rs:494
+msgid ""
+"This is the sandboxed <b>Snap</b> version of SamRewritten, so it needs your "
+"permission to read your Steam files. Pick your Steam folder once — a system "
+"dialog will open, just confirm it to grant access. You won't be asked "
+"again.\n"
+"\n"
+"<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam "
+"with Flatpak, please use the AppImage instead."
+msgstr ""
+"Ceci est la version <b>Snap</b> (en bac à sable) de SamRewritten ; elle a "
+"donc besoin de votre autorisation pour lire vos fichiers Steam. Sélectionnez "
+"votre dossier Steam une seule fois — une fenêtre système s'ouvrira, "
+"confirmez-la simplement pour accorder l'accès. On ne vous le redemandera "
+"plus.\n"
+"\n"
+"<b>Steam via Flatpak n'est pas pris en charge</b> par le Snap. Si vous avez "
+"installé Steam avec Flatpak, veuillez plutôt utiliser l'AppImage."
+
+#: src/gui_frontend/dialogs.rs:501 src/gui_frontend/dialogs.rs:540
+msgid "Connect to Steam"
+msgstr "Se connecter à Steam"
+
+#: src/gui_frontend/dialogs.rs:505 src/gui_frontend/dialogs.rs:571
+msgid "Choose a folder…"
+msgstr "Choisir un dossier…"
+
+#: src/gui_frontend/dialogs.rs:506 src/gui_frontend/dialogs.rs:588
+msgid "Use Snap Steam"
+msgstr "Utiliser Steam Snap"
+
+#: src/gui_frontend/dialogs.rs:643
+msgid "Steam folder not usable"
+msgstr "Dossier Steam inutilisable"
+
+#: src/gui_frontend/dialogs.rs:651
+msgid ""
+"SamRewritten couldn't read <tt>steamclient.so</tt> in the folder you "
+"selected. Pick the <b>Steam</b> directory — the one containing a "
+"<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
+"use the AppImage."
+msgstr ""
+"SamRewritten n'a pas pu lire <tt>steamclient.so</tt> dans le dossier "
+"sélectionné. Choisissez le dossier <b>Steam</b> — celui qui contient un "
+"dossier <tt>linux64</tt>. Un Steam installé via Flatpak ne peut pas être "
+"utilisé par le Snap ; veuillez utiliser l'AppImage."
+
+#: src/gui_frontend/dialogs.rs:659
+msgid "Choose again"
+msgstr "Choisir à nouveau"
+
+#: src/gui_frontend/dialogs.rs:817
+msgid "Select your Steam folder"
+msgstr "Sélectionnez votre dossier Steam"
 
 #: src/gui_frontend/app_view.rs:68
 msgid "Achievements:"
@@ -239,7 +302,7 @@ msgstr "Incrément uniquement"
 msgid "This statistic is protected."
 msgstr "Cette statistique est protégée."
 
-#: src/gui_frontend/achievement_automatic_view.rs:38
+#: src/gui_frontend/achievement_automatic_view.rs:39
 msgid "Stop and go back"
 msgstr "Arrêter et revenir"
 
@@ -312,11 +375,11 @@ msgstr "Remplir automatiquement {count} succès ({progress})"
 msgid "This achievement is protected."
 msgstr "Ce succès est protégé."
 
-#: src/gui_frontend/achievement_manual_view.rs:770
+#: src/gui_frontend/achievement_manual_view.rs:771
 msgid "Click to stage this achievement; click again to remove."
 msgstr "Cliquez pour préparer ce succès ; cliquez à nouveau pour le retirer."
 
-#: src/gui_frontend/achievement_manual_view.rs:788
+#: src/gui_frontend/achievement_manual_view.rs:790
 msgid "Already unlocked."
 msgstr "Déjà déverrouillé."
 
@@ -334,7 +397,7 @@ msgid "The new language will be applied the next time you start SamRewritten."
 msgstr ""
 "La nouvelle langue sera appliquée au prochain démarrage de SamRewritten."
 
-#: src/gui_frontend/app_list_view/settings_bindings.rs:119
+#: src/gui_frontend/app_list_view/settings_bindings.rs:120
 msgid "Language changed"
 msgstr "Langue modifiée"
 
@@ -570,6 +633,3 @@ msgstr "Manager"
 #: src/gui_frontend/widgets/steam_app_card.rs:149
 msgid "Manage this app in a new window"
 msgstr "Gérer cette application dans une nouvelle fenêtre"
-
-#~ msgid "Quit"
-#~ msgstr "Quitter"
