@@ -3,6 +3,7 @@ name = "SamRewritten"
 version = "1.4.0"
 description = "Steam Achievement Manager Rewritten"
 edition = "2024"
+rust-version = "1.95"
 authors = [
     "Paul <abonnementspaul -@- gmail.com>",
     "Phillip <phillip.mendel -@- posteo.de>",
