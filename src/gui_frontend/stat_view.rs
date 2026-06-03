@@ -15,6 +15,7 @@
 
 use super::gobjects::stat::GStatObject;
 use super::request::{Request, SetFloatStat, SetIntStat};
+use crate::gui_frontend::i18n::tr;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::SignalHandlerId;
 use gtk::glib::object::Cast;
@@ -97,12 +98,12 @@ pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
 
         let icon_increment_only = gtk::Image::from_icon_name("go-up-symbolic");
         icon_increment_only.set_margin_end(8);
-        icon_increment_only.set_tooltip_text(Some("Increment only"));
+        icon_increment_only.set_tooltip_text(Some(tr("Increment only").as_str()));
         stat_box.append(&icon_increment_only);
 
         let protected_icon = gtk::Image::from_icon_name("action-unavailable-symbolic");
         protected_icon.set_margin_end(8);
-        protected_icon.set_tooltip_text(Some("This statistic is protected."));
+        protected_icon.set_tooltip_text(Some(tr("This statistic is protected.").as_str()));
         stat_box.append(&protected_icon);
 
         stat_box.append(&button_box);

@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::gui_frontend::i18n::tr;
 use gtk::ApplicationWindow;
 use gtk::glib;
 use gtk::glib::clone;
@@ -85,7 +86,7 @@ pub fn show_list_dialog(
         .build();
     content.append(&scroller);
 
-    let ok_button = gtk::Button::with_label("OK");
+    let ok_button = gtk::Button::with_label(tr("OK").as_str());
     ok_button.add_css_class("suggested-action");
     ok_button.connect_clicked(clone!(
         #[weak]
@@ -98,6 +99,64 @@ pub fn show_list_dialog(
         .halign(Align::End)
         .build();
     button_box.append(&ok_button);
+    content.append(&button_box);
+
+    dialog.set_child(Some(&content));
+    dialog.present();
+}
+
+#[cfg(feature = "adwaita")]
+pub fn show_message_dialog(parent: Option<&gtk::Window>, title: &str, body: &str) {
+    use adw::prelude::*;
+
+    let dialog = adw::AlertDialog::new(Some(title), Some(body));
+    dialog.add_response("ok", tr("OK").as_str());
+    dialog.set_default_response(Some("ok"));
+    dialog.set_close_response("ok");
+    dialog.present(parent);
+}
+
+#[cfg(not(feature = "adwaita"))]
+pub fn show_message_dialog(parent: Option<&gtk::Window>, title: &str, body: &str) {
+    let dialog = gtk::Window::builder()
+        .modal(true)
+        .title(title)
+        .resizable(false)
+        .destroy_with_parent(true)
+        .default_width(380)
+        .build();
+    dialog.set_transient_for(parent);
+
+    let label = gtk::Label::builder()
+        .label(body)
+        .wrap(true)
+        .xalign(0.0)
+        .build();
+
+    let ok_button = gtk::Button::with_label(tr("OK").as_str());
+    ok_button.add_css_class("suggested-action");
+    ok_button.connect_clicked(clone!(
+        #[weak]
+        dialog,
+        move |_| dialog.close()
+    ));
+
+    let button_box = gtk::Box::builder()
+        .orientation(Orientation::Horizontal)
+        .halign(Align::End)
+        .margin_top(12)
+        .build();
+    button_box.append(&ok_button);
+
+    let content = gtk::Box::builder()
+        .orientation(Orientation::Vertical)
+        .margin_top(16)
+        .margin_bottom(16)
+        .margin_start(16)
+        .margin_end(16)
+        .spacing(8)
+        .build();
+    content.append(&label);
     content.append(&button_box);
 
     dialog.set_child(Some(&content));
@@ -122,7 +181,7 @@ fn show_markup_warning(parent: &ApplicationWindow, title: &str, markup: &str) {
         .xalign(0.0)
         .build();
 
-    let close_button = gtk::Button::with_label("OK");
+    let close_button = gtk::Button::with_label(tr("OK").as_str());
     close_button.add_css_class("suggested-action");
     close_button.connect_clicked(clone!(
         #[weak]
@@ -165,16 +224,22 @@ where
     let dirs = SteamLocator::get_local_steam_install_root_folders();
 
     if dirs.is_empty() {
-        let full_message = "<b>No Steam installations were found on your system.</b>\n\n\
-            SamRewritten couldn't find Steam in any of the standard locations. \
-            If you haven't installed Steam yet, please install it through your \
-            distribution's official repository or app store.\n\n\
-            <b>Already have Steam installed?</b>\n\
-            If you've installed Steam in a custom location, you can point SamRewritten \
-            to it using environment variables. Please check the \
-            <a href=\"https://github.com/PaulCombal/SamRewritten\">GitHub page</a> \
-            for instructions, or to report your issue.";
-        show_markup_warning(parent, "No compatible version of Steam found", full_message);
+        let full_message = format!(
+            "{}\n\n{}\n\n{}\n{}",
+            tr("<b>No Steam installations were found on your system.</b>"),
+            tr(
+                "SamRewritten couldn't find Steam in any of the standard locations. If you haven't installed Steam yet, please install it through your distribution's official repository or app store."
+            ),
+            tr("<b>Already have Steam installed?</b>"),
+            tr(
+                "If you've installed Steam in a custom location, you can point SamRewritten to it using environment variables. Please check the <a href=\"https://github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report your issue."
+            ),
+        );
+        show_markup_warning(
+            parent,
+            tr("No compatible version of Steam found").as_str(),
+            full_message.as_str(),
+        );
         on_chosen(None);
         return;
     }
@@ -187,16 +252,15 @@ where
     let dialog = gtk::Window::builder()
         .transient_for(parent)
         .modal(true)
-        .title("Choose a Steam installation")
+        .title(tr("Choose a Steam installation").as_str())
         .destroy_with_parent(true)
         .default_width(560)
         .build();
 
     let intro = gtk::Label::builder()
         .label(
-            "SamRewritten found more than one Steam installation. The one Steam is \
-             currently running from is preselected — the others won't work unless you \
-             start Steam from them first.",
+            tr("SamRewritten found more than one Steam installation. The one Steam is currently running from is preselected — the others won't work unless you start Steam from them first.")
+            .as_str(),
         )
         .wrap(true)
         .xalign(0.0)
@@ -220,9 +284,9 @@ where
         .iter()
         .map(|dir| {
             let suffix = if is_running(dir) {
-                "    (Steam is running here)"
+                tr("    (Steam is running here)")
             } else {
-                "    (Steam not running here)"
+                tr("    (Steam not running here)")
             };
             let cb = gtk::CheckButton::with_label(&format!("{}{suffix}", dir.display()));
             radio_box.append(&cb);
@@ -237,10 +301,8 @@ where
     let hint = gtk::Label::builder()
         .use_markup(true)
         .label(
-            "You'll be asked again next launch. To skip this for good, set the \
-             <tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install \
-             you want — see the \
-             <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-file#environment-variables\">README</a>.",
+            tr("You'll be asked again next launch. To skip this for good, set the <tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install you want — see the <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-file#environment-variables\">README</a>.")
+            .as_str(),
         )
         .wrap(true)
         .xalign(0.0)
@@ -280,7 +342,7 @@ where
         }
     ));
 
-    let use_button = gtk::Button::with_label("Use this installation");
+    let use_button = gtk::Button::with_label(tr("Use this installation").as_str());
     use_button.add_css_class("suggested-action");
     use_button.connect_clicked(clone!(
         #[weak]

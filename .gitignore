@@ -2,6 +2,7 @@
 *.xml
 *.snap
 gschemas.compiled
+/locale
 !*.gschema.xml
 !*.gresource.xml
 !sitemap.xml

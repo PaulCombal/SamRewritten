@@ -19,6 +19,7 @@ use crate::gui_frontend::custom_progress_bar_widget::CustomProgressBar;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::gobjects::mode_state::{GUnlockModeState, MODE_AUTOCOMMIT, MODE_DEFERRED};
 use crate::gui_frontend::gsettings::get_settings;
+use crate::gui_frontend::i18n::{tr, tr_noop};
 use crate::gui_frontend::request::{Request, SetAchievement};
 use crate::gui_frontend::unlock_queue::{UnlockQueue, resolve_target_count};
 use crate::gui_frontend::unlock_scheduler::{
@@ -41,7 +42,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
-const STAGE_LABEL: &str = "Stage unlocks";
+const STAGE_LABEL: &str = tr_noop("Stage unlocks");
 
 struct Header {
     container: ListBox,
@@ -66,7 +67,7 @@ fn create_header(mode_state: &Rc<GUnlockModeState>, config_popover: &Popover) ->
         .build();
     let hbox = Box::new(Orientation::Horizontal, 10);
 
-    let mode_label = Label::new(Some(STAGE_LABEL));
+    let mode_label = Label::new(Some(tr(STAGE_LABEL).as_str()));
     let mode_switch = Switch::builder().valign(Align::Center).build();
 
     let spacer = Box::builder()
@@ -75,10 +76,10 @@ fn create_header(mode_state: &Rc<GUnlockModeState>, config_popover: &Popover) ->
         .build();
 
     let queue_label = Label::builder().build();
-    let auto_fill_button = Button::builder().label("Auto-fill").build();
+    let auto_fill_button = Button::builder().label(tr("Auto-fill").as_str()).build();
     let auto_fill_dropdown = Button::builder()
         .icon_name("pan-down-symbolic")
-        .tooltip_text("Configuration")
+        .tooltip_text(tr("Configuration").as_str())
         .build();
     // Anchor the popover to the dropdown button and drive it manually so both
     // halves of the linked group are plain `Button` widgets (same CSS name,
@@ -104,7 +105,7 @@ fn create_header(mode_state: &Rc<GUnlockModeState>, config_popover: &Popover) ->
     auto_fill_group.append(&auto_fill_dropdown);
 
     let start_button = Button::builder()
-        .label("Start")
+        .label(tr("Start").as_str())
         .css_classes(["suggested-action"])
         .build();
 
@@ -205,9 +206,9 @@ fn create_config_popover(settings: &gtk::gio::Settings) -> Config {
     target_stack.add_named(&count_spin, Some("count"));
     target_stack.add_named(&percent_spin, Some("percent"));
 
-    let unit_count_toggle = ToggleButton::builder().label("Count").build();
+    let unit_count_toggle = ToggleButton::builder().label(tr("Count").as_str()).build();
     let unit_percent_toggle = ToggleButton::builder()
-        .label("Percent")
+        .label(tr("Percent").as_str())
         .group(&unit_count_toggle)
         .build();
     let unit_box = Box::builder()
@@ -241,7 +242,7 @@ fn create_config_popover(settings: &gtk::gio::Settings) -> Config {
         .hexpand(true)
         .build();
     let duration_minutes_label = Label::builder()
-        .label("minutes (0 = instant)")
+        .label(tr("minutes (0 = instant)").as_str())
         .halign(Align::Start)
         .css_classes(["dim-label"])
         .build();
@@ -249,9 +250,12 @@ fn create_config_popover(settings: &gtk::gio::Settings) -> Config {
     duration_row.append(&duration_spin);
     duration_row.append(&duration_minutes_label);
 
-    let spacing_even_toggle = ToggleButton::builder().label("Even").hexpand(true).build();
+    let spacing_even_toggle = ToggleButton::builder()
+        .label(tr("Even").as_str())
+        .hexpand(true)
+        .build();
     let spacing_random_toggle = ToggleButton::builder()
-        .label("Random")
+        .label(tr("Random").as_str())
         .hexpand(true)
         .group(&spacing_even_toggle)
         .build();
@@ -270,12 +274,18 @@ fn create_config_popover(settings: &gtk::gio::Settings) -> Config {
     }
 
     let grid = Grid::builder().row_spacing(10).column_spacing(12).build();
-    let target_label = Label::builder().label("Target").halign(Align::End).build();
-    let duration_label = Label::builder()
-        .label("Spread over")
+    let target_label = Label::builder()
+        .label(tr("Target").as_str())
         .halign(Align::End)
         .build();
-    let spacing_label = Label::builder().label("Spacing").halign(Align::End).build();
+    let duration_label = Label::builder()
+        .label(tr("Spread over").as_str())
+        .halign(Align::End)
+        .build();
+    let spacing_label = Label::builder()
+        .label(tr("Spacing").as_str())
+        .halign(Align::End)
+        .build();
     grid.attach(&target_label, 0, 0, 1, 1);
     grid.attach(&target_row, 1, 0, 1, 1);
     grid.attach(&duration_label, 0, 1, 1, 1);
@@ -351,9 +361,8 @@ fn create_config_popover(settings: &gtk::gio::Settings) -> Config {
 fn update_queue_label(label: &Label, queue: &UnlockQueue) {
     let n = queue.len();
     label.set_label(&match n {
-        0 => "No achievements staged".to_string(),
-        1 => "1 staged".to_string(),
-        n => format!("{n} staged"),
+        0 => tr("No achievements staged").to_string(),
+        n => tr("{count} staged").replace("{count}", &n.to_string()),
     });
 }
 
@@ -385,17 +394,17 @@ fn update_autofill_sensitive(
     );
     if to_add == 0 {
         auto_fill_button.set_sensitive(false);
-        auto_fill_button.set_tooltip_text(Some(&format!(
-            "Already at or above target ({})",
-            format_achievement_progress(unlocked, total),
-        )));
+        auto_fill_button.set_tooltip_text(Some(
+            &tr("Already at or above target ({progress})")
+                .replace("{progress}", &format_achievement_progress(unlocked, total)),
+        ));
     } else {
         auto_fill_button.set_sensitive(true);
-        auto_fill_button.set_tooltip_text(Some(&format!(
-            "Auto-fill {to_add} achievement{} ({})",
-            if to_add == 1 { "" } else { "s" },
-            format_achievement_progress(unlocked, total),
-        )));
+        auto_fill_button.set_tooltip_text(Some(
+            &tr("Auto-fill {count} achievement(s) ({progress})")
+                .replace("{count}", &to_add.to_string())
+                .replace("{progress}", &format_achievement_progress(unlocked, total)),
+        ));
     }
 }
 
@@ -732,7 +741,7 @@ fn install_row_factory(
             // Autocommit trailing widget: protected icon + switch.
             let ac_protected_icon = gtk::Image::from_icon_name("action-unavailable-symbolic");
             ac_protected_icon.set_margin_end(8);
-            ac_protected_icon.set_tooltip_text(Some("This achievement is protected."));
+            ac_protected_icon.set_tooltip_text(Some(tr("This achievement is protected.").as_str()));
             let switch = Switch::builder().valign(Align::Center).build();
             let ac_box = Box::builder()
                 .orientation(Orientation::Horizontal)
@@ -746,7 +755,7 @@ fn install_row_factory(
             // label) keeps the button at a single, theme-stable size across all rows.
             let df_protected_icon = gtk::Image::from_icon_name("action-unavailable-symbolic");
             df_protected_icon.set_margin_end(8);
-            df_protected_icon.set_tooltip_text(Some("This achievement is protected."));
+            df_protected_icon.set_tooltip_text(Some(tr("This achievement is protected.").as_str()));
             let position_label = Label::builder()
                 .valign(Align::Center)
                 .width_request(24)
@@ -758,7 +767,9 @@ fn install_row_factory(
                 .valign(Align::Center)
                 .css_classes(["circular"])
                 .icon_name("list-add-symbolic")
-                .tooltip_text("Click to stage this achievement; click again to remove.")
+                .tooltip_text(
+                    tr("Click to stage this achievement; click again to remove.").as_str(),
+                )
                 .build();
             let df_box = Box::builder()
                 .orientation(Orientation::Horizontal)
@@ -776,7 +787,7 @@ fn install_row_factory(
                 .css_classes(["circular"])
                 .sensitive(false)
                 .icon_name("emblem-ok-symbolic")
-                .tooltip_text("Already unlocked.")
+                .tooltip_text(tr("Already unlocked.").as_str())
                 .build();
 
             let trailing_stack = Stack::builder().build();

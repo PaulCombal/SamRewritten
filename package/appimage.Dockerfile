@@ -4,7 +4,7 @@ FROM fedora:40
 ARG RUST_VERSION=stable
 ENV RUST_VERSION=$RUST_VERSION
 
-RUN dnf install gtk4-devel gcc libadwaita-devel openssl-devel wget file desktop-file-utils appstream squashfs-tools -y
+RUN dnf install gtk4-devel gcc libadwaita-devel openssl-devel wget file desktop-file-utils appstream squashfs-tools gettext -y
 
 ENV APPIMAGE_VERSION=continuous
 ENV APPIMAGE_EXTRACT_AND_RUN=1

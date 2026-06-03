@@ -1,0 +1,15 @@
+# Source files containing translatable strings (xgettext input).
+# Add new files here as they gain tr()/tr_noop()/trn() calls.
+src/gui_frontend/ui_components.rs
+src/gui_frontend/dialogs.rs
+src/gui_frontend/app_view.rs
+src/gui_frontend/stat_view.rs
+src/gui_frontend/achievement_automatic_view.rs
+src/gui_frontend/achievement_manual_view.rs
+src/gui_frontend/unlock_scheduler.rs
+src/gui_frontend/app_list_view/mod.rs
+src/gui_frontend/app_list_view/settings_bindings.rs
+src/gui_frontend/app_list_view/bulk_actions.rs
+src/gui_frontend/app_list_view/progress_actions.rs
+src/gui_frontend/app_list_view/refresh_actions.rs
+src/gui_frontend/widgets/steam_app_card.rs

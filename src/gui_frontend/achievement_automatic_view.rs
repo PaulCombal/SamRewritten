@@ -15,6 +15,7 @@
 
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
+use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use gtk::glib::clone;
 use gtk::pango::EllipsizeMode;
@@ -34,7 +35,9 @@ fn create_header(application: &MainApplication) -> (ListBox, Button) {
     hbox.set_spacing(5);
 
     let button_stop = Button::builder().icon_name("go-previous").build();
-    let label = Label::builder().label("Stop and go back").build();
+    let label = Label::builder()
+        .label(tr("Stop and go back").as_str())
+        .build();
 
     hbox.append(&button_stop);
     hbox.append(&label);

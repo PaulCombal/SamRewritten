@@ -15,6 +15,7 @@
 
 use crate::dev_println;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
+use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::request::{Request, SetAchievement};
 use crate::utils::format::format_seconds_to_hh_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
@@ -136,7 +137,7 @@ pub async fn run_timed_unlock(
             let remaining_ms = times_ms[i].saturating_sub(elapsed_ms);
             let remaining_seconds = remaining_ms / 1000;
             if remaining_seconds == 0 {
-                ach.set_time_until_unlock("OK");
+                ach.set_time_until_unlock(tr("OK").as_str());
             } else {
                 ach.set_time_until_unlock(format_seconds_to_hh_mm_ss(remaining_seconds as usize));
             }

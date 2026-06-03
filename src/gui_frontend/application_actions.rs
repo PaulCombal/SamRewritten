@@ -15,7 +15,7 @@
 
 use crate::dev_println;
 use crate::gui_frontend::MainApplication;
-use gtk::AboutDialog;
+use crate::gui_frontend::ui_components::show_about_dialog;
 use gtk::gio::SimpleAction;
 use gtk::glib;
 use gtk::glib::clone;
@@ -23,7 +23,6 @@ use gtk::prelude::*;
 
 pub fn setup_app_actions(
     application: &MainApplication,
-    about_dialog: &AboutDialog,
     refresh_app_list_action: &SimpleAction,
     refresh_achievements_list_action: &SimpleAction,
     reset_all_stats_and_achievements_action: &SimpleAction,
@@ -37,9 +36,9 @@ pub fn setup_app_actions(
     let action_show_about_dialog = SimpleAction::new("about", None);
     action_show_about_dialog.connect_activate(clone!(
         #[weak]
-        about_dialog,
+        application,
         move |_, _| {
-            about_dialog.set_visible(true);
+            show_about_dialog(application.active_window().as_ref());
         }
     ));
 

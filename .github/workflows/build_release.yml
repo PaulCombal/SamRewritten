@@ -23,6 +23,9 @@ jobs:
       - name: Print NSIS version
         run: Invoke-Expression "& ""C:\Program Files (x86)\NSIS\makensis.exe"" -VERSION"
 
+      - name: Install gettext
+        run: choco install gettext --no-progress -y
+
       - name: Download GTK Dependencies Zip
         run: |
           $zipUrl = "https://github.com/wingtk/gvsbuild/releases/download/2025.5.0/GTK4_Gvsbuild_2025.5.0_x64.zip"
@@ -85,6 +88,12 @@ jobs:
           
           Copy-Item -Path "$originalShareIconsFolder" -Destination $tempShareFolder -Recurse -Force
           Write-Host "Copied icons to $tempShareFolder"
+
+          # Translations compiled by build.rs (locale/<lang>/LC_MESSAGES/*.mo)
+          if (Test-Path "locale") {
+            Copy-Item -Path "locale" -Destination "$tempShareFolder/locale" -Recurse -Force
+            Write-Host "Copied translations to $tempShareFolder/locale"
+          }
           
           # If something breaks after an gvsbuild update, maybe we need to pull more from here
           $tempLibFolder = "$tempArchiveRoot/lib"

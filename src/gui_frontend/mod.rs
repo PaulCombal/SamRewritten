@@ -24,6 +24,7 @@ mod custom_progress_bar_widget;
 mod dialogs;
 mod gobjects;
 mod gsettings;
+mod i18n;
 mod request;
 mod stat_view;
 mod ui_components;

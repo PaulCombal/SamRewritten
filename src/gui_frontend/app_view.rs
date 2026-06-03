@@ -16,6 +16,7 @@
 use super::stat_view::create_stats_view;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::achievement_view::create_achievements_view;
+use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use gtk::gio::ListStore;
 use gtk::glib::clone;
@@ -58,13 +59,13 @@ pub fn create_app_view(
     Stack,
 ) {
     let app_spinner = Spinner::builder().spinning(true).margin_end(5).build();
-    let app_spinner_label = Label::builder().label("Loading...").build();
+    let app_spinner_label = Label::builder().label(tr("Loading...").as_str()).build();
     let app_spinner_box = Box::builder().halign(Align::Center).build();
     app_spinner_box.append(&app_spinner);
     app_spinner_box.append(&app_spinner_label);
 
     let app_achievement_count_label = Label::builder()
-        .label("Achievements:")
+        .label(tr("Achievements:").as_str())
         .halign(Align::Start)
         .build();
     let app_achievement_count_spacer = Box::builder().hexpand(true).build();
@@ -78,7 +79,7 @@ pub fn create_app_view(
     app_achievement_count_box.append(&app_achievement_count_value);
 
     let app_stats_count_label = Label::builder()
-        .label("Stats:")
+        .label(tr("Stats:").as_str())
         .halign(Align::Start)
         .build();
     let app_stats_count_spacer = Box::builder().hexpand(true).build();
@@ -92,7 +93,7 @@ pub fn create_app_view(
     app_stats_count_box.append(&app_stats_count_value);
 
     let app_playtime_label = Label::builder()
-        .label("Last playtime:")
+        .label(tr("Last playtime:").as_str())
         .halign(Align::Start)
         .build();
     let app_playtime_spacer = Box::builder().hexpand(true).build();
@@ -105,7 +106,10 @@ pub fn create_app_view(
     app_playtime_box.append(&app_playtime_spacer);
     app_playtime_box.append(&app_playtime_value);
 
-    let app_type_label = Label::builder().label("Type:").halign(Align::Start).build();
+    let app_type_label = Label::builder()
+        .label(tr("Type:").as_str())
+        .halign(Align::Start)
+        .build();
     let app_type_spacer = Box::builder().hexpand(true).build();
     let app_type_value = Label::builder().halign(Align::End).build();
     let app_type_box = Box::builder()
@@ -117,7 +121,7 @@ pub fn create_app_view(
     app_type_box.append(&app_type_value);
 
     let app_developer_label = Label::builder()
-        .label("Developer:")
+        .label(tr("Developer:").as_str())
         .halign(Align::Start)
         .build();
     let app_developer_spacer = Box::builder().hexpand(true).build();
@@ -134,7 +138,7 @@ pub fn create_app_view(
     app_developer_box.append(&app_developer_value);
 
     let app_metacritic_label = Label::builder()
-        .label("Metacritic:")
+        .label(tr("Metacritic:").as_str())
         .halign(Align::Start)
         .build();
     let app_metacritic_spacer = Box::builder().hexpand(true).build();
@@ -148,13 +152,13 @@ pub fn create_app_view(
     app_metacritic_box.append(&app_metacritic_value);
 
     let app_loading_failed_label = Label::builder()
-        .label("Failed to load app.")
+        .label(tr("Failed to load app.").as_str())
         .halign(Align::Center)
         .valign(Align::Center)
         .build();
 
     let app_no_entries_value = Label::builder()
-        .label("No entries found.")
+        .label(tr("No entries found.").as_str())
         .halign(Align::Center)
         .valign(Align::Center)
         .build();
@@ -170,9 +174,11 @@ pub fn create_app_view(
     app_shimmer_image.set_halign(Align::Fill);
     app_shimmer_image.set_height_request(87);
 
-    let app_achievements_button = ToggleButton::builder().label("Achievements").build();
+    let app_achievements_button = ToggleButton::builder()
+        .label(tr("Achievements").as_str())
+        .build();
     let app_stats_button = ToggleButton::builder()
-        .label("Stats")
+        .label(tr("Stats").as_str())
         .group(&app_achievements_button)
         .build();
     let app_button_box = Box::builder()

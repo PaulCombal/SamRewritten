@@ -18,6 +18,7 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::{set_app_action_enabled, set_bulk_actions_enabled};
 use crate::gui_frontend::dialogs::show_list_dialog;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
+use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::request::{Request, ResetApps, UnlockAllApps};
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
@@ -131,7 +132,11 @@ pub fn create_bulk_actions(
             let progress_label_for_thread = progress_label_weak.clone();
             MainContext::default().invoke(move || {
                 if let Some(label) = progress_label_weak.upgrade() {
-                    label.set_text(&format!("Unlocking 0 / {} app(s)…", total_apps));
+                    label.set_text(
+                        &tr("Unlocking {done} / {total} app(s)…")
+                            .replace("{done}", "0")
+                            .replace("{total}", &total_apps.to_string()),
+                    );
                 }
                 if let Some(label) = info_label_weak.upgrade() {
                     label.set_text("");
@@ -151,7 +156,11 @@ pub fn create_bulk_actions(
                         let label = progress_label_for_thread.clone();
                         MainContext::default().invoke(move || {
                             if let Some(l) = label.upgrade() {
-                                l.set_text(&format!("Unlocking {done} / {total} app(s)…"));
+                                l.set_text(
+                                    &tr("Unlocking {done} / {total} app(s)…")
+                                        .replace("{done}", &done.to_string())
+                                        .replace("{total}", &total.to_string()),
+                                );
                             }
                         });
                     }) {
@@ -198,8 +207,8 @@ pub fn create_bulk_actions(
                     {
                         show_list_dialog(
                             &parent,
-                            "Unlock Incomplete",
-                            "Failed to unlock achievements for the following apps:",
+                            tr("Unlock Incomplete").as_str(),
+                            tr("Failed to unlock achievements for the following apps:").as_str(),
                             &failed_apps.join("\n"),
                         );
                     }
@@ -280,7 +289,11 @@ pub fn create_bulk_actions(
             let progress_label_for_thread = progress_label_weak.clone();
             MainContext::default().invoke(move || {
                 if let Some(label) = progress_label_weak.upgrade() {
-                    label.set_text(&format!("Locking 0 / {} app(s)…", total_apps));
+                    label.set_text(
+                        &tr("Locking {done} / {total} app(s)…")
+                            .replace("{done}", "0")
+                            .replace("{total}", &total_apps.to_string()),
+                    );
                 }
                 if let Some(label) = info_label_weak.upgrade() {
                     label.set_text("");
@@ -302,7 +315,11 @@ pub fn create_bulk_actions(
                     let label = progress_label_for_thread.clone();
                     MainContext::default().invoke(move || {
                         if let Some(l) = label.upgrade() {
-                            l.set_text(&format!("Locking {done} / {total} app(s)…"));
+                            l.set_text(
+                                &tr("Locking {done} / {total} app(s)…")
+                                    .replace("{done}", &done.to_string())
+                                    .replace("{total}", &total.to_string()),
+                            );
                         }
                     });
                 }) {

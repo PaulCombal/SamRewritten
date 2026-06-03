@@ -1,0 +1,575 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SamRewritten\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-03 19:32+0200\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
+#: src/gui_frontend/app_list_view/mod.rs:171
+msgid "Loading..."
+msgstr "Chargement..."
+
+#: src/gui_frontend/ui_components.rs:186
+msgid "Select all visible apps"
+msgstr "Sélectionner les applications visibles"
+
+#: src/gui_frontend/ui_components.rs:190
+msgid "Deselect all apps"
+msgstr "Tout désélectionner"
+
+#: src/gui_frontend/ui_components.rs:194
+msgid "Unlock all in selection"
+msgstr "Tout déverrouiller dans la sélection"
+
+#: src/gui_frontend/ui_components.rs:198
+msgid "Reset all in selection"
+msgstr "Tout réinitialiser dans la sélection"
+
+#: src/gui_frontend/ui_components.rs:202
+#: src/gui_frontend/app_list_view/progress_actions.rs:115
+msgid "Export selected apps progress"
+msgstr "Exporter la progression sélection"
+
+#: src/gui_frontend/ui_components.rs:206
+msgid "Import progress..."
+msgstr "Importer progression..."
+
+#: src/gui_frontend/ui_components.rs:211
+msgid "Refresh app list"
+msgstr "Actualiser la liste des apps"
+
+#: src/gui_frontend/ui_components.rs:215
+msgid "Filter junk"
+msgstr "Filtrer les éléments superflus"
+
+#: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:298
+msgid "About"
+msgstr "À propos"
+
+#: src/gui_frontend/ui_components.rs:222
+msgid "App ID"
+msgstr "App ID"
+
+#: src/gui_frontend/ui_components.rs:223
+msgid "Alphabetical"
+msgstr "Alphabétique"
+
+#: src/gui_frontend/ui_components.rs:224
+msgid "Recently played"
+msgstr "Lancé récemment"
+
+#: src/gui_frontend/ui_components.rs:225
+msgid "Time played"
+msgstr "Temps de jeu"
+
+#: src/gui_frontend/ui_components.rs:232
+msgid "Sort by"
+msgstr "Trier par"
+
+#: src/gui_frontend/ui_components.rs:234
+msgid "Bulk process"
+msgstr "Traitement par lot"
+
+#: src/gui_frontend/ui_components.rs:239
+msgid "System"
+msgstr "Système"
+
+#: src/gui_frontend/ui_components.rs:240
+msgid "Light"
+msgstr "Clair"
+
+#: src/gui_frontend/ui_components.rs:241
+msgid "Dark"
+msgstr "Sombre"
+
+#: src/gui_frontend/ui_components.rs:250
+msgid "Disable animations"
+msgstr "Désactiver les animations"
+
+#: src/gui_frontend/ui_components.rs:254
+msgid "Appearance"
+msgstr "Apparence"
+
+#: src/gui_frontend/ui_components.rs:259
+msgid "System default"
+msgstr "Système par défaut"
+
+#: src/gui_frontend/ui_components.rs:267
+msgid "Language"
+msgstr "Langue"
+
+#: src/gui_frontend/ui_components.rs:291
+msgid "Refresh achievements & stats"
+msgstr "Actualiser les succès et statistiques"
+
+#: src/gui_frontend/ui_components.rs:295
+msgid "Reset everything"
+msgstr "Tout réinitialiser"
+
+#: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:113
+#: src/gui_frontend/dialogs.rs:136 src/gui_frontend/dialogs.rs:184
+#: src/gui_frontend/unlock_scheduler.rs:140
+#: src/gui_frontend/app_list_view/progress_actions.rs:42
+msgid "OK"
+msgstr "OK"
+
+#: src/gui_frontend/dialogs.rs:229
+msgid "<b>No Steam installations were found on your system.</b>"
+msgstr "<b>Aucune installation de Steam n'a été trouvée sur votre système.</b>"
+
+#: src/gui_frontend/dialogs.rs:230
+msgid ""
+"SamRewritten couldn't find Steam in any of the standard locations. If you "
+"haven't installed Steam yet, please install it through your distribution's "
+"official repository or app store."
+msgstr ""
+"SamRewritten n'a trouvé Steam dans aucun des emplacements habituels. Si vous "
+"n'avez pas encore installé Steam, veuillez l'installer depuis le dépôt "
+"officiel de votre distribution ou votre logithèque."
+
+#: src/gui_frontend/dialogs.rs:231
+msgid "<b>Already have Steam installed?</b>"
+msgstr "<b>Steam est déjà installé ?</b>"
+
+#: src/gui_frontend/dialogs.rs:232
+msgid ""
+"If you've installed Steam in a custom location, you can point SamRewritten "
+"to it using environment variables. Please check the <a href=\"https://github."
+"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
+"your issue."
+msgstr ""
+"Si vous avez installé Steam dans un emplacement personnalisé, vous pouvez "
+"l'indiquer à SamRewritten à l'aide de variables d'environnement. Consultez "
+"la <a href=\"https://github.com/PaulCombal/SamRewritten\">page GitHub</a> "
+"pour obtenir des instructions ou signaler votre problème."
+
+#: src/gui_frontend/dialogs.rs:236
+msgid "No compatible version of Steam found"
+msgstr "Aucune version compatible de Steam trouvée"
+
+#: src/gui_frontend/dialogs.rs:251
+msgid "Choose a Steam installation"
+msgstr "Choisir une installation de Steam"
+
+#: src/gui_frontend/dialogs.rs:258
+msgid ""
+"SamRewritten found more than one Steam installation. The one Steam is "
+"currently running from is preselected — the others won't work unless you "
+"start Steam from them first."
+msgstr ""
+"SamRewritten a trouvé plusieurs installations de Steam. Celle depuis "
+"laquelle Steam est actuellement lancé est présélectionnée — les autres ne "
+"fonctionneront pas tant que vous n'aurez pas démarré Steam depuis celles-ci."
+
+#: src/gui_frontend/dialogs.rs:283
+msgid "    (Steam is running here)"
+msgstr "    (Steam est lancé ici)"
+
+#: src/gui_frontend/dialogs.rs:285
+msgid "    (Steam not running here)"
+msgstr "    (Steam n'est pas lancé ici)"
+
+#: src/gui_frontend/dialogs.rs:300
+msgid ""
+"You'll be asked again next launch. To skip this for good, set the "
+"<tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install you want "
+"— see the <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
+"file#environment-variables\">README</a>."
+msgstr ""
+"La question vous sera reposée au prochain lancement. Pour ne plus "
+"l'afficher, définissez la variable d'environnement "
+"<tt>SAM_STEAM_INSTALL_ROOT</tt> sur l'installation souhaitée — voir le <a "
+"href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
+"file#environment-variables\">README</a>."
+
+#: src/gui_frontend/dialogs.rs:341
+msgid "Use this installation"
+msgstr "Utiliser cette installation"
+
+#: src/gui_frontend/app_view.rs:68
+msgid "Achievements:"
+msgstr "Succès :"
+
+#: src/gui_frontend/app_view.rs:82
+msgid "Stats:"
+msgstr "Statistiques :"
+
+#: src/gui_frontend/app_view.rs:96
+msgid "Last playtime:"
+msgstr "Temps de jeu :"
+
+#: src/gui_frontend/app_view.rs:110
+msgid "Type:"
+msgstr "Type :"
+
+#: src/gui_frontend/app_view.rs:124
+msgid "Developer:"
+msgstr "Développeur :"
+
+#: src/gui_frontend/app_view.rs:141
+msgid "Metacritic:"
+msgstr "Metacritic :"
+
+#: src/gui_frontend/app_view.rs:155
+msgid "Failed to load app."
+msgstr "Échec du chargement de l'application."
+
+#: src/gui_frontend/app_view.rs:161
+msgid "No entries found."
+msgstr "Aucune entrée trouvée."
+
+#: src/gui_frontend/app_view.rs:178
+msgid "Achievements"
+msgstr "Succès"
+
+#: src/gui_frontend/app_view.rs:181
+msgid "Stats"
+msgstr "Statistiques"
+
+#: src/gui_frontend/stat_view.rs:101
+msgid "Increment only"
+msgstr "Incrément uniquement"
+
+#: src/gui_frontend/stat_view.rs:106
+msgid "This statistic is protected."
+msgstr "Cette statistique est protégée."
+
+#: src/gui_frontend/achievement_automatic_view.rs:38
+msgid "Stop and go back"
+msgstr "Arrêter et revenir"
+
+#: src/gui_frontend/achievement_manual_view.rs:45
+msgid "Stage unlocks"
+msgstr "Planifier dans le temps"
+
+#: src/gui_frontend/achievement_manual_view.rs:79
+msgid "Auto-fill"
+msgstr "Remplir auto"
+
+#: src/gui_frontend/achievement_manual_view.rs:82
+msgid "Configuration"
+msgstr "Configuration"
+
+#: src/gui_frontend/achievement_manual_view.rs:108
+msgid "Start"
+msgstr "Démarrer"
+
+#: src/gui_frontend/achievement_manual_view.rs:209
+msgid "Count"
+msgstr "Nombre"
+
+#: src/gui_frontend/achievement_manual_view.rs:211
+msgid "Percent"
+msgstr "Pourcentage"
+
+#: src/gui_frontend/achievement_manual_view.rs:245
+msgid "minutes (0 = instant)"
+msgstr "minutes (0 = instantané)"
+
+#: src/gui_frontend/achievement_manual_view.rs:254
+msgid "Even"
+msgstr "Régulier"
+
+#: src/gui_frontend/achievement_manual_view.rs:258
+msgid "Random"
+msgstr "Aléatoire"
+
+#: src/gui_frontend/achievement_manual_view.rs:278
+msgid "Target"
+msgstr "Cible"
+
+#: src/gui_frontend/achievement_manual_view.rs:282
+msgid "Spread over"
+msgstr "Réparti sur"
+
+#: src/gui_frontend/achievement_manual_view.rs:286
+msgid "Spacing"
+msgstr "Espacement"
+
+#: src/gui_frontend/achievement_manual_view.rs:364
+msgid "No achievements staged"
+msgstr "Aucun succès préparé"
+
+#: src/gui_frontend/achievement_manual_view.rs:365
+msgid "{count} staged"
+msgstr "{count} préparé(s)"
+
+#: src/gui_frontend/achievement_manual_view.rs:398
+msgid "Already at or above target ({progress})"
+msgstr "Déjà à la cible ou au-dessus ({progress})"
+
+#: src/gui_frontend/achievement_manual_view.rs:404
+msgid "Auto-fill {count} achievement(s) ({progress})"
+msgstr "Remplir automatiquement {count} succès ({progress})"
+
+#: src/gui_frontend/achievement_manual_view.rs:744
+#: src/gui_frontend/achievement_manual_view.rs:758
+msgid "This achievement is protected."
+msgstr "Ce succès est protégé."
+
+#: src/gui_frontend/achievement_manual_view.rs:770
+msgid "Click to stage this achievement; click again to remove."
+msgstr "Cliquez pour préparer ce succès ; cliquez à nouveau pour le retirer."
+
+#: src/gui_frontend/achievement_manual_view.rs:788
+msgid "Already unlocked."
+msgstr "Déjà déverrouillé."
+
+#: src/gui_frontend/app_list_view/mod.rs:192
+#: src/gui_frontend/app_list_view/mod.rs:852
+msgid "Name or AppId (Ctrl+K)"
+msgstr "Nom ou AppId (Ctrl+K)"
+
+#: src/gui_frontend/app_list_view/mod.rs:847
+msgid "Achievement or stat..."
+msgstr "Succès ou statistique..."
+
+#: src/gui_frontend/app_list_view/settings_bindings.rs:110
+msgid "The new language will be applied the next time you start SamRewritten."
+msgstr ""
+"La nouvelle langue sera appliquée au prochain démarrage de SamRewritten."
+
+#: src/gui_frontend/app_list_view/settings_bindings.rs:119
+msgid "Language changed"
+msgstr "Langue modifiée"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:136
+#: src/gui_frontend/app_list_view/bulk_actions.rs:160
+msgid "Unlocking {done} / {total} app(s)…"
+msgstr "Déverrouillage {done} / {total} application(s)…"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:210
+msgid "Unlock Incomplete"
+msgstr "Déverrouillage incomplet"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:211
+msgid "Failed to unlock achievements for the following apps:"
+msgstr "Échec du déverrouillage des succès pour les applications suivantes :"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:293
+#: src/gui_frontend/app_list_view/bulk_actions.rs:319
+msgid "Locking {done} / {total} app(s)…"
+msgstr "Verrouillage {done} / {total} application(s)…"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:157
+#: src/gui_frontend/app_list_view/progress_actions.rs:180
+msgid "Exporting {done} / {total} app(s)…"
+msgstr "Exportation {done} / {total} application(s)…"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:246
+msgid "Export complete"
+msgstr "Exportation terminée"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:247
+msgid "Exported {count} app(s) to {path}"
+msgstr "{count} application(s) exportée(s) vers {path}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:257
+msgid "Export partially complete"
+msgstr "Exportation partiellement terminée"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:258
+msgid ""
+"Wrote {path}\n"
+"\n"
+"Failed to read data for these apps:"
+msgstr ""
+"Écrit dans {path}\n"
+"\n"
+"Échec de lecture des données pour ces applications :"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:265
+msgid "Export failed"
+msgstr "Échec de l'exportation"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:301
+msgid "Import progress"
+msgstr "Importer une progression"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:337
+#: src/gui_frontend/app_list_view/progress_actions.rs:350
+#: src/gui_frontend/app_list_view/progress_actions.rs:360
+msgid "Import failed"
+msgstr "Échec de l'importation"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:338
+msgid "Could not read file: {error}"
+msgstr "Impossible de lire le fichier : {error}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:351
+msgid "Could not parse file: {error}"
+msgstr "Impossible d'analyser le fichier : {error}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:361
+msgid "Unsupported format version: {found} (this build expects {expected})"
+msgstr ""
+"Version de format non prise en charge : {found} (cette version attend "
+"{expected})"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:376
+#: src/gui_frontend/app_list_view/progress_actions.rs:398
+#: src/gui_frontend/app_list_view/progress_actions.rs:487
+msgid "App {id}"
+msgstr "Application {id}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:387
+#: src/gui_frontend/app_list_view/progress_actions.rs:444
+msgid "Nothing to import"
+msgstr "Rien à importer"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:388
+msgid "None of the apps in the file are in your current library."
+msgstr ""
+"Aucune des applications du fichier n'est dans votre bibliothèque actuelle."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:408
+msgid ""
+"{list}\n"
+"... and {count} more"
+msgstr ""
+"{list}\n"
+"... et {count} de plus"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:417
+msgid "Some apps contain protected fields."
+msgstr "Certaines applications contiennent des champs protégés."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:419
+msgid ""
+"The following apps contain fields that may not be importable. Proceed at "
+"your own risk.\n"
+"\n"
+"{list}"
+msgstr ""
+"Les applications suivantes contiennent des champs qui pourraient ne pas être "
+"importables. Continuez à vos risques et périls.\n"
+"\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:423
+#: src/gui_frontend/app_list_view/refresh_actions.rs:330
+msgid "Cancel"
+msgstr "Annuler"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:424
+msgid "Skip these apps"
+msgstr "Ignorer ces applications"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:425
+msgid "Proceed anyway"
+msgstr "Continuer quand même"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:445
+msgid "All remaining apps were skipped."
+msgstr "Toutes les applications restantes ont été ignorées."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:473
+#: src/gui_frontend/app_list_view/progress_actions.rs:506
+msgid "Importing {done} / {total} app(s)…"
+msgstr "Importation {done} / {total} application(s)…"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:587
+msgid "Applied {achievements} achievement(s) and {stats} stat(s)."
+msgstr "{achievements} succès et {stats} statistique(s) appliqué(s)."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:592
+msgid ""
+"\n"
+"Skipped {count} protected field(s)."
+msgstr ""
+"\n"
+"{count} champ(s) protégé(s) ignoré(s)."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:598
+msgid ""
+"\n"
+"Skipped {count} unwriteable stat(s) (out of range or increment-only)."
+msgstr ""
+"\n"
+"{count} statistique(s) non modifiable(s) ignorée(s) (hors plage ou incrément "
+"uniquement)."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:606
+msgid ""
+"Would succeed if you reset stats first:\n"
+"{list}"
+msgstr ""
+"Réussirait si vous réinitialisiez d'abord les statistiques :\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:612
+msgid ""
+"Skipped (not in your library):\n"
+"{list}"
+msgstr ""
+"Ignoré (absent de votre bibliothèque) :\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:617
+msgid ""
+"Errors:\n"
+"{list}"
+msgstr ""
+"Erreurs :\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:622
+#: src/gui_frontend/app_list_view/progress_actions.rs:624
+msgid "Import complete"
+msgstr "Importation terminée"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:109
+msgid "No apps found on your account. Search for App Id to get started."
+msgstr ""
+"Aucune application trouvée sur votre compte. Recherchez un App Id pour "
+"commencer."
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:126
+msgid "No results. Check for spelling mistakes or try typing an App Id."
+msgstr "Aucun résultat. Vérifiez l'orthographe ou essayez de saisir un App Id."
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:158
+msgid ""
+"Failed to load library. Check your internet connection. Search for App Id to "
+"get started."
+msgstr ""
+"Échec du chargement de la bibliothèque. Vérifiez votre connexion Internet. "
+"Recherchez un App Id pour commencer."
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:166
+msgid "SamRewritten could not connect to Steam. Is it running?"
+msgstr "SamRewritten n'a pas pu se connecter à Steam. Est-il bien lancé ?"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:328
+msgid "Reset Everything"
+msgstr "Tout réinitialiser"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:329
+msgid "This will reset all achievements and stats for this app. Are you sure?"
+msgstr ""
+"Cela réinitialisera tous les succès et statistiques de cette application. "
+"Êtes-vous sûr ?"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:330
+msgid "Sure, reset"
+msgstr "Oui, réinitialiser"
+
+#: src/gui_frontend/widgets/steam_app_card.rs:106
+msgid "Idle"
+msgstr "In-game"
+
+#: src/gui_frontend/widgets/steam_app_card.rs:130
+msgid "Manage"
+msgstr "Manager"
+
+#: src/gui_frontend/widgets/steam_app_card.rs:149
+msgid "Manage this app in a new window"
+msgstr "Gérer cette application dans une nouvelle fenêtre"
+
+#~ msgid "Quit"
+#~ msgstr "Quitter"

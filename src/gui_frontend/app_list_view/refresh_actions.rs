@@ -19,6 +19,7 @@ use crate::gui_frontend::application_actions::set_app_action_enabled;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::gobjects::stat::GStatObject;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
+use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::request::{
     AppProgress, GetAchievementsAndStats, GetRunningApps, GetSubscribedAppList, Request, ResetStats,
 };
@@ -105,7 +106,7 @@ pub fn create_refresh_app_list_action(
                             search_entry.set_sensitive(true);
 
                             if app_vec.is_empty() {
-                                app_list_no_result_label.set_text("No apps found on your account. Search for App Id to get started.");
+                                app_list_no_result_label.set_text(tr("No apps found on your account. Search for App Id to get started.").as_str());
                                 list_of_apps_or_no_result.set_visible_child_name("empty");
                                 list_scrolled_window.set_child(Some(&grid_view));
                                 list_stack.set_visible_child_name("list");
@@ -122,7 +123,7 @@ pub fn create_refresh_app_list_action(
                                 list_store.extend_from_slice(&models);
                                 list_scrolled_window.set_child(Some(&grid_view));
                                 list_stack.set_visible_child_name("list");
-                                app_list_no_result_label.set_text("No results. Check for spelling mistakes or try typing an App Id.");
+                                app_list_no_result_label.set_text(tr("No results. Check for spelling mistakes or try typing an App Id.").as_str());
 
                                 // Sync idle state from the orchestrator: any app it's
                                 // currently holding open should show as idling in the UI.
@@ -154,14 +155,16 @@ pub fn create_refresh_app_list_action(
                         },
                         Ok(Err(SamError::AppListRetrievalFailed)) => {
                             search_entry.set_sensitive(true);
-                            app_list_no_result_label.set_text("Failed to load library. Check your internet connection. Search for App Id to get started.");
+                            app_list_no_result_label.set_text(tr("Failed to load library. Check your internet connection. Search for App Id to get started.").as_str());
                             list_of_apps_or_no_result.set_visible_child_name("empty");
                             list_scrolled_window.set_child(Some(&grid_view));
                             list_stack.set_visible_child_name("list");
                         },
                         Ok(Err(sam_error)) => {
                             eprintln!("[CLIENT] Unknown error: {}", sam_error);
-                            let label = Label::new(Some("SamRewritten could not connect to Steam. Is it running?"));
+                            let label = Label::new(Some(
+                                tr("SamRewritten could not connect to Steam. Is it running?").as_str(),
+                            ));
                             list_scrolled_window.set_child(Some(&label));
                             list_stack.set_visible_child_name("list");
                         }
@@ -322,9 +325,9 @@ pub fn create_clear_all_action(
                 async move {
                     let dialog = gtk::AlertDialog::builder()
                         .modal(true)
-                        .message("Reset Everything")
-                        .detail("This will reset all achievements and stats for this app. Are you sure?")
-                        .buttons(["Cancel", "Sure, reset"])
+                        .message(tr("Reset Everything").as_str())
+                        .detail(tr("This will reset all achievements and stats for this app. Are you sure?").as_str())
+                        .buttons([tr("Cancel").as_str(), tr("Sure, reset").as_str()])
                         .cancel_button(0)
                         .default_button(0)
                         .build();

@@ -92,6 +92,14 @@ If issues persist, please open an issue including your distribution, version, an
 * Idle apps: Appear in-game until you toggle it off
 * A light and dark theme
 
+## Translations
+
+SamRewritten is translated by its community, and **we'd love your help** to
+support more languages. You don't need to be a programmer — translating is just
+filling in a text file, and you can submit it by opening an issue or a PR.
+
+See [`po/README.md`](po/README.md) for a short, step-by-step guide.
+
 ## Steam compatibility
 
 On Linux, SamRewritten supports all of these Steam installation types:

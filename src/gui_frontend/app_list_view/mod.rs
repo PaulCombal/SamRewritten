@@ -27,9 +27,10 @@ use crate::gui_frontend::application_actions::{set_app_action_enabled, setup_app
 use crate::gui_frontend::dialogs::choose_steam_install_then;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::gsettings::get_settings;
+use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::request::{AppProgress, LaunchApp, Request, StopApp};
 use crate::gui_frontend::ui_components::{
-    create_about_dialog, create_context_menu_button, set_context_popover_to_app_list_context,
+    create_context_menu_button, set_context_popover_to_app_list_context,
 };
 use crate::gui_frontend::widgets::steam_app_card::SteamAppCard;
 use crate::utils::app_paths::get_executable_path;
@@ -110,6 +111,8 @@ pub fn create_main_ui(
     application: &MainApplication,
     cmd_line: &ApplicationCommandLine,
 ) -> ExitCode {
+    crate::gui_frontend::i18n::init();
+
     #[cfg(unix)]
     if let Ok(appdir) = std::env::var("APPDIR") {
         if let Some(display) = gtk::gdk::Display::default() {
@@ -126,6 +129,8 @@ pub fn create_main_ui(
 
     let gui_args = parse_gui_arguments(cmd_line);
     let settings = get_settings();
+    // Apply the saved language before any widgets are built with translated text.
+    crate::gui_frontend::i18n::set_language(&settings.string("app-language"));
     let launch_app_by_id_visible = Rc::new(Cell::new(false));
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
@@ -163,7 +168,7 @@ pub fn create_main_ui(
 
     // Loading box
     let list_spinner = Spinner::builder().margin_end(5).spinning(true).build();
-    let list_spinner_label = Label::builder().label("Loading...").build();
+    let list_spinner_label = Label::builder().label(tr("Loading...").as_str()).build();
     let list_spinner_box = Box::builder().halign(Align::Center).build();
     list_spinner_box.append(&list_spinner);
     list_spinner_box.append(&list_spinner_label);
@@ -184,7 +189,7 @@ pub fn create_main_ui(
     // Header bar
     let header_bar = HeaderBar::builder().show_title_buttons(true).build();
     let search_entry = SearchEntry::builder()
-        .placeholder_text("Name or AppId (Ctrl+K)")
+        .placeholder_text(tr("Name or AppId (Ctrl+K)").as_str())
         .build();
     let back_button = Button::builder()
         .icon_name("go-previous")
@@ -319,8 +324,6 @@ pub fn create_main_ui(
         .child(&list_stack)
         .titlebar(&header_bar)
         .build();
-
-    let about_dialog = create_about_dialog(&window);
 
     // Connect list view activation
     grid_view.connect_activate(clone!(
@@ -841,12 +844,12 @@ pub fn create_main_ui(
                 action_refresh_app_list.set_enabled(false);
             } else if stack.visible_child_name().as_deref() == Some("app") {
                 search_entry.set_text("");
-                search_entry.set_placeholder_text(Some("Achievement or stat..."));
+                search_entry.set_placeholder_text(Some(tr("Achievement or stat...").as_str()));
                 back_button.set_sensitive(true);
                 action_refresh_app_list.set_enabled(false);
             } else {
                 search_entry.set_text("");
-                search_entry.set_placeholder_text(Some("Name or AppId (Ctrl+K)"));
+                search_entry.set_placeholder_text(Some(tr("Name or AppId (Ctrl+K)").as_str()));
                 back_button.set_sensitive(false);
                 action_refresh_app_list.set_enabled(true);
 
@@ -900,7 +903,6 @@ pub fn create_main_ui(
 
     setup_app_actions(
         application,
-        &about_dialog,
         &action_refresh_app_list,
         &action_refresh_achievements_list,
         &action_clear_all_stats_and_achievements,

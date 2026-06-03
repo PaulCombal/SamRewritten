@@ -13,6 +13,12 @@
             <description>The preferred color scheme for the application. Valid values are 'system', 'light', and 'dark'.</description>
         </key>
 
+        <key name="app-language" type="s">
+            <default>''</default>
+            <summary>Application Language</summary>
+            <description>Preferred UI language as a locale code (e.g. 'fr'). An empty value follows the system locale.</description>
+        </key>
+
         <key name="app-sort" type="s">
             <default>'app_id'</default>
             <summary>App List Sort Order</summary>

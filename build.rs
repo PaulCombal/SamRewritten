@@ -15,7 +15,49 @@
 
 use std::process::Command;
 
+/// Compile each `po/<lang>.po` to `locale/<lang>/LC_MESSAGES/samrewritten.mo`.
+/// Best-effort: a missing `msgfmt` drops translations rather than failing.
+fn compile_translations() {
+    let po_dir = std::path::Path::new("po");
+    println!("cargo:rerun-if-changed=po");
+    let Ok(entries) = std::fs::read_dir(po_dir) else {
+        return;
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("po") {
+            continue;
+        }
+        let Some(lang) = path.file_stem().and_then(|s| s.to_str()) else {
+            continue;
+        };
+
+        let out_dir = format!("locale/{lang}/LC_MESSAGES");
+        if std::fs::create_dir_all(&out_dir).is_err() {
+            continue;
+        }
+        let out_file = format!("{out_dir}/samrewritten.mo");
+
+        match Command::new("msgfmt")
+            .arg("--output-file")
+            .arg(&out_file)
+            .arg(&path)
+            .status()
+        {
+            Ok(s) if s.success() => {
+                println!("cargo:rerun-if-changed=po/{lang}.po");
+            }
+            Ok(s) => println!("cargo:warning=msgfmt failed for {lang}.po (exit {s})"),
+            Err(e) => println!("cargo:warning=skipping translations, msgfmt unavailable: {e}"),
+        }
+    }
+}
+
 fn main() {
+    // Always present so the AppImage `assets` list resolves on non-GUI builds too.
+    let _ = std::fs::create_dir_all("locale");
+
     if std::env::var_os("CARGO_FEATURE_GUI").is_some() {
         let schema_dir = "assets";
 
@@ -38,6 +80,8 @@ fn main() {
                 );
             }
         }
+
+        compile_translations();
     }
 
     #[cfg(windows)]

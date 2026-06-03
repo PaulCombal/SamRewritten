@@ -1,6 +1,6 @@
 [package]
 name = "SamRewritten"
-version = "1.4.0"
+version = "1.4.1"
 description = "Steam Achievement Manager Rewritten"
 edition = "2024"
 rust-version = "1.95"
@@ -38,7 +38,7 @@ winres = "0"
 [package.metadata.appimage]
 icon = "assets/icon_256.png"
 desktop_entry = "package/samrewritten.desktop"
-assets = ["assets/gschemas.compiled", "assets/icons"]
+assets = ["assets/gschemas.compiled", "assets/icons", "locale"]
 
 [profile.release]
 lto = "thin"

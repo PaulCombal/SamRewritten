@@ -14,6 +14,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::dialogs::show_message_dialog;
+use crate::gui_frontend::i18n::{tr, tr_noop};
 use crate::gui_frontend::widgets::steam_app_card::ANIMATIONS_DISABLED;
 use gtk::gio::Settings;
 use gtk::glib::clone;
@@ -92,6 +94,35 @@ pub fn setup_settings_bindings(
     settings.connect_changed(Some("app-theme"), |s, _| {
         apply_theme(&s.string("app-theme"));
     });
+
+    // Language radio: applied at start-up by i18n::set_language; a runtime switch
+    // would only half-update the UI, so just notify that a restart is needed.
+    application.add_action(&settings.create_action("app-language"));
+    settings.connect_changed(
+        Some("app-language"),
+        clone!(
+            #[weak]
+            application,
+            move |_, _| {
+                // English is the catalogue key, so reuse the literal for the
+                // bilingual notice (no second lookup) unless we're already English.
+                let english = tr_noop(
+                    "The new language will be applied the next time you start SamRewritten.",
+                );
+                let native = tr(english);
+                let detail = if native == english {
+                    native.to_string()
+                } else {
+                    format!("{native}\n\n{english}")
+                };
+                show_message_dialog(
+                    application.active_window().as_ref(),
+                    &tr("Language changed"),
+                    &detail,
+                );
+            }
+        ),
+    );
 
     // Disable animations: cached in a global AtomicBool that SteamAppCard reads.
     ANIMATIONS_DISABLED.store(settings.boolean("disable-animations"), Ordering::Relaxed);

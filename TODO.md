@@ -12,6 +12,13 @@
 - Improve error handling (handle .expects, .unwraps, etc)
 - Route `--auto-open` through the running orchestrator instead of spawning a
   second instance.
+- Third-party license attribution. The statically-linked Cargo crates are mostly
+  MIT/Apache-2.0/BSD, whose notices must be reproduced in distributions; GTK4 and
+  libadwaita are LGPL (dynamically linked, lighter requirement). Auto-generate the
+  transitive license report (`cargo about` or `cargo-bundle-licenses`), embed it,
+  and surface it in the About dialog — `adw::AboutDialog` has `add_legal_section`;
+  `gtk::AboutDialog` falls back to a credit section. (Shipping a LICENSES file in
+  the AppImage is the legal minimum if a dialog section is too much.)
 
 ### Help needed
 

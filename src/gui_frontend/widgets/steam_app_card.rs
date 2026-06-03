@@ -27,6 +27,7 @@ impl SteamAppCard {
 
 mod imp {
     use super::*;
+    use crate::gui_frontend::i18n::tr;
     use crate::gui_frontend::widgets::gradient_overlay::GradientOverlay;
     use glib::Properties;
     use gtk::glib::clone;
@@ -102,7 +103,7 @@ mod imp {
                 .icon_name("emoji-recent-symbolic")
                 .pixel_size(11)
                 .build();
-            let idle_label = gtk::Label::new(Some("Idle"));
+            let idle_label = gtk::Label::new(Some(tr("Idle").as_str()));
             let idle_box = Box::builder()
                 .spacing(8)
                 .margin_start(10)
@@ -126,7 +127,7 @@ mod imp {
                 .icon_name("document-edit-symbolic")
                 .pixel_size(11)
                 .build();
-            let manage_label = gtk::Label::new(Some("Manage"));
+            let manage_label = gtk::Label::new(Some(tr("Manage").as_str()));
             let attr_list = gtk::pango::AttrList::new();
             attr_list.insert(gtk::pango::AttrInt::new_weight(
                 gtk::pango::Weight::Semibold,
@@ -145,7 +146,7 @@ mod imp {
             self.manage_button_new.add_css_class("opaque");
             self.manage_button_new.set_icon_name("window-new-symbolic");
             self.manage_button_new
-                .set_tooltip_text(Some("Manage this app in a new window"));
+                .set_tooltip_text(Some(tr("Manage this app in a new window").as_str()));
             if let Some(img) = self
                 .manage_button_new
                 .child()

@@ -50,7 +50,13 @@ mod tests {
 
     #[test]
     fn brute_force_app001_keys() {
-        // Find others on your own with the Steam command app_info_print
+        // ISteamApps001::GetAppData does not read a file in this process. It is
+        // an IPC shim: the call is marshalled over the Steam pipe to the running
+        // Steam client, which answers from its in-memory appinfo (the `common`
+        // section of each app). That data is backed on disk by, and refreshed
+        // into, appcache/appinfo.vdf (binary KV, v29: header + string table),
+        // and kept current from Valve's servers. So GetAppData needs Steam
+        // running; parsing appinfo.vdf directly is the offline equivalent.
 
         let connected_steam = ConnectedSteam::new(true).expect("Failed to create connected steam");
         let try_force = |key: &str| {
