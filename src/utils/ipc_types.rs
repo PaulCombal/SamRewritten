@@ -27,6 +27,7 @@ pub enum SamError {
     LockUnlockAchievementFailed,
     AppMismatchError,
     Timeout,
+    ProfilePrivate,
     UnknownError,
 }
 
@@ -46,6 +47,7 @@ impl std::fmt::Display for SamError {
                 write!(f, "SAM: Lock/unlock achievement failed")
             }
             SamError::Timeout => write!(f, "SAM: Steam is busy, try again with a smaller batch"),
+            SamError::ProfilePrivate => write!(f, "SAM: That user's profile is private"),
         }
     }
 }
@@ -127,6 +129,18 @@ pub enum SteamCommand {
     /// refcount bumped) first; otherwise it must already be running. Returns
     /// `(achievements, stats)`.
     GetAchievementsAndStats(u32, bool),
+    /// `(app_id, friend)` where `friend` is a SteamID64 or a persona name from the
+    /// current user's friends list. Returns that user's achievement unlock times.
+    /// App-scoped: the per-user stats API needs the child's app context.
+    GetFriendUnlockTimes(u32, String),
+    /// The current user's friends list (for the copy-timing picker). Served by the
+    /// orchestrator from localconfig.vdf — not app-scoped.
+    GetFriends,
+    /// Fetch a user's avatar natively from Steam as raw RGBA, for SteamIDs that
+    /// lack a cached CDN url (e.g. a pasted custom one). Global friends interface.
+    GetUserAvatar(u64),
+    /// Resolve a user's persona name natively from Steam. Global friends interface.
+    GetUserPersonaName(u64),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

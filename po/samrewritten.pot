@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-04 23:36+0200\n"
+"POT-Creation-Date: 2026-06-07 22:43+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -125,7 +125,7 @@ msgstr ""
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:113
 #: src/gui_frontend/dialogs.rs:136 src/gui_frontend/dialogs.rs:184
-#: src/gui_frontend/unlock_scheduler.rs:140
+#: src/gui_frontend/unlock_scheduler.rs:160
 #: src/gui_frontend/app_list_view/progress_actions.rs:42
 msgid "OK"
 msgstr ""
@@ -215,11 +215,11 @@ msgstr ""
 msgid "Use Snap Steam"
 msgstr ""
 
-#: src/gui_frontend/dialogs.rs:643
+#: src/gui_frontend/dialogs.rs:642
 msgid "Steam folder not usable"
 msgstr ""
 
-#: src/gui_frontend/dialogs.rs:651
+#: src/gui_frontend/dialogs.rs:650
 msgid ""
 "SamRewritten couldn't read <tt>steamclient.so</tt> in the folder you "
 "selected. Pick the <b>Steam</b> directory — the one containing a "
@@ -227,11 +227,11 @@ msgid ""
 "use the AppImage."
 msgstr ""
 
-#: src/gui_frontend/dialogs.rs:659
+#: src/gui_frontend/dialogs.rs:658
 msgid "Choose again"
 msgstr ""
 
-#: src/gui_frontend/dialogs.rs:817
+#: src/gui_frontend/dialogs.rs:813
 msgid "Select your Steam folder"
 msgstr ""
 
@@ -287,81 +287,135 @@ msgstr ""
 msgid "Stop and go back"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view.rs:45
-msgid "Stage unlocks"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:79
-msgid "Auto-fill"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:82
-msgid "Configuration"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:108
-msgid "Start"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:209
-msgid "Count"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:211
-msgid "Percent"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:245
-msgid "minutes (0 = instant)"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:254
-msgid "Even"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:258
-msgid "Random"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:278
-msgid "Target"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:282
-msgid "Spread over"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:286
-msgid "Spacing"
-msgstr ""
-
-#: src/gui_frontend/achievement_manual_view.rs:364
+#: src/gui_frontend/achievement_manual_view/mod.rs:56
 msgid "No achievements staged"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view.rs:365
+#: src/gui_frontend/achievement_manual_view/mod.rs:57
 msgid "{count} staged"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view.rs:398
+#: src/gui_frontend/achievement_manual_view/mod.rs:95
 msgid "Already at or above target ({progress})"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view.rs:404
+#: src/gui_frontend/achievement_manual_view/mod.rs:101
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view.rs:744
-#: src/gui_frontend/achievement_manual_view.rs:758
-msgid "This achievement is protected."
+#: src/gui_frontend/achievement_manual_view/header.rs:49
+msgid "Instant"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view.rs:771
-msgid "Click to stage this achievement; click again to remove."
+#: src/gui_frontend/achievement_manual_view/header.rs:52
+msgid "Stage"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view.rs:790
-msgid "Already unlocked."
+#: src/gui_frontend/achievement_manual_view/header.rs:56
+msgid "Copy user"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:74
+msgid "Auto-fill"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:77
+msgid "Configuration"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:103
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
+msgid "Start"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:108
+msgid "Changes apply instantly"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:63
+msgid "Count"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:65
+msgid "Percent"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:99
+msgid "minutes (0 = instant)"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:108
+msgid "Even"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:112
+msgid "Random"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:132
+msgid "Target"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:136
+msgid "Spread over"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:140
+msgid "Spacing"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:232
+msgid "Choose a friend to copy timing from"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
+msgid "Advanced"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:68
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:89
+msgid "minutes"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:103
+msgid "Max gap"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:105
+msgid "First delay"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:99
+msgid "No friend loaded"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:109
+msgid "{count} achievements over {time}"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:57
+msgid "Copy timing from a friend"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:151
+msgid "Use the pasted SteamID64"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:267
+msgid "This profile is private"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:269
+msgid "Couldn't load this user"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:281
+msgid "Search friends or paste a SteamID64"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:369
+msgid "Clear selected user"
 msgstr ""
 
 #: src/gui_frontend/app_list_view/mod.rs:192
@@ -583,4 +637,17 @@ msgstr ""
 
 #: src/gui_frontend/widgets/steam_app_card.rs:149
 msgid "Manage this app in a new window"
+msgstr ""
+
+#: src/gui_frontend/widgets/achievement_row.rs:253
+#: src/gui_frontend/widgets/achievement_row.rs:258
+msgid "This achievement is protected."
+msgstr ""
+
+#: src/gui_frontend/widgets/achievement_row.rs:272
+msgid "Click to stage this achievement; click again to remove."
+msgstr ""
+
+#: src/gui_frontend/widgets/achievement_row.rs:281
+msgid "Already unlocked."
 msgstr ""

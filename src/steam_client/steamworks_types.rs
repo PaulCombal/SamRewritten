@@ -447,3 +447,94 @@ pub struct SteamNetworkingIdentity {
     pub m_cbSize: i32,
     pub data: SteamNetworkingIdentityUnion,
 }
+
+pub type FriendsGroupID_t = i16;
+
+#[repr(C)]
+pub enum EFriendRelationship {
+    k_EFriendRelationshipNone = 0,
+    k_EFriendRelationshipBlocked = 1,
+    k_EFriendRelationshipRequestRecipient = 2,
+    k_EFriendRelationshipFriend = 3,
+    k_EFriendRelationshipRequestInitiator = 4,
+    k_EFriendRelationshipIgnored = 5,
+    k_EFriendRelationshipIgnoredFriend = 6,
+    k_EFriendRelationshipSuggested_DEPRECATED = 7,
+    k_EFriendRelationshipMax = 8,
+}
+
+#[repr(C)]
+pub enum EPersonaState {
+    k_EPersonaStateOffline = 0,
+    k_EPersonaStateOnline = 1,
+    k_EPersonaStateBusy = 2,
+    k_EPersonaStateAway = 3,
+    k_EPersonaStateSnooze = 4,
+    k_EPersonaStateLookingToTrade = 5,
+    k_EPersonaStateLookingToPlay = 6,
+    k_EPersonaStateInvisible = 7,
+    k_EPersonaStateMax = 8,
+}
+
+#[repr(C)]
+pub enum EActivateGameOverlayToWebPageMode {
+    k_EActivateGameOverlayToWebPageMode_Default = 0,
+    k_EActivateGameOverlayToWebPageMode_Modal = 1,
+}
+
+#[repr(C)]
+pub enum EOverlayToStoreFlag {
+    k_EOverlayToStoreFlag_None = 0,
+    k_EOverlayToStoreFlag_AddToCart = 1,
+    k_EOverlayToStoreFlag_AddToCartAndShow = 2,
+}
+
+#[repr(C)]
+pub enum EChatEntryType {
+    k_EChatEntryTypeInvalid = 0,
+    k_EChatEntryTypeChatMsg = 1,
+    k_EChatEntryTypeTyping = 2,
+    k_EChatEntryTypeInviteGame = 3,
+    k_EChatEntryTypeEmote = 4,
+    k_EChatEntryTypeLeftConversation = 6,
+    k_EChatEntryTypeEntered = 7,
+    k_EChatEntryTypeWasKicked = 8,
+    k_EChatEntryTypeWasBanned = 9,
+    k_EChatEntryTypeDisconnected = 10,
+    k_EChatEntryTypeHistoricalChat = 11,
+    k_EChatEntryTypeLinkBlocked = 14,
+}
+
+#[repr(C)]
+pub enum ECommunityProfileItemType {
+    k_ECommunityProfileItemType_AnimatedAvatar = 0,
+    k_ECommunityProfileItemType_AvatarFrame = 1,
+    k_ECommunityProfileItemType_ProfileModifier = 2,
+    k_ECommunityProfileItemType_ProfileBackground = 3,
+    k_ECommunityProfileItemType_MiniProfileBackground = 4,
+}
+
+#[repr(C)]
+pub enum ECommunityProfileItemProperty {
+    k_ECommunityProfileItemProperty_ImageSmall = 0,
+    k_ECommunityProfileItemProperty_ImageLarge = 1,
+    k_ECommunityProfileItemProperty_InternalName = 2,
+    k_ECommunityProfileItemProperty_Title = 3,
+    k_ECommunityProfileItemProperty_Description = 4,
+    k_ECommunityProfileItemProperty_AppID = 5,
+    k_ECommunityProfileItemProperty_TypeID = 6,
+    k_ECommunityProfileItemProperty_Class = 7,
+    k_ECommunityProfileItemProperty_MovieWebM = 8,
+    k_ECommunityProfileItemProperty_MovieMP4 = 9,
+    k_ECommunityProfileItemProperty_MovieWebMSmall = 10,
+    k_ECommunityProfileItemProperty_MovieMP4Small = 11,
+}
+
+#[repr(C)]
+pub struct FriendGameInfo_t {
+    pub m_gameID: CGameID,
+    pub m_unGameIP: u32,
+    pub m_usGamePort: u16,
+    pub m_usQueryPort: u16,
+    pub m_steamIDLobby: CSteamID,
+}

@@ -63,6 +63,42 @@ impl SteamUserStats {
         }
     }
 
+    /// Same as `get_achievement_and_unlock_time`, but for an arbitrary user. Only
+    /// valid after a successful `request_user_stats(steam_id)`. Used to read a
+    /// friend's unlock times when their stats live only in memory (Steam doesn't
+    /// persist other users' stats to the on-disk cache).
+    pub fn get_user_achievement_and_unlock_time(
+        &self,
+        steam_id: CSteamID,
+        achievement_name: &str,
+    ) -> Result<(bool, u32), SteamClientError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+
+            let mut achieved = false;
+            let mut unlock_time = 0u32;
+            let c_achievement_name = std::ffi::CString::new(achievement_name)
+                .map_err(|_| SteamClientError::UnknownError)?;
+
+            let success = (vtable.get_user_achievement_and_unlock_time)(
+                self.inner.ptr,
+                steam_id,
+                c_achievement_name.as_ptr(),
+                &mut achieved,
+                &mut unlock_time,
+            );
+
+            if success {
+                Ok((achieved, unlock_time))
+            } else {
+                Err(SteamClientError::UnknownError)
+            }
+        }
+    }
+
     pub fn set_achievement(&self, achievement_name: &str) -> Result<(), SteamClientError> {
         unsafe {
             let vtable = (*self.inner.ptr)

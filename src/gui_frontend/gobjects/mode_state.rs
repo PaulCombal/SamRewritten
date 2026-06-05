@@ -18,6 +18,7 @@ use gtk::glib;
 
 pub const MODE_AUTOCOMMIT: &str = "autocommit";
 pub const MODE_DEFERRED: &str = "deferred";
+pub const MODE_COPY_TIMING: &str = "copytiming";
 
 glib::wrapper! {
     pub struct GUnlockModeState(ObjectSubclass<imp::GUnlockModeState>);

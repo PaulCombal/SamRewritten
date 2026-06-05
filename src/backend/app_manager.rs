@@ -21,8 +21,9 @@ use crate::backend::stat_definitions::{
 };
 use crate::backend::types::UserStatType;
 use crate::dev_println;
+use crate::backend::user_unlock_times::{self, AchievementUnlock};
 use crate::steam_client::steamworks_types::{
-    AppId_t, EResult, GlobalAchievementPercentagesReady_t, UserStatsReceived_t,
+    AppId_t, CSteamID, EResult, GlobalAchievementPercentagesReady_t, UserStatsReceived_t,
 };
 use crate::steam_client::wrapper_types::SteamCallbackId;
 use crate::utils::ipc_types::SamError;
@@ -107,6 +108,16 @@ impl AppManager {
             steam_id
         );
 
+        if self.wait_for_user_stats(steam_id)? == EResult::k_EResultOK {
+            self.user_stats_received = true;
+        }
+        Ok(())
+    }
+
+    /// Request stats for `steam_id` (current user or any other) and block until
+    /// Steam services the `UserStatsReceived_t` callback, returning its result
+    /// code. Shared by the current-user path and the other-user lookups.
+    fn wait_for_user_stats(&self, steam_id: CSteamID) -> Result<EResult, SamError> {
         let callback_handle = match self.connected_steam.user_stats.request_user_stats(steam_id) {
             Ok(callback_handle) => callback_handle,
             Err(e) => {
@@ -153,19 +164,97 @@ impl AppManager {
                 };
 
                 dev_println!("APPSRV", "User stats received callback result: {result:?}");
-
-                if result.m_eResult == EResult::k_EResultOK {
-                    self.user_stats_received = true;
-                }
-
-                return Ok(());
+                return Ok(result.m_eResult);
             }
 
             std::thread::sleep(std::time::Duration::from_millis(17));
         }
 
-        eprintln!("[APP MANAGER] Requesting user stats for current user timed out");
+        eprintln!("[APP MANAGER] Requesting user stats timed out");
         Err(SamError::Timeout)
+    }
+
+    /// Resolve a `friend` string — either a SteamID64 or a persona name from the
+    /// current user's friends list — then read their unlock times for this app.
+    pub fn fetch_friend_unlock_times(
+        &mut self,
+        friend: &str,
+    ) -> Result<Vec<AchievementUnlock>, SamError> {
+        let friend = friend.trim();
+        // A bare SteamID64 is used directly; anything else is a persona name
+        // looked up in the current user's localconfig.vdf friends block.
+        let steam_id64 = match friend.parse::<u64>() {
+            Ok(id) if id >= user_unlock_times::STEAMID64_BASE => id,
+            _ => {
+                let my_account = user_unlock_times::account_id(self.current_steam_id64()?);
+                let cfg = user_unlock_times::localconfig_path(my_account)?;
+                user_unlock_times::find_friend_steamid64(&cfg, friend).ok_or_else(|| {
+                    eprintln!("[APP MANAGER] Friend '{friend}' not found in {}", cfg.display());
+                    SamError::UnknownError
+                })?
+            }
+        };
+        self.fetch_user_unlock_times(steam_id64)
+    }
+
+    /// SteamID64 of the currently logged-in user.
+    pub fn current_steam_id64(&self) -> Result<u64, SamError> {
+        self.connected_steam
+            .user
+            .get_steam_id()
+            .map(|id| id.m_steamid)
+            .map_err(|_| SamError::UnknownError)
+    }
+
+    /// Fetch another user's achievement unlock times for this app. Steam only
+    /// writes an on-disk stats cache for accounts that have signed in on this
+    /// machine, so locally-cached accounts get a single bulk parse while remote
+    /// friends fall back to the per-user API (names from one bulk schema parse).
+    pub fn fetch_user_unlock_times(
+        &mut self,
+        steam_id64: u64,
+    ) -> Result<Vec<AchievementUnlock>, SamError> {
+        let account_id = user_unlock_times::account_id(steam_id64);
+        let steam_id = CSteamID {
+            m_steamid: steam_id64,
+        };
+
+        // A locally-cached account (signed in on this machine) has its stats on
+        // disk, so bulk-parse those directly — no live request, which also avoids
+        // a spurious timeout masking data we already hold.
+        let user_path = user_unlock_times::user_stats_file(account_id, self.app_id)?;
+        if user_path.exists() {
+            return user_unlock_times::read_unlock_times(account_id, self.app_id);
+        }
+
+        // No local cache: depend on the live request, so a non-OK result means
+        // the target's game details / achievements are private.
+        let result = self.wait_for_user_stats(steam_id)?;
+        if result != EResult::k_EResultOK {
+            eprintln!("[APP MANAGER] RequestUserStats for {steam_id64} returned {result:?}");
+            return Err(SamError::ProfilePrivate);
+        }
+
+        let names = user_unlock_times::read_schema_achievements(self.app_id)?;
+        let mut out = Vec::with_capacity(names.len());
+        for (api_name, display_name) in names {
+            let (achieved, unlock_time) = self
+                .connected_steam
+                .user_stats
+                .get_user_achievement_and_unlock_time(steam_id, &api_name)
+                .unwrap_or((false, 0));
+            out.push(AchievementUnlock {
+                api_name,
+                display_name,
+                achieved,
+                unlock_time: if achieved && unlock_time > 0 {
+                    Some(unlock_time)
+                } else {
+                    None
+                },
+            });
+        }
+        Ok(out)
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs

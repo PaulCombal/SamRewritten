@@ -21,6 +21,7 @@
 
 use crate::backend::app_lister::AppModel;
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
+use crate::backend::user_unlock_times::{AchievementUnlock, AvatarImage, Friend};
 use crate::dev_println;
 #[cfg(feature = "gui")]
 use crate::utils::app_paths::get_executable_path;
@@ -193,6 +194,17 @@ request!(GetAchievementCounts { app_ids: Vec<u32> } -> Vec<(u32, u32, u32)>
 
 request!(GetAchievementsAndStats { app_id: u32, launch: bool } -> AppProgress
     => SteamCommand::GetAchievementsAndStats(app_id, launch));
+
+request!(GetFriendUnlockTimes { app_id: u32, friend: String } -> Vec<AchievementUnlock>
+    => SteamCommand::GetFriendUnlockTimes(app_id, friend));
+
+request!(GetFriends -> Vec<Friend> => SteamCommand::GetFriends);
+
+request!(GetUserAvatar { steam_id64: u64 } -> Option<AvatarImage>
+    => SteamCommand::GetUserAvatar(steam_id64));
+
+request!(GetUserPersonaName { steam_id64: u64 } -> Option<String>
+    => SteamCommand::GetUserPersonaName(steam_id64));
 
 request!(ExportApps { app_ids: Vec<u32> } -> Vec<(u32, Result<AppExport, SamError>)>
     => SteamCommand::ExportApps(app_ids));

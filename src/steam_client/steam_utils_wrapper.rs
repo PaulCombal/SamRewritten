@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Paul <abonnementspaul (at) gmail.com>
 //
@@ -13,6 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+#![allow(dead_code)]
 
 use crate::dev_println;
 use crate::steam_client::steam_utils_vtable::ISteamUtils;
@@ -66,6 +67,44 @@ impl SteamUtils {
             }
 
             Ok(completed)
+        }
+    }
+
+    pub fn get_image_size(&self, handle: i32) -> Result<(u32, u32), SteamClientError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+            let mut width: u32 = 0;
+            let mut height: u32 = 0;
+            let ok =
+                (vtable.get_image_size)(self.inner.ptr, handle as c_int, &mut width, &mut height);
+            if ok {
+                Ok((width, height))
+            } else {
+                Err(SteamClientError::UnknownError)
+            }
+        }
+    }
+
+    pub fn get_image_rgba(&self, handle: i32, buf: &mut [u8]) -> Result<(), SteamClientError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+            let ok = (vtable.get_image_rgba)(
+                self.inner.ptr,
+                handle as c_int,
+                buf.as_mut_ptr() as *mut std::os::raw::c_char,
+                buf.len() as c_int,
+            );
+            if ok {
+                Ok(())
+            } else {
+                Err(SteamClientError::UnknownError)
+            }
         }
     }
 

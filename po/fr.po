@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-04 23:36+0200\n"
+"POT-Creation-Date: 2026-06-07 22:43+0200\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -117,7 +117,7 @@ msgstr "Tout réinitialiser"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:113
 #: src/gui_frontend/dialogs.rs:136 src/gui_frontend/dialogs.rs:184
-#: src/gui_frontend/unlock_scheduler.rs:140
+#: src/gui_frontend/unlock_scheduler.rs:160
 #: src/gui_frontend/app_list_view/progress_actions.rs:42
 msgid "OK"
 msgstr "OK"
@@ -230,11 +230,11 @@ msgstr "Choisir un dossier…"
 msgid "Use Snap Steam"
 msgstr "Utiliser Steam Snap"
 
-#: src/gui_frontend/dialogs.rs:643
+#: src/gui_frontend/dialogs.rs:642
 msgid "Steam folder not usable"
 msgstr "Dossier Steam inutilisable"
 
-#: src/gui_frontend/dialogs.rs:651
+#: src/gui_frontend/dialogs.rs:650
 msgid ""
 "SamRewritten couldn't read <tt>steamclient.so</tt> in the folder you "
 "selected. Pick the <b>Steam</b> directory — the one containing a "
@@ -246,11 +246,11 @@ msgstr ""
 "dossier <tt>linux64</tt>. Un Steam installé via Flatpak ne peut pas être "
 "utilisé par le Snap ; veuillez utiliser l'AppImage."
 
-#: src/gui_frontend/dialogs.rs:659
+#: src/gui_frontend/dialogs.rs:658
 msgid "Choose again"
 msgstr "Choisir à nouveau"
 
-#: src/gui_frontend/dialogs.rs:817
+#: src/gui_frontend/dialogs.rs:813
 msgid "Select your Steam folder"
 msgstr "Sélectionnez votre dossier Steam"
 
@@ -306,82 +306,136 @@ msgstr "Cette statistique est protégée."
 msgid "Stop and go back"
 msgstr "Arrêter et revenir"
 
-#: src/gui_frontend/achievement_manual_view.rs:45
-msgid "Stage unlocks"
-msgstr "Planifier dans le temps"
-
-#: src/gui_frontend/achievement_manual_view.rs:79
-msgid "Auto-fill"
-msgstr "Remplir auto"
-
-#: src/gui_frontend/achievement_manual_view.rs:82
-msgid "Configuration"
-msgstr "Configuration"
-
-#: src/gui_frontend/achievement_manual_view.rs:108
-msgid "Start"
-msgstr "Démarrer"
-
-#: src/gui_frontend/achievement_manual_view.rs:209
-msgid "Count"
-msgstr "Nombre"
-
-#: src/gui_frontend/achievement_manual_view.rs:211
-msgid "Percent"
-msgstr "Pourcentage"
-
-#: src/gui_frontend/achievement_manual_view.rs:245
-msgid "minutes (0 = instant)"
-msgstr "minutes (0 = instantané)"
-
-#: src/gui_frontend/achievement_manual_view.rs:254
-msgid "Even"
-msgstr "Régulier"
-
-#: src/gui_frontend/achievement_manual_view.rs:258
-msgid "Random"
-msgstr "Aléatoire"
-
-#: src/gui_frontend/achievement_manual_view.rs:278
-msgid "Target"
-msgstr "Cible"
-
-#: src/gui_frontend/achievement_manual_view.rs:282
-msgid "Spread over"
-msgstr "Réparti sur"
-
-#: src/gui_frontend/achievement_manual_view.rs:286
-msgid "Spacing"
-msgstr "Espacement"
-
-#: src/gui_frontend/achievement_manual_view.rs:364
+#: src/gui_frontend/achievement_manual_view/mod.rs:56
 msgid "No achievements staged"
 msgstr "Aucun succès préparé"
 
-#: src/gui_frontend/achievement_manual_view.rs:365
+#: src/gui_frontend/achievement_manual_view/mod.rs:57
 msgid "{count} staged"
 msgstr "{count} préparé(s)"
 
-#: src/gui_frontend/achievement_manual_view.rs:398
+#: src/gui_frontend/achievement_manual_view/mod.rs:95
 msgid "Already at or above target ({progress})"
 msgstr "Déjà à la cible ou au-dessus ({progress})"
 
-#: src/gui_frontend/achievement_manual_view.rs:404
+#: src/gui_frontend/achievement_manual_view/mod.rs:101
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr "Remplir automatiquement {count} succès ({progress})"
 
-#: src/gui_frontend/achievement_manual_view.rs:744
-#: src/gui_frontend/achievement_manual_view.rs:758
-msgid "This achievement is protected."
-msgstr "Ce succès est protégé."
+#: src/gui_frontend/achievement_manual_view/header.rs:49
+msgid "Instant"
+msgstr "Instantané"
 
-#: src/gui_frontend/achievement_manual_view.rs:771
-msgid "Click to stage this achievement; click again to remove."
-msgstr "Cliquez pour préparer ce succès ; cliquez à nouveau pour le retirer."
+#: src/gui_frontend/achievement_manual_view/header.rs:52
+msgid "Stage"
+msgstr "Préparer"
 
-#: src/gui_frontend/achievement_manual_view.rs:790
-msgid "Already unlocked."
-msgstr "Déjà déverrouillé."
+#: src/gui_frontend/achievement_manual_view/header.rs:56
+msgid "Copy user"
+msgstr "Copier profil"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:74
+msgid "Auto-fill"
+msgstr "Remplir auto"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:77
+msgid "Configuration"
+msgstr "Configuration"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:103
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
+msgid "Start"
+msgstr "Démarrer"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:108
+msgid "Changes apply instantly"
+msgstr "Les changements s'appliquent immédiatement"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:63
+msgid "Count"
+msgstr "Nombre"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:65
+msgid "Percent"
+msgstr "Pourcentage"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:99
+msgid "minutes (0 = instant)"
+msgstr "minutes (0 = instantané)"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:108
+msgid "Even"
+msgstr "Régulier"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:112
+msgid "Random"
+msgstr "Aléatoire"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:132
+msgid "Target"
+msgstr "Cible"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:136
+msgid "Spread over"
+msgstr "Réparti sur"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:140
+msgid "Spacing"
+msgstr "Espacement"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:232
+msgid "Choose a friend to copy timing from"
+msgstr "Choisir un ami pour lequel copier le minutage"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
+msgid "Advanced"
+msgstr "Avancé"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:68
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:89
+msgid "minutes"
+msgstr "minutes"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:103
+msgid "Max gap"
+msgstr "Écart max"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:105
+msgid "First delay"
+msgstr "Délai initial"
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:99
+msgid "No friend loaded"
+msgstr "Aucun ami chargé"
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:109
+msgid "{count} achievements over {time}"
+msgstr "{count} succès sur {time}"
+
+#: src/gui_frontend/friend_picker.rs:57
+msgid "Copy timing from a friend"
+msgstr "Copier le minutage d'un ami"
+
+#: src/gui_frontend/friend_picker.rs:151
+msgid "Use the pasted SteamID64"
+msgstr "Utiliser le SteamID64 collé"
+
+#: src/gui_frontend/friend_picker.rs:267
+msgid "This profile is private"
+msgstr "Ce profil est privé"
+
+#: src/gui_frontend/friend_picker.rs:269
+msgid "Couldn't load this user"
+msgstr "Impossible de charger cet utilisateur"
+
+#: src/gui_frontend/friend_picker.rs:281
+msgid "Search friends or paste a SteamID64"
+msgstr "Rechercher des amis ou coller un SteamID64"
+
+#: src/gui_frontend/friend_picker.rs:369
+msgid "Clear selected user"
+msgstr "Effacer l'utilisateur sélectionné"
 
 #: src/gui_frontend/app_list_view/mod.rs:192
 #: src/gui_frontend/app_list_view/mod.rs:852
@@ -633,3 +687,19 @@ msgstr "Manager"
 #: src/gui_frontend/widgets/steam_app_card.rs:149
 msgid "Manage this app in a new window"
 msgstr "Gérer cette application dans une nouvelle fenêtre"
+
+#: src/gui_frontend/widgets/achievement_row.rs:253
+#: src/gui_frontend/widgets/achievement_row.rs:258
+msgid "This achievement is protected."
+msgstr "Ce succès est protégé."
+
+#: src/gui_frontend/widgets/achievement_row.rs:272
+msgid "Click to stage this achievement; click again to remove."
+msgstr "Cliquez pour préparer ce succès ; cliquez à nouveau pour le retirer."
+
+#: src/gui_frontend/widgets/achievement_row.rs:281
+msgid "Already unlocked."
+msgstr "Déjà déverrouillé."
+
+#~ msgid "Stage unlocks"
+#~ msgstr "Planifier dans le temps"

@@ -20,6 +20,7 @@ use crate::steam_client::create_client::{create_client_engine, create_steam_clie
 use crate::steam_client::steam_apps_001_wrapper::SteamApps001;
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steam_client_wrapper::SteamClient;
+use crate::steam_client::steam_friends_wrapper::SteamFriends;
 use crate::steam_client::steam_user_stats_wrapper::SteamUserStats;
 use crate::steam_client::steam_user_wrapper::SteamUser;
 use crate::steam_client::steam_utils_wrapper::SteamUtils;
@@ -34,6 +35,7 @@ pub struct ConnectedSteam {
     pub user_stats: SteamUserStats,
     pub utils: SteamUtils,
     pub user: SteamUser,
+    pub friends: SteamFriends,
     engine: ClientEngine,
     engine_handles: (HSteamPipe, HSteamUser),
 }
@@ -48,6 +50,7 @@ impl ConnectedSteam {
         let apps_001 = client.get_isteam_apps_001(h_user, h_pipe)?;
         let user_stats = client.get_isteam_user_stats(h_user, h_pipe)?;
         let user = client.get_isteam_user(h_user, h_pipe)?;
+        let friends = client.get_isteam_friends(h_user, h_pipe)?;
 
         let engine = create_client_engine(silent)?;
         let engine_pipe = engine.create_steam_pipe()?;
@@ -62,6 +65,7 @@ impl ConnectedSteam {
             user_stats,
             utils,
             user,
+            friends,
             engine,
             engine_handles: (engine_pipe, engine_user),
         })

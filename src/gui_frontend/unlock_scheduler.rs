@@ -57,6 +57,26 @@ pub fn compute_unlock_times_ms(count: usize, total_ms: u64, spacing: &str) -> Ve
     out
 }
 
+/// Turn a friend's absolute unlock timestamps (unix seconds, ascending) into
+/// "from now" offsets in ms. The order is preserved; each real gap is kept as-is
+/// but capped at `max_gap_s` (so multi-day breaks between play sessions don't
+/// stretch the replay over years); `first_delay_s` shifts the whole timeline.
+/// Bursts (gap 0) are kept faithfully — equal offsets fire in the same tick.
+pub fn compute_copy_timing_ms(times_s: &[u32], max_gap_s: u64, first_delay_s: u64) -> Vec<u64> {
+    if times_s.is_empty() {
+        return Vec::new();
+    }
+    let mut out = Vec::with_capacity(times_s.len());
+    let mut acc = first_delay_s * 1000;
+    out.push(acc);
+    for w in times_s.windows(2) {
+        let gap = (w[1].saturating_sub(w[0]) as u64).min(max_gap_s);
+        acc += gap * 1000;
+        out.push(acc);
+    }
+    out
+}
+
 fn enforce_min_gap(times: &mut [u64], min_gap: u64, total_ms: u64) {
     for i in 1..times.len() {
         let prev = times[i - 1];
@@ -233,5 +253,19 @@ mod tests {
     fn random_spacing_with_one_is_linear() {
         let times = compute_unlock_times_ms(1, 10_000, SPACING_RANDOM);
         assert_eq!(times, vec![10_000]);
+    }
+
+    #[test]
+    fn copy_timing_caps_long_gaps_and_keeps_short_ones() {
+        // gaps: 30s, 45s, 3 days, 20s ; cap 300s ; first delay 10s
+        let t = [1_000_000u32, 1_000_030, 1_000_075, 1_000_075 + 259_200, 1_000_095 + 259_200];
+        let out = compute_copy_timing_ms(&t, 300, 10);
+        assert_eq!(out, vec![10_000, 40_000, 85_000, 385_000, 405_000]);
+    }
+
+    #[test]
+    fn copy_timing_keeps_simultaneous_bursts() {
+        let t = [100u32, 100, 100];
+        assert_eq!(compute_copy_timing_ms(&t, 300, 0), vec![0, 0, 0]);
     }
 }

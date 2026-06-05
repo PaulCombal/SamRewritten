@@ -65,7 +65,7 @@ paru -S samrewritten-git
 </details>
 
 <details>
-<summary><b>Ubuntu Linux (Snap - Soon!)</b></summary>
+<summary><b>Ubuntu Linux (Snap)</b></summary>
 
 **⚠️ Important:** The Snap version of SamRewritten cannot be used with the Flatpak version of Steam.
 
@@ -122,6 +122,7 @@ If the installation fails or behaves unexpectedly, please open a GitHub issue wi
 * Lock and unlock specific achievements with a single click
 * Bulk lock/unlock achievements for all or selected apps
 * Schedule achievement unlocks over a custom period
+* Copy another user's achievement unlock timings and replay them
 * Edit statistics in real-time
 * Per-app or bulk import and export of achievements and stats
 * Idle apps: Appear in-game until you toggle it off

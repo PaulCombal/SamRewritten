@@ -26,3 +26,4 @@ pub mod progress_io;
 pub mod stat_definitions;
 mod tests;
 pub mod types;
+pub mod user_unlock_times;

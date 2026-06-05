@@ -19,6 +19,7 @@ use crate::backend::local_config::parse_localconfig;
 use crate::backend::local_stats::LocalIndex;
 use crate::backend::progress_io::{MAX_CONCURRENT_APPS, run_command_on_apps_concurrent};
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
+use crate::backend::user_unlock_times;
 use crate::dev_println;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
@@ -105,6 +106,18 @@ fn ensure_connected(slot: &mut Option<ConnectedSteam>) -> Result<&mut ConnectedS
         }
     }
     Ok(slot.as_mut().unwrap())
+}
+
+/// Drop a stale connection if Steam was restarted, then `ensure_connected`. Used
+/// by the orchestrator's own (non-app-scoped) commands.
+fn orchestrator_connection(
+    slot: &mut Option<ConnectedSteam>,
+) -> Result<&mut ConnectedSteam, ()> {
+    #[cfg(target_os = "linux")]
+    if slot.is_some() && !crate::utils::steam_ns::loaded_install_is_running() {
+        *slot = None;
+    }
+    ensure_connected(slot)
 }
 
 fn ensure_app_launched(
@@ -278,7 +291,7 @@ fn process_command(
             let vdf_path = if include_playtime {
                 match connected_steam.user.get_steam_id() {
                     Ok(steam_id) => {
-                        let account_id = (steam_id.m_steamid & 0xFFFF_FFFF) as u32;
+                        let account_id = user_unlock_times::account_id(steam_id.m_steamid);
                         let path = SteamLocator::get_local_config_path(account_id);
                         if path.is_none() {
                             dev_println!(
@@ -564,6 +577,57 @@ fn process_command(
             );
         }
 
+        SteamCommand::GetFriendUnlockTimes(app_id, friend) => {
+            forward_to_child(
+                app_id,
+                SteamCommand::GetFriendUnlockTimes(app_id, friend),
+                tx,
+                children_processes,
+                "get friend unlock times",
+            );
+        }
+
+        // Friends / avatar / persona aren't app-specific (localconfig.vdf + the
+        // global ISteamFriends interface), so the orchestrator serves them from
+        // its own connection instead of forwarding to a child.
+        SteamCommand::GetFriends => {
+            let friends: Result<_, SamError> = match orchestrator_connection(connected_steam) {
+                Ok(cs) => match cs.user.get_steam_id() {
+                    Ok(steam_id) => {
+                        let account_id = user_unlock_times::account_id(steam_id.m_steamid);
+                        user_unlock_times::localconfig_path(account_id).map(|path| {
+                            let mut friends = user_unlock_times::list_friends(&path);
+                            // You can't copy your own cadence, so drop yourself.
+                            friends.retain(|f| f.steam_id64 != steam_id.m_steamid);
+                            friends
+                        })
+                    }
+                    Err(e) => {
+                        dev_println!("ORCH", "Failed to get Steam ID: {e:?}");
+                        Err(SamError::UnknownError)
+                    }
+                },
+                Err(()) => Err(SamError::SteamConnectionFailed),
+            };
+            send(tx, &SteamResponse::from(friends));
+        }
+
+        SteamCommand::GetUserAvatar(steam_id64) => {
+            let avatar = match orchestrator_connection(connected_steam) {
+                Ok(cs) => user_unlock_times::fetch_user_avatar(&cs.friends, &cs.utils, steam_id64),
+                Err(()) => Err(SamError::SteamConnectionFailed),
+            };
+            send(tx, &SteamResponse::from(avatar));
+        }
+
+        SteamCommand::GetUserPersonaName(steam_id64) => {
+            let name = match orchestrator_connection(connected_steam) {
+                Ok(cs) => user_unlock_times::fetch_user_persona_name(&cs.friends, steam_id64),
+                Err(()) => Err(SamError::SteamConnectionFailed),
+            };
+            send(tx, &SteamResponse::from(name));
+        }
+
         SteamCommand::UnlockAllAchievements(app_id) => {
             run_ephemeral(
                 tx,
@@ -645,7 +709,7 @@ fn process_command(
                 .user
                 .get_steam_id()
                 .ok()
-                .map(|sid| (sid.m_steamid & 0xFFFF_FFFF) as u32)
+                .map(|sid| user_unlock_times::account_id(sid.m_steamid))
                 .and_then(LocalIndex::build);
 
             let mut counts: Vec<(u32, u32, u32)> = Vec::with_capacity(app_ids.len());

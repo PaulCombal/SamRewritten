@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Paul <abonnementspaul (at) gmail.com>
 //
@@ -13,6 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+#![allow(dead_code)]
 
 use crate::steam_client::steam_app_list_vtable::ISteamAppList;
 use crate::steam_client::steamworks_types::AppId_t;

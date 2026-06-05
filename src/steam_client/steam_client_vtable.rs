@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 // SPDX-License-Identifier: GPL-3.0-only
 // Copyright (C) 2026 Paul <abonnementspaul (at) gmail.com>
 //
@@ -14,8 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#![allow(dead_code)]
+
 use crate::steam_client::steam_app_list_vtable::ISteamAppList;
 use crate::steam_client::steam_apps_vtable::ISteamApps;
+use crate::steam_client::steam_friends_vtable::ISteamFriends;
 use crate::steam_client::steam_user_stats_vtable::ISteamUserStats;
 use crate::steam_client::steam_user_vtable::ISteamUser;
 use crate::steam_client::steam_utils_vtable::ISteamUtils;
@@ -56,7 +58,7 @@ pub struct ISteamClientVTable {
         HSteamUser,
         HSteamPipe,
         *const c_char,
-    ) -> *mut c_void, // ISteamFriends
+    ) -> *mut ISteamFriends,
     pub get_isteam_utils:
         unsafe extern "C" fn(*mut ISteamClient, HSteamPipe, *const c_char) -> *mut ISteamUtils, // ISteamUtils
     pub get_isteam_matchmaking: unsafe extern "C" fn(

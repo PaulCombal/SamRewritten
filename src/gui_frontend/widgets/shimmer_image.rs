@@ -37,6 +37,24 @@ impl ShimmerImage {
     pub fn reset(&self) {
         self.set_url("");
     }
+
+    /// Display raw RGBA pixels directly (e.g. a Steam avatar fetched natively),
+    /// bypassing the URL/HTTP path. Rounded-corner clipping still applies.
+    pub fn set_rgba(&self, width: i32, height: i32, rgba: &[u8]) {
+        use gtk::gdk::{MemoryFormat, MemoryTexture};
+        use gtk::prelude::Cast;
+        use gtk::subclass::prelude::ObjectSubclassIsExt;
+        self.set_url("");
+        let bytes = glib::Bytes::from(rgba);
+        let texture = MemoryTexture::new(
+            width,
+            height,
+            MemoryFormat::R8g8b8a8,
+            &bytes,
+            (width as usize) * 4,
+        );
+        self.imp().apply_texture(texture.upcast());
+    }
 }
 
 mod imp {
@@ -289,7 +307,7 @@ mod imp {
     }
 
     impl ShimmerImage {
-        fn apply_texture(&self, texture: Texture) {
+        pub(crate) fn apply_texture(&self, texture: Texture) {
             let ratio = texture.width() as f32 / texture.height() as f32;
             self.texture_size_ratio.set(ratio);
             self.texture.replace(Some(texture));
@@ -324,7 +342,19 @@ mod imp {
             let url_for_bail = url_string.clone();
             let push_res = POOL.with(|pool| {
                 pool.push(move || {
-                    let result: Result<Vec<u8>, ()> = if url_string.starts_with("file://") {
+                    let result: Result<Vec<u8>, ()> = if let Some(rest) =
+                        url_string.strip_prefix("data:")
+                    {
+                        // data:[<mime>][;base64],<payload> — native RGBA avatars are
+                        // handed in this way to avoid a temp-file round-trip.
+                        match rest.split_once(',') {
+                            Some((meta, payload)) if meta.contains("base64") => {
+                                Ok(glib::base64_decode(payload).to_vec())
+                            }
+                            Some((_, payload)) => Ok(payload.as_bytes().to_vec()),
+                            None => Err(()),
+                        }
+                    } else if url_string.starts_with("file://") {
                         let path = url_string.replace("file://", "");
                         std::fs::read(path).map_err(|_| ())
                     } else {

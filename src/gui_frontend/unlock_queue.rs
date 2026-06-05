@@ -18,7 +18,7 @@ use gtk::gio::ListStore;
 use gtk::prelude::*;
 use std::cell::RefCell;
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
 #[derive(Default)]
@@ -71,6 +71,69 @@ impl UnlockQueue {
                 .downcast::<GAchievementObject>()
                 .expect("Not a GAchievementObject");
             if ids.contains(&ach.id()) {
+                ach.set_queue_position(0);
+            }
+        }
+    }
+
+    /// Replace the queue with `ordered_ids` in the given order, setting each
+    /// matching achievement's queue position. Used by copy-timing mode, where the
+    /// order comes from a friend's timeline rather than the user's clicks. Ids not
+    /// present in the model are skipped; callers pre-filter achieved/protected.
+    pub fn set_order(&self, raw_model: &ListStore, ordered_ids: &[String]) {
+        self.clear(raw_model);
+        let mut by_id: HashMap<String, GAchievementObject> = HashMap::new();
+        for obj in raw_model.into_iter().flatten() {
+            if let Ok(ach) = obj.downcast::<GAchievementObject>() {
+                by_id.insert(ach.id(), ach);
+            }
+        }
+        let mut order = self.order.borrow_mut();
+        for id in ordered_ids {
+            if let Some(ach) = by_id.get(id) {
+                order.push(id.clone());
+                ach.set_queue_position(order.len() as u32);
+            }
+        }
+    }
+
+    /// Re-apply each queued id's 1-based position to its achievement without
+    /// changing the stored order. Used to bring a queue back on screen after a
+    /// mode switch hid it.
+    pub fn render(&self, raw_model: &ListStore) {
+        let order = self.order.borrow();
+        if order.is_empty() {
+            return;
+        }
+        let pos_by_id: HashMap<&str, u32> = order
+            .iter()
+            .enumerate()
+            .map(|(i, id)| (id.as_str(), (i + 1) as u32))
+            .collect();
+        for obj in raw_model.into_iter().flatten() {
+            let ach = obj
+                .downcast::<GAchievementObject>()
+                .expect("Not a GAchievementObject");
+            if let Some(&pos) = pos_by_id.get(ach.id().as_str()) {
+                ach.set_queue_position(pos);
+            }
+        }
+    }
+
+    /// Zero the on-screen positions of queued achievements while keeping the
+    /// stored order, so the queue can be re-rendered later. Lets the staged and
+    /// copy-timing queues coexist without bleeding into one another.
+    pub fn hide(&self, raw_model: &ListStore) {
+        let order = self.order.borrow();
+        if order.is_empty() {
+            return;
+        }
+        let ids: HashSet<&str> = order.iter().map(|s| s.as_str()).collect();
+        for obj in raw_model.into_iter().flatten() {
+            let ach = obj
+                .downcast::<GAchievementObject>()
+                .expect("Not a GAchievementObject");
+            if ids.contains(ach.id().as_str()) {
                 ach.set_queue_position(0);
             }
         }

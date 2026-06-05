@@ -34,7 +34,25 @@
         <key name="unlock-mode" type="s">
             <default>'autocommit'</default>
             <summary>Achievement Unlock Mode</summary>
-            <description>How the achievement view commits toggles. Valid values are 'autocommit' (each switch commits immediately) and 'deferred' (toggles build an ordered queue that the user fires later).</description>
+            <description>How the achievement view commits toggles. Valid values are 'autocommit' (each switch commits immediately), 'deferred' (toggles build an ordered queue that the user fires later), and 'copytiming' (replay a friend's unlock cadence).</description>
+        </key>
+
+        <key name="copy-timing-max-gap-minutes" type="i">
+            <default>5</default>
+            <summary>Copy Timing Maximum Gap (Minutes)</summary>
+            <description>In copy-timing mode, the largest gap kept between two consecutive unlocks. Real gaps longer than this (e.g. between play sessions on different days) are compressed to this value.</description>
+        </key>
+
+        <key name="copy-timing-first-delay-minutes" type="i">
+            <default>5</default>
+            <summary>Copy Timing First Delay (Minutes)</summary>
+            <description>In copy-timing mode, how long to wait before the first achievement is unlocked.</description>
+        </key>
+
+        <key name="copy-timing-friend" type="s">
+            <default>''</default>
+            <summary>Copy Timing Friend</summary>
+            <description>Last persona name or SteamID64 used as the source in copy-timing mode.</description>
         </key>
 
         <key name="auto-fill-unit" type="s">

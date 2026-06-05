@@ -22,6 +22,7 @@ mod app_view;
 mod application_actions;
 mod custom_progress_bar_widget;
 mod dialogs;
+mod friend_picker;
 mod gobjects;
 mod gsettings;
 mod i18n;

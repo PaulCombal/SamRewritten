@@ -125,6 +125,9 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
             SteamCommand::ImportAppProgress(id, payload) => dispatch(parent_tx, id, app_id, || {
                 Ok::<_, SamError>(apply_app_export(am, payload))
             }),
+            SteamCommand::GetFriendUnlockTimes(id, friend) => {
+                dispatch(parent_tx, id, app_id, || am.fetch_friend_unlock_times(&friend))
+            }
 
             _ => {
                 dev_println!("APPSRV", "Received unknown command {command:?}");

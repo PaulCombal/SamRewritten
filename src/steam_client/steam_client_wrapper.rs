@@ -18,6 +18,8 @@ use crate::steam_client::steam_apps_001_wrapper::SteamApps001;
 use crate::steam_client::steam_apps_vtable::STEAMAPPS_INTERFACE_VERSION;
 use crate::steam_client::steam_apps_wrapper::SteamApps;
 use crate::steam_client::steam_client_vtable::ISteamClient;
+use crate::steam_client::steam_friends_vtable::STEAMFRIENDS_INTERFACE_VERSION;
+use crate::steam_client::steam_friends_wrapper::SteamFriends;
 use crate::steam_client::steam_user_stats_vtable::STEAMUSERSTATS_INTERFACE_VERSION;
 use crate::steam_client::steam_user_stats_wrapper::SteamUserStats;
 use crate::steam_client::steam_user_vtable::STEAMUSER_INTERFACE_VERSION;
@@ -208,6 +210,30 @@ impl<'a> SteamClient {
                 ))
             } else {
                 Ok(SteamUserStats::from_raw(user_stats_ptr))
+            }
+        }
+    }
+
+    pub fn get_isteam_friends(
+        &self,
+        user: HSteamUser,
+        pipe: HSteamPipe,
+    ) -> Result<SteamFriends, SteamClientError> {
+        unsafe {
+            let version = STEAMFRIENDS_INTERFACE_VERSION.as_ptr() as *const c_char;
+
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+            let friends_ptr = (vtable.get_isteam_friends)(self.inner.ptr, user, pipe, version);
+
+            if friends_ptr.is_null() {
+                Err(SteamClientError::InterfaceCreationFailed(
+                    "ISteamFriends".to_owned(),
+                ))
+            } else {
+                Ok(SteamFriends::from_raw(friends_ptr))
             }
         }
     }
