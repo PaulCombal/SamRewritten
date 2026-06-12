@@ -145,7 +145,7 @@ msgstr "SamRewritten não pode encontrar a Steam em nenhum dos diretórios padr�
 
 #: src/gui_frontend/dialogs.rs:239
 msgid "<b>Already have Steam installed?</b>"
-msgstr "A Steam está instalada?"
+msgstr "<b>A Steam está instalada?<\b>"
 
 #: src/gui_frontend/dialogs.rs:241
 msgid ""
