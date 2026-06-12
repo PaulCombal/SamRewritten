@@ -49,7 +49,7 @@ impl FromStr for UserStatType {
         match s.to_lowercase().as_str() {
             "int" | "integer" => Ok(UserStatType::Integer),
             "float" => Ok(UserStatType::Float),
-            "averagerate" => Ok(UserStatType::AverageRate),
+            "avgrate" | "averagerate" => Ok(UserStatType::AverageRate),
             "achievements" => Ok(UserStatType::Achievements),
             "groupachievements" => Ok(UserStatType::GroupAchievements),
             _ => Err(()),

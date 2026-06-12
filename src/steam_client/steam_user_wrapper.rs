@@ -61,4 +61,15 @@ impl SteamUser {
             Ok(steam_id)
         }
     }
+
+    pub fn b_logged_on(&self) -> Result<bool, SteamClientError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+
+            Ok((vtable.b_logged_on)(self.inner.ptr))
+        }
+    }
 }

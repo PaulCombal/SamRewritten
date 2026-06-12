@@ -94,6 +94,15 @@ impl AppManager {
             return Ok(());
         }
 
+        // Offline (or backend unreachable): Steam never services the
+        // UserStatsReceived callback, so waiting would just stall for the full
+        // timeout. Skip it and fall back to the on-disk stats cache so the app
+        // still loads. Treat a failed BLoggedOn check as "assume online".
+        if self.connected_steam.user.b_logged_on() == Ok(false) {
+            eprintln!("[APP MANAGER] Steam is offline; loading from cached stats without a live request");
+            return Ok(());
+        }
+
         let steam_id = match self.connected_steam.user.get_steam_id() {
             Ok(id) => id,
             Err(e) => {
@@ -108,8 +117,17 @@ impl AppManager {
             steam_id
         );
 
-        if self.wait_for_user_stats(steam_id)? == EResult::k_EResultOK {
-            self.user_stats_received = true;
+        // A timeout here is non-fatal: proceed with whatever stats Steam has
+        // cached rather than failing the whole load.
+        match self.wait_for_user_stats(steam_id) {
+            Ok(EResult::k_EResultOK) => self.user_stats_received = true,
+            Ok(result) => {
+                eprintln!("[APP MANAGER] RequestCurrentStats returned {result:?}; continuing with cached stats")
+            }
+            Err(SamError::Timeout) => {
+                eprintln!("[APP MANAGER] RequestCurrentStats timed out; continuing with cached stats")
+            }
+            Err(e) => return Err(e),
         }
         Ok(())
     }
