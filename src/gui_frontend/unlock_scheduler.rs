@@ -258,7 +258,13 @@ mod tests {
     #[test]
     fn copy_timing_caps_long_gaps_and_keeps_short_ones() {
         // gaps: 30s, 45s, 3 days, 20s ; cap 300s ; first delay 10s
-        let t = [1_000_000u32, 1_000_030, 1_000_075, 1_000_075 + 259_200, 1_000_095 + 259_200];
+        let t = [
+            1_000_000u32,
+            1_000_030,
+            1_000_075,
+            1_000_075 + 259_200,
+            1_000_095 + 259_200,
+        ];
         let out = compute_copy_timing_ms(&t, 300, 10);
         assert_eq!(out, vec![10_000, 40_000, 85_000, 385_000, 405_000]);
     }

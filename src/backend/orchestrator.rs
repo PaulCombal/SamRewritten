@@ -110,9 +110,7 @@ fn ensure_connected(slot: &mut Option<ConnectedSteam>) -> Result<&mut ConnectedS
 
 /// Drop a stale connection if Steam was restarted, then `ensure_connected`. Used
 /// by the orchestrator's own (non-app-scoped) commands.
-fn orchestrator_connection(
-    slot: &mut Option<ConnectedSteam>,
-) -> Result<&mut ConnectedSteam, ()> {
+fn orchestrator_connection(slot: &mut Option<ConnectedSteam>) -> Result<&mut ConnectedSteam, ()> {
     #[cfg(target_os = "linux")]
     if slot.is_some() && !crate::utils::steam_ns::loaded_install_is_running() {
         *slot = None;

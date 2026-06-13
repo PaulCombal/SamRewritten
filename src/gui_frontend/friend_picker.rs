@@ -82,7 +82,10 @@ pub fn open_friend_picker<Fut>(
             let q = query.borrow();
             let q = q.trim();
             if item.is_custom() {
-                return q.parse::<u64>().map(|v| v >= STEAMID64_BASE).unwrap_or(false);
+                return q
+                    .parse::<u64>()
+                    .map(|v| v >= STEAMID64_BASE)
+                    .unwrap_or(false);
             }
             q.is_empty() || item.search_text().contains(&q.to_lowercase())
         }
@@ -129,8 +132,7 @@ pub fn open_friend_picker<Fut>(
             Some(s.to_value())
         });
         ClosureExpression::new::<String>(
-            &[li
-                .property_expression("item")
+            &[li.property_expression("item")
                 .chain_property::<GFriendObject>("steam-id")],
             id_closure,
         )
@@ -203,7 +205,10 @@ pub fn open_friend_picker<Fut>(
     );
     banner_box.append(&banner_label);
     banner_box.append(&banner_close);
-    let banner = Revealer::builder().child(&banner_box).reveal_child(false).build();
+    let banner = Revealer::builder()
+        .child(&banner_box)
+        .reveal_child(false)
+        .build();
     banner_close.connect_clicked(clone!(
         #[weak]
         banner,
@@ -323,8 +328,7 @@ pub fn open_friend_picker<Fut>(
                 #[strong]
                 custom,
                 async move {
-                    if let Ok(Some(name)) =
-                        name_handle.await.expect("spawn_blocking task panicked")
+                    if let Ok(Some(name)) = name_handle.await.expect("spawn_blocking task panicked")
                         && custom.steam_id() == id
                     {
                         custom.set_name(name);

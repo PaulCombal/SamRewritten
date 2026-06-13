@@ -54,14 +54,15 @@ impl SteamFriends {
                 .vtable
                 .as_ref()
                 .ok_or(SteamClientError::NullVtable)?;
-            Ok((vtable.request_user_information)(self.inner.ptr, steam_id, name_only))
+            Ok((vtable.request_user_information)(
+                self.inner.ptr,
+                steam_id,
+                name_only,
+            ))
         }
     }
 
-    pub fn get_friend_persona_name(
-        &self,
-        steam_id: CSteamID,
-    ) -> Result<String, SteamClientError> {
+    pub fn get_friend_persona_name(&self, steam_id: CSteamID) -> Result<String, SteamClientError> {
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable

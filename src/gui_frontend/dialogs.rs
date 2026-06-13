@@ -723,7 +723,10 @@ where
             on_chosen(Some(root));
         }
         Err(e) => {
-            eprintln!("[SNAP] Could not read steamclient.so under {}: {e}", root.display());
+            eprintln!(
+                "[SNAP] Could not read steamclient.so under {}: {e}",
+                root.display()
+            );
             show_snap_folder_error(parent, on_chosen.clone());
         }
     }

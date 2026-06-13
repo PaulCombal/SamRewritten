@@ -20,8 +20,8 @@ use crate::backend::stat_definitions::{
     IntStatInfo, IntegerStatDefinition, StatDefinition, StatInfo,
 };
 use crate::backend::types::UserStatType;
-use crate::dev_println;
 use crate::backend::user_unlock_times::{self, AchievementUnlock};
+use crate::dev_println;
 use crate::steam_client::steamworks_types::{
     AppId_t, CSteamID, EResult, GlobalAchievementPercentagesReady_t, UserStatsReceived_t,
 };
@@ -189,7 +189,10 @@ impl AppManager {
                 let my_account = user_unlock_times::account_id(self.current_steam_id64()?);
                 let cfg = user_unlock_times::localconfig_path(my_account)?;
                 user_unlock_times::find_friend_steamid64(&cfg, friend).ok_or_else(|| {
-                    eprintln!("[APP MANAGER] Friend '{friend}' not found in {}", cfg.display());
+                    eprintln!(
+                        "[APP MANAGER] Friend '{friend}' not found in {}",
+                        cfg.display()
+                    );
                     SamError::UnknownError
                 })?
             }

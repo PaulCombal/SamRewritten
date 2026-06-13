@@ -28,7 +28,11 @@ pub const TEXT_DOMAIN: &str = "samrewritten";
 
 /// `(locale code, native name)`; add a row per new `po/<code>.po`. "en" has no
 /// catalogue — it is the source language, so gettext falls back to the msgids.
-pub const LANGUAGES: &[(&str, &str)] = &[("en", "English"), ("fr", "Français")];
+pub const LANGUAGES: &[(&str, &str)] = &[
+    ("en", "English"),
+    ("fr", "Français"),
+    ("pt_BR", "Português (Brasil)"),
+];
 
 // glib-rs wraps dgettext/dngettext but not bindtextdomain; the symbol lives in
 // libintl, which GTK already links.

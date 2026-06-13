@@ -1,21 +1,13 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the SamRewritten package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-07 22:43+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:171
@@ -132,20 +124,22 @@ msgstr ""
 
 #: src/gui_frontend/dialogs.rs:235
 msgid "<b>No Steam installations were found on your system.</b>"
-msgstr "<b>Não foi possivel encontrar uma instalação da Steam no seu sistema.<\b>"
+msgstr ""
+"<b>Não foi possível encontrar uma instalação da Steam no seu sistema.</b>"
 
 #: src/gui_frontend/dialogs.rs:237
 msgid ""
 "SamRewritten couldn't find Steam in any of the standard locations. If you "
 "haven't installed Steam yet, please install it through your distribution's "
 "official repository or app store."
-msgstr "SamRewritten não pode encontrar a Steam em nenhum dos diretórios padrões. "
-"Se você ainda nao instalou a Steam, faça isso pelo repositório oficial de sua "
+msgstr ""
+"SamRewritten não pode encontrar a Steam em nenhum dos diretórios padrões. Se "
+"você ainda não instalou a Steam, faça isso pelo repositório oficial de sua "
 "distribuição ou loja de aplicativos."
 
 #: src/gui_frontend/dialogs.rs:239
 msgid "<b>Already have Steam installed?</b>"
-msgstr "<b>A Steam está instalada?<\b>"
+msgstr "<b>A Steam está instalada?</b>"
 
 #: src/gui_frontend/dialogs.rs:241
 msgid ""
@@ -153,14 +147,16 @@ msgid ""
 "to it using environment variables. Please check the <a href=\"https://github."
 "com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
 "your issue."
-msgstr "Caso a Steam esteja instalada em um diretório costumizado, você pode usar "
-"variáveis de ambiente para apontar esse caminho para o SamRewritten. Por favor "
-"verificar <a href=\"https://github."
-"com/PaulCombal/SamRewritten\">GitHub page</a>" em busca de instruções, ou para reportar o seu problema"
+msgstr ""
+"Caso a Steam esteja instalada em um diretório customizado, você pode usar "
+"variáveis de ambiente para apontar esse caminho para o SamRewritten. Por "
+"favor verifique a <a href=\"https://github.com/PaulCombal/"
+"SamRewritten\">página do GitHub</a> em busca de instruções, ou para reportar "
+"o seu problema."
 
 #: src/gui_frontend/dialogs.rs:246
 msgid "No compatible version of Steam found"
-msgstr "Nenhuma versão compativel da Steam foi encontrada"
+msgstr "Nenhuma versão compatível da Steam foi encontrada"
 
 #: src/gui_frontend/dialogs.rs:282
 msgid "    (Steam is running here)"
@@ -175,9 +171,10 @@ msgid ""
 "SamRewritten found more than one Steam installation. The one Steam is "
 "currently running from is preselected — the others won't work unless you "
 "start Steam from them first."
-msgstr "SamRewritten achou mais que uma instalação da Steam, aquela que a Steam "
-"está atualmente usando foi pré-selecionada — as outras irão funcionar apenas quando "
-"você iniciar a Steam através delas."
+msgstr ""
+"SamRewritten achou mais que uma instalação da Steam, aquela que a Steam está "
+"atualmente usando foi pré-selecionada — as outras irão funcionar apenas "
+"quando você iniciar a Steam através delas."
 
 #: src/gui_frontend/dialogs.rs:312
 msgid ""
@@ -185,10 +182,12 @@ msgid ""
 "<tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install you want "
 "— see the <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
 "file#environment-variables\">README</a>."
-msgstr "Você será avisado novamente na proxima inicialização. Para pular isso de vez "
-"voce deve configurar a variável <tt>SAM_STEAM_INSTALL_ROOT</tt> para a instalação que "
-"você deseja usar — veja <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
-"file#environment-variables\">README</a>."
+msgstr ""
+"Você será avisado novamente na próxima inicialização. Para pular isso de vez "
+"você deve configurar a variável <tt>SAM_STEAM_INSTALL_ROOT</tt> para a "
+"instalação que você deseja usar — veja <a href=\"https://github.com/"
+"PaulCombal/SamRewritten?tab=readme-ov-file#environment-variables\">README</"
+"a>."
 
 #: src/gui_frontend/dialogs.rs:328 src/gui_frontend/dialogs.rs:377
 msgid "Choose a Steam installation"
@@ -211,13 +210,14 @@ msgid ""
 "\n"
 "<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam "
 "with Flatpak, please use the AppImage instead."
-msgstr "Essa é a versão <b>Snap</b> isolada de SamRewritten, portanto precisa de "
-"sua permissão para ler seus arquivos da Steam. Escolha a pasta da Steam uma vez — "
-"um dialogo de sistema aparecerá, apenas confirme para conceder acesso. Você não será "
-"perguntado novamente. \n"
+msgstr ""
+"Essa é a versão <b>Snap</b> isolada de SamRewritten, portanto precisa de sua "
+"permissão para ler seus arquivos da Steam. Escolha a pasta da Steam uma vez "
+"— um dialogo de sistema aparecerá, apenas confirme para conceder acesso. "
+"Você não será perguntado novamente. \n"
 "\n"
-"<b>A Steam por Flatpak não é suportada<b> pela versão Snap. Caso use a Steam "
-"por Flatpak, por favor use a versão AppImage."
+"<b>A Steam por Flatpak não é suportada</b> pela versão Snap. Caso use a "
+"Steam por Flatpak, por favor use a versão AppImage."
 
 #: src/gui_frontend/dialogs.rs:501 src/gui_frontend/dialogs.rs:540
 msgid "Connect to Steam"
@@ -241,9 +241,10 @@ msgid ""
 "selected. Pick the <b>Steam</b> directory — the one containing a "
 "<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
 "use the AppImage."
-msgstr "SamRewritten não pode ler <tt>steamclient.so</tt> na pasta selecionada. "
-"Escolha o diretório <b>Steam</b>  — aquele que contém a pasta <tt>linux64</tt>. "
-"Uma instalação de Steam por Flatpak não pode ser utilizada pelo Snap, "
+msgstr ""
+"SamRewritten não pode ler <tt>steamclient.so</tt> na pasta selecionada. "
+"Escolha o diretório <b>Steam</b>  — aquele que contém a pasta <tt>linux64</"
+"tt>. Uma instalação de Steam por Flatpak não pode ser utilizada pelo Snap, "
 "por favor utilizar o AppImage."
 
 #: src/gui_frontend/dialogs.rs:658
@@ -427,7 +428,7 @@ msgstr "Esse perfil é privado"
 
 #: src/gui_frontend/friend_picker.rs:269
 msgid "Couldn't load this user"
-msgstr "Não foi possivel carregar esse usuário"
+msgstr "Não foi possível carregar esse usuário"
 
 #: src/gui_frontend/friend_picker.rs:281
 msgid "Search friends or paste a SteamID64"
@@ -448,7 +449,7 @@ msgstr "Conquista ou estatística..."
 
 #: src/gui_frontend/app_list_view/settings_bindings.rs:110
 msgid "The new language will be applied the next time you start SamRewritten."
-msgstr "O idioma será aplicado na proxima inicialização."
+msgstr "O idioma será aplicado na próxima inicialização."
 
 #: src/gui_frontend/app_list_view/settings_bindings.rs:120
 msgid "Language changed"
@@ -475,7 +476,7 @@ msgstr "Bloqueando {done} / {total} app(s)…"
 #: src/gui_frontend/app_list_view/progress_actions.rs:157
 #: src/gui_frontend/app_list_view/progress_actions.rs:180
 msgid "Exporting {done} / {total} app(s)…"
-msgstr "Exportando {Done} / {total} app(s)…"
+msgstr "Exportando {done} / {total} app(s)…"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:246
 msgid "Export complete"
@@ -483,7 +484,7 @@ msgstr "Exportação completa"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:247
 msgid "Exported {count} app(s) to {path}"
-msgstr "Exportou {count} / app(s) para {path}"
+msgstr "Exportou {count} app(s) para {path}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:257
 msgid "Export partially complete"
@@ -498,6 +499,7 @@ msgstr ""
 "{path} escrito\n"
 "\n"
 "Falha ao ler dados para esses apps:"
+
 #: src/gui_frontend/app_list_view/progress_actions.rs:265
 msgid "Export failed"
 msgstr "Exportação falhou"
@@ -514,11 +516,11 @@ msgstr "Importação falhou"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:338
 msgid "Could not read file: {error}"
-msgstr "Não foi possivel ler arquivo: {error}"
+msgstr "Não foi possível ler arquivo: {error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:351
 msgid "Could not parse file: {error}"
-msgstr "Não foi possivel analisar arquivo: {error}"
+msgstr "Não foi possível analisar arquivo: {error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:361
 msgid "Unsupported format version: {found} (this build expects {expected})"
@@ -545,7 +547,7 @@ msgid ""
 "... and {count} more"
 msgstr ""
 "{list}\n"
-"... e mais {count}" 
+"... e mais {count}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:417
 msgid "Some apps contain protected fields."
@@ -558,8 +560,8 @@ msgid ""
 "\n"
 "{list}"
 msgstr ""
-"Os apps a seguir contém campos que podem não ser importáveis. Prossiga "
-"por sua conta e risco.\n"
+"Os apps a seguir contém campos que podem não ser importáveis. Prossiga por "
+"sua conta e risco.\n"
 "\n"
 "{list}"
 
@@ -593,13 +595,17 @@ msgstr "Aplicou {achievements} conquista(s) e {stats} estatísticas."
 msgid ""
 "\n"
 "Skipped {count} protected field(s)."
-msgstr "Pulou {count} campo(s) protegido(s)."
+msgstr ""
+"\n"
+"Pulou {count} campo(s) protegido(s)."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:598
 msgid ""
 "\n"
 "Skipped {count} unwriteable stat(s) (out of range or increment-only)."
-msgstr "Pulou {count} estatística(s) (fora de alcance ou apenas incrementos)."
+msgstr ""
+"\n"
+"Pulou {count} estatística(s) (fora de alcance ou apenas incrementos)."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:606
 msgid ""
@@ -613,7 +619,8 @@ msgstr ""
 msgid ""
 "Skipped (not in your library):\n"
 "{list}"
-msgstr "Pulou (não estão em sua biblioteca):\n"
+msgstr ""
+"Pulou (não estão em sua biblioteca):\n"
 "{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:617
@@ -641,7 +648,8 @@ msgstr "Sem resultados. Confira sua digitação ou tente usar um App Id."
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
-msgstr "Falha ao carregar sua biblioteca. Confira sua conexão com a internet. "
+msgstr ""
+"Falha ao carregar sua biblioteca. Confira sua conexão com a internet. "
 "Procure por App Id para começar."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:166
@@ -654,7 +662,9 @@ msgstr "Resetar tudo"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:329
 msgid "This will reset all achievements and stats for this app. Are you sure?"
-msgstr "Isso irá resetar todas as conquistas e estatísticas para esse app. Você tem certeza?
+msgstr ""
+"Isso irá resetar todas as conquistas e estatísticas para esse app. Você tem "
+"certeza?"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:330
 msgid "Sure, reset"

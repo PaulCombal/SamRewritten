@@ -72,11 +72,17 @@ pub fn read_unlock_times(account_id: u32, app_id: u32) -> Result<Vec<Achievement
     let user_path = dir.join(format!("UserGameStats_{account_id}_{app_id}.bin"));
 
     let schema = KeyValue::load_as_binary(&schema_path).map_err(|e| {
-        eprintln!("[USER UNLOCK TIMES] Failed to read schema {}: {e}", schema_path.display());
+        eprintln!(
+            "[USER UNLOCK TIMES] Failed to read schema {}: {e}",
+            schema_path.display()
+        );
         SamError::UnknownError
     })?;
     let user = KeyValue::load_as_binary(&user_path).map_err(|e| {
-        eprintln!("[USER UNLOCK TIMES] Failed to read user stats {}: {e}", user_path.display());
+        eprintln!(
+            "[USER UNLOCK TIMES] Failed to read user stats {}: {e}",
+            user_path.display()
+        );
         SamError::UnknownError
     })?;
 
@@ -92,7 +98,10 @@ pub fn read_unlock_times(account_id: u32, app_id: u32) -> Result<Vec<Achievement
 pub fn read_schema_achievements(app_id: u32) -> Result<Vec<(String, String)>, SamError> {
     let schema_path = stats_dir()?.join(format!("UserGameStatsSchema_{app_id}.bin"));
     let schema = KeyValue::load_as_binary(&schema_path).map_err(|e| {
-        eprintln!("[USER UNLOCK TIMES] Failed to read schema {}: {e}", schema_path.display());
+        eprintln!(
+            "[USER UNLOCK TIMES] Failed to read schema {}: {e}",
+            schema_path.display()
+        );
         SamError::UnknownError
     })?;
     let mut out = Vec::new();

@@ -26,10 +26,10 @@ use crate::gui_frontend::unlock_scheduler::{compute_copy_timing_ms, run_timed_un
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use crate::utils::format::format_seconds_to_hh_mm_ss;
 use crate::utils::ipc_types::SamError;
+use gtk::Stack;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::{self, MainContext, clone};
 use gtk::prelude::*;
-use gtk::Stack;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::sync::Arc;

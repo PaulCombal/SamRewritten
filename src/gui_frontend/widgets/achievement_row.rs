@@ -20,9 +20,7 @@ use crate::gui_frontend::gobjects::mode_state::{
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{
-    ClosureExpression, ConstantExpression, ListItem, Switch, ToggleButton, Widget,
-};
+use gtk::{ClosureExpression, ConstantExpression, ListItem, Switch, ToggleButton, Widget};
 
 glib::wrapper! {
     pub struct AchievementRow(ObjectSubclass<imp::AchievementRow>)
@@ -142,8 +140,10 @@ impl AchievementRow {
             let permission = values.get(1).and_then(|v| v.get::<i32>().ok()).unwrap_or(0);
             Some((permission != 0).to_value())
         });
-        let sensitive_expr =
-            ClosureExpression::new::<bool>(std::slice::from_ref(&permission_expr), sensitive_closure);
+        let sensitive_expr = ClosureExpression::new::<bool>(
+            std::slice::from_ref(&permission_expr),
+            sensitive_closure,
+        );
         let protected_expr =
             ClosureExpression::new::<bool>(&[permission_expr.clone()], protected_closure);
         sensitive_expr.bind(&imp.switch, "sensitive", Widget::NONE);
@@ -199,7 +199,11 @@ impl AchievementRow {
             .property_expression("item")
             .chain_property::<GAchievementObject>("time-until-unlock");
         let position_text_expr = ClosureExpression::new::<String>(
-            &[mode_expr.clone(), queue_position_expr, time_until_unlock_expr],
+            &[
+                mode_expr.clone(),
+                queue_position_expr,
+                time_until_unlock_expr,
+            ],
             position_text_closure,
         );
         position_text_expr.bind(&imp.position_label, "label", Widget::NONE);
@@ -269,7 +273,9 @@ mod imp {
                 .valign(Align::Center)
                 .css_classes(["circular"])
                 .icon_name("list-add-symbolic")
-                .tooltip_text(tr("Click to stage this achievement; click again to remove.").as_str())
+                .tooltip_text(
+                    tr("Click to stage this achievement; click again to remove.").as_str(),
+                )
                 .build();
             // Same icon-only toggle shape so rows line up.
             let done_toggle = ToggleButton::builder()

@@ -22,22 +22,17 @@ mod row_factory;
 use crate::dev_println;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
-use crate::gui_frontend::gobjects::mode_state::{
-    GUnlockModeState, MODE_AUTOCOMMIT, MODE_DEFERRED,
-};
+use crate::gui_frontend::gobjects::mode_state::{GUnlockModeState, MODE_AUTOCOMMIT, MODE_DEFERRED};
 use crate::gui_frontend::gsettings::get_settings;
 use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::unlock_queue::{UnlockQueue, resolve_target_count};
 use crate::gui_frontend::unlock_scheduler::{
-    SPACING_EVEN, SPACING_RANDOM, compute_unlock_times_ms, run_timed_unlock,
-    unlock_all_immediately,
+    SPACING_EVEN, SPACING_RANDOM, compute_unlock_times_ms, run_timed_unlock, unlock_all_immediately,
 };
 use crate::utils::format::format_achievement_progress;
 use config_popover::create_config_popover;
 use copy_controls::create_copy_controls;
 use copy_mode::install_copy_mode;
-use header::create_header;
-use row_factory::install_row_factory;
 use gtk::gio::ListStore;
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
@@ -45,6 +40,8 @@ use gtk::{
     Box, Button, Frame, Label, ListView, NoSelection, Orientation, ScrolledWindow,
     SignalListItemFactory, SpinButton, Stack, ToggleButton, glib,
 };
+use header::create_header;
+use row_factory::install_row_factory;
 use std::cell::Cell;
 use std::rc::Rc;
 use std::sync::Arc;
