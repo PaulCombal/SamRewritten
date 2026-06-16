@@ -342,46 +342,45 @@ mod imp {
             let url_for_bail = url_string.clone();
             let push_res = POOL.with(|pool| {
                 pool.push(move || {
-                    let result: Result<Vec<u8>, ()> = if let Some(rest) =
-                        url_string.strip_prefix("data:")
-                    {
-                        // data:[<mime>][;base64],<payload> — native RGBA avatars are
-                        // handed in this way to avoid a temp-file round-trip.
-                        match rest.split_once(',') {
-                            Some((meta, payload)) if meta.contains("base64") => {
-                                Ok(glib::base64_decode(payload).to_vec())
-                            }
-                            Some((_, payload)) => Ok(payload.as_bytes().to_vec()),
-                            None => Err(()),
-                        }
-                    } else if url_string.starts_with("file://") {
-                        let path = url_string.replace("file://", "");
-                        std::fs::read(path).map_err(|_| ())
-                    } else {
-                        let mut hasher = DefaultHasher::new();
-                        url_string.hash(&mut hasher);
-                        let hash_name = format!("{:x}.cache", hasher.finish());
-
-                        let mut cache_path = std::env::temp_dir();
-                        cache_path.push(hash_name);
-
-                        if cache_path.exists() {
-                            std::fs::read(&cache_path).map_err(|_| ())
-                        } else {
-                            match http_client()
-                                .get(&url_string)
-                                .send()
-                                .and_then(|res| res.bytes())
-                            {
-                                Ok(bytes) => {
-                                    let data = bytes.to_vec();
-                                    let _ = std::fs::write(&cache_path, &data);
-                                    Ok(data)
+                    let result: Result<Vec<u8>, ()> =
+                        if let Some(rest) = url_string.strip_prefix("data:") {
+                            // data:[<mime>][;base64],<payload> — native RGBA avatars are
+                            // handed in this way to avoid a temp-file round-trip.
+                            match rest.split_once(',') {
+                                Some((meta, payload)) if meta.contains("base64") => {
+                                    Ok(glib::base64_decode(payload).to_vec())
                                 }
-                                Err(_) => Err(()),
+                                Some((_, payload)) => Ok(payload.as_bytes().to_vec()),
+                                None => Err(()),
                             }
-                        }
-                    };
+                        } else if url_string.starts_with("file://") {
+                            let path = url_string.replace("file://", "");
+                            std::fs::read(path).map_err(|_| ())
+                        } else {
+                            let mut hasher = DefaultHasher::new();
+                            url_string.hash(&mut hasher);
+                            let hash_name = format!("{:x}.cache", hasher.finish());
+
+                            let mut cache_path = std::env::temp_dir();
+                            cache_path.push(hash_name);
+
+                            if cache_path.exists() {
+                                std::fs::read(&cache_path).map_err(|_| ())
+                            } else {
+                                match http_client()
+                                    .get(&url_string)
+                                    .send()
+                                    .and_then(|res| res.bytes())
+                                {
+                                    Ok(bytes) => {
+                                        let data = bytes.to_vec();
+                                        let _ = std::fs::write(&cache_path, &data);
+                                        Ok(data)
+                                    }
+                                    Err(_) => Err(()),
+                                }
+                            }
+                        };
 
                     glib::MainContext::default().invoke(move || {
                         let waiters = IN_FLIGHT
