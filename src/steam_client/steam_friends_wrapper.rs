@@ -34,13 +34,41 @@ impl SteamFriends {
         }
     }
 
-    pub fn get_small_friend_avatar(&self, steam_id: CSteamID) -> Result<i32, SteamClientError> {
+    /// Number of entries in the current user's friends list matching `flags`
+    /// (an `EFriendFlags` bitmask, e.g. `K_E_FRIEND_FLAG_IMMEDIATE`).
+    pub fn get_friend_count(&self, flags: i32) -> Result<i32, SteamClientError> {
         unsafe {
             let vtable = (*self.inner.ptr)
                 .vtable
                 .as_ref()
                 .ok_or(SteamClientError::NullVtable)?;
-            Ok((vtable.get_small_friend_avatar)(self.inner.ptr, steam_id))
+            Ok((vtable.get_friend_count)(self.inner.ptr, flags))
+        }
+    }
+
+    /// The SteamID at `index` (`0..get_friend_count(flags)`) of the friends list
+    /// filtered by the same `flags`.
+    pub fn get_friend_by_index(
+        &self,
+        index: i32,
+        flags: i32,
+    ) -> Result<CSteamID, SteamClientError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+            Ok((vtable.get_friend_by_index)(self.inner.ptr, index, flags))
+        }
+    }
+
+    pub fn get_medium_friend_avatar(&self, steam_id: CSteamID) -> Result<i32, SteamClientError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+            Ok((vtable.get_medium_friend_avatar)(self.inner.ptr, steam_id))
         }
     }
 

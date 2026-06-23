@@ -590,21 +590,7 @@ fn process_command(
         // its own connection instead of forwarding to a child.
         SteamCommand::GetFriends => {
             let friends: Result<_, SamError> = match orchestrator_connection(connected_steam) {
-                Ok(cs) => match cs.user.get_steam_id() {
-                    Ok(steam_id) => {
-                        let account_id = user_unlock_times::account_id(steam_id.m_steamid);
-                        user_unlock_times::localconfig_path(account_id).map(|path| {
-                            let mut friends = user_unlock_times::list_friends(&path);
-                            // You can't copy your own cadence, so drop yourself.
-                            friends.retain(|f| f.steam_id64 != steam_id.m_steamid);
-                            friends
-                        })
-                    }
-                    Err(e) => {
-                        dev_println!("ORCH", "Failed to get Steam ID: {e:?}");
-                        Err(SamError::UnknownError)
-                    }
-                },
+                Ok(cs) => Ok(user_unlock_times::list_friends(&cs.friends)),
                 Err(()) => Err(SamError::SteamConnectionFailed),
             };
             send(tx, &SteamResponse::from(friends));

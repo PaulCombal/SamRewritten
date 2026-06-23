@@ -20,7 +20,7 @@ use crate::backend::key_value::KeyValue;
 use crate::utils::ipc_types::SamError;
 use crate::utils::steam_locator::SteamLocator;
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AchievementUnlock {
@@ -42,21 +42,6 @@ pub fn stats_dir() -> Result<PathBuf, SamError> {
         .parent()
         .map(PathBuf::from)
         .ok_or(SamError::UnknownError)
-}
-
-/// `<steam root>/userdata/<account_id>/config/localconfig.vdf`.
-pub fn localconfig_path(account_id: u32) -> Result<PathBuf, SamError> {
-    // stats_dir is `<root>/appcache/stats`; climb two to reach `<root>`.
-    let root = stats_dir()?
-        .parent()
-        .and_then(Path::parent)
-        .map(PathBuf::from)
-        .ok_or(SamError::UnknownError)?;
-    Ok(root
-        .join("userdata")
-        .join(account_id.to_string())
-        .join("config")
-        .join("localconfig.vdf"))
 }
 
 /// Path of the cached stats blob for `account_id`/`app_id` (may not exist yet).

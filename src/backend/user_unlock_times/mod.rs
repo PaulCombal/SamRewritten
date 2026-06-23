@@ -20,9 +20,9 @@
 //!   `UserGameStats_<account_id>_<app_id>.bin` cache joined against the shared
 //!   `UserGameStatsSchema_<app_id>.bin` — the same join `local_stats.rs` does for
 //!   counts, extended to pull each group's `AchievementTimes`. Plus the cache path
-//!   helpers used to locate those files and `localconfig.vdf`.
-//! - [`friends`]: the native friends-interface queries (avatar, persona name) and
-//!   the `localconfig.vdf` friends-block readers.
+//!   helpers used to locate those files.
+//! - [`friends`]: native friends-interface queries — the live friends list,
+//!   per-friend persona name, and avatar (RGBA).
 
 mod friends;
 mod unlock_times;

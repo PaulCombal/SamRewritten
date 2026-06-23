@@ -38,6 +38,13 @@ use std::cell::{Cell, RefCell};
 use std::future::Future;
 use std::rc::Rc;
 
+/// The row's avatar widget (first child of the row's hbox).
+fn row_avatar(li: &ListItem) -> Option<ShimmerImage> {
+    li.child()
+        .and_then(|child| child.first_child())
+        .and_then(|w| w.downcast::<ShimmerImage>().ok())
+}
+
 /// Open the modal and run `on_select` for the clicked friend. `on_select` loads
 /// the friend's data (it returns a future) while the picker stays open with a
 /// loading state; on success the window closes, on error a banner is shown so the
@@ -121,9 +128,7 @@ pub fn open_friend_picker<Fut>(
         hbox.append(&text);
         li.set_child(Some(&hbox));
 
-        li.property_expression("item")
-            .chain_property::<GFriendObject>("avatar-url")
-            .bind(&avatar, "url", Widget::NONE);
+        // Avatars load on bind (see connect_bind below), not from a property.
 
         // SteamID label (blank for an empty custom row).
         let id_closure = glib::RustClosure::new(|values: &[glib::Value]| {
@@ -169,6 +174,59 @@ pub fn open_friend_picker<Fut>(
             name_closure,
         )
         .bind(&name, "label", Widget::NONE);
+    });
+
+    // Avatars aren't in the friend list payload, so fetch each visible row's
+    // avatar natively (RGBA) on bind; clear it on unbind so a recycled row never
+    // briefly shows the previous friend's face.
+    factory.connect_bind(|_, list_item| {
+        let li = list_item
+            .downcast_ref::<ListItem>()
+            .expect("Needs to be a ListItem");
+        let Some(avatar) = row_avatar(li) else {
+            return;
+        };
+        avatar.reset();
+
+        let Some(item) = li.item().and_downcast::<GFriendObject>() else {
+            return;
+        };
+        // The custom (paste-a-SteamID) row has no friend avatar to show.
+        if item.is_custom() {
+            return;
+        }
+        let steam_id64 = item.steam_id();
+        if steam_id64 == 0 {
+            return;
+        }
+
+        let handle = spawn_blocking(move || GetUserAvatar { steam_id64 }.request());
+        let li_weak = li.downgrade();
+        MainContext::default().spawn_local(async move {
+            let Ok(result) = handle.await else {
+                return;
+            };
+            let Some(li) = li_weak.upgrade() else {
+                return;
+            };
+            // The row may have been recycled to another friend while waiting.
+            let still_current = li
+                .item()
+                .and_downcast::<GFriendObject>()
+                .map(|f| f.steam_id())
+                == Some(steam_id64);
+            if !still_current {
+                return;
+            }
+            if let (Some(avatar), Ok(Some(img))) = (row_avatar(&li), result) {
+                avatar.set_rgba(img.width as i32, img.height as i32, &img.rgba);
+            }
+        });
+    });
+    factory.connect_unbind(|_, list_item| {
+        if let Some(avatar) = list_item.downcast_ref::<ListItem>().and_then(row_avatar) {
+            avatar.reset();
+        }
     });
 
     let list_view = ListView::builder()

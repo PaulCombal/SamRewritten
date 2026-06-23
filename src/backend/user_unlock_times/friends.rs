@@ -18,11 +18,9 @@
 
 use crate::steam_client::steam_friends_wrapper::SteamFriends;
 use crate::steam_client::steam_utils_wrapper::SteamUtils;
-use crate::steam_client::steamworks_types::CSteamID;
+use crate::steam_client::steamworks_types::{CSteamID, K_E_FRIEND_FLAG_IMMEDIATE};
 use crate::utils::ipc_types::SamError;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::path::Path;
 
 /// SteamID64 of the first individual account. `account_id` (SteamID3) + this base
 /// = SteamID64; subtracting recovers the account id used in cache filenames.
@@ -38,34 +36,19 @@ pub fn account_id(steam_id64: u64) -> u32 {
 pub struct Friend {
     pub name: String,
     pub steam_id64: u64,
-    /// Steam avatar CDN url, or empty if the friend has no custom avatar.
+    /// Optional avatar CDN url. Always empty for natively-enumerated friends
+    /// (their avatars load on demand as RGBA via `fetch_user_avatar`); kept so a
+    /// caller that already has a url can pass it straight to the frontend.
     pub avatar_url: String,
 }
 
-/// Raw RGBA avatar pixels fetched natively from Steam (`GetSmallFriendAvatar` +
-/// `GetImageRGBA`), for SteamIDs that have no cached CDN url (e.g. a pasted
-/// custom SteamID). Travels over IPC to the frontend, which builds a texture.
+/// Raw RGBA avatar pixels fetched natively from Steam (`GetMediumFriendAvatar` +
+/// `GetImageRGBA`). Travels over IPC to the frontend, which builds a texture.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AvatarImage {
     pub width: u32,
     pub height: u32,
     pub rgba: Vec<u8>,
-}
-
-/// The `friends` block of `localconfig.vdf`, read as a loose value map: it mixes
-/// scalar settings with `<id> { "name" ... }` objects, so callers keep the object
-/// entries and ignore the rest.
-#[derive(Deserialize)]
-struct FriendsConfig {
-    #[serde(default)]
-    friends: HashMap<String, serde_json::Value>,
-}
-
-impl FriendsConfig {
-    fn load(localconfig: &Path) -> Option<Self> {
-        let contents = std::fs::read_to_string(localconfig).ok()?;
-        keyvalues_serde::from_str(&contents).ok()
-    }
 }
 
 /// Fetch a user's avatar as raw RGBA via Steam's global friends interface.
@@ -88,7 +71,7 @@ pub fn fetch_user_avatar(
     // Handle: >0 ready, -1 downloading, 0 none/unknown. Poll ~5s for a cold user.
     let mut handle = 0;
     for _ in 0..200 {
-        match friends.get_small_friend_avatar(steam_id) {
+        match friends.get_medium_friend_avatar(steam_id) {
             Ok(h) if h > 0 => {
                 handle = h;
                 break;
@@ -96,7 +79,7 @@ pub fn fetch_user_avatar(
             Ok(0) if !still_fetching => return Ok(None),
             Ok(_) => {}
             Err(e) => {
-                eprintln!("[USER UNLOCK TIMES] get_small_friend_avatar error: {e}");
+                eprintln!("[USER UNLOCK TIMES] get_medium_friend_avatar error: {e}");
                 return Err(SamError::UnknownError);
             }
         }
@@ -152,69 +135,51 @@ pub fn fetch_user_persona_name(
     Ok(None)
 }
 
-/// All individual friends from the current user's `localconfig.vdf` friends block,
-/// sorted by name. Clans/groups (stored as full SteamID64 keys) and scalar
-/// settings entries are skipped; the avatar hash becomes a CDN url.
-pub fn list_friends(localconfig: &Path) -> Vec<Friend> {
-    let Some(root) = FriendsConfig::load(localconfig) else {
-        return Vec::new();
-    };
+/// SteamIDs of the current user's confirmed friends, in Steam's enumeration
+/// order. Only `k_EFriendFlagImmediate` is requested, so removed/blocked/ignored
+/// users and pending requests are excluded.
+fn immediate_friend_ids(friends: &SteamFriends) -> Vec<CSteamID> {
+    let count = friends
+        .get_friend_count(K_E_FRIEND_FLAG_IMMEDIATE)
+        .unwrap_or(0);
+    (0..count)
+        .filter_map(|i| {
+            friends
+                .get_friend_by_index(i, K_E_FRIEND_FLAG_IMMEDIATE)
+                .ok()
+        })
+        .filter(|id| id.m_steamid != 0)
+        .collect()
+}
 
-    let mut out: Vec<Friend> = Vec::new();
-    for (key, val) in &root.friends {
-        let Some(obj) = val.as_object() else {
-            continue;
-        };
-        let Some(name) = obj.get("name").and_then(|n| n.as_str()) else {
-            continue;
-        };
-        // Individual friends are stored by 32-bit account id; larger keys are
-        // clans/groups, which have no per-game achievement stats.
-        let Ok(account_id) = key.parse::<u64>() else {
-            continue;
-        };
-        if account_id >= (1u64 << 32) {
-            continue;
-        }
-        let avatar = obj.get("avatar").and_then(|a| a.as_str()).unwrap_or("");
-        let avatar_url = if avatar.len() == 40 {
-            format!("https://avatars.steamstatic.com/{avatar}_full.jpg")
-        } else {
-            String::new()
-        };
-        out.push(Friend {
-            name: name.to_string(),
-            steam_id64: account_id + STEAMID64_BASE,
-            avatar_url,
-        });
-    }
+/// The current user's confirmed friends, enumerated live from Steam and sorted by
+/// name. Avatars load on demand (see `fetch_user_avatar`), so `avatar_url` is left
+/// empty.
+pub fn list_friends(friends: &SteamFriends) -> Vec<Friend> {
+    let mut out: Vec<Friend> = immediate_friend_ids(friends)
+        .into_iter()
+        .map(|steam_id| Friend {
+            name: friends
+                .get_friend_persona_name(steam_id)
+                .unwrap_or_default(),
+            steam_id64: steam_id.m_steamid,
+            avatar_url: String::new(),
+        })
+        .collect();
     out.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
     out
 }
 
-/// Resolve a friend's persona name to their SteamID64 from the `friends` block of
-/// the current user's `localconfig.vdf`. Keys are 32-bit account ids or full
-/// SteamID64s. Case-insensitive.
-pub fn find_friend_steamid64(localconfig: &Path, persona: &str) -> Option<u64> {
-    let root = FriendsConfig::load(localconfig)?;
-
-    for (key, val) in &root.friends {
-        let Some(obj) = val.as_object() else {
-            continue;
-        };
-        let matches = obj
-            .get("name")
-            .and_then(|n| n.as_str())
-            .map(|n| n.eq_ignore_ascii_case(persona))
-            .unwrap_or(false);
-        if matches {
-            let id = key.parse::<u64>().ok()?;
-            return Some(if id < (1u64 << 32) {
-                id + STEAMID64_BASE
-            } else {
-                id
-            });
-        }
-    }
-    None
+/// Resolve a confirmed friend's persona name to their SteamID64 by matching
+/// against the live friends list (case-insensitive). `None` if no friend matches.
+pub fn find_friend_steamid64(friends: &SteamFriends, persona: &str) -> Option<u64> {
+    immediate_friend_ids(friends)
+        .into_iter()
+        .find(|steam_id| {
+            friends
+                .get_friend_persona_name(*steam_id)
+                .map(|n| n.eq_ignore_ascii_case(persona))
+                .unwrap_or(false)
+        })
+        .map(|steam_id| steam_id.m_steamid)
 }

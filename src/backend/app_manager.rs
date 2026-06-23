@@ -99,7 +99,9 @@ impl AppManager {
         // timeout. Skip it and fall back to the on-disk stats cache so the app
         // still loads. Treat a failed BLoggedOn check as "assume online".
         if self.connected_steam.user.b_logged_on() == Ok(false) {
-            eprintln!("[APP MANAGER] Steam is offline; loading from cached stats without a live request");
+            eprintln!(
+                "[APP MANAGER] Steam is offline; loading from cached stats without a live request"
+            );
             return Ok(());
         }
 
@@ -122,10 +124,14 @@ impl AppManager {
         match self.wait_for_user_stats(steam_id) {
             Ok(EResult::k_EResultOK) => self.user_stats_received = true,
             Ok(result) => {
-                eprintln!("[APP MANAGER] RequestCurrentStats returned {result:?}; continuing with cached stats")
+                eprintln!(
+                    "[APP MANAGER] RequestCurrentStats returned {result:?}; continuing with cached stats"
+                )
             }
             Err(SamError::Timeout) => {
-                eprintln!("[APP MANAGER] RequestCurrentStats timed out; continuing with cached stats")
+                eprintln!(
+                    "[APP MANAGER] RequestCurrentStats timed out; continuing with cached stats"
+                )
             }
             Err(e) => return Err(e),
         }
@@ -200,31 +206,16 @@ impl AppManager {
     ) -> Result<Vec<AchievementUnlock>, SamError> {
         let friend = friend.trim();
         // A bare SteamID64 is used directly; anything else is a persona name
-        // looked up in the current user's localconfig.vdf friends block.
+        // matched against the live friends list.
         let steam_id64 = match friend.parse::<u64>() {
             Ok(id) if id >= user_unlock_times::STEAMID64_BASE => id,
-            _ => {
-                let my_account = user_unlock_times::account_id(self.current_steam_id64()?);
-                let cfg = user_unlock_times::localconfig_path(my_account)?;
-                user_unlock_times::find_friend_steamid64(&cfg, friend).ok_or_else(|| {
-                    eprintln!(
-                        "[APP MANAGER] Friend '{friend}' not found in {}",
-                        cfg.display()
-                    );
+            _ => user_unlock_times::find_friend_steamid64(&self.connected_steam.friends, friend)
+                .ok_or_else(|| {
+                    eprintln!("[APP MANAGER] Friend '{friend}' not found in friends list");
                     SamError::UnknownError
-                })?
-            }
+                })?,
         };
         self.fetch_user_unlock_times(steam_id64)
-    }
-
-    /// SteamID64 of the currently logged-in user.
-    pub fn current_steam_id64(&self) -> Result<u64, SamError> {
-        self.connected_steam
-            .user
-            .get_steam_id()
-            .map(|id| id.m_steamid)
-            .map_err(|_| SamError::UnknownError)
     }
 
     /// Fetch another user's achievement unlock times for this app. Steam only

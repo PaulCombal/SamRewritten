@@ -450,6 +450,11 @@ pub struct SteamNetworkingIdentity {
 
 pub type FriendsGroupID_t = i16;
 
+/// `EFriendFlags` bitmask for the `GetFriendCount`/`GetFriendByIndex`
+/// enumeration. Immediate = the user's actual (confirmed) friends, excluding
+/// blocked/ignored users and pending requests.
+pub const K_E_FRIEND_FLAG_IMMEDIATE: i32 = 0x04;
+
 #[repr(C)]
 pub enum EFriendRelationship {
     k_EFriendRelationshipNone = 0,

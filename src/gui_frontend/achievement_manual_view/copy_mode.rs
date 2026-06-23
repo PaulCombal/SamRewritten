@@ -331,14 +331,15 @@ pub(super) fn install_copy_mode(
         #[strong]
         clear_friend,
         #[strong]
-        copy_source,
-        #[strong]
         application,
+        #[strong]
+        settings,
         move |_| {
             let Some(app_id_val) = app_id.get() else {
                 return;
             };
-            let has_selection = !copy_source.borrow().is_empty();
+
+            let has_selection = !settings.string("copy-timing-friend").is_empty();
             let handle = spawn_blocking(move || GetFriends.request());
             MainContext::default().spawn_local(clone!(
                 #[strong]
