@@ -130,6 +130,11 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
                     am.fetch_friend_unlock_times(&friend)
                 })
             }
+            SteamCommand::GetFriendAchievementCount(id, steam_id64) => {
+                dispatch(parent_tx, id, app_id, || {
+                    am.fetch_user_achievement_count(steam_id64)
+                })
+            }
 
             _ => {
                 dev_println!("APPSRV", "Received unknown command {command:?}");

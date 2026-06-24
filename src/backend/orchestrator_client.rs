@@ -198,6 +198,9 @@ request!(GetAchievementsAndStats { app_id: u32, launch: bool } -> AppProgress
 request!(GetFriendUnlockTimes { app_id: u32, friend: String } -> Vec<AchievementUnlock>
     => SteamCommand::GetFriendUnlockTimes(app_id, friend));
 
+request!(GetFriendAchievementCount { app_id: u32, steam_id64: u64 } -> (u32, u32)
+    => SteamCommand::GetFriendAchievementCount(app_id, steam_id64));
+
 request!(GetFriends -> Vec<Friend> => SteamCommand::GetFriends);
 
 request!(GetUserAvatar { steam_id64: u64 } -> Option<AvatarImage>

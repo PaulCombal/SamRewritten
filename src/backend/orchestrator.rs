@@ -585,6 +585,16 @@ fn process_command(
             );
         }
 
+        SteamCommand::GetFriendAchievementCount(app_id, steam_id64) => {
+            forward_to_child(
+                app_id,
+                SteamCommand::GetFriendAchievementCount(app_id, steam_id64),
+                tx,
+                children_processes,
+                "get friend achievement count",
+            );
+        }
+
         // Friends / avatar / persona aren't app-specific (localconfig.vdf + the
         // global ISteamFriends interface), so the orchestrator serves them from
         // its own connection instead of forwarding to a child.

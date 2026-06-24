@@ -218,6 +218,18 @@ impl AppManager {
         self.fetch_user_unlock_times(steam_id64)
     }
 
+    /// Count a user's achieved vs total achievements for this app, reusing the
+    /// same resolution `fetch_user_unlock_times` does (local cache or live API).
+    /// Returns `(achieved, total)`; a private profile surfaces as `ProfilePrivate`.
+    pub fn fetch_user_achievement_count(
+        &mut self,
+        steam_id64: u64,
+    ) -> Result<(u32, u32), SamError> {
+        let list = self.fetch_user_unlock_times(steam_id64)?;
+        let achieved = list.iter().filter(|a| a.achieved).count() as u32;
+        Ok((achieved, list.len() as u32))
+    }
+
     /// Fetch another user's achievement unlock times for this app. Steam only
     /// writes an on-disk stats cache for accounts that have signed in on this
     /// machine, so locally-cached accounts get a single bulk parse while remote

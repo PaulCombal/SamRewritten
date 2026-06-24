@@ -14,14 +14,17 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 //! Modal friend picker for copy-timing mode: an omnibar over a *virtualized* list
-//! of friends (avatar + name). Only visible rows build widgets / load avatars, so
-//! a large friends list stays cheap. Selecting a user is only possible by clicking
-//! a result; a pasted SteamID64 surfaces as its own clickable result.
+//! of friends (avatar + name + this game's achieved/total count). Only visible
+//! rows build widgets / load avatars / fetch counts, so a large friends list stays
+//! cheap. Selecting a user is only possible by clicking a result; a pasted
+//! SteamID64 surfaces as its own clickable result.
 
 use crate::backend::user_unlock_times::{Friend, STEAMID64_BASE};
 use crate::gui_frontend::gobjects::friend::GFriendObject;
 use crate::gui_frontend::i18n::tr;
-use crate::gui_frontend::request::{GetUserAvatar, GetUserPersonaName, Request};
+use crate::gui_frontend::request::{
+    GetFriendAchievementCount, GetUserAvatar, GetUserPersonaName, Request,
+};
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use crate::utils::ipc_types::SamError;
 use gtk::gdk::{MemoryFormat, MemoryTexture};
@@ -35,6 +38,7 @@ use gtk::{
     SignalListItemFactory, Spinner, Widget, Window,
 };
 use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::future::Future;
 use std::rc::Rc;
 
@@ -45,6 +49,35 @@ fn row_avatar(li: &ListItem) -> Option<ShimmerImage> {
         .and_then(|w| w.downcast::<ShimmerImage>().ok())
 }
 
+/// The row's trailing achievement-count label (last child of the row's hbox).
+fn row_count_label(li: &ListItem) -> Option<Label> {
+    li.child()
+        .and_then(|child| child.last_child())
+        .and_then(|w| w.downcast::<Label>().ok())
+}
+
+/// Resolved per-game count for a friend, cached for the picker's lifetime so a
+/// recycled row shows instantly and nobody is queried twice.
+#[derive(Clone)]
+enum CountState {
+    Ready(u32, u32),
+    Private,
+    /// Queried and failed (or panicked); rendered blank, not retried this session.
+    Failed,
+}
+
+/// Holds a weak handle to the count coordinator so it can re-invoke itself after
+/// each completion without a strong self-reference cycle.
+type PumpHolder = Rc<RefCell<Option<std::rc::Weak<dyn Fn()>>>>;
+
+fn set_count_label(count: &Label, state: &CountState) {
+    match state {
+        CountState::Ready(achieved, total) => count.set_label(&format!("{achieved} / {total}")),
+        CountState::Private => count.set_label(&tr("Private")),
+        CountState::Failed => count.set_label(""),
+    }
+}
+
 /// Open the modal and run `on_select` for the clicked friend. `on_select` loads
 /// the friend's data (it returns a future) while the picker stays open with a
 /// loading state; on success the window closes, on error a banner is shown so the
@@ -53,6 +86,7 @@ fn row_avatar(li: &ListItem) -> Option<ShimmerImage> {
 pub fn open_friend_picker<Fut>(
     parent: Option<&Window>,
     friends: Vec<Friend>,
+    app_id: u32,
     has_selection: bool,
     on_clear: impl Fn() + 'static,
     on_select: impl Fn(Friend) -> Fut + 'static,
@@ -113,9 +147,18 @@ pub fn open_friend_picker<Fut>(
             .halign(Align::Start)
             .css_classes(["dim-label", "caption"])
             .build();
-        let text = Box::builder().orientation(Orientation::Vertical).build();
+        let text = Box::builder()
+            .orientation(Orientation::Vertical)
+            .hexpand(true)
+            .build();
         text.append(&name);
         text.append(&id);
+        // Trailing "achieved / total" hint for the selected game (filled on bind).
+        let count = Label::builder()
+            .halign(Align::End)
+            .valign(Align::Center)
+            .css_classes(["dim-label", "numeric"])
+            .build();
         let hbox = Box::builder()
             .orientation(Orientation::Horizontal)
             .spacing(10)
@@ -126,6 +169,7 @@ pub fn open_friend_picker<Fut>(
             .build();
         hbox.append(&avatar);
         hbox.append(&text);
+        hbox.append(&count);
         li.set_child(Some(&hbox));
 
         // Avatars load on bind (see connect_bind below), not from a property.
@@ -176,56 +220,179 @@ pub fn open_friend_picker<Fut>(
         .bind(&name, "label", Widget::NONE);
     });
 
+    // Per-row loading state. Avatars and counts both ride the single serialized
+    // orchestrator IPC, so counts run through a one-at-a-time coordinator that
+    // always picks the *topmost currently-visible* unresolved row — which makes
+    // ordering follow the live filter/scroll instead of bind order. Avatars stay
+    // fire-and-forget (they're quick) and the coordinator waits until none are in
+    // flight before starting a count, so faces fill in first.
+    let count_cache: Rc<RefCell<HashMap<u64, CountState>>> = Rc::new(RefCell::new(HashMap::new()));
+    let bound: Rc<RefCell<Vec<glib::WeakRef<ListItem>>>> = Rc::new(RefCell::new(Vec::new()));
+    let count_busy = Rc::new(Cell::new(false));
+    let avatars_in_flight = Rc::new(Cell::new(0usize));
+    // Lets the count coordinator re-invoke itself after each completion without a
+    // strong self-reference cycle (which would leak it for the window's lifetime).
+    let pump_holder: PumpHolder = Rc::new(RefCell::new(None));
+
+    let pump: Rc<dyn Fn()> = {
+        let bound = bound.clone();
+        let count_cache = count_cache.clone();
+        let count_busy = count_busy.clone();
+        let avatars_in_flight = avatars_in_flight.clone();
+        let pump_holder = pump_holder.clone();
+        Rc::new(move || {
+            if count_busy.get() || avatars_in_flight.get() > 0 {
+                return;
+            }
+            // Topmost (lowest model position) visible row with no count yet.
+            bound.borrow_mut().retain(|w| w.upgrade().is_some());
+            let mut best: Option<(u32, u64)> = None;
+            for w in bound.borrow().iter() {
+                let Some(li) = w.upgrade() else { continue };
+                let Some(item) = li.item().and_downcast::<GFriendObject>() else {
+                    continue;
+                };
+                if item.is_custom() {
+                    continue;
+                }
+                let sid = item.steam_id();
+                if sid == 0 || count_cache.borrow().contains_key(&sid) {
+                    continue;
+                }
+                let pos = li.position();
+                if best.is_none_or(|(bp, _)| pos < bp) {
+                    best = Some((pos, sid));
+                }
+            }
+            let Some((_, sid)) = best else { return };
+
+            count_busy.set(true);
+            let handle = spawn_blocking(move || {
+                GetFriendAchievementCount {
+                    app_id,
+                    steam_id64: sid,
+                }
+                .request()
+            });
+            let count_cache = count_cache.clone();
+            let count_busy = count_busy.clone();
+            let bound = bound.clone();
+            let pump_holder = pump_holder.clone();
+            MainContext::default().spawn_local(async move {
+                let result = handle.await;
+                count_busy.set(false);
+                let state = match result {
+                    Ok(Ok((achieved, total))) => CountState::Ready(achieved, total),
+                    Ok(Err(SamError::ProfilePrivate)) => CountState::Private,
+                    _ => CountState::Failed,
+                };
+                count_cache.borrow_mut().insert(sid, state.clone());
+                for w in bound.borrow().iter() {
+                    if let Some(li) = w.upgrade()
+                        && li
+                            .item()
+                            .and_downcast::<GFriendObject>()
+                            .map(|f| f.steam_id())
+                            == Some(sid)
+                        && let Some(count) = row_count_label(&li)
+                    {
+                        set_count_label(&count, &state);
+                    }
+                }
+                if let Some(p) = pump_holder.borrow().clone().and_then(|w| w.upgrade()) {
+                    p();
+                }
+            });
+        })
+    };
+    *pump_holder.borrow_mut() = Some(Rc::downgrade(&pump));
+
     // Avatars aren't in the friend list payload, so fetch each visible row's
     // avatar natively (RGBA) on bind; clear it on unbind so a recycled row never
-    // briefly shows the previous friend's face.
-    factory.connect_bind(|_, list_item| {
-        let li = list_item
-            .downcast_ref::<ListItem>()
-            .expect("Needs to be a ListItem");
-        let Some(avatar) = row_avatar(li) else {
-            return;
-        };
-        avatar.reset();
+    // briefly shows the previous friend's face. Counts are left to the coordinator.
+    factory.connect_bind({
+        let bound = bound.clone();
+        let count_cache = count_cache.clone();
+        let avatars_in_flight = avatars_in_flight.clone();
+        let pump = pump.clone();
+        move |_, list_item| {
+            let li = list_item
+                .downcast_ref::<ListItem>()
+                .expect("Needs to be a ListItem");
+            if let Some(avatar) = row_avatar(li) {
+                avatar.reset();
+            }
+            if let Some(count) = row_count_label(li) {
+                count.set_label("");
+            }
+            // Track this realized (visible) row so the coordinator can find it.
+            bound.borrow_mut().push(li.downgrade());
 
-        let Some(item) = li.item().and_downcast::<GFriendObject>() else {
-            return;
-        };
-        // The custom (paste-a-SteamID) row has no friend avatar to show.
-        if item.is_custom() {
-            return;
-        }
-        let steam_id64 = item.steam_id();
-        if steam_id64 == 0 {
-            return;
-        }
-
-        let handle = spawn_blocking(move || GetUserAvatar { steam_id64 }.request());
-        let li_weak = li.downgrade();
-        MainContext::default().spawn_local(async move {
-            let Ok(result) = handle.await else {
+            let Some(item) = li.item().and_downcast::<GFriendObject>() else {
                 return;
             };
-            let Some(li) = li_weak.upgrade() else {
-                return;
-            };
-            // The row may have been recycled to another friend while waiting.
-            let still_current = li
-                .item()
-                .and_downcast::<GFriendObject>()
-                .map(|f| f.steam_id())
-                == Some(steam_id64);
-            if !still_current {
+            // The custom (paste-a-SteamID) row has no friend avatar/count to show.
+            if item.is_custom() {
                 return;
             }
-            if let (Some(avatar), Ok(Some(img))) = (row_avatar(&li), result) {
-                avatar.set_rgba(img.width as i32, img.height as i32, &img.rgba);
+            let steam_id64 = item.steam_id();
+            if steam_id64 == 0 {
+                return;
             }
-        });
+
+            // A cached count renders instantly; otherwise show a pending hint and
+            // let the coordinator pick it up in visible order.
+            match count_cache.borrow().get(&steam_id64) {
+                Some(state) => {
+                    if let Some(count) = row_count_label(li) {
+                        set_count_label(&count, state);
+                    }
+                }
+                None => {
+                    if let Some(count) = row_count_label(li) {
+                        count.set_label("…");
+                    }
+                }
+            }
+
+            avatars_in_flight.set(avatars_in_flight.get() + 1);
+            let handle = spawn_blocking(move || GetUserAvatar { steam_id64 }.request());
+            let li_weak = li.downgrade();
+            let avatars_in_flight = avatars_in_flight.clone();
+            let pump = pump.clone();
+            MainContext::default().spawn_local(async move {
+                let result = handle.await;
+                if let Ok(res) = result
+                    && let Some(li) = li_weak.upgrade()
+                    // The row may have been recycled to another friend while waiting.
+                    && li.item().and_downcast::<GFriendObject>().map(|f| f.steam_id())
+                        == Some(steam_id64)
+                    && let (Some(avatar), Ok(Some(img))) = (row_avatar(&li), res)
+                {
+                    avatar.set_rgba(img.width as i32, img.height as i32, &img.rgba);
+                }
+                avatars_in_flight.set(avatars_in_flight.get().saturating_sub(1));
+                if avatars_in_flight.get() == 0 {
+                    pump();
+                }
+            });
+        }
     });
-    factory.connect_unbind(|_, list_item| {
-        if let Some(avatar) = list_item.downcast_ref::<ListItem>().and_then(row_avatar) {
-            avatar.reset();
+    factory.connect_unbind({
+        let bound = bound.clone();
+        move |_, list_item| {
+            let Some(li) = list_item.downcast_ref::<ListItem>() else {
+                return;
+            };
+            if let Some(avatar) = row_avatar(li) {
+                avatar.reset();
+            }
+            if let Some(count) = row_count_label(li) {
+                count.set_label("");
+            }
+            bound
+                .borrow_mut()
+                .retain(|w| w.upgrade().is_some_and(|r| &r != li));
         }
     });
 

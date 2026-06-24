@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-07 22:43+0200\n"
+"POT-Creation-Date: 2026-06-24 21:45+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -231,7 +231,7 @@ msgstr ""
 msgid "Choose again"
 msgstr ""
 
-#: src/gui_frontend/dialogs.rs:813
+#: src/gui_frontend/dialogs.rs:816
 msgid "Select your Steam folder"
 msgstr ""
 
@@ -287,19 +287,19 @@ msgstr ""
 msgid "Stop and go back"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:56
+#: src/gui_frontend/achievement_manual_view/mod.rs:53
 msgid "No achievements staged"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:57
+#: src/gui_frontend/achievement_manual_view/mod.rs:54
 msgid "{count} staged"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:95
+#: src/gui_frontend/achievement_manual_view/mod.rs:92
 msgid "Already at or above target ({progress})"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:101
+#: src/gui_frontend/achievement_manual_view/mod.rs:98
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr ""
 
@@ -394,27 +394,31 @@ msgstr ""
 msgid "{count} achievements over {time}"
 msgstr ""
 
-#: src/gui_frontend/friend_picker.rs:57
+#: src/gui_frontend/friend_picker.rs:76
+msgid "Private"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:98
 msgid "Copy timing from a friend"
 msgstr ""
 
-#: src/gui_frontend/friend_picker.rs:151
+#: src/gui_frontend/friend_picker.rs:202
 msgid "Use the pasted SteamID64"
 msgstr ""
 
-#: src/gui_frontend/friend_picker.rs:267
+#: src/gui_frontend/friend_picker.rs:497
 msgid "This profile is private"
 msgstr ""
 
-#: src/gui_frontend/friend_picker.rs:269
+#: src/gui_frontend/friend_picker.rs:499
 msgid "Couldn't load this user"
 msgstr ""
 
-#: src/gui_frontend/friend_picker.rs:281
+#: src/gui_frontend/friend_picker.rs:511
 msgid "Search friends or paste a SteamID64"
 msgstr ""
 
-#: src/gui_frontend/friend_picker.rs:369
+#: src/gui_frontend/friend_picker.rs:598
 msgid "Clear selected user"
 msgstr ""
 
@@ -639,15 +643,15 @@ msgstr ""
 msgid "Manage this app in a new window"
 msgstr ""
 
-#: src/gui_frontend/widgets/achievement_row.rs:253
-#: src/gui_frontend/widgets/achievement_row.rs:258
+#: src/gui_frontend/widgets/achievement_row.rs:257
+#: src/gui_frontend/widgets/achievement_row.rs:262
 msgid "This achievement is protected."
 msgstr ""
 
-#: src/gui_frontend/widgets/achievement_row.rs:272
+#: src/gui_frontend/widgets/achievement_row.rs:277
 msgid "Click to stage this achievement; click again to remove."
 msgstr ""
 
-#: src/gui_frontend/widgets/achievement_row.rs:281
+#: src/gui_frontend/widgets/achievement_row.rs:287
 msgid "Already unlocked."
 msgstr ""

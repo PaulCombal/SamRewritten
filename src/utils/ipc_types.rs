@@ -141,6 +141,9 @@ pub enum SteamCommand {
     GetUserAvatar(u64),
     /// Resolve a user's persona name natively from Steam. Global friends interface.
     GetUserPersonaName(u64),
+    /// `(app_id, steam_id64)`. Counts a user's achieved vs total achievements for
+    /// `app_id` — the picker's per-row hint. App-scoped like `GetFriendUnlockTimes`.
+    GetFriendAchievementCount(u32, u64),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

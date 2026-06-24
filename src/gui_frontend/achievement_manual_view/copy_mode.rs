@@ -360,6 +360,7 @@ pub(super) fn install_copy_mode(
                     open_friend_picker(
                         parent.as_ref(),
                         friends,
+                        app_id_val,
                         has_selection,
                         move || clear_friend(),
                         move |friend| {

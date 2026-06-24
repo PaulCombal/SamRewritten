@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-07 22:43+0200\n"
+"POT-Creation-Date: 2026-06-24 21:45+0200\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -251,7 +251,7 @@ msgstr ""
 msgid "Choose again"
 msgstr "Escolha novamente"
 
-#: src/gui_frontend/dialogs.rs:813
+#: src/gui_frontend/dialogs.rs:816
 msgid "Select your Steam folder"
 msgstr "Selecione sua pasta Steam"
 
@@ -307,19 +307,19 @@ msgstr "Essa estatística é protegida."
 msgid "Stop and go back"
 msgstr "Parar e retornar"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:56
+#: src/gui_frontend/achievement_manual_view/mod.rs:53
 msgid "No achievements staged"
 msgstr "Nenhuma conquista programada(s)"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:57
+#: src/gui_frontend/achievement_manual_view/mod.rs:54
 msgid "{count} staged"
 msgstr "{count} programada(s)"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:95
+#: src/gui_frontend/achievement_manual_view/mod.rs:92
 msgid "Already at or above target ({progress})"
 msgstr "Já acima ou no alvo ({progress})"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:101
+#: src/gui_frontend/achievement_manual_view/mod.rs:98
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr "Auto-preencher {count} conquista(s) ({progress})"
 
@@ -414,27 +414,31 @@ msgstr "Nenhum amigo carregado"
 msgid "{count} achievements over {time}"
 msgstr "{count} conquistas por {time}"
 
-#: src/gui_frontend/friend_picker.rs:57
+#: src/gui_frontend/friend_picker.rs:76
+msgid "Private"
+msgstr "Privado"
+
+#: src/gui_frontend/friend_picker.rs:98
 msgid "Copy timing from a friend"
 msgstr "Copiar tempo de um amigo"
 
-#: src/gui_frontend/friend_picker.rs:151
+#: src/gui_frontend/friend_picker.rs:202
 msgid "Use the pasted SteamID64"
 msgstr "Usar o SteamID64 colado"
 
-#: src/gui_frontend/friend_picker.rs:267
+#: src/gui_frontend/friend_picker.rs:497
 msgid "This profile is private"
 msgstr "Esse perfil é privado"
 
-#: src/gui_frontend/friend_picker.rs:269
+#: src/gui_frontend/friend_picker.rs:499
 msgid "Couldn't load this user"
 msgstr "Não foi possível carregar esse usuário"
 
-#: src/gui_frontend/friend_picker.rs:281
+#: src/gui_frontend/friend_picker.rs:511
 msgid "Search friends or paste a SteamID64"
 msgstr "Procurar amigos ou colar um SteamID64"
 
-#: src/gui_frontend/friend_picker.rs:369
+#: src/gui_frontend/friend_picker.rs:598
 msgid "Clear selected user"
 msgstr "Limpar seleção de usuário"
 
@@ -682,15 +686,15 @@ msgstr "Gerenciar"
 msgid "Manage this app in a new window"
 msgstr "Gerenciar esse app em uma nova janela"
 
-#: src/gui_frontend/widgets/achievement_row.rs:253
-#: src/gui_frontend/widgets/achievement_row.rs:258
+#: src/gui_frontend/widgets/achievement_row.rs:257
+#: src/gui_frontend/widgets/achievement_row.rs:262
 msgid "This achievement is protected."
 msgstr "Essa conquista é protegida."
 
-#: src/gui_frontend/widgets/achievement_row.rs:272
+#: src/gui_frontend/widgets/achievement_row.rs:277
 msgid "Click to stage this achievement; click again to remove."
 msgstr "Clique para programar essa conquista; clique novamente para remove-la."
 
-#: src/gui_frontend/widgets/achievement_row.rs:281
+#: src/gui_frontend/widgets/achievement_row.rs:287
 msgid "Already unlocked."
 msgstr "Já desbloqueada."
