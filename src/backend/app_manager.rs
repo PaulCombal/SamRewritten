@@ -881,6 +881,6 @@ mod tests {
 
     #[test]
     fn test_adler32() {
-        println!("Adler null: {:08x}", adler32(&vec![]));
+        println!("Adler null: {:08x}", adler32(&[]));
     }
 }
