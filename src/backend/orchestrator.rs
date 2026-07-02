@@ -254,8 +254,9 @@ fn process_command(
             return;
         }
 
-        ipc.wait()
-            .expect("[ORCHESTRATOR] Failed to wait child process");
+        if let Err(e) = ipc.wait() {
+            eprintln!("[ORCHESTRATOR] Failed to wait on {op_name} app {app_id}: {e}");
+        }
 
         match response {
             Ok(resp) => send_raw(tx, &resp),

@@ -1,6 +1,6 @@
 name: samrewritten
 title: SamRewritten
-version: '1.4.3'
+version: '1.4.4'
 summary: Steam achievements and stats manager
 description: Unlock achievements and stats on your Steam account
 confinement: strict
@@ -12,9 +12,19 @@ source-code: https://github.com/PaulCombal/SamRewritten
 website: https://paulcombal.github.io/SamRewritten/
 
 parts:
+  # This workaround stays until gnome extensions land in core26
+  rust-deps:
+    plugin: nil
+    build-packages:
+      - curl
+    override-build: |
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable
+
   samrewritten:
     plugin: rust
     source: .
+    after: [rust-deps]
+    rust-channel: "none"
     build-environment:
       - RUSTUP_TOOLCHAIN: stable
     build-packages:
@@ -53,8 +63,6 @@ slots:
 
 apps:
   samrewritten:
-    environment:
-      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy # remove when this is in stable https://github.com/canonical/snapcraft-desktop-integration/pull/27
     command-chain: [bin/sam-launcher.sh]
     command: bin/samrewritten
     extensions: [gnome]
@@ -67,8 +75,6 @@ apps:
       - dbus-samrewritten
 
   samrewritten-adw:
-    environment:
-      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/libproxy
     command-chain: [bin/sam-launcher.sh]
     command: bin/samrewritten-adw
     extensions: [gnome]

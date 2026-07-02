@@ -291,7 +291,7 @@ fn export(app_ids: Vec<u32>) -> ExitCode {
     let results = match (ExportApps {
         app_ids: app_ids.clone(),
     })
-    .request()
+    .request_with_progress(|done, total| eprintln!("Exported {done}/{total}"))
     {
         Ok(results) => results,
         Err(e) => {
@@ -384,7 +384,9 @@ fn import(file: PathBuf, app_id: Option<u32>) -> ExitCode {
     }
 
     let app_ids: Vec<u32> = apps.iter().map(|a| a.app_id).collect();
-    let results = match (ImportApps { apps }).request() {
+    let results = match (ImportApps { apps })
+        .request_with_progress(|done, total| eprintln!("Imported {done}/{total}"))
+    {
         Ok(results) => results,
         Err(e) => {
             eprintln!("Failed to import: {e}");

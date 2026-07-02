@@ -18,7 +18,7 @@ use crate::utils::ipc_types::SamError;
 use interprocess::unnamed_pipe::pipe;
 use interprocess::unnamed_pipe::{Recver, Sender};
 #[cfg(unix)]
-use std::os::fd::IntoRawFd;
+use std::os::fd::AsRawFd;
 #[cfg(windows)]
 use std::os::windows::io::{AsRawHandle, OwnedHandle};
 use std::process::{Child, Command};
@@ -33,26 +33,23 @@ pub struct BidirChild {
 impl BidirChild {
     #[cfg(unix)]
     pub fn new(command: &mut Command) -> Result<Self, SamError> {
-        let (parent_to_child_tx, parent_to_child_rx) = pipe().expect("Unable to create a pipe");
-        let (child_to_parent_tx, child_to_parent_rx) = pipe().expect("Unable to create a pipe");
-
-        let child_to_parent_tx_handle: i32 = child_to_parent_tx.into_raw_fd();
-        let parent_to_child_rx_handle: i32 = parent_to_child_rx.into_raw_fd();
-
+        let make_pipe = || {
+            pipe().map_err(|e| {
+                eprintln!("Unable to create a pipe: {e}");
+                SamError::SocketCommunicationFailed
+            })
+        };
+        let (parent_to_child_tx, parent_to_child_rx) = make_pipe()?;
+        let (child_to_parent_tx, child_to_parent_rx) = make_pipe()?;
+        
         let process = match command
-            .arg(format!("--tx={child_to_parent_tx_handle}"))
-            .arg(format!("--rx={parent_to_child_rx_handle}"))
+            .arg(format!("--tx={}", child_to_parent_tx.as_raw_fd()))
+            .arg(format!("--rx={}", parent_to_child_rx.as_raw_fd()))
             .spawn()
         {
-            Ok(child) => {
-                // We don't need to close the ends we don't need, they are already consumed
-                // drop(parent_to_child_rx);
-                // drop(child_to_parent_tx);
-
-                child
-            }
-            Err(_) => {
-                eprintln!("Unable to spawn a child process");
+            Ok(child) => child,
+            Err(e) => {
+                eprintln!("Unable to spawn a child process: {e}");
                 return Err(SamError::UnknownError);
             }
         };
@@ -66,16 +63,17 @@ impl BidirChild {
 
     #[cfg(windows)]
     pub fn new(command: &mut Command) -> Result<Self, SamError> {
-        let (parent_to_child_tx, parent_to_child_rx) =
+        let make_pipe = || {
             interprocess::os::windows::unnamed_pipe::CreationOptions::default()
                 .inheritable(true)
                 .build()
-                .expect("Failed to create handle");
-        let (child_to_parent_tx, child_to_parent_rx) =
-            interprocess::os::windows::unnamed_pipe::CreationOptions::default()
-                .inheritable(true)
-                .build()
-                .expect("Failed to create handle");
+                .map_err(|e| {
+                    eprintln!("Unable to create a pipe: {e}");
+                    SamError::SocketCommunicationFailed
+                })
+        };
+        let (parent_to_child_tx, parent_to_child_rx) = make_pipe()?;
+        let (child_to_parent_tx, child_to_parent_rx) = make_pipe()?;
 
         let child_to_parent_tx_handle: OwnedHandle = child_to_parent_tx.into();
         let parent_to_child_rx_handle: OwnedHandle = parent_to_child_rx.into();
@@ -98,8 +96,8 @@ impl BidirChild {
 
                 child
             }
-            Err(_) => {
-                eprintln!("Unable to spawn a child process");
+            Err(e) => {
+                eprintln!("Unable to spawn a child process: {e}");
                 return Err(SamError::UnknownError);
             }
         };

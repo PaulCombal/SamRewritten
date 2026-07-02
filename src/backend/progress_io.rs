@@ -74,7 +74,17 @@ pub fn run_command_on_apps_concurrent(
                 loop {
                     let next = queue.lock().unwrap().next();
                     let Some((app_id, command)) = next else { break };
-                    let outcome = run_one(app_id, command);
+                    // A panicking worker would abort the whole scope (and the
+                    // orchestrator with it) before the terminal frame is sent,
+                    // leaving the frontend waiting forever — degrade to a
+                    // per-app error instead.
+                    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        run_one(app_id, command)
+                    }))
+                    .unwrap_or_else(|_| {
+                        eprintln!("[CLIENT] Worker panicked for app {app_id}");
+                        Err(SamError::UnknownError)
+                    });
                     let step = {
                         let mut d = done.lock().unwrap();
                         *d += 1;
