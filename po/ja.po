@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-07 22:43+0200\n"
-"PO-Revision-Date: 2026-06-24 03:41+0900\n"
+"POT-Creation-Date: 2026-06-24 21:45+0200\n"
+"PO-Revision-Date: 2026-07-08 04:03+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -256,7 +256,7 @@ msgstr ""
 msgid "Choose again"
 msgstr "再選択"
 
-#: src/gui_frontend/dialogs.rs:813
+#: src/gui_frontend/dialogs.rs:816
 msgid "Select your Steam folder"
 msgstr "Steamフォルダを選択"
 
@@ -312,19 +312,19 @@ msgstr "この統計は保護されています"
 msgid "Stop and go back"
 msgstr "停止して戻る"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:56
+#: src/gui_frontend/achievement_manual_view/mod.rs:53
 msgid "No achievements staged"
 msgstr "保留中の実績はありません"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:57
+#: src/gui_frontend/achievement_manual_view/mod.rs:54
 msgid "{count} staged"
 msgstr "{count}件保留中"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:95
+#: src/gui_frontend/achievement_manual_view/mod.rs:92
 msgid "Already at or above target ({progress})"
 msgstr "すでに目標以上です ({progress})"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:101
+#: src/gui_frontend/achievement_manual_view/mod.rs:98
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr "実績を自動補完 ({count}件、{progress})"
 
@@ -419,27 +419,31 @@ msgstr "フレンドが読み込まれていません"
 msgid "{count} achievements over {time}"
 msgstr "{time}で{count}件の実績"
 
-#: src/gui_frontend/friend_picker.rs:57
+#: src/gui_frontend/friend_picker.rs:76
+msgid "Private"
+msgstr "プライベート"
+
+#: src/gui_frontend/friend_picker.rs:98
 msgid "Copy timing from a friend"
 msgstr "フレンドからタイミングをコピー"
 
-#: src/gui_frontend/friend_picker.rs:151
+#: src/gui_frontend/friend_picker.rs:202
 msgid "Use the pasted SteamID64"
 msgstr "貼り付けたSteamID64を使用"
 
-#: src/gui_frontend/friend_picker.rs:267
+#: src/gui_frontend/friend_picker.rs:497
 msgid "This profile is private"
 msgstr "このプロフィールは非公開です"
 
-#: src/gui_frontend/friend_picker.rs:269
+#: src/gui_frontend/friend_picker.rs:499
 msgid "Couldn't load this user"
 msgstr "このユーザーを読み込めませんでした"
 
-#: src/gui_frontend/friend_picker.rs:281
+#: src/gui_frontend/friend_picker.rs:511
 msgid "Search friends or paste a SteamID64"
 msgstr "フレンドを検索するかSteamID64を貼り付けてください"
 
-#: src/gui_frontend/friend_picker.rs:369
+#: src/gui_frontend/friend_picker.rs:598
 msgid "Clear selected user"
 msgstr "選択したユーザーをクリア"
 
@@ -691,17 +695,17 @@ msgstr "管理"
 msgid "Manage this app in a new window"
 msgstr "新しいウィンドウでこのアプリを管理"
 
-#: src/gui_frontend/widgets/achievement_row.rs:253
-#: src/gui_frontend/widgets/achievement_row.rs:258
+#: src/gui_frontend/widgets/achievement_row.rs:257
+#: src/gui_frontend/widgets/achievement_row.rs:262
 msgid "This achievement is protected."
 msgstr "この実績は保護されています"
 
-#: src/gui_frontend/widgets/achievement_row.rs:272
+#: src/gui_frontend/widgets/achievement_row.rs:277
 msgid "Click to stage this achievement; click again to remove."
 msgstr ""
 "クリックで実績を実行待ちに設定します。\n"
 "もう一度クリックで解除します。"
 
-#: src/gui_frontend/widgets/achievement_row.rs:281
+#: src/gui_frontend/widgets/achievement_row.rs:287
 msgid "Already unlocked."
 msgstr "すでに解除済みです"
