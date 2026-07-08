@@ -33,6 +33,7 @@ pub const LANGUAGES: &[(&str, &str)] = &[
     ("fr", "Français"),
     ("pt_BR", "Português (Brasil)"),
     ("es", "Español"),
+    ("ja", "日本語"),
 ];
 
 // glib-rs wraps dgettext/dngettext but not bindtextdomain; the symbol lives in
