@@ -253,27 +253,27 @@ msgstr "Steamフォルダを選択"
 
 #: src/gui_frontend/app_view.rs:68
 msgid "Achievements:"
-msgstr "実績"
+msgstr "実績:"
 
 #: src/gui_frontend/app_view.rs:82
 msgid "Stats:"
-msgstr "統計"
+msgstr "統計:"
 
 #: src/gui_frontend/app_view.rs:96
 msgid "Last playtime:"
-msgstr "プレイ時間"
+msgstr "最終プレイ時間:"
 
 #: src/gui_frontend/app_view.rs:110
 msgid "Type:"
-msgstr "種類"
+msgstr "種類:"
 
 #: src/gui_frontend/app_view.rs:124
 msgid "Developer:"
-msgstr "開発元"
+msgstr "開発元:"
 
 #: src/gui_frontend/app_view.rs:141
 msgid "Metacritic:"
-msgstr "Metacritic"
+msgstr "Metacritic:"
 
 #: src/gui_frontend/app_view.rs:155
 msgid "Failed to load app."
@@ -466,7 +466,7 @@ msgstr "アンロック未完了"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:211
 msgid "Failed to unlock achievements for the following apps:"
-msgstr "以下のアプリの実績アンロックに失敗しました："
+msgstr "以下のアプリの実績アンロックに失敗しました:"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:293
 #: src/gui_frontend/app_list_view/bulk_actions.rs:319
@@ -498,7 +498,7 @@ msgid ""
 msgstr ""
 "{path}へ保存しました\n"
 "\n"
-"以下のアプリのデータを読み取れませんでした："
+"以下のアプリのデータを読み取れませんでした:"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:265
 msgid "Export failed"
