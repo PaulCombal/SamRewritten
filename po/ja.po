@@ -261,7 +261,7 @@ msgstr "統計:"
 
 #: src/gui_frontend/app_view.rs:96
 msgid "Last playtime:"
-msgstr "最終プレイ時間:"
+msgstr "最終プレイ日時:"
 
 #: src/gui_frontend/app_view.rs:110
 msgid "Type:"
