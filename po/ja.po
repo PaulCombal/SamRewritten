@@ -1,0 +1,702 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SamRewritten\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-24 21:45+0200\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
+#: src/gui_frontend/app_list_view/mod.rs:171
+msgid "Loading..."
+msgstr "読み込み中..."
+
+#: src/gui_frontend/ui_components.rs:186
+msgid "Select all visible apps"
+msgstr "表示されているすべてのアプリを選択"
+
+#: src/gui_frontend/ui_components.rs:190
+msgid "Deselect all apps"
+msgstr "すべてのアプリの選択を解除"
+
+#: src/gui_frontend/ui_components.rs:194
+msgid "Unlock all in selection"
+msgstr "選択した項目をすべてアンロック"
+
+#: src/gui_frontend/ui_components.rs:198
+msgid "Reset all in selection"
+msgstr "選択した項目をすべてリセット"
+
+#: src/gui_frontend/ui_components.rs:202
+#: src/gui_frontend/app_list_view/progress_actions.rs:115
+msgid "Export selected apps progress"
+msgstr "選択したアプリの進行状況をエクスポート"
+
+#: src/gui_frontend/ui_components.rs:206
+msgid "Import progress..."
+msgstr "進行状況をインポート..."
+
+#: src/gui_frontend/ui_components.rs:211
+msgid "Refresh app list"
+msgstr "アプリ一覧を更新"
+
+#: src/gui_frontend/ui_components.rs:215
+msgid "Filter junk"
+msgstr "ジャンクを除外"
+
+#: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:307
+msgid "About"
+msgstr "このアプリについて"
+
+#: src/gui_frontend/ui_components.rs:221
+msgid "Change Steam folder…"
+msgstr "Steamフォルダを変更..."
+
+#: src/gui_frontend/ui_components.rs:229
+msgid "App ID"
+msgstr "アプリID"
+
+#: src/gui_frontend/ui_components.rs:230
+msgid "Alphabetical"
+msgstr "アルファベット順"
+
+#: src/gui_frontend/ui_components.rs:231
+msgid "Recently played"
+msgstr "最近プレイした"
+
+#: src/gui_frontend/ui_components.rs:232
+msgid "Time played"
+msgstr "プレイ時間"
+
+#: src/gui_frontend/ui_components.rs:239
+msgid "Sort by"
+msgstr "並び替え"
+
+#: src/gui_frontend/ui_components.rs:241
+msgid "Bulk process"
+msgstr "一括処理"
+
+#: src/gui_frontend/ui_components.rs:246
+msgid "System"
+msgstr "システム"
+
+#: src/gui_frontend/ui_components.rs:247
+msgid "Light"
+msgstr "ライト"
+
+#: src/gui_frontend/ui_components.rs:248
+msgid "Dark"
+msgstr "ダーク"
+
+#: src/gui_frontend/ui_components.rs:257
+msgid "Disable animations"
+msgstr "アニメーションを無効化"
+
+#: src/gui_frontend/ui_components.rs:261
+msgid "Appearance"
+msgstr "外観"
+
+#: src/gui_frontend/ui_components.rs:266
+msgid "System default"
+msgstr "システムの既定"
+
+#: src/gui_frontend/ui_components.rs:276
+msgid "Language"
+msgstr "言語"
+
+#: src/gui_frontend/ui_components.rs:300
+msgid "Refresh achievements & stats"
+msgstr "実績と統計を更新"
+
+#: src/gui_frontend/ui_components.rs:304
+msgid "Reset everything"
+msgstr "すべてをリセット"
+
+#: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:113
+#: src/gui_frontend/dialogs.rs:136 src/gui_frontend/dialogs.rs:184
+#: src/gui_frontend/unlock_scheduler.rs:160
+#: src/gui_frontend/app_list_view/progress_actions.rs:42
+msgid "OK"
+msgstr "OK"
+
+#: src/gui_frontend/dialogs.rs:235
+msgid "<b>No Steam installations were found on your system.</b>"
+msgstr "<b>システム上にSteamがインストールされていません。</b>"
+
+#: src/gui_frontend/dialogs.rs:237
+msgid ""
+"SamRewritten couldn't find Steam in any of the standard locations. If you "
+"haven't installed Steam yet, please install it through your distribution's "
+"official repository or app store."
+msgstr ""
+"SamRewrittenは標準的な場所のいずれにもSteamを見つけることができませんでした。"
+"まだSteamをインストールしていない場合は、ディストリビューションの公式リポジト"
+"リまたはアプリストアからインストールしてください。"
+
+#: src/gui_frontend/dialogs.rs:239
+msgid "<b>Already have Steam installed?</b>"
+msgstr "<b>すでにSteamをインストールしていますか？</b>"
+
+#: src/gui_frontend/dialogs.rs:241
+msgid ""
+"If you've installed Steam in a custom location, you can point SamRewritten "
+"to it using environment variables. Please check the <a href=\"https://"
+"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
+"report your issue."
+msgstr ""
+"Steamをカスタムの場所にインストールしている場合は、環境変数でSamRewrittenに場"
+"所を指定できます。手順や問題の報告については<a href=\"https://github.com/"
+"PaulCombal/SamRewritten\">GitHubページ</a>をご確認ください。"
+
+#: src/gui_frontend/dialogs.rs:246
+msgid "No compatible version of Steam found"
+msgstr "互換性のあるSteamのバージョンが見つかりませんでした"
+
+#: src/gui_frontend/dialogs.rs:282
+msgid "    (Steam is running here)"
+msgstr "    (ここでSteamが起動中)"
+
+#: src/gui_frontend/dialogs.rs:284
+msgid "    (Steam not running here)"
+msgstr "    (ここではSteamは起動していません)"
+
+#: src/gui_frontend/dialogs.rs:307
+msgid ""
+"SamRewritten found more than one Steam installation. The one Steam is "
+"currently running from is preselected — the others won't work unless you "
+"start Steam from them first."
+msgstr ""
+"SamRewrittenは複数のSteamインストールフォルダを検出しました。現在のSteamが起"
+"動しているインストールフォルダが自動的に選択されています。その他のインストー"
+"ルフォルダは、それらの場所からSteamを起動しない限り使用できません。"
+
+#: src/gui_frontend/dialogs.rs:312
+msgid ""
+"You'll be asked again next launch. To skip this for good, set the "
+"<tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install you want "
+"— see the <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
+"file#environment-variables\">README</a>."
+msgstr ""
+"次回起動時に再度確認が表示されます。この確認を完全にスキップするには、環境変"
+"数 <tt>SAM_STEAM_INSTALL_ROOT</tt> を、希望するインストールフォルダに設定して"
+"ください。詳細は <a href=\"https://github.com/PaulCombal/SamRewritten?"
+"tab=readme-ov-file#environment-variables\">README</a> をご覧ください。"
+
+#: src/gui_frontend/dialogs.rs:328 src/gui_frontend/dialogs.rs:377
+msgid "Choose a Steam installation"
+msgstr "Steamのインストールフォルダを選択"
+
+#: src/gui_frontend/dialogs.rs:340 src/gui_frontend/dialogs.rs:504
+msgid "Quit"
+msgstr "終了"
+
+#: src/gui_frontend/dialogs.rs:341 src/gui_frontend/dialogs.rs:417
+msgid "Use this installation"
+msgstr "このインストールフォルダを使用"
+
+#: src/gui_frontend/dialogs.rs:494
+msgid ""
+"This is the sandboxed <b>Snap</b> version of SamRewritten, so it needs your "
+"permission to read your Steam files. Pick your Steam folder once — a system "
+"dialog will open, just confirm it to grant access. You won't be asked "
+"again.\n"
+"\n"
+"<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam "
+"with Flatpak, please use the AppImage instead."
+msgstr ""
+"これはサンドボックス化された<b>Snap</b>版のSamRewrittenです。そのため、Steam"
+"のファイルを読み取るための許可が必要です。Steamフォルダを一度選択してくださ"
+"い。システムダイアログが開くので、許可を確認すればアクセスが付与されます。以"
+"後、この操作を再度求められることはありません。\n"
+"\n"
+"<b>Flatpak版のSteamはSnapではサポートされていません</b>。FlatpakでSteamをイン"
+"ストールしている場合は、代わりにAppImage版を使用してください。"
+
+#: src/gui_frontend/dialogs.rs:501 src/gui_frontend/dialogs.rs:540
+msgid "Connect to Steam"
+msgstr "Steamに接続"
+
+#: src/gui_frontend/dialogs.rs:505 src/gui_frontend/dialogs.rs:571
+msgid "Choose a folder…"
+msgstr "フォルダを選択…"
+
+#: src/gui_frontend/dialogs.rs:506 src/gui_frontend/dialogs.rs:588
+msgid "Use Snap Steam"
+msgstr "Snap版Steamを使用"
+
+#: src/gui_frontend/dialogs.rs:642
+msgid "Steam folder not usable"
+msgstr "Steamフォルダは使用できません"
+
+#: src/gui_frontend/dialogs.rs:650
+msgid ""
+"SamRewritten couldn't read <tt>steamclient.so</tt> in the folder you "
+"selected. Pick the <b>Steam</b> directory — the one containing a "
+"<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
+"use the AppImage."
+msgstr ""
+"SamRewrittenは、選択したフォルダ内の<tt>steamclient.so</tt>を読み取ることがで"
+"きませんでした。<b>Steam</b>ディレクトリ (<tt>linux64</tt>フォルダを含むもの)"
+"を選択してください。Snap版ではFlatpak版のSteamは使用できません。代わりに"
+"AppImage版を使用してください。"
+
+#: src/gui_frontend/dialogs.rs:658
+msgid "Choose again"
+msgstr "再選択"
+
+#: src/gui_frontend/dialogs.rs:816
+msgid "Select your Steam folder"
+msgstr "Steamフォルダを選択"
+
+#: src/gui_frontend/app_view.rs:68
+msgid "Achievements:"
+msgstr "実績:"
+
+#: src/gui_frontend/app_view.rs:82
+msgid "Stats:"
+msgstr "統計:"
+
+#: src/gui_frontend/app_view.rs:96
+msgid "Last playtime:"
+msgstr "最終プレイ日時:"
+
+#: src/gui_frontend/app_view.rs:110
+msgid "Type:"
+msgstr "種類:"
+
+#: src/gui_frontend/app_view.rs:124
+msgid "Developer:"
+msgstr "開発元:"
+
+#: src/gui_frontend/app_view.rs:141
+msgid "Metacritic:"
+msgstr "Metacritic:"
+
+#: src/gui_frontend/app_view.rs:155
+msgid "Failed to load app."
+msgstr "アプリの読み込みに失敗しました"
+
+#: src/gui_frontend/app_view.rs:161
+msgid "No entries found."
+msgstr "項目が見つかりませんでした"
+
+#: src/gui_frontend/app_view.rs:178
+msgid "Achievements"
+msgstr "実績"
+
+#: src/gui_frontend/app_view.rs:181
+msgid "Stats"
+msgstr "統計"
+
+#: src/gui_frontend/stat_view.rs:101
+msgid "Increment only"
+msgstr "増加のみ"
+
+#: src/gui_frontend/stat_view.rs:106
+msgid "This statistic is protected."
+msgstr "この統計は保護されています"
+
+#: src/gui_frontend/achievement_automatic_view.rs:39
+msgid "Stop and go back"
+msgstr "停止して戻る"
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:53
+msgid "No achievements staged"
+msgstr "保留中の実績はありません"
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:54
+msgid "{count} staged"
+msgstr "{count}件保留中"
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:92
+msgid "Already at or above target ({progress})"
+msgstr "すでに目標以上です ({progress})"
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:98
+msgid "Auto-fill {count} achievement(s) ({progress})"
+msgstr "実績を自動補完 ({count}件、{progress})"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:49
+msgid "Instant"
+msgstr "即時"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:52
+msgid "Stage"
+msgstr "保留"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:56
+msgid "Copy user"
+msgstr "ユーザーからコピー"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:74
+msgid "Auto-fill"
+msgstr "自動実行"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:77
+msgid "Configuration"
+msgstr "設定"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:103
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
+msgid "Start"
+msgstr "開始"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:108
+msgid "Changes apply instantly"
+msgstr "変更は即時反映されます"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:63
+msgid "Count"
+msgstr "件数"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:65
+msgid "Percent"
+msgstr "割合"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:99
+msgid "minutes (0 = instant)"
+msgstr "分 (0 = 即時)"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:108
+msgid "Even"
+msgstr "均等"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:112
+msgid "Random"
+msgstr "ランダム"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:132
+msgid "Target"
+msgstr "目標"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:136
+msgid "Spread over"
+msgstr "分配時間"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:140
+msgid "Spacing"
+msgstr "間隔"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:232
+msgid "Choose a friend to copy timing from"
+msgstr "タイミングをコピーするフレンドを選択"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
+msgid "Advanced"
+msgstr "詳細設定"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:68
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:89
+msgid "minutes"
+msgstr "分"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:103
+msgid "Max gap"
+msgstr "最大間隔"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:105
+msgid "First delay"
+msgstr "初回遅延"
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:99
+msgid "No friend loaded"
+msgstr "フレンドが読み込まれていません"
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:109
+msgid "{count} achievements over {time}"
+msgstr "{time}で{count}件の実績"
+
+#: src/gui_frontend/friend_picker.rs:76
+msgid "Private"
+msgstr "プライベート"
+
+#: src/gui_frontend/friend_picker.rs:98
+msgid "Copy timing from a friend"
+msgstr "フレンドからタイミングをコピー"
+
+#: src/gui_frontend/friend_picker.rs:202
+msgid "Use the pasted SteamID64"
+msgstr "貼り付けたSteamID64を使用"
+
+#: src/gui_frontend/friend_picker.rs:497
+msgid "This profile is private"
+msgstr "このプロフィールは非公開です"
+
+#: src/gui_frontend/friend_picker.rs:499
+msgid "Couldn't load this user"
+msgstr "このユーザーを読み込めませんでした"
+
+#: src/gui_frontend/friend_picker.rs:511
+msgid "Search friends or paste a SteamID64"
+msgstr "フレンドを検索するかSteamID64を貼り付けてください"
+
+#: src/gui_frontend/friend_picker.rs:598
+msgid "Clear selected user"
+msgstr "選択したユーザーをクリア"
+
+#: src/gui_frontend/app_list_view/mod.rs:192
+#: src/gui_frontend/app_list_view/mod.rs:852
+msgid "Name or AppId (Ctrl+K)"
+msgstr "名前またはAppID (Ctrl+K)"
+
+#: src/gui_frontend/app_list_view/mod.rs:847
+msgid "Achievement or stat..."
+msgstr "実績または統計…"
+
+#: src/gui_frontend/app_list_view/settings_bindings.rs:110
+msgid "The new language will be applied the next time you start SamRewritten."
+msgstr "新しい言語はSamRewrittenを再起動すると適用されます。"
+
+#: src/gui_frontend/app_list_view/settings_bindings.rs:120
+msgid "Language changed"
+msgstr "言語が変更されました"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:136
+#: src/gui_frontend/app_list_view/bulk_actions.rs:160
+msgid "Unlocking {done} / {total} app(s)…"
+msgstr "アンロック中：{done}/{total}件のアプリ…"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:210
+msgid "Unlock Incomplete"
+msgstr "アンロック未完了"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:211
+msgid "Failed to unlock achievements for the following apps:"
+msgstr "以下のアプリの実績アンロックに失敗しました:"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:293
+#: src/gui_frontend/app_list_view/bulk_actions.rs:319
+msgid "Locking {done} / {total} app(s)…"
+msgstr "ロック中：{done}/{total}件のアプリ…"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:157
+#: src/gui_frontend/app_list_view/progress_actions.rs:180
+msgid "Exporting {done} / {total} app(s)…"
+msgstr "エクスポート中：{done}/{total}件のアプリ…"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:246
+msgid "Export complete"
+msgstr "エクスポート完了"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:247
+msgid "Exported {count} app(s) to {path}"
+msgstr "{count}件のアプリを{path}にエクスポートしました"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:257
+msgid "Export partially complete"
+msgstr "エクスポートは一部完了しました"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:258
+msgid ""
+"Wrote {path}\n"
+"\n"
+"Failed to read data for these apps:"
+msgstr ""
+"{path}へ保存しました\n"
+"\n"
+"以下のアプリのデータを読み取れませんでした:"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:265
+msgid "Export failed"
+msgstr "エクスポートに失敗しました"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:301
+msgid "Import progress"
+msgstr "進行状況をインポート"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:337
+#: src/gui_frontend/app_list_view/progress_actions.rs:350
+#: src/gui_frontend/app_list_view/progress_actions.rs:360
+msgid "Import failed"
+msgstr "インポートに失敗しました"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:338
+msgid "Could not read file: {error}"
+msgstr "ファイルを読み取れませんでした：{error}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:351
+msgid "Could not parse file: {error}"
+msgstr "ファイルを解析できませんでした：{error}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:361
+msgid "Unsupported format version: {found} (this build expects {expected})"
+msgstr ""
+"サポートされていないフォーマットバージョンです：{found} (このビルドが対応して"
+"いるのは {expected} です)"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:376
+#: src/gui_frontend/app_list_view/progress_actions.rs:398
+#: src/gui_frontend/app_list_view/progress_actions.rs:487
+msgid "App {id}"
+msgstr "アプリ {id}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:387
+#: src/gui_frontend/app_list_view/progress_actions.rs:444
+msgid "Nothing to import"
+msgstr "インポートするデータがありません"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:388
+msgid "None of the apps in the file are in your current library."
+msgstr "ファイル内のアプリはいずれも現在のライブラリに存在しません。"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:408
+msgid ""
+"{list}\n"
+"... and {count} more"
+msgstr ""
+"{list}\n"
+"…ほか {count} 件"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:417
+msgid "Some apps contain protected fields."
+msgstr "一部のアプリには変更できない項目があります。"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:419
+msgid ""
+"The following apps contain fields that may not be importable. Proceed at "
+"your own risk.\n"
+"\n"
+"{list}"
+msgstr ""
+"以下のアプリにはインポートできない可能性のある項目が含まれています。続行する"
+"場合はご注意ください。\n"
+"\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:423
+#: src/gui_frontend/app_list_view/refresh_actions.rs:330
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:424
+msgid "Skip these apps"
+msgstr "これらのアプリをスキップ"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:425
+msgid "Proceed anyway"
+msgstr "そのまま続行"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:445
+msgid "All remaining apps were skipped."
+msgstr "残りのアプリはすべてスキップされました。"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:473
+#: src/gui_frontend/app_list_view/progress_actions.rs:506
+msgid "Importing {done} / {total} app(s)…"
+msgstr "インポート中：{done}/{total}件のアプリ…"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:587
+msgid "Applied {achievements} achievement(s) and {stats} stat(s)."
+msgstr "{achievements}件の実績と{stats}件の統計を適用しました。"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:592
+msgid ""
+"\n"
+"Skipped {count} protected field(s)."
+msgstr ""
+"\n"
+"保護されている項目 {count}件をスキップしました。"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:598
+msgid ""
+"\n"
+"Skipped {count} unwriteable stat(s) (out of range or increment-only)."
+msgstr ""
+"\n"
+"書き込み不可の統計 {count}件をスキップしました (範囲外または増加のみ設定のた"
+"め)。"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:606
+msgid ""
+"Would succeed if you reset stats first:\n"
+"{list}"
+msgstr ""
+"統計をリセットすれば成功します：\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:612
+msgid ""
+"Skipped (not in your library):\n"
+"{list}"
+msgstr ""
+"スキップ済み (ライブラリに存在しません)：\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:617
+msgid ""
+"Errors:\n"
+"{list}"
+msgstr ""
+"エラー:\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:622
+#: src/gui_frontend/app_list_view/progress_actions.rs:624
+msgid "Import complete"
+msgstr "インポート完了"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:109
+msgid "No apps found on your account. Search for App Id to get started."
+msgstr ""
+"アカウント内にアプリが見つかりませんでした。App IDを検索して開始してくださ"
+"い。"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:126
+msgid "No results. Check for spelling mistakes or try typing an App Id."
+msgstr ""
+"結果が見つかりませんでした。スペルを確認するか、App IDを入力してください。"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:158
+msgid ""
+"Failed to load library. Check your internet connection. Search for App Id to "
+"get started."
+msgstr ""
+"ライブラリの読み込みに失敗しました。インターネット接続を確認し、App IDを検索"
+"して開始してください。"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:166
+msgid "SamRewritten could not connect to Steam. Is it running?"
+msgstr "SamRewrittenはSteamに接続できませんでした。起動していますか？"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:328
+msgid "Reset Everything"
+msgstr "すべてリセット"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:329
+msgid "This will reset all achievements and stats for this app. Are you sure?"
+msgstr "このアプリのすべての実績と統計をリセットします。本当によろしいですか？"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:330
+msgid "Sure, reset"
+msgstr "はい、リセットします"
+
+#: src/gui_frontend/widgets/steam_app_card.rs:106
+msgid "Idle"
+msgstr "待機中"
+
+#: src/gui_frontend/widgets/steam_app_card.rs:130
+msgid "Manage"
+msgstr "管理"
+
+#: src/gui_frontend/widgets/steam_app_card.rs:149
+msgid "Manage this app in a new window"
+msgstr "新しいウィンドウでこのアプリを管理"
+
+#: src/gui_frontend/widgets/achievement_row.rs:257
+#: src/gui_frontend/widgets/achievement_row.rs:262
+msgid "This achievement is protected."
+msgstr "この実績は保護されています"
+
+#: src/gui_frontend/widgets/achievement_row.rs:277
+msgid "Click to stage this achievement; click again to remove."
+msgstr ""
+"クリックで実績を実行待ちに設定します。\n"
+"もう一度クリックで解除します。"
+
+#: src/gui_frontend/widgets/achievement_row.rs:287
+msgid "Already unlocked."
+msgstr "すでに解除済みです"
