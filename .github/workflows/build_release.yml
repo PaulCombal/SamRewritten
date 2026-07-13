@@ -4,124 +4,6 @@ on: [workflow_dispatch]
 permissions:
   contents: write
 jobs:
-  build_windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        run: |
-          rustup update stable
-          rustup target add x86_64-pc-windows-msvc
-
-      - name: Install NSIS
-        run: |
-          Invoke-WebRequest https://unlimited.dl.sourceforge.net/project/nsis/NSIS%203/3.11/nsis-3.11-setup.exe?viasf=1 -OutFile C:\WINDOWS\Temp\nsis-3.11-setup.exe
-          Invoke-Expression "& C:\WINDOWS\Temp\nsis-3.11-setup.exe /S"
-
-      - name: Print NSIS version
-        run: Invoke-Expression "& ""C:\Program Files (x86)\NSIS\makensis.exe"" -VERSION"
-
-      - name: Download GTK Dependencies Zip
-        run: |
-          $zipUrl = "https://github.com/wingtk/gvsbuild/releases/download/2025.5.0/GTK4_Gvsbuild_2025.5.0_x64.zip"
-          $downloadPath = "C:\temp\gtk_dependencies.zip"
-          $extractPath = "C:\gtk"
-          
-          Write-Host "Ensuring C:\temp directory exists..."
-          New-Item -ItemType Directory -Force -Path "C:\temp"
-          
-          Write-Host "Downloading GTK dependencies from $zipUrl to $downloadPath..."
-          Invoke-WebRequest -Uri $zipUrl -OutFile $downloadPath
-          
-          Write-Host "Ensuring extraction directory $extractPath exists..."
-          New-Item -ItemType Directory -Force -Path $extractPath
-          
-          Write-Host "Extracting $downloadPath to $extractPath..."
-          Expand-Archive -Path $downloadPath -DestinationPath $extractPath -Force
-          
-          Write-Host "Cleaning up temporary zip file..."
-          Remove-Item -Path $downloadPath -Force
-          
-          Write-Host "GTK dependencies downloaded and extracted successfully to C:\gtk!"
-
-      - name: Configure environment
-        run: |
-          echo "PATH=C:\gtk\bin;$env:CARGO_HOME\bin;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "LIB=C:\gtk\lib;$env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "INCLUDE=C:\gtk\include;C:\gtk\include\cairo;C:\gtk\include\glib-2.0;C:\gtk\include\gobject-introspection-1.0;C:\gtk\lib\glib-2.0\include;$env:INCLUDE" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        shell: pwsh
-
-      - name: Build GTK-RS application (release)
-        run: cargo build --release --target x86_64-pc-windows-msvc
-
-      - name: Create release archive
-        run: |
-          $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
-          New-Item -ItemType Directory -Path "$ARCHIVE_NAME"
-          Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/"
-          
-          $originalBinFolder = "C:\gtk\bin"
-          $originalLibFolder = "C:\gtk\lib"
-          $originalShareIconsFolder = "C:\gtk\share\icons"
-          
-          $tempArchiveRoot = "./$ARCHIVE_NAME"
-          $tempBinFolder = "./$ARCHIVE_NAME/bin"
-          $tempShareFolder = "./$ARCHIVE_NAME/share"
-          $tempSchemaFolder = "./$ARCHIVE_NAME/share/glib-2.0/schemas"
-          
-          New-Item -ItemType Directory -Path $tempBinFolder
-          New-Item -ItemType Directory -Path $tempShareFolder
-          New-Item -ItemType Directory -Path $tempSchemaFolder -Force
-          
-          Get-ChildItem -Path $originalBinFolder -Filter "*.dll" -File | ForEach-Object {
-            Copy-Item -Path $_.FullName -Destination $tempBinFolder -Force
-            Write-Host "Copied: $($_.Name) to $tempBinFolder"
-          }
-          
-          Copy-Item -Path C:\gtk\bin\gdbus.exe -Destination $tempBinFolder -Force
-          Copy-Item -Path C:\gtk\bin\gtk4-update-icon-cache.exe -Destination $tempBinFolder -Force
-          
-          Copy-Item -Path "$originalShareIconsFolder" -Destination $tempShareFolder -Recurse -Force
-          Write-Host "Copied icons to $tempShareFolder"
-          
-          Copy-Item -Path "$originalLibFolder" -Destination $tempArchiveRoot -Recurse -Force
-          Write-Host "Copied lib to $tempArchiveRoot"
-          
-          Copy-Item -Path "assets/org.samrewritten.SamRewritten.gschema.xml" -Destination $tempSchemaFolder -Force
-          Copy-Item -Path "assets/gschemas.compiled" -Destination $tempSchemaFolder -Force
-          Write-Host "Copied GSettings schemas to $tempSchemaFolder"
-        shell: pwsh
-
-      - name: Build GTK-RS application (debug, console)
-        run: cargo build --features win-console --target x86_64-pc-windows-msvc
-
-      - name: Move console executable to release archive
-        run: |
-          $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
-          Copy-Item "target/x86_64-pc-windows-msvc/debug/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-console.exe"
-        shell: pwsh
-
-      - name: Build GTK-RS application (CLI)
-        run: cargo build --release --features cli --target x86_64-pc-windows-msvc
-
-      - name: Move console executable to release archive
-        run: |
-          $ARCHIVE_NAME = "SamRewritten-windows-x86_64"
-          Copy-Item "target/x86_64-pc-windows-msvc/release/samrewritten.exe" "$ARCHIVE_NAME/samrewritten-cli.exe"
-        shell: pwsh
-
-      - name: Make installer
-        run: Invoke-Expression "& ""C:\Program Files (x86)\NSIS\makensis.exe"" package/windows_installer.nsi"
-
-      - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-artifact
-          path: package/SamRewritten-installer.exe
-          retention-days: 1
-
   build_appimage:
     runs-on: ubuntu-latest
     steps:
@@ -160,14 +42,8 @@ jobs:
 
   create_release:
     runs-on: ubuntu-latest
-    needs: [ build_windows, build_appimage ] # This job depends on both build jobs
+    needs: [ build_appimage ] # This job depends on both build jobs
     steps:
-      - name: Download Windows Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-artifact
-          path: ./release_artifacts/windows
-
       - name: Download Linux Artifact
         uses: actions/download-artifact@v4
         with:
@@ -178,7 +54,6 @@ jobs:
         run: |
           ls -la ./release_artifacts
           ls -la ./release_artifacts/linux
-          ls -la ./release_artifacts/windows
 
       - name: Create Release
         id: create_release # Assign an ID to this step to access its outputs
@@ -200,7 +75,6 @@ jobs:
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            release_artifacts/windows/SamRewritten-installer.exe
             release_artifacts/linux/samrewritten-gtk.AppImage
             release_artifacts/linux/samrewritten-adw.AppImage
             release_artifacts/linux/samrewritten-cli.AppImage
