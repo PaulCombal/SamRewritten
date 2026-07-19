@@ -1,17 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hans">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>SamRewritten — Steam Achievement Manager for Linux &amp; Windows</title>
-<meta name="description" content="SamRewritten is a free, open-source Steam Achievement Manager (SAM) for Linux and Windows. Unlock and relock Steam achievements, edit game stats, schedule unlocks, and idle apps — with a GTK GUI and a CLI.">
-<meta name="keywords" content="Steam Achievement Manager, SAM, Steam achievements Linux, unlock Steam achievements, Steam stats editor, SamRewritten, Steam achievement unlocker, GTK, Rust, AppImage, AUR">
-<meta name="author" content="Paul Combal and SamRewritten contributors">
-<meta name="robots" content="index, follow">
-<meta name="google-site-verification" content="GwUHy4H_OSGQ7yAjX4geR9iGU3nc9KHW69StkL1db0I">
-<meta name="msvalidate.01" content="7BEA431868D33B82CBCDC8F62CEEB7AD" />
-<link rel="canonical" href="https://paulcombal.github.io/SamRewritten/">
+<title>SamRewritten — 适用于 Linux 和 Windows 的 Steam 成就管理器</title>
+<meta name="description" content="SamRewritten 是一款免费、开源的 Steam 成就管理器（SAM），支持 Linux 和 Windows。解锁和重新锁定 Steam 成就、编辑游戏统计数据、定时解锁，以及挂机（伪装游戏中）——同时提供 GTK 图形界面和命令行工具。">
+<meta name="keywords" content="Steam 成就管理器, SAM, Linux Steam 成就, 解锁 Steam 成就, Steam 统计数据编辑器, SamRewritten, Steam 成就解锁工具, GTK, Rust, AppImage, AUR">
+<meta name="author" content="Paul Combal 及 SamRewritten 贡献者">
+<meta name="robots" content="index, follow"><link rel="canonical" href="https://paulcombal.github.io/SamRewritten/zh-hans/">
 <link rel="alternate" hreflang="en" href="https://paulcombal.github.io/SamRewritten/">
 <link rel="alternate" hreflang="zh-Hans" href="https://paulcombal.github.io/SamRewritten/zh-hans/">
 <link rel="alternate" hreflang="zh-Hant" href="https://paulcombal.github.io/SamRewritten/zh-hant/">
@@ -21,16 +18,16 @@
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="SamRewritten — Steam Achievement Manager for Linux &amp; Windows">
-<meta property="og:description" content="Free, open-source Steam Achievement Manager for Linux and Windows. Unlock/relock achievements, edit stats, schedule unlocks, idle apps. GUI + CLI.">
-<meta property="og:url" content="https://paulcombal.github.io/SamRewritten/">
+<meta property="og:title" content="SamRewritten — 适用于 Linux 和 Windows 的 Steam 成就管理器">
+<meta property="og:description" content="免费、开源的 Steam 成就管理器，支持 Linux 和 Windows。解锁/重新锁定成就、编辑统计数据、定时解锁、挂机（伪装游戏中）。图形界面 + 命令行工具。">
+<meta property="og:url" content="https://paulcombal.github.io/SamRewritten/zh-hans/">
 <meta property="og:image" content="https://paulcombal.github.io/SamRewritten/img/screenshot1.png">
 <meta property="og:site_name" content="SamRewritten">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SamRewritten — Steam Achievement Manager for Linux &amp; Windows">
-<meta name="twitter:description" content="Free, open-source Steam Achievement Manager for Linux and Windows. Unlock/relock achievements, edit stats, schedule unlocks, idle apps.">
+<meta name="twitter:title" content="SamRewritten — 适用于 Linux 和 Windows 的 Steam 成就管理器">
+<meta name="twitter:description" content="免费、开源的 Steam 成就管理器，支持 Linux 和 Windows。解锁/重新锁定成就、编辑统计数据、定时解锁、挂机（伪装游戏中）。">
 <meta name="twitter:image" content="https://paulcombal.github.io/SamRewritten/img/screenshot1.png">
 
 <!-- Structured data: the application -->
@@ -42,8 +39,8 @@
   "alternateName": "Steam Achievement Manager Rewritten",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Linux, Windows",
-  "description": "A free, open-source Steam Achievement Manager for Linux and Windows. Unlock and relock Steam achievements, edit game stats in real time, schedule achievement unlocks, and idle apps. Includes a GTK graphical interface and a command-line tool.",
-  "url": "https://paulcombal.github.io/SamRewritten/",
+  "description": "一款免费、开源的 Steam 成就管理器，支持 Linux 和 Windows。可解锁和重新锁定 Steam 成就、实时编辑游戏统计数据、定时解锁成就，以及挂机（伪装游戏中）。同时包含 GTK 图形界面和命令行工具。",
+  "url": "https://paulcombal.github.io/SamRewritten/zh-hans/",
   "downloadUrl": "https://github.com/PaulCombal/SamRewritten/releases",
   "softwareVersion": "1.4.5",
   "license": "https://github.com/PaulCombal/SamRewritten/blob/master/LICENSE",
@@ -68,42 +65,42 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Does SamRewritten work on Linux?",
+      "name": "SamRewritten 能在 Linux 上运行吗？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. SamRewritten provides Linux AppImages and is available on the Arch User Repository (samrewritten-git). It supports Snap installations of Steam, Ubuntu/Debian multiarch and .deb installations, and distributions that use the Steam runtime such as Gentoo and Arch."
+        "text": "可以。SamRewritten 提供 Linux AppImage，并已上架 Arch 用户仓库（samrewritten-git）。它支持 Snap 安装的 Steam、Ubuntu/Debian 多架构以及 .deb 安装，还支持使用 Steam 运行时的发行版，例如 Gentoo 和 Arch。"
       }
     },
     {
       "@type": "Question",
-      "name": "What is a Steam Achievement Manager?",
+      "name": "什么是 Steam 成就管理器？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "A Steam Achievement Manager (SAM) is a tool that lets you unlock and relock achievements on your Steam account and edit game statistics. SamRewritten is a modern, open-source SAM for Linux and Windows."
+        "text": "Steam 成就管理器（SAM）是一种工具，可让你在自己的 Steam 账户上解锁和重新锁定成就，并编辑游戏统计数据。SamRewritten 是一款现代化的开源 Steam 成就管理器，支持 Linux 和 Windows。"
       }
     },
     {
       "@type": "Question",
-      "name": "Is SamRewritten free and open source?",
+      "name": "SamRewritten 是免费和开源的吗？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. SamRewritten is free and open source, hosted on GitHub. It is not affiliated with Valve Corporation or Microsoft."
+        "text": "是的。SamRewritten 免费且开源，托管在 GitHub 上。它与 Valve Corporation 或 Microsoft 无任何关联。"
       }
     },
     {
       "@type": "Question",
-      "name": "Does SamRewritten support Flatpak Steam?",
+      "name": "SamRewritten 支持 Flatpak 版的 Steam 吗？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. SamRewritten works with the Flatpak version of Steam. The Snap and .deb versions of Steam are supported too."
+        "text": "支持。SamRewritten 可与 Flatpak 版本的 Steam 配合使用。Snap 和 .deb 版本的 Steam 也同样受支持。"
       }
     },
     {
       "@type": "Question",
-      "name": "Can I use SamRewritten from the command line?",
+      "name": "我可以通过命令行使用 SamRewritten 吗？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. SamRewritten includes a CLI that does not require GTK. It can list apps, achievements and stats, lock/unlock achievements in bulk, import/export as JSON, and idle apps."
+        "text": "可以。SamRewritten 包含一个无需 GTK 的命令行工具。它可以列出应用、成就和统计数据，批量锁定/解锁成就，以 JSON 格式导入/导出，以及挂机（伪装游戏中）。"
       }
     }
   ]
@@ -330,37 +327,38 @@
       SamRewritten
     </a>
     <div class="links">
-      <a class="nav-link" href="#features">Features</a>
-      <a class="nav-link" href="#compare">Compare</a>
-      <a class="nav-link" href="#install">Install</a>
-      <a class="nav-link" href="#faq">FAQ</a>
-      <a class="btn" href="https://github.com/PaulCombal/SamRewritten/releases/latest">Download</a>
+      <a class="nav-link" href="#features">功能特性</a>
+      <a class="nav-link" href="#compare">对比</a>
+      <a class="nav-link" href="#install">安装</a>
+      <a class="nav-link" href="#faq">常见问题</a>
+      <a class="nav-link" href="/SamRewritten/" hreflang="en" lang="en">English</a>
+      <a class="btn" href="https://github.com/PaulCombal/SamRewritten/releases/latest">下载</a>
     </div>
   </div>
 </nav>
 
 <header class="hero" id="top">
   <div class="wrap">
-    <img class="logo" src="https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png" alt="SamRewritten logo">
+    <img class="logo" src="https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png" alt="SamRewritten 徽标">
     <h1>SamRewritten</h1>
-    <p class="tagline">A free, open-source Steam Achievement Manager for Linux &amp; Windows.</p>
+    <p class="tagline">一款免费、开源的 Steam 成就管理器，支持 Linux 和 Windows。</p>
     <div class="badges">
-      <span class="badge">Free &amp; open source</span>
+      <span class="badge">免费 &amp; 开源</span>
       <span class="badge">Linux</span>
       <span class="badge">Windows</span>
-      <span class="badge">GUI + CLI</span>
+      <span class="badge">图形界面 + 命令行工具</span>
     </div>
     <div class="cta">
       <a class="btn" href="https://github.com/PaulCombal/SamRewritten/releases/latest">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg>
-        Download
+        下载
       </a>
       <a class="snap-store" href="https://snapcraft.io/samrewritten">
-        <img alt="Get it from the Snap Store" src="https://snapcraft.io/en/dark/install.svg" />
+        <img alt="从 Snap Store 获取" src="https://snapcraft.io/en/dark/install.svg" />
       </a>
       <a class="btn secondary" href="https://github.com/PaulCombal/SamRewritten">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7 0-.7 0-.7 1.2 0 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2 0-.3-.5-1.5.2-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z"/></svg>
-        View on GitHub
+        在 GitHub 上查看
       </a>
     </div>
   </div>
@@ -371,22 +369,22 @@
   <section class="block">
     <div class="wrap">
       <div class="section-head">
-        <h2>What is SamRewritten?</h2>
+        <h2>什么是 SamRewritten？</h2>
       </div>
       <p class="lead">
-        SamRewritten is a tool that lets you <strong>unlock and relock achievements</strong> on your Steam account.
-        It can also edit statistics for games and apps that expose them. While achievements carry no financial value,
-        they are widely used for collection progress and bragging rights. SamRewritten ships with both a polished
-        <strong>GTK graphical interface</strong> and a scriptable <strong>command-line tool</strong>.
+        SamRewritten 是一款工具，可让你在自己的 Steam 账户上<strong>解锁和重新锁定成就</strong>。
+        它还可以编辑支持此功能的游戏和应用的统计数据。虽然成就没有任何经济价值，
+        但它们被广泛用于展示收集进度和炫耀成绩。SamRewritten 同时提供精美的
+        <strong>GTK 图形界面</strong>和可脚本化的<strong>命令行工具</strong>。
       </p>
       <div class="shots">
         <figure>
-          <img class="zoomable" src="img/screenshot1.png" alt="SamRewritten GTK interface showing a Steam game's achievement list with unlock toggles" role="button" tabindex="0" aria-label="Enlarge GTK version screenshot">
-          <figcaption>GTK version preview</figcaption>
+          <img class="zoomable" src="../img/screenshot1.png" alt="SamRewritten GTK 界面，显示某款 Steam 游戏的成就列表及解锁开关" role="button" tabindex="0" aria-label="放大 GTK 版本截图">
+          <figcaption>GTK 版本预览</figcaption>
         </figure>
         <figure>
-          <img class="zoomable" src="img/screenshot2.png" alt="SamRewritten Adwaita interface preview with light and dark themes" role="button" tabindex="0" aria-label="Enlarge Adwaita version screenshot">
-          <figcaption>Adwaita version preview</figcaption>
+          <img class="zoomable" src="../img/screenshot2.png" alt="SamRewritten Adwaita 界面预览，含浅色和深色主题" role="button" tabindex="0" aria-label="放大 Adwaita 版本截图">
+          <figcaption>Adwaita 版本预览</figcaption>
         </figure>
       </div>
     </div>
@@ -394,50 +392,53 @@
 
   <section class="block" id="features">
     <div class="wrap">
-      <div class="section-head"><h2>Features</h2></div>
+      <div class="section-head"><h2>功能特性</h2></div>
       <ul class="features">
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Lock and unlock specific achievements with a single click</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Bulk lock/unlock achievements for all or selected apps</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Schedule achievement unlocks over a custom period</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Copy another user's unlock timings and replay them on your account</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Edit game statistics in real time</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Per-app or bulk import/export of achievements and stats (JSON)</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Idle apps: appear in-game until you toggle it off</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Light and dark themes</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Translated into French, Spanish, Japanese, and Brazilian Portuguese (in addition to English)</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Full-featured CLI that does not require GTK</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 一键锁定和解锁特定成就</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 为全部或选定的应用批量锁定/解锁成就</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 在自定义时间段内定时解锁成就</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 复制其他用户的解锁时间并在你的账户上重现</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 实时编辑游戏统计数据</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 按单个应用或批量导入/导出成就和统计数据（JSON）</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 挂机（伪装游戏中）：显示为游戏中，直到你手动关闭</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 浅色和深色主题</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 除英语外，还支持法语、西班牙语、日语和巴西葡萄牙语</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 功能完备且无需 GTK 的命令行工具</li>
       </ul>
+      <p class="note">
+        SamRewritten 的翻译均由社区贡献，但<strong>目前尚未有人提交中文翻译</strong>。你无需是程序员也能参与——翻译大多只是填写一个文本文件而已。欢迎任何语言的贡献，请参阅<a href="https://github.com/PaulCombal/SamRewritten#translations">翻译指南</a>开始。
+      </p>
     </div>
   </section>
 
   <section class="block" id="compare">
     <div class="wrap">
-      <div class="section-head"><h2>How SamRewritten compares to other Steam Achievement Managers</h2></div>
+      <div class="section-head"><h2>SamRewritten 与其他 Steam 成就管理器的对比</h2></div>
       <p class="lead">
-        How SamRewritten stacks up against other Steam Achievement Managers and unlockers — the original
-        <a href="https://github.com/gibbed/SteamAchievementManager">Steam Achievement Manager (SAM) by Gibbed</a>,
-        <a href="https://github.com/jsnli/Samira">Samira</a>, and
-        <a href="https://github.com/zevnda/steam-game-idler">Steam Game Idler</a>.
+        SamRewritten 与其他 Steam 成就管理器及解锁工具的对比——包括初代
+        <a href="https://github.com/gibbed/SteamAchievementManager">由 Gibbed 开发的 Steam 成就管理器（SAM）</a>、
+        <a href="https://github.com/jsnli/Samira">Samira</a> 以及
+        <a href="https://github.com/zevnda/steam-game-idler">Steam Game Idler</a>。
       </p>
       <div class="compare-wrap">
         <table class="compare">
-          <caption>SamRewritten vs other Steam Achievement Managers. <span class="yes">✓</span> yes · <span class="no">✕</span> no. Compiled June 2026 from each project's own documentation.</caption>
+          <caption>SamRewritten 与其他 Steam 成就管理器的对比。<span class="yes">✓</span> 支持 · <span class="no">✕</span> 不支持。资料于 2026 年 6 月依据各项目自身文档整理。</caption>
           <thead>
             <tr>
-              <th class="tool" rowspan="2">Tool</th>
-              <th class="grp" colspan="4" title="Which Steam packaging formats the tool can read and modify: Windows, Snap, Flatpak, or a native distro package (apt/.deb).">Supported Steam installs</th>
-              <th class="grp" rowspan="2" title="Unlock achievements gradually over a chosen time period instead of all at once.">Timed unlocks</th>
-              <th rowspan="2" title="Copy another user's unlock order and delays">Copy user timings</th>
-              <th rowspan="2" title="Back up and restore achievements and stats as JSON files.">Import/Export</th>
-              <th rowspan="2" title="Offers a command-line interface for automation, without needing the GUI.">Scriptable</th>
-              <th class="grp" rowspan="2" title="The graphical toolkit or framework the app's interface is built with.">GUI stack</th>
-              <th rowspan="2" title="The open-source license the project is released under.">License</th>
+              <th class="tool" rowspan="2">工具</th>
+              <th class="grp" colspan="4" title="该工具能够读取和修改的 Steam 打包格式：Windows、Snap、Flatpak，或原生发行版软件包（apt/.deb）。">支持的 Steam 安装方式</th>
+              <th class="grp" rowspan="2" title="在选定的时间段内逐步解锁成就，而非一次性全部解锁。">定时解锁</th>
+              <th rowspan="2" title="复制其他用户的解锁顺序和间隔">复制解锁时间</th>
+              <th rowspan="2" title="将成就和统计数据以 JSON 文件形式备份和恢复。">导入/导出</th>
+              <th rowspan="2" title="提供命令行界面以实现自动化，无需图形界面。">可脚本化</th>
+              <th class="grp" rowspan="2" title="构建应用界面所用的图形工具包或框架。">图形界面技术栈</th>
+              <th rowspan="2" title="该项目所采用的开源许可证。">许可证</th>
             </tr>
             <tr>
               <th class="grp" title="Windows Steam"><svg class="ico" viewBox="0 0 24 24" role="img" aria-label="Windows Steam"><rect x="2.5" y="2.5" width="8.5" height="8.5" rx="0.6" fill="#0078d4"/><rect x="13" y="2.5" width="8.5" height="8.5" rx="0.6" fill="#0078d4"/><rect x="2.5" y="13" width="8.5" height="8.5" rx="0.6" fill="#0078d4"/><rect x="13" y="13" width="8.5" height="8.5" rx="0.6" fill="#0078d4"/></svg></th>
               <th title="Snap Steam"><svg class="ico" viewBox="7.87 -0.04 114.07 109.18" role="img" aria-label="Snap Steam"><path d="m72.2 24.74v35.05l24.28-24.27-24.28-10.78z" fill="#82bea0"/><path d="m55.61 50.33l-29.76 55.8 42.82-42.83-13.06-12.97z" fill="#82bea0"/><path d="m70.13 23.1l-61.26-22.14 61.26 60.88v-38.74z" fill="#82bea0"/><path d="m118.94 43.26l-10.04-20.16h-35.3l45.34 20.16z" fill="#fa6441"/></svg></th>
               <th title="Flatpak Steam"><svg class="ico" viewBox="101 47 191 212" role="img" aria-label="Flatpak Steam"><g transform="translate(-1108.5714,-122.85715)"><g transform="matrix(0.65355666,0,0,0.65355666,1083.9554,58.477411)" fill="#4a90d9"><path d="m 474.6092,255.1181 1e-5,151.18111 -130.92667,75.59055 v -151.1811 z"/><path d="M 343.68252,330.70866 V 179.52756 L 212.75586,255.1181 Z"/><path d="m 218.61226,233.26169 c -13.54108,7.81795 -21.85641,22.22052 -21.85641,37.85641 v 119.18111 c 0,15.63589 8.31533,30.03846 21.85641,37.85641 l 103.21385,59.59055 c 13.54108,7.81794 30.17174,7.81794 43.71282,0 l 103.21386,-59.59055 c 13.54108,-7.81795 21.85641,-22.22052 21.85641,-37.85641 V 271.1181 c 0,-15.63589 -8.31533,-30.03846 -21.85641,-37.85641 L 365.53893,173.67115 c -13.54108,-7.81794 -30.17174,-7.81794 -43.71282,0 z m 130.92667,-31.87772 103.21386,59.59054 c 3.60767,2.08289 5.85641,5.97781 5.85641,10.14359 v 119.18111 c 0,4.16578 -2.24874,8.0607 -5.85641,10.14359 l -103.21386,59.59055 c -3.60767,2.08289 -8.10515,2.08289 -11.71282,0 L 234.61226,400.4428 c -3.60767,-2.08289 -5.85641,-5.97781 -5.85641,-10.14359 V 271.1181 c 0,-4.16578 2.24874,-8.0607 5.85641,-10.14359 l 103.21385,-59.59054 c 3.60767,-2.08289 8.10515,-2.08289 11.71282,0 z"/></g></g></svg></th>
-              <th title="Native / package Steam (apt, .deb)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#c08440" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Native or package Steam (apt, .deb)"><path d="M16.5 9.4 7.5 4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></th>
+              <th title="原生 / 软件包 Steam（apt、.deb）"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#c08440" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="原生或软件包 Steam（apt、.deb）"><path d="M16.5 9.4 7.5 4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></th>
             </tr>
           </thead>
           <tbody>
@@ -485,33 +486,33 @@
         </table>
       </div>
       <p class="note">
-        <sup>1</sup> Steam Game Idler is a graphical app; its engine, <a href="https://github.com/zevnda/steam-utility">SteamUtility</a>, is a separate standalone CLI.
+        <sup>1</sup> Steam Game Idler 是一款图形应用；其引擎 <a href="https://github.com/zevnda/steam-utility">SteamUtility</a> 是一个独立的命令行工具。
       </p>
     </div>
   </section>
 
   <section class="block" id="install">
     <div class="wrap">
-      <div class="section-head"><h2>Installation</h2></div>
+      <div class="section-head"><h2>安装</h2></div>
       <div class="install-grid">
         <div class="card">
           <h3>
             <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2.5" y="2.5" width="8.5" height="8.5" rx="0.6"/><rect x="13" y="2.5" width="8.5" height="8.5" rx="0.6"/><rect x="2.5" y="13" width="8.5" height="8.5" rx="0.6"/><rect x="13" y="13" width="8.5" height="8.5" rx="0.6"/></svg>
             Windows
           </h3>
-          <p>Download the official installer from the
-            <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">Releases page</a>
-            and launch SamRewritten from the Start menu. A portable ZIP is also available.</p>
+          <p>从
+            <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">发布页面</a>
+            下载官方安装程序，然后从开始菜单启动 SamRewritten。同时也提供便携版 ZIP。</p>
         </div>
         <div class="card">
           <h3>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4a3 3 0 0 1 6 0c0 2 1 3 1 6s2 5 2 7-3 2-6 2-6 0-6-2 2-4 2-7 1-4 1-6Z"/><path d="M9.5 9h.01M14.5 9h.01"/></svg>
             Linux
           </h3>
-          <p>SamRewritten runs on <strong>every Linux distribution</strong> — as an AppImage, from the
-            Snap Store, or from the AUR. See the
-            <a href="https://github.com/PaulCombal/SamRewritten#installation">install instructions</a>
-            for the option that fits your distribution.</p>
+          <p>SamRewritten 可在<strong>所有 Linux 发行版</strong>上运行——支持 AppImage、
+            Snap Store 或 AUR。请查看
+            <a href="https://github.com/PaulCombal/SamRewritten#installation">安装说明</a>
+            以选择适合你所用发行版的方式。</p>
         </div>
       </div>
     </div>
@@ -519,54 +520,47 @@
 
   <section class="block" id="faq">
     <div class="wrap">
-      <div class="section-head"><h2>Frequently asked questions</h2></div>
+      <div class="section-head"><h2>常见问题</h2></div>
 
       <details open>
-        <summary>Does SamRewritten work on Linux?</summary>
-        <p>Yes. It provides Linux AppImages and is on the AUR (<code>samrewritten-git</code>). It supports Snap Steam,
-          Ubuntu/Debian multiarch and <code>.deb</code> installs, and Steam-runtime distros such as Gentoo and Arch.</p>
+        <summary>SamRewritten 能在 Linux 上运行吗？</summary>
+        <p>可以。它提供 Linux AppImage，并已上架 AUR（<code>samrewritten-git</code>）。它支持 Snap Steam、
+          Ubuntu/Debian 多架构以及 <code>.deb</code> 安装，还支持使用 Steam 运行时的发行版，例如 Gentoo 和 Arch。</p>
       </details>
 
       <details>
-        <summary>What is a Steam Achievement Manager?</summary>
-        <p>A Steam Achievement Manager (SAM) lets you unlock and relock achievements on your Steam account and edit
-          game statistics. SamRewritten is a modern, open-source SAM for Linux and Windows.</p>
+        <summary>什么是 Steam 成就管理器？</summary>
+        <p>Steam 成就管理器（SAM）可让你在自己的 Steam 账户上解锁和重新锁定成就，并编辑
+          游戏统计数据。SamRewritten 是一款现代化的开源 Steam 成就管理器，支持 Linux 和 Windows。</p>
       </details>
 
       <details>
-        <summary>Is SamRewritten free and open source?</summary>
-        <p>Yes — it is free and open source, hosted on GitHub. It is not affiliated with Valve Corporation or Microsoft.</p>
+        <summary>SamRewritten 是免费和开源的吗？</summary>
+        <p>是的——它免费且开源，托管在 GitHub 上。它与 Valve Corporation 或 Microsoft 无任何关联。</p>
       </details>
 
       <details>
-        <summary>Does SamRewritten support Flatpak Steam?</summary>
-        <p>Yes. SamRewritten works with the Flatpak version of Steam. Snap and .deb installations of Steam are supported as well.</p>
+        <summary>SamRewritten 支持 Flatpak 版的 Steam 吗？</summary>
+        <p>支持。SamRewritten 可与 Flatpak 版本的 Steam 配合使用。Snap 和 .deb 安装的 Steam 也同样受支持。</p>
       </details>
 
       <details>
-        <summary>Can I use SamRewritten from the command line?</summary>
-        <p>Yes. The CLI does not require GTK and can list apps/achievements/stats, lock/unlock in bulk,
-          import/export JSON, and idle apps.</p>
+        <summary>我可以通过命令行使用 SamRewritten 吗？</summary>
+        <p>可以。命令行工具无需 GTK，可以列出应用/成就/统计数据、批量锁定/解锁、
+          导入/导出 JSON，以及挂机（伪装游戏中）。</p>
       </details>
     </div>
   </section>
 
   <section class="block">
     <div class="wrap">
-      <div class="section-head"><h2>Acknowledgements</h2></div>
+      <div class="section-head"><h2>致谢</h2></div>
       <p class="lead">
-        SamRewritten is heavily inspired by
-        <a href="https://github.com/gibbed/SteamAchievementManager">Steam Achievement Manager by Gibbed</a> and
-        <a href="https://github.com/jsnli/Samira">Samira by jsnli</a>, and by
-        <a href="https://github.com/PaulCombal/SamRewritten-legacy">the legacy version of SamRewritten</a>.
-        Thank you to all contributors, users, and stargazers.
-      </p>
-      <p class="lead">
-        SamRewritten's translations are written by its community.
-        You don't need to be a programmer to help: translating is mostly just filling in a text
-        file. Contributions for any language are welcome — see the
-        <a href="https://github.com/PaulCombal/SamRewritten#translations">translation guide</a>
-        to get started.
+        SamRewritten 深受
+        <a href="https://github.com/gibbed/SteamAchievementManager">Gibbed 开发的 Steam 成就管理器</a>和
+        <a href="https://github.com/jsnli/Samira">jsnli 开发的 Samira</a> 的启发，也受到
+        <a href="https://github.com/PaulCombal/SamRewritten-legacy">SamRewritten 旧版</a>的启发。
+        感谢所有贡献者、用户以及给项目点星的朋友。
       </p>
     </div>
   </section>
@@ -576,18 +570,18 @@
 <footer>
   <div class="wrap">
     <p>
-      SamRewritten and its contributors are not affiliated with Valve Corporation or Microsoft.
-      Steam and Windows are trademarks of their respective owners. This software is provided as a Proof-of-Concept;
-      you alone are responsible for the management of your Steam account.
+      SamRewritten 及其贡献者与 Valve Corporation 或 Microsoft 无任何关联。
+      Steam 和 Windows 是其各自所有者的商标。本软件以概念验证（Proof-of-Concept）形式提供；
+      请自行承担管理 Steam 账户的相关风险。
     </p>
     <p class="links"><a href="https://github.com/PaulCombal/SamRewritten">GitHub</a> &middot;
-       <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">Download</a> &middot;
-       <a href="https://github.com/PaulCombal/SamRewritten/issues">Report an issue</a></p>
+       <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">下载</a> &middot;
+       <a href="https://github.com/PaulCombal/SamRewritten/issues">报告问题</a></p>
   </div>
 </footer>
 
-<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot viewer">
-  <button class="close" type="button" aria-label="Close">&times;</button>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="截图查看器">
+  <button class="close" type="button" aria-label="关闭">&times;</button>
   <img id="lightbox-img" src="" alt="">
 </div>
 

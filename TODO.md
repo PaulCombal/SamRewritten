@@ -19,7 +19,3 @@
   and surface it in the About dialog — `adw::AboutDialog` has `add_legal_section`;
   `gtk::AboutDialog` falls back to a credit section. (Shipping a LICENSES file in
   the AppImage is the legal minimum if a dialog section is too much.)
-
-### Help needed
-
-- Snapcraft packaging

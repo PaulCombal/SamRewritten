@@ -17,7 +17,7 @@ SamRewritten
 
 <p align="center">A Steam Achievement Manager for Windows and Linux.</p>
 <p align="center">
-    <a href="https://github.com/PaulCombal/SamRewritten/releases">DOWNLOAD</a>
+    <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">DOWNLOAD</a>
 </p>
 
 <p align="center">
@@ -133,6 +133,9 @@ If the installation fails or behaves unexpectedly, please open a GitHub issue wi
 SamRewritten is translated by its community, and **we'd love your help** to
 support more languages. You don't need to be a programmer — translating is just
 filling in a text file, and you can submit it by opening an issue or a PR.
+
+In addition to English, SamRewritten is currently available in French, Spanish,
+Japanese, and Brazilian Portuguese.
 
 See [`po/README.md`](po/README.md) for a short, step-by-step guide.
 
