@@ -48,6 +48,7 @@ impl SteamFriends {
 
     /// The SteamID at `index` (`0..get_friend_count(flags)`) of the friends list
     /// filtered by the same `flags`.
+    #[cfg(unix)]
     pub fn get_friend_by_index(
         &self,
         index: i32,
@@ -59,6 +60,23 @@ impl SteamFriends {
                 .as_ref()
                 .ok_or(SteamClientError::NullVtable)?;
             Ok((vtable.get_friend_by_index)(self.inner.ptr, index, flags))
+        }
+    }
+
+    #[cfg(windows)]
+    pub fn get_friend_by_index(
+        &self,
+        index: i32,
+        flags: i32,
+    ) -> Result<CSteamID, SteamClientError> {
+        unsafe {
+            let vtable = (*self.inner.ptr)
+                .vtable
+                .as_ref()
+                .ok_or(SteamClientError::NullVtable)?;
+            let mut id64 = 0u64;
+            (vtable.get_friend_by_index)(self.inner.ptr, &mut id64, index, flags);
+            Ok(CSteamID { m_steamid: id64 })
         }
     }
 

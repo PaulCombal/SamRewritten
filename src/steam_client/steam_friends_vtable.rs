@@ -27,7 +27,10 @@ pub struct ISteamFriendsVTable {
     pub get_persona_name: unsafe extern "C" fn(*mut ISteamFriends) -> *const c_char,
     pub get_persona_state: unsafe extern "C" fn(*mut ISteamFriends) -> EPersonaState,
     pub get_friend_count: unsafe extern "C" fn(*mut ISteamFriends, c_int) -> c_int,
+    #[cfg(unix)]
     pub get_friend_by_index: unsafe extern "C" fn(*mut ISteamFriends, c_int, c_int) -> CSteamID,
+    #[cfg(windows)]
+    pub get_friend_by_index: unsafe extern "C" fn(*mut ISteamFriends, *mut u64, c_int, c_int),
     pub get_friend_relationship:
         unsafe extern "C" fn(*mut ISteamFriends, CSteamID) -> EFriendRelationship,
     pub get_friend_persona_state:
