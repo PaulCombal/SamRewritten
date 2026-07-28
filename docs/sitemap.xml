@@ -1,13 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://paulcombal.github.io/SamRewritten/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://paulcombal.github.io/SamRewritten/"/>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://paulcombal.github.io/SamRewritten/zh-hans/"/>
     <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://paulcombal.github.io/SamRewritten/zh-hant/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://paulcombal.github.io/SamRewritten/"/>
-    <lastmod>2026-07-19</lastmod>
+    <image:image>
+      <image:loc>https://paulcombal.github.io/SamRewritten/img/og-card.png</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://paulcombal.github.io/SamRewritten/img/screenshot1.png</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://paulcombal.github.io/SamRewritten/img/screenshot2.png</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://paulcombal.github.io/SamRewritten/img/icon_256.png</image:loc>
+    </image:image>
+    <lastmod>2026-07-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -17,7 +30,10 @@
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://paulcombal.github.io/SamRewritten/zh-hans/"/>
     <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://paulcombal.github.io/SamRewritten/zh-hant/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://paulcombal.github.io/SamRewritten/"/>
-    <lastmod>2026-07-19</lastmod>
+    <image:image>
+      <image:loc>https://paulcombal.github.io/SamRewritten/img/og-card.png</image:loc>
+    </image:image>
+    <lastmod>2026-07-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -27,7 +43,10 @@
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://paulcombal.github.io/SamRewritten/zh-hans/"/>
     <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://paulcombal.github.io/SamRewritten/zh-hant/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://paulcombal.github.io/SamRewritten/"/>
-    <lastmod>2026-07-19</lastmod>
+    <image:image>
+      <image:loc>https://paulcombal.github.io/SamRewritten/img/og-card.png</image:loc>
+    </image:image>
+    <lastmod>2026-07-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

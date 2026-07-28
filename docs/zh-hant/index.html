@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>SamRewritten — 適用於 Linux 與 Windows 的 Steam 成就管理器</title>
-<meta name="description" content="SamRewritten 是一款免費、開放原始碼的 Steam 成就管理器（SAM），支援 Linux 與 Windows。可解鎖與重新鎖定 Steam 成就、編輯遊戲統計資料、排程解鎖，以及掛機（偽裝遊戲中），並同時提供 GTK 圖形介面與命令列工具。">
+<title>SamRewritten | 適用於 Linux 與 Windows 的 Steam 成就管理器</title>
+<meta name="description" content="功能完整的 Steam 成就管理器。可解鎖與重新鎖定成就、編輯統計資料、定時解鎖、複製好友的解鎖時間、掛機（偽裝遊戲中）。免費、開放原始碼、持續維護。">
 <meta name="keywords" content="Steam 成就管理器, SAM, Steam 成就 Linux, 解鎖 Steam 成就, Steam 統計資料編輯器, SamRewritten, Steam 成就解鎖工具, GTK, Rust, AppImage, AUR">
 <meta name="author" content="Paul Combal 與 SamRewritten 貢獻者">
-<meta name="robots" content="index, follow"><link rel="canonical" href="https://paulcombal.github.io/SamRewritten/zh-hant/">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#0d0d12"><link rel="canonical" href="https://paulcombal.github.io/SamRewritten/zh-hant/">
 <link rel="alternate" hreflang="en" href="https://paulcombal.github.io/SamRewritten/">
 <link rel="alternate" hreflang="zh-Hans" href="https://paulcombal.github.io/SamRewritten/zh-hans/">
 <link rel="alternate" hreflang="zh-Hant" href="https://paulcombal.github.io/SamRewritten/zh-hant/">
@@ -18,17 +19,42 @@
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="SamRewritten — 適用於 Linux 與 Windows 的 Steam 成就管理器">
-<meta property="og:description" content="免費、開放原始碼的 Steam 成就管理器，支援 Linux 與 Windows。可解鎖／重新鎖定成就、編輯統計資料、排程解鎖、掛機（偽裝遊戲中）。圖形介面 + 命令列工具。">
+<meta property="og:title" content="SamRewritten | 適用於 Linux 與 Windows 的 Steam 成就管理器">
+<meta property="og:description" content="功能完整的 Steam 成就管理器，支援 Linux 與 Windows。可解鎖與重新鎖定成就、編輯遊戲統計資料、定時解鎖、複製好友的解鎖時間、掛機（偽裝遊戲中）。免費、開放原始碼、持續維護。">
 <meta property="og:url" content="https://paulcombal.github.io/SamRewritten/zh-hant/">
-<meta property="og:image" content="https://paulcombal.github.io/SamRewritten/img/screenshot1.png">
+<meta property="og:image" content="https://paulcombal.github.io/SamRewritten/img/og-card.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SamRewritten — 適用於 Linux 與 Windows 的 Steam 成就管理器，圖為應用程式的遊戲庫介面。">
 <meta property="og:site_name" content="SamRewritten">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:locale:alternate" content="en">
+<meta property="og:locale:alternate" content="zh_CN">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SamRewritten — 適用於 Linux 與 Windows 的 Steam 成就管理器">
-<meta name="twitter:description" content="免費、開放原始碼的 Steam 成就管理器，支援 Linux 與 Windows。可解鎖／重新鎖定成就、編輯統計資料、排程解鎖、掛機（偽裝遊戲中）。">
-<meta name="twitter:image" content="https://paulcombal.github.io/SamRewritten/img/screenshot1.png">
+<meta name="twitter:title" content="SamRewritten | 適用於 Linux 與 Windows 的 Steam 成就管理器">
+<meta name="twitter:description" content="功能完整的 Steam 成就管理器，支援 Linux 與 Windows。可解鎖與重新鎖定成就、編輯遊戲統計資料、定時解鎖、複製好友的解鎖時間、掛機（偽裝遊戲中）。免費、開放原始碼、持續維護。">
+<meta name="twitter:image" content="https://paulcombal.github.io/SamRewritten/img/og-card.png">
+<meta name="twitter:image:alt" content="SamRewritten — 適用於 Linux 與 Windows 的 Steam 成就管理器，圖為應用程式的遊戲庫介面。">
+
+<!-- Structured data: site identity -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "SamRewritten",
+  "alternateName": "SamRewritten — Steam 成就管理器",
+  "url": "https://paulcombal.github.io/SamRewritten/zh-hant/",
+  "inLanguage": "zh-Hant",
+  "publisher": {
+    "@type": "Person",
+    "name": "Paul Combal",
+    "url": "https://github.com/PaulCombal"
+  }
+}
+</script>
 
 <!-- Structured data: the application -->
 <script type="application/ld+json">
@@ -44,7 +70,15 @@
   "downloadUrl": "https://github.com/PaulCombal/SamRewritten/releases",
   "softwareVersion": "1.4.5",
   "license": "https://github.com/PaulCombal/SamRewritten/blob/master/LICENSE",
-  "image": "https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png",
+  "image": [
+    "https://paulcombal.github.io/SamRewritten/img/og-card.png",
+    "https://paulcombal.github.io/SamRewritten/img/screenshot1.png",
+    "https://paulcombal.github.io/SamRewritten/img/icon_256.png"
+  ],
+  "screenshot": [
+    "https://paulcombal.github.io/SamRewritten/img/screenshot1.png",
+    "https://paulcombal.github.io/SamRewritten/img/screenshot2.png"
+  ],
   "author": {
     "@type": "Person",
     "name": "Paul Combal"
@@ -205,7 +239,7 @@
   .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   .shots figure { margin: 0; }
   .shots img {
-    width: 100%; border-radius: var(--radius); border: 1px solid var(--border);
+    width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--border);
     display: block; box-shadow: var(--shadow); transition: transform .2s ease;
   }
   .shots img { cursor: pointer; }
@@ -323,7 +357,7 @@
 <nav class="nav">
   <div class="wrap">
     <a class="brand" href="#top">
-      <img src="https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png" alt="">
+      <img src="../img/icon_256.png" alt="" width="256" height="256">
       SamRewritten
     </a>
     <div class="links">
@@ -339,7 +373,7 @@
 
 <header class="hero" id="top">
   <div class="wrap">
-    <img class="logo" src="https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png" alt="SamRewritten 標誌">
+    <img class="logo" width="256" height="256" fetchpriority="high" src="../img/icon_256.png" alt="SamRewritten 標誌">
     <h1>SamRewritten</h1>
     <p class="tagline">一款免費、開放原始碼的 Steam 成就管理器，支援 Linux 與 Windows。</p>
     <div class="badges">
@@ -379,11 +413,11 @@
       </p>
       <div class="shots">
         <figure>
-          <img class="zoomable" src="../img/screenshot1.png" alt="SamRewritten GTK 介面，顯示某款 Steam 遊戲的成就清單與解鎖切換開關" role="button" tabindex="0" aria-label="放大 GTK 版本螢幕截圖">
+          <img class="zoomable" width="910" height="602" src="../img/screenshot1.png" alt="SamRewritten GTK 介面，顯示某款 Steam 遊戲的成就清單與解鎖切換開關" role="button" tabindex="0" aria-label="放大 GTK 版本螢幕截圖">
           <figcaption>GTK 版本預覽</figcaption>
         </figure>
         <figure>
-          <img class="zoomable" src="../img/screenshot2.png" alt="SamRewritten Adwaita 介面預覽，含淺色與深色主題" role="button" tabindex="0" aria-label="放大 Adwaita 版本螢幕截圖">
+          <img class="zoomable" width="906" height="602" src="../img/screenshot2.png" alt="SamRewritten Adwaita 介面預覽，含淺色與深色主題" role="button" tabindex="0" aria-label="放大 Adwaita 版本螢幕截圖">
           <figcaption>Adwaita 版本預覽</figcaption>
         </figure>
       </div>

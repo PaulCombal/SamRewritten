@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>SamRewritten — Steam Achievement Manager for Linux &amp; Windows</title>
-<meta name="description" content="SamRewritten is a free, open-source Steam Achievement Manager (SAM) for Linux and Windows. Unlock and relock Steam achievements, edit game stats, schedule unlocks, and idle apps — with a GTK GUI and a CLI.">
+<title>SamRewritten | Steam Achievement Manager, Linux &amp; Windows</title>
+<meta name="description" content="Full-featured Steam Achievement Manager. Unlock and relock achievements, edit stats, schedule unlocks, copy friends&#39; timings. Free, open-source and maintained.">
 <meta name="keywords" content="Steam Achievement Manager, SAM, Steam achievements Linux, unlock Steam achievements, Steam stats editor, SamRewritten, Steam achievement unlocker, GTK, Rust, AppImage, AUR">
 <meta name="author" content="Paul Combal and SamRewritten contributors">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#0d0d12">
 <meta name="google-site-verification" content="GwUHy4H_OSGQ7yAjX4geR9iGU3nc9KHW69StkL1db0I">
 <meta name="msvalidate.01" content="7BEA431868D33B82CBCDC8F62CEEB7AD" />
 <link rel="canonical" href="https://paulcombal.github.io/SamRewritten/">
@@ -21,17 +22,25 @@
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="SamRewritten — Steam Achievement Manager for Linux &amp; Windows">
-<meta property="og:description" content="Free, open-source Steam Achievement Manager for Linux and Windows. Unlock/relock achievements, edit stats, schedule unlocks, idle apps. GUI + CLI.">
+<meta property="og:title" content="SamRewritten | Steam Achievement Manager, Linux &amp; Windows">
+<meta property="og:description" content="Full-featured Steam Achievement Manager for Linux and Windows. Unlock and relock achievements, edit game stats, schedule unlocks, copy friends&#39; timings. Free, open-source and maintained.">
 <meta property="og:url" content="https://paulcombal.github.io/SamRewritten/">
-<meta property="og:image" content="https://paulcombal.github.io/SamRewritten/img/screenshot1.png">
+<meta property="og:image" content="https://paulcombal.github.io/SamRewritten/img/og-card.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SamRewritten — Steam Achievement Manager for Linux and Windows, showing the app's game library.">
 <meta property="og:site_name" content="SamRewritten">
+<meta property="og:locale" content="en">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SamRewritten — Steam Achievement Manager for Linux &amp; Windows">
-<meta name="twitter:description" content="Free, open-source Steam Achievement Manager for Linux and Windows. Unlock/relock achievements, edit stats, schedule unlocks, idle apps.">
-<meta name="twitter:image" content="https://paulcombal.github.io/SamRewritten/img/screenshot1.png">
+<meta name="twitter:title" content="SamRewritten | Steam Achievement Manager, Linux &amp; Windows">
+<meta name="twitter:description" content="Full-featured Steam Achievement Manager for Linux and Windows. Unlock and relock achievements, edit game stats, schedule unlocks, copy friends&#39; timings. Free, open-source and maintained.">
+<meta name="twitter:image" content="https://paulcombal.github.io/SamRewritten/img/og-card.png">
+<meta name="twitter:image:alt" content="SamRewritten — Steam Achievement Manager for Linux and Windows, showing the app's game library.">
 
 <!-- Structured data: the application -->
 <script type="application/ld+json">
@@ -47,7 +56,15 @@
   "downloadUrl": "https://github.com/PaulCombal/SamRewritten/releases",
   "softwareVersion": "1.4.6",
   "license": "https://github.com/PaulCombal/SamRewritten/blob/master/LICENSE",
-  "image": "https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png",
+  "image": [
+    "https://paulcombal.github.io/SamRewritten/img/og-card.png",
+    "https://paulcombal.github.io/SamRewritten/img/screenshot1.png",
+    "https://paulcombal.github.io/SamRewritten/img/icon_256.png"
+  ],
+  "screenshot": [
+    "https://paulcombal.github.io/SamRewritten/img/screenshot1.png",
+    "https://paulcombal.github.io/SamRewritten/img/screenshot2.png"
+  ],
   "author": {
     "@type": "Person",
     "name": "Paul Combal"
@@ -56,6 +73,23 @@
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "USD"
+  }
+}
+</script>
+
+<!-- Structured data: site identity -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "SamRewritten",
+  "alternateName": "SamRewritten — Steam Achievement Manager",
+  "url": "https://paulcombal.github.io/SamRewritten/",
+  "inLanguage": "en",
+  "publisher": {
+    "@type": "Person",
+    "name": "Paul Combal",
+    "url": "https://github.com/PaulCombal"
   }
 }
 </script>
@@ -208,7 +242,7 @@
   .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   .shots figure { margin: 0; }
   .shots img {
-    width: 100%; border-radius: var(--radius); border: 1px solid var(--border);
+    width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--border);
     display: block; box-shadow: var(--shadow); transition: transform .2s ease;
   }
   .shots img { cursor: pointer; }
@@ -326,7 +360,7 @@
 <nav class="nav">
   <div class="wrap">
     <a class="brand" href="#top">
-      <img src="https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png" alt="">
+      <img src="img/icon_256.png" alt="" width="256" height="256">
       SamRewritten
     </a>
     <div class="links">
@@ -341,7 +375,7 @@
 
 <header class="hero" id="top">
   <div class="wrap">
-    <img class="logo" src="https://raw.githubusercontent.com/PaulCombal/SamRewritten/master/assets/icon_256.png" alt="SamRewritten logo">
+    <img class="logo" src="img/icon_256.png" alt="SamRewritten logo" width="256" height="256" fetchpriority="high">
     <h1>SamRewritten</h1>
     <p class="tagline">A free, open-source Steam Achievement Manager for Linux &amp; Windows.</p>
     <div class="badges">
@@ -381,11 +415,11 @@
       </p>
       <div class="shots">
         <figure>
-          <img class="zoomable" src="img/screenshot1.png" alt="SamRewritten GTK interface showing a Steam game's achievement list with unlock toggles" role="button" tabindex="0" aria-label="Enlarge GTK version screenshot">
+          <img class="zoomable" src="img/screenshot1.png" alt="SamRewritten GTK interface showing a Steam game's achievement list with unlock toggles" width="910" height="602" role="button" tabindex="0" aria-label="Enlarge GTK version screenshot">
           <figcaption>GTK version preview</figcaption>
         </figure>
         <figure>
-          <img class="zoomable" src="img/screenshot2.png" alt="SamRewritten Adwaita interface preview with light and dark themes" role="button" tabindex="0" aria-label="Enlarge Adwaita version screenshot">
+          <img class="zoomable" src="img/screenshot2.png" alt="SamRewritten Adwaita interface preview with light and dark themes" width="906" height="602" role="button" tabindex="0" aria-label="Enlarge Adwaita version screenshot">
           <figcaption>Adwaita version preview</figcaption>
         </figure>
       </div>
