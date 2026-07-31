@@ -27,7 +27,7 @@ mod tests {
         let mut app_manager =
             AppManager::new_connected(206690).expect("Failed to create app manager");
         let achievements = app_manager
-            .get_achievements(true)
+            .get_achievements(true, "")
             .expect("Failed to get achievements");
         println!("{achievements:?}")
     }
@@ -35,7 +35,7 @@ mod tests {
     #[test]
     fn get_stats_no_message() {
         let mut app_manager = AppManager::new_connected(480).expect("Failed to create app manager");
-        let stats = app_manager.get_statistics().expect("Failed to get stats");
+        let stats = app_manager.get_statistics("").expect("Failed to get stats");
         println!("{stats:?}")
     }
 

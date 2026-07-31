@@ -13,19 +13,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::backend::local_stats::read_schema_languages;
 use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::app_list_view::PrefetchedProgress;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
-use crate::gui_frontend::request::{AppProgress, GetAchievementsAndStats, Request};
-use crate::gui_frontend::ui_components::set_context_popover_to_app_details_context;
+use crate::gui_frontend::request::{GetAchievementsAndStats, Request};
+use crate::gui_frontend::ui_components::{
+    set_achievement_languages_provisional, set_context_popover_to_app_details_context,
+};
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use crate::utils::format::format_playtime_minutes;
-use gtk::gio::{Menu, spawn_blocking};
+use gtk::gio::{Menu, Settings, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::WidgetExt;
 use gtk::prelude::*;
 use gtk::{Box, Label, Stack};
-use std::cell::{Cell, RefCell};
+use std::cell::Cell;
 use std::rc::Rc;
 
 #[inline]
@@ -45,7 +49,8 @@ pub(crate) fn switch_from_app_list_to_app(
     app_label: &Label,
     menu_model: &Menu,
     list_stack: &Stack,
-    prefetched_progress: &Rc<RefCell<Option<AppProgress>>>,
+    prefetched_progress: &PrefetchedProgress,
+    settings: &Settings,
 ) {
     set_app_action_enabled(&application, "refresh_achievements_list", false);
     app_type_value_label.set_label(&steam_app_object.app_type());
@@ -72,33 +77,67 @@ pub(crate) fn switch_from_app_list_to_app(
     ));
 
     let app_id_copy = steam_app_object.app_id();
+    let language = settings.string("achievement-language").to_string();
+    let requested_language = language.clone();
     let handle = spawn_blocking(move || {
         GetAchievementsAndStats {
             app_id: app_id_copy,
             launch: true,
+            language,
         }
         .request()
     });
 
     set_context_popover_to_app_details_context(menu_model, &application);
 
-    let prefetched_progress = prefetched_progress.clone();
-    MainContext::default().spawn_local(clone!(async move {
-        // Launch and the achievement/stats fetch ride in one round-trip; hand
-        // the result to the refresh action so no second fetch is needed.
-        match handle.await {
-            Ok(Ok(progress)) => prefetched_progress.replace(Some(progress)),
-            other => {
-                eprintln!("[LAUNCH APP] Failed to launch app: {other:?}");
-                return app_stack.set_visible_child_name("failed");
+    // This depends only on the schema on disk, so don't wait on the fetch that also
+    // carries it: a game that fails to launch never delivers one. An empty read means
+    // we couldn't see the file, and the fetch's answer is the better one anyway.
+    let languages = spawn_blocking(move || read_schema_languages(app_id_copy));
+    MainContext::default().spawn_local(clone!(
+        #[strong]
+        app_id,
+        async move {
+            if let Ok(languages) = languages.await
+                && !languages.is_empty()
+                && app_id.get() == Some(app_id_copy)
+            {
+                set_achievement_languages_provisional(&languages);
             }
-        };
+        }
+    ));
 
-        set_app_action_enabled(&application, "refresh_achievements_list", true);
-        set_app_action_enabled(&application, "clear_all_stats_and_achievements", true);
+    let prefetched_progress = prefetched_progress.clone();
+    MainContext::default().spawn_local(clone!(
+        #[strong]
+        app_id,
+        async move {
+            // Launch and the achievement/stats fetch ride in one round-trip; hand
+            // the result to the refresh action so no second fetch is needed.
+            let result = handle.await;
 
-        application.activate_action("refresh_achievements_list", None);
-    }));
+            // Another game may own the page by now; the widgets below are shared
+            // with it, and the refresh this kicks off would collide with its own.
+            if app_id.get() != Some(app_id_copy) {
+                return;
+            }
+
+            match result {
+                Ok(Ok(progress)) => {
+                    prefetched_progress.replace(Some((app_id_copy, requested_language, progress)))
+                }
+                other => {
+                    eprintln!("[LAUNCH APP] Failed to launch app: {other:?}");
+                    return app_stack.set_visible_child_name("failed");
+                }
+            };
+
+            set_app_action_enabled(&application, "refresh_achievements_list", true);
+            set_app_action_enabled(&application, "clear_all_stats_and_achievements", true);
+
+            application.activate_action("refresh_achievements_list", None);
+        }
+    ));
 
     list_stack.set_visible_child_name("app");
 }

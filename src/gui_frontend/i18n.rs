@@ -36,6 +36,43 @@ pub const LANGUAGES: &[(&str, &str)] = &[
     ("ja", "日本語"),
 ];
 
+/// Steam's own language names as they appear in `UserGameStatsSchema_<appid>.bin`,
+/// not locale codes, paired with untranslated native names. Order drives the menu;
+/// a schema language missing here is shown under its raw name.
+pub const STEAM_LANGUAGES: &[(&str, &str)] = &[
+    ("english", "English"),
+    ("arabic", "العربية"),
+    ("bulgarian", "Български"),
+    ("czech", "Čeština"),
+    ("danish", "Dansk"),
+    ("german", "Deutsch"),
+    ("greek", "Ελληνικά"),
+    ("spanish", "Español (España)"),
+    ("latam", "Español (Latinoamérica)"),
+    ("finnish", "Suomi"),
+    ("french", "Français"),
+    ("indonesian", "Bahasa Indonesia"),
+    ("hungarian", "Magyar"),
+    ("italian", "Italiano"),
+    ("japanese", "日本語"),
+    ("koreana", "한국어"),
+    ("dutch", "Nederlands"),
+    ("norwegian", "Norsk"),
+    ("polish", "Polski"),
+    ("portuguese", "Português"),
+    ("brazilian", "Português (Brasil)"),
+    ("romanian", "Română"),
+    ("russian", "Русский"),
+    ("swedish", "Svenska"),
+    ("thai", "ไทย"),
+    ("turkish", "Türkçe"),
+    ("ukrainian", "Українська"),
+    ("vietnamese", "Tiếng Việt"),
+    ("schinese", "简体中文"),
+    ("sc_schinese", "简体中文 (Steam 中国)"),
+    ("tchinese", "繁體中文"),
+];
+
 // glib-rs wraps dgettext/dngettext but not bindtextdomain; the symbol lives in
 // libintl, which GTK already links.
 unsafe extern "C" {

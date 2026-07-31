@@ -21,8 +21,11 @@ mod row_factory;
 
 use crate::dev_println;
 use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::application_actions::set_timed_unlock_actions_enabled;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
-use crate::gui_frontend::gobjects::mode_state::{GUnlockModeState, MODE_AUTOCOMMIT, MODE_DEFERRED};
+use crate::gui_frontend::gobjects::mode_state::{
+    GUnlockModeState, MODE_AUTOCOMMIT, MODE_COPY_TIMING, MODE_DEFERRED,
+};
 use crate::gui_frontend::gsettings::get_settings;
 use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::unlock_queue::{UnlockQueue, resolve_target_count};
@@ -33,7 +36,7 @@ use crate::utils::format::format_achievement_progress;
 use config_popover::create_config_popover;
 use copy_controls::create_copy_controls;
 use copy_mode::install_copy_mode;
-use gtk::gio::ListStore;
+use gtk::gio::{ListStore, SimpleAction};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{
@@ -171,58 +174,116 @@ pub fn create_achievements_manual_view(
         config.unit_percent.connect_toggled(move |_| f());
     }
 
-    // Wipe the queue whenever the raw model is reset (game change, refresh, etc.).
-    raw_model.connect_items_changed(clone!(
-        #[strong]
-        queue,
-        #[weak(rename_to = queue_label)]
-        header.queue_label,
-        #[weak(rename_to = start_button)]
-        header.start_button,
-        #[strong]
-        update_autofill,
-        move |model, _pos, removed, _added| {
-            if removed > 0 {
-                queue.clear(model);
-                update_queue_label(&queue_label, &queue);
-                start_button.set_sensitive(false);
-            }
-            update_autofill();
-        }
-    ));
-
-    // On a mode switch, hide both queues' positions then render only the active
-    // mode's. The copy-timing queue is (re)rendered by its own handler below; here
-    // we restore the staged queue when returning to deferred mode.
-    mode_state.connect_mode_notify(clone!(
+    // Positions live on the achievement objects, so only the active mode's are
+    // rendered and this has to re-run whenever the model is rebuilt. Weak on the
+    // model and mode state, which both hold this closure.
+    let apply_queues: Rc<dyn Fn()> = Rc::new(clone!(
         #[strong]
         queue,
         #[strong]
         copy_queue,
-        #[strong]
-        app_unlocked_achievements_count,
+        #[weak]
+        mode_state,
         #[weak(rename_to = raw_model)]
         raw_model,
         #[weak(rename_to = queue_label)]
         header.queue_label,
         #[weak(rename_to = start_button)]
         header.start_button,
-        move |state| {
+        #[strong(rename_to = unlocked_count)]
+        app_unlocked_achievements_count,
+        move || {
+            // Nothing is stageable between a refresh's wipe and its repopulation,
+            // and pruning against that would throw the queue away.
+            if raw_model.n_items() == 0 {
+                return;
+            }
             queue.hide(&raw_model);
             copy_queue.hide(&raw_model);
-            if state.mode() == MODE_DEFERRED {
-                queue.render(&raw_model);
-                update_queue_label(&queue_label, &queue);
-                update_start_sensitive(
-                    &start_button,
-                    &queue,
-                    app_unlocked_achievements_count.get(),
-                    raw_model.n_items(),
-                );
-            } else {
-                start_button.set_sensitive(false);
+            queue.retain_stageable(&raw_model);
+            copy_queue.retain_stageable(&raw_model);
+            match mode_state.mode().as_str() {
+                MODE_DEFERRED => {
+                    queue.render(&raw_model);
+                    update_queue_label(&queue_label, &queue);
+                    update_start_sensitive(
+                        &start_button,
+                        &queue,
+                        unlocked_count.get(),
+                        raw_model.n_items(),
+                    );
+                }
+                MODE_COPY_TIMING => {
+                    copy_queue.render(&raw_model);
+                    start_button.set_sensitive(false);
+                }
+                _ => start_button.set_sensitive(false),
             }
         }
+    ));
+
+    // Keyed by achievement id, so both queues survive the model being rebuilt for
+    // the same game and only need repainting. A different game invalidates them.
+    let queued_app_id: Rc<Cell<Option<u32>>> = Rc::new(Cell::new(None));
+    raw_model.connect_items_changed(clone!(
+        #[strong]
+        queue,
+        #[strong]
+        copy_queue,
+        #[strong]
+        app_id,
+        #[strong]
+        queued_app_id,
+        #[weak(rename_to = queue_label)]
+        header.queue_label,
+        #[strong]
+        apply_queues,
+        #[strong]
+        update_autofill,
+        move |model, _pos, _removed, added| {
+            if added > 0 {
+                if queued_app_id.get() != app_id.get() {
+                    queue.clear(model);
+                    copy_queue.clear(model);
+                    queued_app_id.set(app_id.get());
+                    update_queue_label(&queue_label, &queue);
+                }
+                apply_queues();
+            }
+            update_autofill();
+        }
+    ));
+
+    // Leaving ends the staging session, but the models are only cleared on a delay
+    // after the page is gone, so no model event marks it — the caller says so.
+    let action_app_page_closed = SimpleAction::new("app_page_closed", None);
+    action_app_page_closed.connect_activate(clone!(
+        #[strong]
+        queue,
+        #[strong]
+        copy_queue,
+        #[strong]
+        queued_app_id,
+        #[weak(rename_to = raw_model)]
+        raw_model,
+        #[weak(rename_to = queue_label)]
+        header.queue_label,
+        #[weak(rename_to = start_button)]
+        header.start_button,
+        move |_, _| {
+            queue.clear(&raw_model);
+            copy_queue.clear(&raw_model);
+            queued_app_id.set(None);
+            update_queue_label(&queue_label, &queue);
+            start_button.set_sensitive(false);
+        }
+    ));
+    application.add_action(&action_app_page_closed);
+
+    mode_state.connect_mode_notify(clone!(
+        #[strong]
+        apply_queues,
+        move |_| apply_queues()
     ));
 
     header.auto_fill_button.connect_clicked(clone!(
@@ -336,6 +397,7 @@ pub fn create_achievements_manual_view(
                 }
             ));
 
+            set_timed_unlock_actions_enabled(&application, false);
             achievement_views_stack.set_visible_child_name("automatic");
         }
     ));

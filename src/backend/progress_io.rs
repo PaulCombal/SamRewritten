@@ -104,11 +104,11 @@ pub fn run_command_on_apps_concurrent(
 
 fn run_one(app_id: u32, command: SteamCommand) -> Result<Vec<u8>, SamError> {
     let first = run_one_attempt(app_id, command.clone());
-    if let Ok(bytes) = &first {
-        if response_is_timeout(bytes) {
-            eprintln!("[CLIENT] Timeout for app {app_id}, retrying once");
-            return run_one_attempt(app_id, command);
-        }
+    if let Ok(bytes) = &first
+        && response_is_timeout(bytes)
+    {
+        eprintln!("[CLIENT] Timeout for app {app_id}, retrying once");
+        return run_one_attempt(app_id, command);
     }
     first
 }
@@ -137,8 +137,9 @@ fn response_is_timeout(bytes: &[u8]) -> bool {
 /// Snapshot every achievement and stat for `app_id` into an `AppExport`.
 /// `app_name` is left empty; callers that know the name fill it in.
 pub fn collect_app_export(manager: &mut AppManager, app_id: u32) -> Result<AppExport, SamError> {
-    let achievements = manager.get_achievements(false)?;
-    let stats = manager.get_statistics()?;
+    // Game default, so exported names don't shift with the display-language pick.
+    let achievements = manager.get_achievements(false, "")?;
+    let stats = manager.get_statistics("")?;
 
     Ok(AppExport {
         app_id,
@@ -252,7 +253,7 @@ fn apply_stat_decision<T: Display>(
 /// recorded in `skipped_unwriteable` rather than attempted.
 pub fn apply_app_export(manager: &mut AppManager, payload: AppExport) -> ImportSummary {
     let mut summary = ImportSummary::default();
-    let _ = manager.load_definitions();
+    let _ = manager.load_definitions("");
 
     let mut had_reset_fixable = false;
     let mut had_hard_block = false;

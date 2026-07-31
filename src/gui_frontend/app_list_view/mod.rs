@@ -23,7 +23,9 @@ use crate::backend::app_lister::{AppModel, AppModelType};
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::app_list_view_callbacks::switch_from_app_list_to_app;
 use crate::gui_frontend::app_view::create_app_view;
-use crate::gui_frontend::application_actions::{set_app_action_enabled, setup_app_actions};
+use crate::gui_frontend::application_actions::{
+    set_app_action_enabled, set_timed_unlock_actions_enabled, setup_app_actions,
+};
 use crate::gui_frontend::dialogs::choose_steam_install_then;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::gsettings::get_settings;
@@ -107,6 +109,10 @@ fn apply_idle_cap_delta(list_store: &ListStore, idle_count: &Cell<usize>, delta:
     }
 }
 
+/// Tagged with the app id and language it was fetched for: the slot is global and
+/// a late arrival can outlive the page it was started from.
+pub type PrefetchedProgress = Rc<RefCell<Option<(u32, String, AppProgress)>>>;
+
 pub fn create_main_ui(
     application: &MainApplication,
     cmd_line: &ApplicationCommandLine,
@@ -114,16 +120,16 @@ pub fn create_main_ui(
     crate::gui_frontend::i18n::init();
 
     #[cfg(unix)]
-    if let Ok(appdir) = std::env::var("APPDIR") {
-        if let Some(display) = gtk::gdk::Display::default() {
-            let theme = gtk::IconTheme::for_display(&display);
+    if let Ok(appdir) = std::env::var("APPDIR")
+        && let Some(display) = gtk::gdk::Display::default()
+    {
+        let theme = gtk::IconTheme::for_display(&display);
 
-            if !theme.has_icon("open-menu-symbolic") {
-                crate::dev_println!("CLIENT", "Icon not found in system theme. Using fallback.");
+        if !theme.has_icon("open-menu-symbolic") {
+            crate::dev_println!("CLIENT", "Icon not found in system theme. Using fallback.");
 
-                let fallback_path = std::path::Path::new(&appdir).join("icons");
-                theme.add_search_path(fallback_path);
-            }
+            let fallback_path = std::path::Path::new(&appdir).join("icons");
+            theme.add_search_path(fallback_path);
         }
     }
 
@@ -134,7 +140,7 @@ pub fn create_main_ui(
     let launch_app_by_id_visible = Rc::new(Cell::new(false));
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
-    let prefetched_progress: Rc<RefCell<Option<AppProgress>>> = Rc::new(RefCell::new(None));
+    let prefetched_progress: PrefetchedProgress = Rc::new(RefCell::new(None));
     let idle_count: Rc<Cell<usize>> = Rc::new(Cell::new(0));
     let achievement_loader = AchievementLoader::new();
 
@@ -357,6 +363,8 @@ pub fn create_main_ui(
         app_shimmer_image,
         #[strong]
         prefetched_progress,
+        #[strong]
+        settings,
         move |list_view, position| {
             let Some(model) = list_view.model() else {
                 return;
@@ -382,6 +390,7 @@ pub fn create_main_ui(
                 &menu_model,
                 &list_stack,
                 &prefetched_progress,
+                &settings,
             );
         }
     ));
@@ -428,6 +437,8 @@ pub fn create_main_ui(
         app_label,
         #[weak]
         app_shimmer_image,
+        #[strong]
+        settings,
         move |_, list_item| {
             let card = SteamAppCard::default();
             card.set_size_request(400, 150);
@@ -481,6 +492,8 @@ pub fn create_main_ui(
                 app_shimmer_image,
                 #[strong]
                 prefetched_progress,
+                #[strong]
+                settings,
                 move |_| {
                     let Some(steam_app_object) = card.app_object() else {
                         return;
@@ -502,6 +515,7 @@ pub fn create_main_ui(
                         &menu_model,
                         &list_stack,
                         &prefetched_progress,
+                        &settings,
                     );
                 }
             ));
@@ -737,7 +751,11 @@ pub fn create_main_ui(
         move |_| {
             cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
             list_stack.set_visible_child_name("list");
+            // The one way out of a timed unlock that skips the refresh, so it has
+            // to lift the lockout itself or the next app page inherits it.
+            set_timed_unlock_actions_enabled(&application, true);
             set_context_popover_to_app_list_context(&menu_model, &application);
+            application.activate_action("app_page_closed", None);
             if let Some(app_id) = app_id.take() {
                 achievement_loader.refresh_app(app_id, &list_store);
                 spawn_blocking(move || {
@@ -751,14 +769,23 @@ pub fn create_main_ui(
                 std::thread::sleep(std::time::Duration::from_millis(500));
             });
 
-            MainContext::default().spawn_local(async move {
-                if Some(()) != handle.await.ok() {
-                    eprintln!("[CLIENT] Threading task failed");
-                }
+            MainContext::default().spawn_local(clone!(
+                #[strong]
+                app_id,
+                async move {
+                    if Some(()) != handle.await.ok() {
+                        eprintln!("[CLIENT] Threading task failed");
+                    }
 
-                app_achievements_model.remove_all();
-                app_stat_model.remove_all();
-            });
+                    // An app opened during the wait already put its rows here.
+                    if app_id.get().is_some() {
+                        return;
+                    }
+
+                    app_achievements_model.remove_all();
+                    app_stat_model.remove_all();
+                }
+            ));
         }
     ));
 
@@ -814,6 +841,7 @@ pub fn create_main_ui(
         &app_achievements_stack,
         &cancel_timed_unlock,
         &prefetched_progress,
+        &settings,
     );
 
     let action_clear_all_stats_and_achievements = create_clear_all_action(
@@ -838,6 +866,8 @@ pub fn create_main_ui(
         action_refresh_app_list,
         #[strong]
         prefetched_progress,
+        #[strong]
+        settings,
         move |stack| {
             if stack.visible_child_name().as_deref() == Some("loading") {
                 back_button.set_sensitive(false);
@@ -895,6 +925,7 @@ pub fn create_main_ui(
                         &menu_model,
                         stack,
                         &prefetched_progress,
+                        &settings,
                     );
                 }
             }
@@ -943,6 +974,13 @@ pub fn create_main_ui(
             #[strong]
             window,
             move |chosen| {
+                // This process reads Steam's files too, so it has to land on the
+                // same install the orchestrator is about to be pinned to. The snap
+                // chooser pins its own; this covers the multi-install one.
+                #[cfg(unix)]
+                if let Some(root) = chosen.as_ref() {
+                    crate::utils::snap::pin_install_root(root);
+                }
                 if let Err(e) = crate::backend::orchestrator_client::spawn_orchestrator(chosen) {
                     eprintln!("[CLIENT] Failed to start orchestrator: {e}");
                 }

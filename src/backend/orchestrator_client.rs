@@ -32,6 +32,7 @@ use crate::utils::ipc_types::{
     AppExport, ImportSummary, ProgressMsg, SamError, SteamCommand, SteamResponse,
 };
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 #[cfg(feature = "gui")]
 use std::path::PathBuf;
@@ -76,14 +77,20 @@ pub fn shutdown_and_wait() {
     if let Err(err) = Shutdown.request() {
         eprintln!("[CLIENT] Failed to send shutdown message: {err}");
     }
-    if let Some(ipc) = ORCHESTRATOR.lock().unwrap().as_mut() {
-        if let Err(err) = ipc.wait() {
-            eprintln!("[CLIENT] Failed to wait on orchestrator to shut down: {err}");
-        }
+    if let Some(ipc) = ORCHESTRATOR.lock().unwrap().as_mut()
+        && let Err(err) = ipc.wait()
+    {
+        eprintln!("[CLIENT] Failed to wait on orchestrator to shut down: {err}");
     }
 }
 
-pub type AppProgress = (Vec<AchievementInfo>, Vec<StatInfo>);
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AppProgress {
+    pub achievements: Vec<AchievementInfo>,
+    pub stats: Vec<StatInfo>,
+    /// What the app's schema ships, for the achievement-language picker.
+    pub languages: Vec<String>,
+}
 
 pub trait Request: Into<SteamCommand> + Debug + Clone {
     type Response: DeserializeOwned;
@@ -192,8 +199,8 @@ request!(ResetStats { app_id: u32, achievements_too: bool } -> bool
 request!(GetAchievementCounts { app_ids: Vec<u32> } -> Vec<(u32, u32, u32)>
     => SteamCommand::GetAchievementCounts(app_ids));
 
-request!(GetAchievementsAndStats { app_id: u32, launch: bool } -> AppProgress
-    => SteamCommand::GetAchievementsAndStats(app_id, launch));
+request!(GetAchievementsAndStats { app_id: u32, launch: bool, language: String } -> AppProgress
+    => SteamCommand::GetAchievementsAndStats(app_id, launch, language));
 
 request!(GetFriendUnlockTimes { app_id: u32, friend: String } -> Vec<AchievementUnlock>
     => SteamCommand::GetFriendUnlockTimes(app_id, friend));

@@ -13,11 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use crate::backend::local_stats::read_schema_languages;
 use crate::backend::orchestrator_client::{
-    ExportApps, GetAchievementsAndStats, GetSubscribedAppList, ImportApps, LaunchApp, Request,
-    ResetStats, SetAchievement, StoreStatsAndAchievements, UnlockAllAchievements, set_orchestrator,
-    shutdown_and_wait,
+    AppProgress, ExportApps, GetAchievementsAndStats, GetSubscribedAppList, ImportApps, LaunchApp,
+    Request, ResetStats, SetAchievement, SetFloatStat, SetIntStat, StoreStatsAndAchievements,
+    UnlockAllAchievements, set_orchestrator, shutdown_and_wait,
 };
+use crate::backend::stat_definitions::StatInfo;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::bidir_child::BidirChild;
 use crate::utils::export_file::{ExportFile, FORMAT_VERSION, iso8601_utc_now};
@@ -54,9 +56,18 @@ enum Command {
     ListAchievements {
         /// Steam AppID of the game to query.
         app_id: u32,
+        #[command(flatten)]
+        language: Language,
     },
     /// List all stats defined for an app, with their current values, as JSON.
     ListStatistics {
+        /// Steam AppID of the game to query.
+        app_id: u32,
+        #[command(flatten)]
+        language: Language,
+    },
+    /// List the languages an app's schema offers for --language, as JSON.
+    ListLanguages {
         /// Steam AppID of the game to query.
         app_id: u32,
     },
@@ -66,6 +77,9 @@ enum Command {
         /// Slower: requires querying stats for every owned app.
         #[arg(long)]
         with_achievements: bool,
+        /// Also include playtime and last-played time for every app.
+        #[arg(long)]
+        with_playtime: bool,
     },
     /// Unlock one or more achievements for an app.
     Unlock {
@@ -90,6 +104,15 @@ enum Command {
     LockAll {
         /// Steam AppID of the game.
         app_id: u32,
+    },
+    /// Set the value of a stat for an app.
+    SetStat {
+        /// Steam AppID of the game.
+        app_id: u32,
+        /// Stat API name, as printed by `list-statistics`.
+        stat_id: String,
+        /// New value, an integer or a decimal depending on the stat's type.
+        value: String,
     },
     /// Idle an app (appear in-game) until interrupted with Ctrl+C.
     Idle {
@@ -120,6 +143,14 @@ struct Ids {
     ids: Vec<String>,
 }
 
+#[derive(Args)]
+struct Language {
+    /// Steam schema language for achievement and stat names, e.g. 'french'.
+    /// Defaults to the game's own language; see `list-languages`.
+    #[arg(long)]
+    language: Option<String>,
+}
+
 /// The orchestrator owns every Steam connection, so the CLI process itself
 /// never loads `steamclient.so`.
 fn spawn_orchestrator() -> Result<(), SamError> {
@@ -144,41 +175,28 @@ pub fn main() -> ExitCode {
 
 fn run_command(command: Command) -> ExitCode {
     match command {
-        Command::ListAchievements { app_id } => {
-            let (achievements, _stats) = match (GetAchievementsAndStats {
-                app_id,
-                launch: true,
-            })
-            .request()
-            {
-                Ok(progress) => progress,
-                Err(e) => {
-                    eprintln!("Failed to get achievements: {e}");
-                    return ExitCode::FAILURE;
-                }
-            };
-            print_json(&achievements)
+        Command::ListAchievements { app_id, language } => {
+            match fetch_progress(app_id, language, "achievements") {
+                Ok(progress) => print_json(&progress.achievements),
+                Err(code) => code,
+            }
         }
 
-        Command::ListStatistics { app_id } => {
-            let (_achievements, statistics) = match (GetAchievementsAndStats {
-                app_id,
-                launch: true,
-            })
-            .request()
-            {
-                Ok(progress) => progress,
-                Err(e) => {
-                    eprintln!("Failed to get statistics: {e}");
-                    return ExitCode::FAILURE;
-                }
-            };
-            print_json(&statistics)
+        Command::ListStatistics { app_id, language } => {
+            match fetch_progress(app_id, language, "statistics") {
+                Ok(progress) => print_json(&progress.stats),
+                Err(code) => code,
+            }
         }
 
-        Command::ListApps { with_achievements } => {
+        Command::ListLanguages { app_id } => print_json(&read_schema_languages(app_id)),
+
+        Command::ListApps {
+            with_achievements,
+            with_playtime,
+        } => {
             let apps = match (GetSubscribedAppList {
-                include_playtime: false,
+                include_playtime: with_playtime,
                 with_achievement_counts: with_achievements,
             })
             .request()
@@ -223,6 +241,12 @@ fn run_command(command: Command) -> ExitCode {
             }
         },
 
+        Command::SetStat {
+            app_id,
+            stat_id,
+            value,
+        } => set_stat(app_id, stat_id, value),
+
         Command::Idle { app_id } => {
             if let Err(e) = (LaunchApp { app_id }).request() {
                 eprintln!("Failed to connect to Steam: {e}");
@@ -246,6 +270,102 @@ fn run_command(command: Command) -> ExitCode {
         Command::Export { app_ids } => export(app_ids),
 
         Command::Import { file, app_id } => import(file, app_id),
+    }
+}
+
+/// An unreadable schema reads as empty and is left to the backend, which falls back
+/// to the game's own language. That is also what a typo would silently produce, so
+/// reject one here instead, while the list of real names is at hand.
+fn resolve_language(app_id: u32, language: Option<String>) -> Result<String, String> {
+    let Some(language) = language else {
+        return Ok(String::new());
+    };
+    let offered = read_schema_languages(app_id);
+    if offered.is_empty() || offered.iter().any(|l| l.eq_ignore_ascii_case(&language)) {
+        Ok(language)
+    } else {
+        Err(format!(
+            "App {app_id} has no '{language}' in its schema. Available: {}",
+            offered.join(", ")
+        ))
+    }
+}
+
+fn fetch_progress(app_id: u32, language: Language, what: &str) -> Result<AppProgress, ExitCode> {
+    let language = match resolve_language(app_id, language.language) {
+        Ok(language) => language,
+        Err(e) => {
+            eprintln!("{e}");
+            return Err(ExitCode::FAILURE);
+        }
+    };
+
+    (GetAchievementsAndStats {
+        app_id,
+        launch: true,
+        language,
+    })
+    .request()
+    .map_err(|e| {
+        eprintln!("Failed to get {what}: {e}");
+        ExitCode::FAILURE
+    })
+}
+
+/// The schema decides whether a stat is written as an integer or a float, so look the
+/// stat up rather than making the caller declare it.
+fn set_stat(app_id: u32, stat_id: String, value: String) -> ExitCode {
+    let progress = match fetch_progress(app_id, Language { language: None }, "statistics") {
+        Ok(progress) => progress,
+        Err(code) => return code,
+    };
+
+    let Some(stat) = progress.stats.iter().find(|s| s.id() == stat_id) else {
+        eprintln!("App {app_id} has no stat named {stat_id}");
+        return ExitCode::FAILURE;
+    };
+
+    if (stat.permission() & 2) != 0 {
+        eprintln!("Stat {stat_id} is protected by Steam and cannot be changed");
+        return ExitCode::FAILURE;
+    }
+
+    let result = match stat {
+        StatInfo::Integer(_) => match value.parse::<i32>() {
+            Ok(value) => (SetIntStat {
+                app_id,
+                stat_id: stat_id.clone(),
+                value,
+            })
+            .request(),
+            Err(e) => {
+                eprintln!("Stat {stat_id} takes an integer: {e}");
+                return ExitCode::FAILURE;
+            }
+        },
+        StatInfo::Float(_) => match value.parse::<f32>() {
+            Ok(value) => (SetFloatStat {
+                app_id,
+                stat_id: stat_id.clone(),
+                value,
+            })
+            .request(),
+            Err(e) => {
+                eprintln!("Stat {stat_id} takes a number: {e}");
+                return ExitCode::FAILURE;
+            }
+        },
+    };
+
+    match result {
+        Ok(true) => {
+            println!("{}", json!({"id": stat_id, "success": true}));
+            ExitCode::SUCCESS
+        }
+        other => {
+            eprintln!("Failed to set stat {stat_id}: {other:?}");
+            ExitCode::FAILURE
+        }
     }
 }
 

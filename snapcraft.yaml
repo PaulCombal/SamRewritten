@@ -1,6 +1,6 @@
 name: samrewritten
 title: SamRewritten
-version: '1.4.6'
+version: '1.4.7'
 summary: Steam achievements and stats manager
 description: Unlock achievements and stats on your Steam account
 confinement: strict

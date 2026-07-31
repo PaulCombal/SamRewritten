@@ -16,6 +16,7 @@
 use super::copy_controls::CopyControls;
 use crate::backend::user_unlock_times::Friend;
 use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::application_actions::set_timed_unlock_actions_enabled;
 use crate::gui_frontend::friend_picker::open_friend_picker;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::gobjects::mode_state::{GUnlockModeState, MODE_COPY_TIMING};
@@ -396,6 +397,8 @@ pub(super) fn install_copy_mode(
         copy.first_delay_spin,
         #[weak(rename_to = achievement_views_stack)]
         achievement_views_stack,
+        #[weak]
+        application,
         move |_| {
             let plan = copy_plan.borrow().clone();
             if plan.is_empty() {
@@ -432,6 +435,7 @@ pub(super) fn install_copy_mode(
                     .await;
                 }
             ));
+            set_timed_unlock_actions_enabled(&application, false);
             achievement_views_stack.set_visible_child_name("automatic");
         }
     ));

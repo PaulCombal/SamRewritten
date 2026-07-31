@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 21:45+0200\n"
+"POT-Creation-Date: 2026-07-31 19:47+0200\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
-#: src/gui_frontend/app_list_view/mod.rs:171
+#: src/gui_frontend/app_list_view/mod.rs:177
 msgid "Loading..."
 msgstr "読み込み中..."
 
@@ -47,7 +47,7 @@ msgstr "アプリ一覧を更新"
 msgid "Filter junk"
 msgstr "ジャンクを除外"
 
-#: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:307
+#: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:401
 msgid "About"
 msgstr "このアプリについて"
 
@@ -99,21 +99,29 @@ msgstr "アニメーションを無効化"
 msgid "Appearance"
 msgstr "外観"
 
-#: src/gui_frontend/ui_components.rs:266
+#: src/gui_frontend/ui_components.rs:267
 msgid "System default"
 msgstr "システムの既定"
 
-#: src/gui_frontend/ui_components.rs:276
+#: src/gui_frontend/ui_components.rs:270
 msgid "Language"
 msgstr "言語"
 
-#: src/gui_frontend/ui_components.rs:300
+#: src/gui_frontend/ui_components.rs:375
+msgid "Game default"
+msgstr "ゲームの既定"
+
+#: src/gui_frontend/ui_components.rs:394
 msgid "Refresh achievements & stats"
 msgstr "実績と統計を更新"
 
-#: src/gui_frontend/ui_components.rs:304
+#: src/gui_frontend/ui_components.rs:398
 msgid "Reset everything"
 msgstr "すべてをリセット"
+
+#: src/gui_frontend/ui_components.rs:407
+msgid "Achievement language"
+msgstr "実績の言語"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:113
 #: src/gui_frontend/dialogs.rs:136 src/gui_frontend/dialogs.rs:184
@@ -143,9 +151,9 @@ msgstr "<b>すでにSteamをインストールしていますか？</b>"
 #: src/gui_frontend/dialogs.rs:241
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
-"to it using environment variables. Please check the <a href=\"https://"
-"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
-"report your issue."
+"to it using environment variables. Please check the <a href=\"https://github."
+"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
+"your issue."
 msgstr ""
 "Steamをカスタムの場所にインストールしている場合は、環境変数でSamRewrittenに場"
 "所を指定できます。手順や問題の報告については<a href=\"https://github.com/"
@@ -299,23 +307,23 @@ msgstr "増加のみ"
 msgid "This statistic is protected."
 msgstr "この統計は保護されています"
 
-#: src/gui_frontend/achievement_automatic_view.rs:39
+#: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
 msgstr "停止して戻る"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:53
+#: src/gui_frontend/achievement_manual_view/mod.rs:56
 msgid "No achievements staged"
 msgstr "保留中の実績はありません"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:54
+#: src/gui_frontend/achievement_manual_view/mod.rs:57
 msgid "{count} staged"
 msgstr "{count}件保留中"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:92
+#: src/gui_frontend/achievement_manual_view/mod.rs:95
 msgid "Already at or above target ({progress})"
 msgstr "すでに目標以上です ({progress})"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:98
+#: src/gui_frontend/achievement_manual_view/mod.rs:101
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr "実績を自動補完 ({count}件、{progress})"
 
@@ -381,7 +389,7 @@ msgid "Spacing"
 msgstr "間隔"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:232
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:233
 msgid "Choose a friend to copy timing from"
 msgstr "タイミングをコピーするフレンドを選択"
 
@@ -402,11 +410,11 @@ msgstr "最大間隔"
 msgid "First delay"
 msgstr "初回遅延"
 
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:99
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:100
 msgid "No friend loaded"
 msgstr "フレンドが読み込まれていません"
 
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:109
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:110
 msgid "{count} achievements over {time}"
 msgstr "{time}で{count}件の実績"
 
@@ -438,12 +446,12 @@ msgstr "フレンドを検索するかSteamID64を貼り付けてください"
 msgid "Clear selected user"
 msgstr "選択したユーザーをクリア"
 
-#: src/gui_frontend/app_list_view/mod.rs:192
-#: src/gui_frontend/app_list_view/mod.rs:852
+#: src/gui_frontend/app_list_view/mod.rs:198
+#: src/gui_frontend/app_list_view/mod.rs:882
 msgid "Name or AppId (Ctrl+K)"
 msgstr "名前またはAppID (Ctrl+K)"
 
-#: src/gui_frontend/app_list_view/mod.rs:847
+#: src/gui_frontend/app_list_view/mod.rs:877
 msgid "Achievement or stat..."
 msgstr "実績または統計…"
 
@@ -568,7 +576,7 @@ msgstr ""
 "{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:423
-#: src/gui_frontend/app_list_view/refresh_actions.rs:330
+#: src/gui_frontend/app_list_view/refresh_actions.rs:375
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -639,18 +647,18 @@ msgstr ""
 msgid "Import complete"
 msgstr "インポート完了"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:109
+#: src/gui_frontend/app_list_view/refresh_actions.rs:113
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
 "アカウント内にアプリが見つかりませんでした。App IDを検索して開始してくださ"
 "い。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:126
+#: src/gui_frontend/app_list_view/refresh_actions.rs:130
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr ""
 "結果が見つかりませんでした。スペルを確認するか、App IDを入力してください。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:158
+#: src/gui_frontend/app_list_view/refresh_actions.rs:162
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
@@ -658,19 +666,19 @@ msgstr ""
 "ライブラリの読み込みに失敗しました。インターネット接続を確認し、App IDを検索"
 "して開始してください。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:166
+#: src/gui_frontend/app_list_view/refresh_actions.rs:170
 msgid "SamRewritten could not connect to Steam. Is it running?"
 msgstr "SamRewrittenはSteamに接続できませんでした。起動していますか？"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:328
+#: src/gui_frontend/app_list_view/refresh_actions.rs:373
 msgid "Reset Everything"
 msgstr "すべてリセット"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:329
+#: src/gui_frontend/app_list_view/refresh_actions.rs:374
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr "このアプリのすべての実績と統計をリセットします。本当によろしいですか？"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:330
+#: src/gui_frontend/app_list_view/refresh_actions.rs:375
 msgid "Sure, reset"
 msgstr "はい、リセットします"
 

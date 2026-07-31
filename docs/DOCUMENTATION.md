@@ -97,6 +97,8 @@ so it benefits from the same Flatpak namespace join.
   the orchestrator's per-app commands (`LaunchApp`, `GetAchievementsAndStats`,
   `SetAchievement`, `UnlockAllAchievements`, `ResetStats`, …).
 * Bulk commands (`export`, `import`) send the multi-app commands above.
+* `list-languages` is the one exception: it parses the app's schema file in
+  process, so it needs neither Steam nor a launched app.
 
 `main.rs` routes `--orchestrator` and `--app=<id>` in both feature builds, so
 the orchestrator and the app-server workers run the same loops

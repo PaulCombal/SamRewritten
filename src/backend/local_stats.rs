@@ -20,8 +20,10 @@
 
 use crate::backend::key_value::KeyValue;
 use crate::utils::steam_locator::SteamLocator;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
+use std::sync::{LazyLock, Mutex};
+use std::time::SystemTime;
 
 pub struct LocalIndex {
     stats_dir: PathBuf,
@@ -90,6 +92,69 @@ impl LocalIndex {
             return None;
         }
         Some((total, unlocked))
+    }
+}
+
+/// Empty when the schema is missing or unparseable, leaving only the game default.
+///
+/// Memoised on the schema's mtime: the parse is ~30 ms on the largest schema seen
+/// and runs on every app open and refresh, while the answer only changes when
+/// Steam re-downloads the schema.
+pub fn read_schema_languages(app_id: u32) -> Vec<String> {
+    /// `app_id -> (schema mtime it was read at, languages)`.
+    type LanguageCache = Mutex<HashMap<u32, (Option<SystemTime>, Vec<String>)>>;
+    static CACHE: LazyLock<LanguageCache> = LazyLock::new(|| Mutex::new(HashMap::new()));
+
+    let Some(stats_dir) = locate_stats_dir() else {
+        return vec![];
+    };
+    let schema_path = stats_dir.join(format!("UserGameStatsSchema_{app_id}.bin"));
+    let mtime = std::fs::metadata(&schema_path)
+        .and_then(|m| m.modified())
+        .ok();
+
+    if let Some((cached_mtime, languages)) = CACHE.lock().unwrap().get(&app_id)
+        && *cached_mtime == mtime
+    {
+        return languages.clone();
+    }
+
+    // Outside the lock: a duplicated concurrent parse is cheaper than holding
+    // every other app id up for the length of one.
+    let languages = KeyValue::load_as_binary(&schema_path)
+        .map(|schema| schema_languages(&schema))
+        .unwrap_or_default();
+    CACHE
+        .lock()
+        .unwrap()
+        .insert(app_id, (mtime, languages.clone()));
+    languages
+}
+
+/// Shared with the child, which resolves the picked language against the tree it
+/// has already loaded.
+pub fn schema_languages(schema: &KeyValue) -> Vec<String> {
+    let mut found: HashSet<String> = HashSet::new();
+    collect_languages(schema, &mut found);
+    // Steam's internal placeholder pseudo-language, never a real translation.
+    found.retain(|l| !l.eq_ignore_ascii_case("token"));
+
+    let mut languages: Vec<String> = found.into_iter().collect();
+    languages.sort();
+    languages
+}
+
+/// `display/name` and `display/desc` hold one child per shipped language.
+fn collect_languages(node: &KeyValue, out: &mut HashSet<String>) {
+    if node.name == "display" {
+        for field in ["name", "desc"] {
+            if let Some(kv) = node.children.get(field) {
+                out.extend(kv.children.keys().cloned());
+            }
+        }
+    }
+    for child in node.children.values() {
+        collect_languages(child, out);
     }
 }
 

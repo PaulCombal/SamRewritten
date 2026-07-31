@@ -15,9 +15,9 @@
 
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::dialogs::show_message_dialog;
-use crate::gui_frontend::i18n::{tr, tr_noop};
+use crate::gui_frontend::i18n::{STEAM_LANGUAGES, tr, tr_noop};
 use crate::gui_frontend::widgets::steam_app_card::ANIMATIONS_DISABLED;
-use gtk::gio::Settings;
+use gtk::gio::{Settings, SimpleAction};
 use gtk::glib::clone;
 use gtk::prelude::*;
 use gtk::{CustomFilter, CustomSorter, glib};
@@ -120,6 +120,78 @@ pub fn setup_settings_bindings(
                     &tr("Language changed"),
                     &detail,
                 );
+            }
+        ),
+    );
+
+    // Menu targets and radio state are compared byte for byte, and this value can
+    // arrive spelled differently, so settle on the table's spelling once.
+    let picked = settings.string("achievement-language");
+    if let Some((code, _)) = STEAM_LANGUAGES
+        .iter()
+        .find(|(code, _)| code.eq_ignore_ascii_case(&picked) && *code != picked)
+        && let Err(e) = settings.set_string("achievement-language", code)
+    {
+        eprintln!("[CLIENT] Error normalising achievement-language setting: {e:?}");
+    }
+
+    // Achievement language radio: a plain stateful action rather than
+    // Settings::create_action, because that one derives `enabled` from the key's
+    // writability and we need to disable it during a timed unlock.
+    let achievement_language = SimpleAction::new_stateful(
+        "achievement-language",
+        Some(&String::static_variant_type()),
+        &settings.string("achievement-language").to_variant(),
+    );
+    achievement_language.connect_activate(clone!(
+        #[strong]
+        settings,
+        move |action, target| {
+            let Some(value) = target.and_then(|t| t.str()) else {
+                return;
+            };
+            action.set_state(&value.to_variant());
+            if let Err(e) = settings.set_string("achievement-language", value) {
+                eprintln!("[CLIENT] Error saving achievement-language setting: {e:?}");
+            }
+        }
+    ));
+    application.add_action(&achievement_language);
+
+    // Carries the menu's ghost row for a language the open game doesn't ship:
+    // same state so it renders selected, never enabled so it renders greyed.
+    let achievement_language_unavailable = SimpleAction::new_stateful(
+        "achievement-language-unavailable",
+        Some(&String::static_variant_type()),
+        &settings.string("achievement-language").to_variant(),
+    );
+    achievement_language_unavailable.set_enabled(false);
+    application.add_action(&achievement_language_unavailable);
+
+    // Re-read the schema. Refresh is enabled exactly when that is possible: on an
+    // app page, with no timed unlock running.
+    settings.connect_changed(
+        Some("achievement-language"),
+        clone!(
+            #[weak]
+            application,
+            #[strong]
+            achievement_language,
+            #[strong]
+            achievement_language_unavailable,
+            move |s, _| {
+                // Also covers an external `gsettings set` and a second instance,
+                // neither of which goes through the action.
+                let value = s.string("achievement-language").to_variant();
+                achievement_language.set_state(&value);
+                achievement_language_unavailable.set_state(&value);
+                if application
+                    .lookup_action("refresh_achievements_list")
+                    .and_then(|a| a.downcast::<SimpleAction>().ok())
+                    .is_some_and(|a| a.is_enabled())
+                {
+                    application.activate_action("refresh_achievements_list", None);
+                }
             }
         ),
     );

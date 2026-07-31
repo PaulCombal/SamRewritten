@@ -97,6 +97,19 @@ impl UnlockQueue {
         }
     }
 
+    /// Drop ids the rebuilt model can no longer stage. An achieved row has no stage
+    /// toggle, so anything left here would count towards "N staged" for good.
+    pub fn retain_stageable(&self, raw_model: &ListStore) {
+        let stageable: HashSet<String> = raw_model
+            .into_iter()
+            .flatten()
+            .filter_map(|obj| obj.downcast::<GAchievementObject>().ok())
+            .filter(|ach| !ach.is_achieved() && ach.permission() == 0)
+            .map(|ach| ach.id())
+            .collect();
+        self.order.borrow_mut().retain(|id| stageable.contains(id));
+    }
+
     /// Re-apply each queued id's 1-based position to its achievement without
     /// changing the stored order. Used to bring a queue back on screen after a
     /// mode switch hid it.

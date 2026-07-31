@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 21:45+0200\n"
+"POT-Creation-Date: 2026-07-31 19:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
-#: src/gui_frontend/app_list_view/mod.rs:171
+#: src/gui_frontend/app_list_view/mod.rs:177
 msgid "Loading..."
 msgstr ""
 
@@ -55,7 +55,7 @@ msgstr ""
 msgid "Filter junk"
 msgstr ""
 
-#: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:307
+#: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:401
 msgid "About"
 msgstr ""
 
@@ -107,20 +107,28 @@ msgstr ""
 msgid "Appearance"
 msgstr ""
 
-#: src/gui_frontend/ui_components.rs:266
+#: src/gui_frontend/ui_components.rs:267
 msgid "System default"
 msgstr ""
 
-#: src/gui_frontend/ui_components.rs:276
+#: src/gui_frontend/ui_components.rs:270
 msgid "Language"
 msgstr ""
 
-#: src/gui_frontend/ui_components.rs:300
+#: src/gui_frontend/ui_components.rs:375
+msgid "Game default"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:394
 msgid "Refresh achievements & stats"
 msgstr ""
 
-#: src/gui_frontend/ui_components.rs:304
+#: src/gui_frontend/ui_components.rs:398
 msgid "Reset everything"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:407
+msgid "Achievement language"
 msgstr ""
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:113
@@ -283,23 +291,23 @@ msgstr ""
 msgid "This statistic is protected."
 msgstr ""
 
-#: src/gui_frontend/achievement_automatic_view.rs:39
+#: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:53
+#: src/gui_frontend/achievement_manual_view/mod.rs:56
 msgid "No achievements staged"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:54
+#: src/gui_frontend/achievement_manual_view/mod.rs:57
 msgid "{count} staged"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:92
+#: src/gui_frontend/achievement_manual_view/mod.rs:95
 msgid "Already at or above target ({progress})"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:98
+#: src/gui_frontend/achievement_manual_view/mod.rs:101
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr ""
 
@@ -365,7 +373,7 @@ msgid "Spacing"
 msgstr ""
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:232
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:233
 msgid "Choose a friend to copy timing from"
 msgstr ""
 
@@ -386,11 +394,11 @@ msgstr ""
 msgid "First delay"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:99
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:100
 msgid "No friend loaded"
 msgstr ""
 
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:109
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:110
 msgid "{count} achievements over {time}"
 msgstr ""
 
@@ -422,12 +430,12 @@ msgstr ""
 msgid "Clear selected user"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:192
-#: src/gui_frontend/app_list_view/mod.rs:852
+#: src/gui_frontend/app_list_view/mod.rs:198
+#: src/gui_frontend/app_list_view/mod.rs:882
 msgid "Name or AppId (Ctrl+K)"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:847
+#: src/gui_frontend/app_list_view/mod.rs:877
 msgid "Achievement or stat..."
 msgstr ""
 
@@ -541,7 +549,7 @@ msgid ""
 msgstr ""
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:423
-#: src/gui_frontend/app_list_view/refresh_actions.rs:330
+#: src/gui_frontend/app_list_view/refresh_actions.rs:375
 msgid "Cancel"
 msgstr ""
 
@@ -601,33 +609,33 @@ msgstr ""
 msgid "Import complete"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:109
+#: src/gui_frontend/app_list_view/refresh_actions.rs:113
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:126
+#: src/gui_frontend/app_list_view/refresh_actions.rs:130
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:158
+#: src/gui_frontend/app_list_view/refresh_actions.rs:162
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:166
+#: src/gui_frontend/app_list_view/refresh_actions.rs:170
 msgid "SamRewritten could not connect to Steam. Is it running?"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:328
+#: src/gui_frontend/app_list_view/refresh_actions.rs:373
 msgid "Reset Everything"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:329
+#: src/gui_frontend/app_list_view/refresh_actions.rs:374
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:330
+#: src/gui_frontend/app_list_view/refresh_actions.rs:375
 msgid "Sure, reset"
 msgstr ""
 

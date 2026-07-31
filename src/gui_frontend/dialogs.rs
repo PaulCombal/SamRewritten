@@ -559,10 +559,10 @@ where
             #[upgrade_or]
             glib::Propagation::Proceed,
             move |_| {
-                if !proceeding.get() {
-                    if let Some(app) = parent.application() {
-                        app.quit();
-                    }
+                if !proceeding.get()
+                    && let Some(app) = parent.application()
+                {
+                    app.quit();
                 }
                 glib::Propagation::Proceed
             }

@@ -106,8 +106,10 @@ pub enum SteamCommand {
     GetRunningApps,
     Shutdown,
     Status, // Ask for status of the process
-    GetAchievements(u32),
-    GetStats(u32),
+    /// `(app_id, language)` where `language` is a Steam schema language name
+    /// (e.g. `french`). Empty means the game's own language.
+    GetAchievements(u32, String),
+    GetStats(u32, String),
     SetAchievement(u32, bool, String, bool),
     SetIntStat(u32, String, i32),
     SetFloatStat(u32, String, f32),
@@ -126,9 +128,10 @@ pub enum SteamCommand {
     /// Fetch `app_id`'s achievements and stats in a single round-trip, so an
     /// unrelated batch command can't interleave between the two fetches on the
     /// serial channel. When `launch` is true the app is launched (or its
-    /// refcount bumped) first; otherwise it must already be running. Returns
-    /// `(achievements, stats)`.
-    GetAchievementsAndStats(u32, bool),
+    /// refcount bumped) first; otherwise it must already be running. `language`
+    /// is a Steam schema language name; empty means the game's own language.
+    /// Returns `(achievements, stats, languages the schema offers)`.
+    GetAchievementsAndStats(u32, bool, String),
     /// `(app_id, friend)` where `friend` is a SteamID64 or a persona name from the
     /// current user's friends list. Returns that user's achievement unlock times.
     /// App-scoped: the per-user stats API needs the child's app context.

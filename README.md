@@ -156,16 +156,12 @@ If you would like to see your specific distribution supported, please open an is
 
 ## CLI
 
-SamRewritten also functions as a command-line tool. The CLI version does not require GTK.
-For Windows users, the installer places the CLI version in the installation folder, though no shortcut is created for it.
+SamRewritten also functions as a command-line tool, as a separate binary that does not require GTK. It can list
+apps, achievements and stats as JSON, lock and unlock achievements individually or in bulk, edit stat values,
+import and export progress, and idle apps.
 
-The CLI allows you to:
-
-* List apps, achievements, and stats
-* Lock and unlock achievements
-* Bulk lock and unlock achievements
-* Import and export achievements and stats as JSON (compatible with the GUI format)
-* Idle apps: Appear in-game until SIGINT (Ctrl+C)
+**➡️ [Read the CLI documentation](https://paulcombal.github.io/SamRewritten/cli.html)** for installation, a full
+command reference and scripting examples.
 
 When using a graphical version of SamRewritten, you can use `--auto-open=X` where `X` is an AppId, to open SamRewritten
 directly on the corresponding app's details page.

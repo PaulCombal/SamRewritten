@@ -93,10 +93,12 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
         let am = app_manager.as_mut().unwrap();
 
         match command {
-            SteamCommand::GetAchievements(id) => {
-                dispatch(parent_tx, id, app_id, || am.get_achievements(true))
+            SteamCommand::GetAchievements(id, language) => dispatch(parent_tx, id, app_id, || {
+                am.get_achievements(true, &language)
+            }),
+            SteamCommand::GetStats(id, language) => {
+                dispatch(parent_tx, id, app_id, || am.get_statistics(&language))
             }
-            SteamCommand::GetStats(id) => dispatch(parent_tx, id, app_id, || am.get_statistics()),
             SteamCommand::SetAchievement(id, unlocked, ach_id, store) => {
                 dispatch(parent_tx, id, app_id, || {
                     am.set_achievement(&ach_id, unlocked, store)

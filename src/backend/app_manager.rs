@@ -15,6 +15,7 @@
 
 use crate::backend::connected_steam::ConnectedSteam;
 use crate::backend::key_value::{KeyValue, KeyValueData};
+use crate::backend::local_stats::schema_languages;
 use crate::backend::stat_definitions::{
     AchievementDefinition, AchievementInfo, BaseStatDefinition, FloatStatDefinition, FloatStatInfo,
     IntStatInfo, IntegerStatDefinition, StatDefinition, StatInfo,
@@ -34,7 +35,8 @@ use std::time::UNIX_EPOCH;
 pub struct AppManager {
     app_id: AppId_t,
     connected_steam: ConnectedSteam,
-    definitions_loaded: bool,
+    /// Parsed language, so a change re-parses instead of serving stale names.
+    loaded_language: Option<String>,
     user_stats_received: bool,
     achievement_definitions: Vec<AchievementDefinition>,
     stat_definitions: Vec<StatDefinition>,
@@ -82,7 +84,7 @@ impl AppManager {
         Ok(Self {
             app_id,
             connected_steam,
-            definitions_loaded: false,
+            loaded_language: None,
             user_stats_received: false,
             achievement_definitions: vec![],
             stat_definitions: vec![],
@@ -281,8 +283,30 @@ impl AppManager {
         Ok(out)
     }
 
+    fn ensure_definitions(&mut self, language: &str) -> Result<(), SamError> {
+        if self.loaded_language.as_deref() != Some(language) {
+            self.load_definitions(language)?;
+        }
+        Ok(())
+    }
+
+    /// Schemas disagree on how they spell a language (`LATAM` vs `latam`), so the
+    /// global pick is matched loosely and answered with this schema's own spelling.
+    /// A language this app lacks falls back to the game's, not to english.
+    fn resolve_language(&self, language: &str, schema: &KeyValue) -> String {
+        if !language.is_empty()
+            && let Some(offered) = schema_languages(schema)
+                .into_iter()
+                .find(|l| l.eq_ignore_ascii_case(language))
+        {
+            return offered;
+        }
+        self.connected_steam.apps.get_current_game_language()
+    }
+
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs
-    pub fn load_definitions(&mut self) -> Result<(), SamError> {
+    /// `language` is a Steam schema language name; empty means the game's own.
+    pub fn load_definitions(&mut self, language: &str) -> Result<(), SamError> {
         self.request_current_stats()?;
         let steam_locator_lock = SteamLocator::global();
         let steam_locator = steam_locator_lock.read().unwrap();
@@ -324,7 +348,11 @@ impl AppManager {
             }
         };
 
-        let current_language = self.connected_steam.apps.get_current_game_language();
+        let current_language = self.resolve_language(language, &kv);
+        dev_println!(
+            "APPMAN",
+            "Reading schema in {current_language:?} (asked for {language:?})"
+        );
         let stats = kv.get(&self.app_id.to_string());
         let stats = stats.get("stats");
 
@@ -340,10 +368,10 @@ impl AppManager {
 
             // Schema in the new format?
             let type_node = stat.get("type");
-            if let KeyValueData::String(ref type_str) = type_node.data {
-                if let Ok(parsed) = type_str.parse::<UserStatType>() {
-                    type_ = parsed;
-                }
+            if let KeyValueData::String(ref type_str) = type_node.data
+                && let Ok(parsed) = type_str.parse::<UserStatType>()
+            {
+                type_ = parsed;
             }
 
             // Schema in the old format?
@@ -356,8 +384,7 @@ impl AppManager {
                     type_node.as_i32(0)
                 };
 
-                type_ = UserStatType::try_from(raw_type as u8)
-                    .unwrap_or_else(|_| UserStatType::Invalid);
+                type_ = UserStatType::try_from(raw_type as u8).unwrap_or(UserStatType::Invalid);
             }
 
             match type_ {
@@ -453,7 +480,7 @@ impl AppManager {
 
         self.stat_definitions = stat_definitions;
         self.achievement_definitions = achievement_definitions;
-        self.definitions_loaded = true;
+        self.loaded_language = Some(language.to_owned());
 
         Ok(())
     }
@@ -462,6 +489,7 @@ impl AppManager {
     pub fn get_achievements(
         &mut self,
         with_global_achieved: bool,
+        language: &str,
     ) -> Result<Vec<AchievementInfo>, SamError> {
         let mut global_stats_fetched = EResult::k_EResultFail;
         if with_global_achieved {
@@ -501,9 +529,7 @@ impl AppManager {
 
         let mut achievement_infos: Vec<AchievementInfo> = vec![];
 
-        if !self.definitions_loaded {
-            self.load_definitions()?;
-        }
+        self.ensure_definitions(language)?;
 
         for def in self.achievement_definitions.iter() {
             if def.id.is_empty() {
@@ -582,12 +608,10 @@ impl AppManager {
     }
 
     // Reference: https://github.com/gibbed/SteamAchievementManager/blob/master/SAM.Game/Manager.cs#L519
-    pub fn get_statistics(&mut self) -> Result<Vec<StatInfo>, SamError> {
+    pub fn get_statistics(&mut self, language: &str) -> Result<Vec<StatInfo>, SamError> {
         let mut statistics_info: Vec<StatInfo> = vec![];
 
-        if !self.definitions_loaded {
-            self.load_definitions()?;
-        }
+        self.ensure_definitions(language)?;
 
         for stat in self.stat_definitions.iter() {
             match stat {
@@ -769,7 +793,10 @@ impl AppManager {
     }
 
     pub fn unlock_all_achievements(&mut self) -> Result<(), SamError> {
-        let achievements = self.get_achievements(false)?;
+        // Only ids and flags are used here, so reuse whatever is already parsed
+        // rather than forcing a re-parse in another language.
+        let language = self.loaded_language.clone().unwrap_or_default();
+        let achievements = self.get_achievements(false, &language)?;
         let mut has_failures = false;
         for achievement in achievements {
             if achievement.is_achieved {

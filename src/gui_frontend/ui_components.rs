@@ -16,7 +16,7 @@
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_app_action_enabled;
 use crate::gui_frontend::i18n::{tr, tr_noop};
-use gtk::prelude::{BoxExt, ToVariant};
+use gtk::prelude::{BoxExt, SettingsExt, ToVariant};
 use gtk::{Label, License, MenuButton, Popover, PopoverMenu, PositionType, Spinner};
 
 #[cfg(not(feature = "adwaita"))]
@@ -261,26 +261,43 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
     menu_model.append_section(Some(tr("Appearance").as_str()), &theme_section);
 
     let language_menu = gtk::gio::Menu::new();
-    // Empty target = follow system locale; native names are intentionally untranslated.
-    let system_item = gtk::gio::MenuItem::new(
-        Some(tr("System default").as_str()),
-        Some("app.app-language"),
+    fill_language_menu(
+        &language_menu,
+        "app.app-language",
+        &tr("System default"),
+        crate::gui_frontend::i18n::LANGUAGES.iter().copied(),
     );
-    system_item.set_action_and_target_value(Some("app.app-language"), Some(&"".to_variant()));
-    language_menu.append_item(&system_item);
-    for (code, name) in crate::gui_frontend::i18n::LANGUAGES {
-        let item = gtk::gio::MenuItem::new(Some(name), Some("app.app-language"));
-        item.set_action_and_target_value(Some("app.app-language"), Some(&code.to_variant()));
-        language_menu.append_item(&item);
+    menu_model.append_submenu(Some(&bilingual_label(tr_noop("Language"))), &language_menu);
+}
+
+/// Native names are deliberately untranslated, so a language stays findable
+/// whatever the UI locale is.
+fn fill_language_menu<'a>(
+    menu: &gtk::gio::Menu,
+    action: &str,
+    default_label: &str,
+    entries: impl Iterator<Item = (&'a str, &'a str)>,
+) {
+    menu.remove_all();
+
+    let default_item = gtk::gio::MenuItem::new(Some(default_label), Some(action));
+    default_item.set_action_and_target_value(Some(action), Some(&"".to_variant()));
+    menu.append_item(&default_item);
+
+    for (target, name) in entries {
+        let item = gtk::gio::MenuItem::new(Some(name), Some(action));
+        item.set_action_and_target_value(Some(action), Some(&target.to_variant()));
+        menu.append_item(&item);
     }
-    let english = tr_noop("Language");
+}
+
+fn bilingual_label(english: &str) -> String {
     let native = tr(english);
-    let language_label = if native == english {
+    if native == english {
         native.to_string()
     } else {
         format!("{native} • {english}")
-    };
-    menu_model.append_submenu(Some(&language_label), &language_menu);
+    }
 }
 
 pub fn set_context_popover_to_app_list_context(
@@ -289,6 +306,83 @@ pub fn set_context_popover_to_app_list_context(
 ) {
     setup_app_list_popover_menu(menu_model);
     set_app_action_enabled(application, "refresh_achievements_list", false);
+}
+
+thread_local! {
+    /// Not threaded through the view: a game's languages are only known once its
+    /// schema has been read, long after the menu is built.
+    static ACHIEVEMENT_LANGUAGE_MENU: gtk::gio::Menu = gtk::gio::Menu::new();
+    static ACHIEVEMENT_LANGUAGES_FROM_FETCH: std::cell::Cell<bool> =
+        const { std::cell::Cell::new(false) };
+}
+
+/// Used until the fetch answers. The orchestrator may resolve a different Steam
+/// install than this process can see, so its answer wins whenever there is one.
+pub fn set_achievement_languages_provisional(languages: &[String]) {
+    if !ACHIEVEMENT_LANGUAGES_FROM_FETCH.with(std::cell::Cell::get) {
+        fill_achievement_language_menu(languages);
+    }
+}
+
+/// `gio::Menu` is a live model, so an already-open popover picks this up.
+pub fn set_achievement_languages(languages: &[String]) {
+    // Empty means unreadable, which is no better than our own empty read.
+    if languages.is_empty() {
+        return;
+    }
+    ACHIEVEMENT_LANGUAGES_FROM_FETCH.with(|f| f.set(true));
+    fill_achievement_language_menu(languages);
+}
+
+fn fill_achievement_language_menu(languages: &[String]) {
+    use crate::gui_frontend::gsettings::get_settings;
+    use crate::gui_frontend::i18n::STEAM_LANGUAGES;
+
+    // Schemas disagree on casing ("LATAM" vs "latam") and the setting is shared
+    // across games, so store the table's spelling and let the backend match loosely.
+    let mut entries: Vec<(&str, &str)> = STEAM_LANGUAGES
+        .iter()
+        .filter(|(code, _)| languages.iter().any(|l| l.eq_ignore_ascii_case(code)))
+        .map(|(code, name)| (*code, *name))
+        .collect();
+    entries.extend(
+        languages
+            .iter()
+            .filter(|l| {
+                !STEAM_LANGUAGES
+                    .iter()
+                    .any(|(code, _)| l.eq_ignore_ascii_case(code))
+            })
+            .map(|l| (l.as_str(), l.as_str())),
+    );
+
+    // A pick this game doesn't ship would leave the group with nothing selected,
+    // reading as "no preference". Carry it on a permanently disabled action so it
+    // draws selected but greyed. Exact match, as that is how GTK ticks a radio.
+    let picked = get_settings().string("achievement-language").to_string();
+    let unavailable = (!picked.is_empty() && !entries.iter().any(|(target, _)| *target == picked))
+        .then(|| {
+            STEAM_LANGUAGES
+                .iter()
+                .find(|(code, _)| code.eq_ignore_ascii_case(&picked))
+                .map_or(picked.clone(), |(_, name)| (*name).to_owned())
+        });
+
+    ACHIEVEMENT_LANGUAGE_MENU.with(|menu| {
+        fill_language_menu(
+            menu,
+            "app.achievement-language",
+            &tr("Game default"),
+            entries.into_iter(),
+        );
+
+        if let Some(name) = &unavailable {
+            let action = "app.achievement-language-unavailable";
+            let item = gtk::gio::MenuItem::new(Some(name), Some(action));
+            item.set_action_and_target_value(Some(action), Some(&picked.to_variant()));
+            menu.append_item(&item);
+        }
+    });
 }
 
 pub fn set_context_popover_to_app_details_context(
@@ -305,6 +399,15 @@ pub fn set_context_popover_to_app_details_context(
         Some("app.clear_all_stats_and_achievements"),
     );
     menu_model.append(Some(tr("About").as_str()), Some("app.about"));
+
+    ACHIEVEMENT_LANGUAGES_FROM_FETCH.with(|f| f.set(false));
+    fill_achievement_language_menu(&[]);
+    ACHIEVEMENT_LANGUAGE_MENU.with(|menu| {
+        menu_model.append_submenu(
+            Some(&bilingual_label(tr_noop("Achievement language"))),
+            menu,
+        );
+    });
 
     set_app_action_enabled(application, "refresh_app_list", false);
 }

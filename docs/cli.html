@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SamRewritten CLI — command-line Steam Achievement Manager</title>
+<meta name="description" content="How to use the SamRewritten command-line tool: list apps, achievements and stats as JSON, unlock and relock achievements, edit stats, idle apps, and import/export progress.">
+<meta name="keywords" content="Steam achievement CLI, unlock Steam achievements command line, SamRewritten CLI, Steam stats editor CLI, scriptable Steam Achievement Manager, JSON">
+<meta name="author" content="Paul Combal and SamRewritten contributors">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="theme-color" content="#0d0d12">
+<link rel="canonical" href="https://paulcombal.github.io/SamRewritten/cli.html">
+<link rel="icon" href="/SamRewritten/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/SamRewritten/icon_64.png">
+
+<!-- Open Graph -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="SamRewritten CLI — command-line Steam Achievement Manager">
+<meta property="og:description" content="How to use the SamRewritten command-line tool: list apps, achievements and stats as JSON, unlock and relock achievements, edit stats, idle apps, and import/export progress.">
+<meta property="og:url" content="https://paulcombal.github.io/SamRewritten/cli.html">
+<meta property="og:image" content="https://paulcombal.github.io/SamRewritten/img/og-card.png">
+<meta property="og:site_name" content="SamRewritten">
+<meta property="og:locale" content="en">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SamRewritten CLI — command-line Steam Achievement Manager">
+<meta name="twitter:description" content="How to use the SamRewritten command-line tool: list apps, achievements and stats as JSON, unlock and relock achievements, edit stats, and idle apps.">
+<meta name="twitter:image" content="https://paulcombal.github.io/SamRewritten/img/og-card.png">
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "SamRewritten CLI — command-line Steam Achievement Manager",
+  "description": "Reference and usage guide for the SamRewritten command-line tool, which manages Steam achievements and statistics without a graphical interface.",
+  "url": "https://paulcombal.github.io/SamRewritten/cli.html",
+  "inLanguage": "en",
+  "author": {
+    "@type": "Person",
+    "name": "Paul Combal"
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "SamRewritten",
+    "url": "https://paulcombal.github.io/SamRewritten/"
+  }
+}
+</script>
+
+<style>
+  :root {
+    --bg: #0d0d12;
+    --surface: #15151d;
+    --surface-2: #1b1b25;
+    --border: #25252f;
+    --border-soft: #1f1f29;
+    --text: #ededf2;
+    --muted: #9a9aab;
+    --accent: #7c93ff;
+    --accent-hover: #93a6ff;
+    --accent-soft: rgba(124, 147, 255, .14);
+    --btn: #4361ee;
+    --btn-hover: #5470f5;
+    --warn: #d9a441;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.25);
+    --maxw: 960px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  /* Nav */
+  .nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(13,13,18,.72);
+    backdrop-filter: saturate(160%) blur(12px);
+    -webkit-backdrop-filter: saturate(160%) blur(12px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .nav .wrap { display: flex; align-items: center; gap: 16px; height: 60px; }
+  .nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+  .nav .brand img { width: 26px; height: 26px; }
+  .nav .links { margin-left: auto; display: flex; align-items: center; gap: 22px; }
+  .nav .links a:not(.btn) { color: var(--muted); font-size: .94rem; font-weight: 500; }
+  .nav .links a:not(.btn):hover { color: var(--text); }
+  .nav .links .btn { padding: 8px 16px; font-size: .9rem; }
+  @media (max-width: 600px) { .nav .links .nav-link { display: none; } }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--btn); color: #fff;
+    padding: 12px 22px; border-radius: 10px;
+    font-weight: 600; font-size: 1rem; line-height: 1;
+    border: 1px solid transparent;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .btn:hover { background: var(--btn-hover); color: #fff; transform: translateY(-1px); }
+
+  /* Page header */
+  .page-head { padding: 56px 0 8px; }
+  .page-head h1 { font-size: clamp(1.9rem, 5vw, 2.7rem); margin: 0 0 10px; letter-spacing: -.03em; line-height: 1.1; }
+  .page-head .tagline { font-size: 1.1rem; color: var(--muted); margin: 0; max-width: 640px; }
+  .crumb { color: var(--muted); font-size: .9rem; margin: 0 0 14px; }
+
+  /* Sections */
+  section.block { padding: 44px 0; }
+  [id] { scroll-margin-top: 76px; }
+  section.block + section.block { border-top: 1px solid var(--border-soft); }
+  h2 { font-size: clamp(1.4rem, 3vw, 1.75rem); margin: 0 0 8px; letter-spacing: -.02em; }
+  h3 { font-size: 1.1rem; margin: 26px 0 8px; }
+  .lead { color: var(--muted); margin: 0 0 24px; }
+  .section-head { margin-bottom: 24px; }
+  p { margin: 0 0 14px; }
+  ul.plain { color: var(--muted); padding-left: 20px; margin: 0 0 14px; }
+  ul.plain li { margin-bottom: 6px; }
+  ul.plain strong { color: var(--text); font-weight: 600; }
+
+  code, pre { background: #0a0a0f; border: 1px solid var(--border); border-radius: 8px; font-family: var(--mono); }
+  code { padding: 2px 7px; font-size: .88em; }
+  pre { padding: 12px 14px; margin: 14px 0; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0; font-size: .86rem; line-height: 1.6; }
+  pre .c { color: var(--muted); }
+  kbd {
+    font-family: var(--mono); font-size: .82em; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 6px;
+  }
+
+  /* Table of contents */
+  .toc { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 18px 22px; }
+  .toc h2 { font-size: .82rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; }
+  .toc ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; }
+  .toc a { font-size: .95rem; }
+
+  /* Command cards */
+  .cmd {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: var(--radius); padding: 20px 22px; margin-bottom: 16px;
+  }
+  .cmd:hover { border-color: var(--border); }
+  .cmd h3 { margin: 0 0 12px; font-family: var(--mono); font-size: 1.02rem; color: var(--accent); font-weight: 600; }
+  .cmd .sig { margin: 0 0 12px; }
+  .cmd .sig code { display: block; padding: 10px 12px; font-size: .86rem; color: var(--text); }
+  .cmd p { color: var(--muted); }
+  .cmd p:last-child, .cmd pre:last-child { margin-bottom: 0; }
+  .cmd dl { margin: 0 0 14px; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
+  .cmd dt { font-family: var(--mono); font-size: .84rem; color: var(--text); white-space: nowrap; }
+  .cmd dd { margin: 0; color: var(--muted); font-size: .95rem; }
+
+  /* Callouts */
+  .callout {
+    border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    background: var(--surface); border-radius: 8px; padding: 14px 18px; margin: 18px 0;
+  }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout p { margin: 0; color: var(--muted); }
+  .callout p + p { margin-top: 10px; }
+  .callout strong { color: var(--text); }
+
+  /* Definition table */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border-soft); border-radius: var(--radius); }
+  table.defs { border-collapse: collapse; width: 100%; min-width: 520px; }
+  table.defs th, table.defs td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border-soft); font-weight: 500; vertical-align: top; }
+  table.defs thead th { color: var(--muted); font-weight: 600; font-size: .9rem; background: var(--surface); }
+  table.defs td:first-child { font-family: var(--mono); font-size: .84rem; white-space: nowrap; }
+  table.defs td { color: var(--muted); font-size: .95rem; }
+  table.defs tbody tr:last-child td { border-bottom: none; }
+
+  footer { border-top: 1px solid var(--border-soft); padding: 40px 0 56px; }
+  footer .wrap { text-align: center; color: var(--muted); font-size: .85rem; }
+  footer .links { margin-top: 12px; }
+  footer .links a { color: var(--muted); }
+  footer .links a:hover { color: var(--text); }
+
+  @media (max-width: 640px) {
+    .toc ul { grid-template-columns: 1fr; }
+    section.block { padding: 36px 0; }
+    .page-head { padding: 40px 0 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <img src="img/icon_256.png" alt="" width="256" height="256">
+      SamRewritten
+    </a>
+    <div class="links">
+      <a class="nav-link" href="index.html#features">Features</a>
+      <a class="nav-link" href="index.html#install">Install</a>
+      <a class="nav-link" href="index.html#faq">FAQ</a>
+      <a class="btn" href="https://github.com/PaulCombal/SamRewritten/releases/latest">Download</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+  <header class="page-head">
+    <div class="wrap">
+      <p class="crumb"><a href="index.html">SamRewritten</a> &rsaquo; CLI</p>
+      <h1>Using the SamRewritten CLI</h1>
+      <p class="tagline">
+        A scriptable Steam Achievement Manager for your terminal. Same engine as the graphical app,
+        no GTK required, and every command speaks JSON.
+      </p>
+    </div>
+  </header>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="toc">
+        <h2>On this page</h2>
+        <ul>
+          <li><a href="#get">Getting the CLI</a></li>
+          <li><a href="#basics">How it behaves</a></li>
+          <li><a href="#discover">Finding IDs</a></li>
+          <li><a href="#achievements">Locking and unlocking</a></li>
+          <li><a href="#stats">Editing statistics</a></li>
+          <li><a href="#languages">Reading names in another language</a></li>
+          <li><a href="#idle">Idling apps</a></li>
+          <li><a href="#backup">Import and export</a></li>
+          <li><a href="#recipes">Scripting recipes</a></li>
+          <li><a href="#env">Environment variables</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="get">
+    <div class="wrap">
+      <div class="section-head"><h2>Getting the CLI</h2></div>
+      <p class="lead">
+        The CLI is a <strong>separate binary</strong> from the graphical app — it is not a flag you pass to the GUI.
+        Grab it from the <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">Releases page</a>
+        or install the Snap.
+      </p>
+
+      <div class="table-wrap">
+        <table class="defs">
+          <thead>
+            <tr><th>Platform</th><th>What to run</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Linux (AppImage)</td>
+              <td>Download <code>samrewritten-cli.AppImage</code>, then <code>chmod +x samrewritten-cli.AppImage</code> and run it.</td>
+            </tr>
+            <tr>
+              <td>Linux (Snap)</td>
+              <td><code>samrewritten.samrewritten-cli</code>. The Snap reuses the Steam folder you granted through the GUI, so run a GUI command once before using the CLI.</td>
+            </tr>
+            <tr>
+              <td>Windows</td>
+              <td><code>samrewritten-cli.exe</code>, in the installation folder or the portable ZIP. The installer deliberately creates no shortcut for it.</td>
+            </tr>
+            <tr>
+              <td>From source</td>
+              <td><code>cargo build --release --no-default-features --features cli</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:18px">
+        The examples below call the binary <code>samrewritten</code>. Substitute whichever name applies to your
+        install, or add an alias:
+      </p>
+      <pre><code>alias samrewritten=~/Downloads/samrewritten-cli.AppImage</code></pre>
+
+      <p>Every command supports <code>--help</code>, and <code>samrewritten --help</code> lists them all.</p>
+    </div>
+  </section>
+
+  <section class="block" id="basics">
+    <div class="wrap">
+      <div class="section-head"><h2>How it behaves</h2></div>
+      <ul class="plain">
+        <li><strong>Steam must be running and signed in.</strong> The CLI talks to your live Steam client; it does not log in on its own.</li>
+        <li><strong>Results go to stdout as JSON, diagnostics go to stderr.</strong> That means you can pipe straight into <code>jq</code> and keep the noise on your terminal.</li>
+        <li><strong>Exit status is 0 on success, non-zero on failure</strong>, so <code>&amp;&amp;</code> and <code>set -e</code> work as you would expect.</li>
+        <li><strong>You will briefly appear in-game.</strong> Any command that reads or changes a game's progress opens a short Steam session for that app, exactly as the graphical version does.</li>
+        <li><strong>Commands are one-shot.</strong> Each invocation starts a backend process, does its work, and shuts down — <code>idle</code> being the one that stays alive on purpose.</li>
+      </ul>
+
+      <div class="callout warn">
+        <p><strong>Using this on multiplayer games is strongly discouraged.</strong> You alone are responsible for
+        what happens to your Steam account; see the end-user agreement in the
+        <a href="https://github.com/PaulCombal/SamRewritten#end-user-agreement">README</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="discover">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Finding IDs</h2>
+        <p class="lead">
+          Everything else takes an <em>App ID</em> and, usually, achievement or stat <em>API names</em> — the
+          internal identifiers, not the titles you see in the Steam overlay. These three commands are how you find them.
+        </p>
+      </div>
+
+      <article class="cmd" id="list-apps">
+        <h3>list-apps</h3>
+        <p class="sig"><code>samrewritten list-apps [--with-achievements] [--with-playtime]</code></p>
+        <p>Lists every app on your account.</p>
+        <dl>
+          <dt>--with-achievements</dt>
+          <dd>Adds <code>achievement_count</code> and <code>unlocked_achievement_count</code>. Slower: it has to query stats for every app you own.</dd>
+          <dt>--with-playtime</dt>
+          <dd>Adds <code>playtime_minutes</code> and <code>last_played</code>.</dd>
+        </dl>
+<pre><code>$ samrewritten list-apps --with-playtime --with-achievements
+[
+  {
+    "app_id": 440,
+    "app_name": "Team Fortress 2",
+    "image_url": "https://.../capsule_231x87.jpg",
+    "app_type": "App",
+    "developer": "Valve",
+    "metacritic_score": 92,
+    "playtime_minutes": 338,
+    "last_played": 1785521891,
+    "achievement_count": 520,
+    "unlocked_achievement_count": 0
+  },
+  ...
+]</code></pre>
+        <p><code>app_type</code> is one of <code>App</code>, <code>Mod</code>, <code>Demo</code> or <code>Junk</code> — the last covers
+        soundtracks, dedicated servers and other entries you probably want to filter out.</p>
+      </article>
+
+      <article class="cmd" id="list-achievements">
+        <h3>list-achievements</h3>
+        <p class="sig"><code>samrewritten list-achievements &lt;APP_ID&gt; [--language &lt;LANGUAGE&gt;]</code></p>
+        <p>Lists an app's achievements and whether you have each one.</p>
+<pre><code>$ samrewritten list-achievements 440
+[
+  {
+    "id": "TF_SCOUT_KILL_IN_DODGE_COOLDOWN",
+    "is_achieved": false,
+    "unlock_time": null,
+    "permission": 0,
+    "icon_normal": "https://.../7acbb467.jpg",
+    "icon_locked": "https://.../bf906416.jpg",
+    "name": "Retire the Runner",
+    "description": "Kill a Scout while they are under the effect of Crit-a-Cola.",
+    "global_achieved_percent": 11.3
+  },
+  ...
+]</code></pre>
+        <p>
+          <code>id</code> is the API name you pass to <code>unlock</code> and <code>lock</code>.
+          A non-zero <code>permission</code> means Steam marks the achievement as protected and will refuse to change it.
+          <code>unlock_time</code> is a Unix timestamp, or <code>null</code> if the achievement is still locked.
+        </p>
+      </article>
+
+      <article class="cmd" id="list-statistics">
+        <h3>list-statistics</h3>
+        <p class="sig"><code>samrewritten list-statistics &lt;APP_ID&gt; [--language &lt;LANGUAGE&gt;]</code></p>
+        <p>Lists an app's statistics and their current values. Each entry is tagged <code>Integer</code> or <code>Float</code>,
+        which is what decides how a new value is written.</p>
+<pre><code>$ samrewritten list-statistics 440
+[
+  {
+    "Integer": {
+      "id": "TF_PYRO_DEFEND_POINTS_STAT",
+      "app_id": 440,
+      "display_name": "TF_PYRO_DEFEND_POINTS_STAT",
+      "is_increment_only": false,
+      "permission": 0,
+      "original_value": 0,
+      "int_value": 0,
+      "min_value": -2147483648,
+      "max_value": 2147483647
+    }
+  },
+  ...
+]</code></pre>
+        <p>Float stats have the same shape with <code>float_value</code> in place of <code>int_value</code>.
+        Games often leave <code>display_name</code> equal to the API name, as Team Fortress 2 does here.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="block" id="achievements">
+    <div class="wrap">
+      <div class="section-head"><h2>Locking and unlocking achievements</h2></div>
+
+      <article class="cmd" id="unlock">
+        <h3>unlock</h3>
+        <p class="sig"><code>samrewritten unlock &lt;APP_ID&gt; &lt;IDS&gt;...</code></p>
+        <p>Unlocks one or more achievements, then saves. Prints one result object per ID.</p>
+<pre><code>$ samrewritten unlock 480 ACH_WIN_ONE_GAME ACH_WIN_100_GAMES
+[
+  { "id": "ACH_WIN_ONE_GAME", "success": true },
+  { "id": "ACH_WIN_100_GAMES", "success": true }
+]</code></pre>
+      </article>
+
+      <article class="cmd" id="lock">
+        <h3>lock</h3>
+        <p class="sig"><code>samrewritten lock &lt;APP_ID&gt; &lt;IDS&gt;...</code></p>
+        <p>The reverse: re-locks the listed achievements. Same output shape.</p>
+      </article>
+
+      <article class="cmd" id="unlock-all">
+        <h3>unlock-all</h3>
+        <p class="sig"><code>samrewritten unlock-all &lt;APP_ID&gt;</code></p>
+        <p>Unlocks every achievement the app defines.</p>
+<pre><code>$ samrewritten unlock-all 480
+{"success":true}</code></pre>
+      </article>
+
+      <article class="cmd" id="lock-all">
+        <h3>lock-all</h3>
+        <p class="sig"><code>samrewritten lock-all &lt;APP_ID&gt;</code></p>
+        <p>Resets the app to a factory state.</p>
+        <div class="callout warn">
+          <p><strong>This clears statistics as well as achievements</strong>, returning every stat to its default
+          value. If you only meant to re-lock achievements, use <code>lock</code> with a list of IDs instead — and
+          consider taking an <a href="#backup">export</a> first.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="block" id="stats">
+    <div class="wrap">
+      <div class="section-head"><h2>Editing statistics</h2></div>
+
+      <article class="cmd" id="set-stat">
+        <h3>set-stat</h3>
+        <p class="sig"><code>samrewritten set-stat &lt;APP_ID&gt; &lt;STAT_ID&gt; &lt;VALUE&gt;</code></p>
+        <p>
+          Writes a new value for one statistic. You do not have to say whether the stat is an integer or a
+          float — the command looks it up in the game's schema and writes it accordingly, rejecting a value
+          that does not fit.
+        </p>
+<pre><code>$ samrewritten set-stat 440 TF_PYRO_DEFEND_POINTS_STAT 250
+{"id":"TF_PYRO_DEFEND_POINTS_STAT","success":true}
+
+<span class="c">$ samrewritten set-stat 440 TF_PYRO_DEFEND_POINTS_STAT 3.7
+Stat TF_PYRO_DEFEND_POINTS_STAT takes an integer: invalid digit found in string</span></code></pre>
+        <p>
+          Stats that Steam marks as protected are refused, the same way the graphical version greys them out.
+          Note that <code>set-stat</code> does not second-guess a game's <code>is_increment_only</code> flag the
+          way <code>import</code> does: it asks Steam for the write and reports what came back, so lowering such
+          a stat may simply not take.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="block" id="languages">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Reading names in another language</h2>
+        <p class="lead">
+          Achievement titles, descriptions and stat display names come from a schema Steam caches locally, and
+          that file usually ships every language the game was translated into. By default you get the game's own
+          language; <code>--language</code> picks a different one.
+        </p>
+      </div>
+
+      <article class="cmd" id="list-languages">
+        <h3>list-languages</h3>
+        <p class="sig"><code>samrewritten list-languages &lt;APP_ID&gt;</code></p>
+        <p>Shows what that particular game offers. This one reads the cached schema directly, so it works
+        without Steam running and without starting the game.</p>
+<pre><code>$ samrewritten list-languages 440
+[
+  "LATAM",
+  "brazilian",
+  "bulgarian",
+  ...
+  "tchinese",
+  "thai",
+  "turkish",
+  "ukrainian"
+]
+
+<span class="c">$ for lang in english french japanese; do
+    samrewritten list-achievements 440 --language $lang \
+      | jq -r --arg l "$lang" '.[] | select(.id == "TF_HEAVY_DAMAGE_TAKEN") | "\($l): \(.name)"'
+  done</span>
+english: Iron Kurtain
+french: Rideau de fer
+japanese: 鉄のカーテン</code></pre>
+        <p>
+          Matching ignores case, so <code>--language FRENCH</code> works too. A name the game does not ship is
+          rejected outright rather than quietly falling back, and the error lists what is actually available:
+        </p>
+<pre><code><span class="c">$ samrewritten list-achievements 440 --language klingon
+App 440 has no 'klingon' in its schema. Available: LATAM, brazilian, bulgarian, ...</span></code></pre>
+        <p>
+          <code>--language</code> only affects display text. IDs never change, so a script that filters on
+          <code>id</code> behaves identically in any language. Exports are always written in the game's own
+          language, which keeps exported files comparable no matter who produced them.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="block" id="idle">
+    <div class="wrap">
+      <div class="section-head"><h2>Idling apps</h2></div>
+
+      <article class="cmd">
+        <h3>idle</h3>
+        <p class="sig"><code>samrewritten idle &lt;APP_ID&gt;</code></p>
+        <p>
+          Makes you appear in-game until you stop it. Unlike every other command this one stays in the
+          foreground; press <kbd>Ctrl+C</kbd> (or send <code>SIGTERM</code>) and it shuts the session down cleanly.
+        </p>
+<pre><code>$ samrewritten idle 440
+Idling app 440. Press Ctrl+C to stop.</code></pre>
+      </article>
+    </div>
+  </section>
+
+  <section class="block" id="backup">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Import and export</h2>
+        <p class="lead">
+          Snapshots use the same JSON format as the graphical version, so a file taken in one can be restored
+          by the other.
+        </p>
+      </div>
+
+      <article class="cmd" id="export">
+        <h3>export</h3>
+        <p class="sig"><code>samrewritten export &lt;APP_IDS&gt;...</code></p>
+        <p>Writes a snapshot of one or more apps to stdout. Progress is reported on stderr, so redirecting
+        stdout gives you a clean file.</p>
+<pre><code>$ samrewritten export 440 480 &gt; backup.json
+Exported 1/2
+Exported 2/2
+
+$ head -13 backup.json
+{
+  "format_version": 1,
+  "exported_at": "2026-07-31T18:18:25Z",
+  "apps": [
+    {
+      "app_id": 480,
+      "app_name": "",
+      "achievements": [
+        {
+          "id": "ACH_WIN_ONE_GAME",
+          "is_achieved": true,
+          "permission": 0
+        },
+        ...</code></pre>
+      </article>
+
+      <article class="cmd" id="import">
+        <h3>import</h3>
+        <p class="sig"><code>samrewritten import &lt;FILE&gt; [--app-id &lt;APP_ID&gt;]</code></p>
+        <p>
+          Restores a snapshot. Pass <code>--app-id</code> to apply just one app out of a file covering several.
+          Protected achievements and stats are skipped rather than failing the run, and the summary names them.
+        </p>
+<pre><code>$ samrewritten import backup.json --app-id 480
+Imported 1/1
+[
+  {
+    "app_id": 480,
+    "achievements_applied": 7,
+    "stats_applied": 0,
+    "skipped_protected": [],
+    "skipped_unwriteable": [],
+    "errors": [],
+    "reset_would_help": false
+  }
+]</code></pre>
+        <p>
+          <code>reset_would_help</code> is a hint for one specific case: the snapshot wanted to lower a stat the
+          game only ever lets increase. Running <code>lock-all</code> first, then importing again, gets you there —
+          which is why it is only set when nothing else in the run failed outright.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="block" id="recipes">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Scripting recipes</h2>
+        <p class="lead">
+          All of these use <a href="https://jqlang.github.io/jq/">jq</a>. Diagnostics land on stderr, so nothing
+          needs filtering out of the pipe.
+        </p>
+      </div>
+
+      <h3>List what you are still missing in a game</h3>
+<pre><code>samrewritten list-achievements 440 \
+  | jq -r '.[] | select(.is_achieved | not) | "\(.id)\t\(.name)"'</code></pre>
+
+      <h3>Unlock only the achievements most players already have</h3>
+      <p>A gentler alternative to <code>unlock-all</code>: everything earned by more than half of all players.</p>
+<pre><code>samrewritten unlock 440 $(
+  samrewritten list-achievements 440 \
+    | jq -r '.[] | select(.global_achieved_percent &gt; 50) | .id'
+)</code></pre>
+
+      <h3>Find the games you own that have achievements</h3>
+<pre><code>samrewritten list-apps --with-achievements \
+  | jq -r '.[] | select(.app_type == "App" and .achievement_count &gt; 0)
+           | "\(.app_id)\t\(.unlocked_achievement_count)/\(.achievement_count)\t\(.app_name)"'</code></pre>
+
+      <h3>Back up a handful of games before experimenting</h3>
+<pre><code>samrewritten export 440 480 570 &gt; backup-$(date +%F).json</code></pre>
+      <p>
+        You can feed the whole library in the same way, but bear in mind each app is opened in turn, so a large
+        account takes a while.
+      </p>
+    </div>
+  </section>
+
+  <section class="block" id="env">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Environment variables</h2>
+        <p class="lead">Rarely needed, but useful when detection guesses wrong or you keep several Steam installs.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="defs">
+          <thead>
+            <tr><th>Variable</th><th>Effect</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>SAM_STEAM_INSTALL_ROOT</td>
+              <td>Linux only. Use this Steam installation instead of the detected one — handy when a Snap, Flatpak and native Steam coexist on the same machine.</td>
+            </tr>
+            <tr>
+              <td>SAM_STEAMCLIENT_PATH</td>
+              <td>Linux only. Load this specific <code>steamclient.so</code>.</td>
+            </tr>
+            <tr>
+              <td>SAM_APP_LIST_URL</td>
+              <td>Fetch the app list from a different URL.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <pre><code>SAM_STEAM_INSTALL_ROOT=~/snap/steam/common/.local/share/Steam samrewritten list-apps</code></pre>
+      <p>
+        Something not behaving as documented? Please
+        <a href="https://github.com/PaulCombal/SamRewritten/issues">open an issue</a>.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>
+      SamRewritten and its contributors are not affiliated with Valve Corporation or Microsoft.
+      Steam and Windows are trademarks of their respective owners. This software is provided as a Proof-of-Concept;
+      you alone are responsible for the management of your Steam account.
+    </p>
+    <p class="links"><a href="index.html">Home</a> &middot;
+       <a href="https://github.com/PaulCombal/SamRewritten">GitHub</a> &middot;
+       <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">Download</a> &middot;
+       <a href="https://github.com/PaulCombal/SamRewritten/issues">Report an issue</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -103,6 +103,14 @@ pub fn set_app_action_enabled(application: &MainApplication, action_name: &str, 
     }
 }
 
+/// A refresh cancels a running timed unlock, and a language change goes through a
+/// refresh, so both come off the menu while the timed view is up.
+pub fn set_timed_unlock_actions_enabled(application: &MainApplication, enabled: bool) {
+    set_app_action_enabled(application, "refresh_achievements_list", enabled);
+    set_app_action_enabled(application, "clear_all_stats_and_achievements", enabled);
+    set_app_action_enabled(application, "achievement-language", enabled);
+}
+
 pub fn set_bulk_actions_enabled(application: &MainApplication, enabled: bool) {
     set_app_action_enabled(application, "unlock_all_apps", enabled);
     set_app_action_enabled(application, "lock_all_apps", enabled);

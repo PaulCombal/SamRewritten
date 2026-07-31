@@ -16,7 +16,8 @@
 use crate::backend::app_lister::{AppLister, fetch_achievement_counts};
 use crate::backend::connected_steam::ConnectedSteam;
 use crate::backend::local_config::parse_localconfig;
-use crate::backend::local_stats::LocalIndex;
+use crate::backend::local_stats::{LocalIndex, read_schema_languages};
+use crate::backend::orchestrator_client::AppProgress;
 use crate::backend::progress_io::{MAX_CONCURRENT_APPS, run_command_on_apps_concurrent};
 use crate::backend::stat_definitions::{AchievementInfo, StatInfo};
 use crate::backend::user_unlock_times;
@@ -164,11 +165,20 @@ fn ensure_app_launched(
 fn fetch_child_progress(
     ipc: &mut IpcClient,
     app_id: u32,
-) -> Result<(Vec<AchievementInfo>, Vec<StatInfo>), SamError> {
-    let achievements =
-        ipc.request_response::<Vec<AchievementInfo>, _>(&SteamCommand::GetAchievements(app_id))?;
-    let stats = ipc.request_response::<Vec<StatInfo>, _>(&SteamCommand::GetStats(app_id))?;
-    Ok((achievements, stats))
+    language: &str,
+) -> Result<AppProgress, SamError> {
+    let achievements = ipc.request_response::<Vec<AchievementInfo>, _>(
+        &SteamCommand::GetAchievements(app_id, language.to_owned()),
+    )?;
+    let stats = ipc.request_response::<Vec<StatInfo>, _>(&SteamCommand::GetStats(
+        app_id,
+        language.to_owned(),
+    ))?;
+    Ok(AppProgress {
+        achievements,
+        stats,
+        languages: read_schema_languages(app_id),
+    })
 }
 
 /// Forward `command` to the per-app child process for `app_id` and proxy its
@@ -385,10 +395,10 @@ fn process_command(
             }
         }
 
-        SteamCommand::GetAchievementsAndStats(app_id, launch) => {
+        SteamCommand::GetAchievementsAndStats(app_id, launch, language) => {
             dev_println!(
                 "ORCH",
-                "GetAchievementsAndStats {} (launch={launch})",
+                "GetAchievementsAndStats {} (launch={launch}, language={language})",
                 app_id
             );
 
@@ -396,19 +406,17 @@ fn process_command(
             if app_id == 0 {
                 send(
                     tx,
-                    &SteamResponse::Success((
-                        Vec::<AchievementInfo>::new(),
-                        Vec::<StatInfo>::new(),
-                    )),
+                    &SteamResponse::Success(AppProgress {
+                        achievements: vec![],
+                        stats: vec![],
+                        languages: vec![],
+                    }),
                 );
                 return true;
             }
 
             if launch && let Err(e) = ensure_app_launched(app_id, children_processes) {
-                send(
-                    tx,
-                    &SteamResponse::<(Vec<AchievementInfo>, Vec<StatInfo>)>::Error(e),
-                );
+                send(tx, &SteamResponse::<AppProgress>::Error(e));
                 return true;
             }
 
@@ -417,14 +425,12 @@ fn process_command(
             let Some((ipc, _)) = children_processes.get_mut(&app_id) else {
                 send(
                     tx,
-                    &SteamResponse::<(Vec<AchievementInfo>, Vec<StatInfo>)>::Error(
-                        SamError::AppMismatchError,
-                    ),
+                    &SteamResponse::<AppProgress>::Error(SamError::AppMismatchError),
                 );
                 return true;
             };
 
-            match fetch_child_progress(ipc, app_id) {
+            match fetch_child_progress(ipc, app_id, &language) {
                 Ok(progress) => send(tx, &SteamResponse::Success(progress)),
                 Err(_) => send_raw(tx, &SOCKET_ERROR_RESPONSE),
             }
@@ -509,7 +515,7 @@ fn process_command(
             send(tx, &SteamResponse::Success(running));
         }
 
-        SteamCommand::GetAchievements(app_id) => {
+        SteamCommand::GetAchievements(app_id, language) => {
             #[cfg(debug_assertions)]
             if app_id == 0 {
                 let mut ach_infos = vec![];
@@ -537,14 +543,14 @@ fn process_command(
 
             forward_to_child(
                 app_id,
-                SteamCommand::GetAchievements(app_id),
+                SteamCommand::GetAchievements(app_id, language),
                 tx,
                 children_processes,
                 "load achievements",
             );
         }
 
-        SteamCommand::GetStats(app_id) => {
+        SteamCommand::GetStats(app_id, language) => {
             #[cfg(debug_assertions)]
             if app_id == 0 {
                 send(tx, &SteamResponse::<Vec<StatInfo>>::Success(vec![]));
@@ -553,7 +559,7 @@ fn process_command(
 
             forward_to_child(
                 app_id,
-                SteamCommand::GetStats(app_id),
+                SteamCommand::GetStats(app_id, language),
                 tx,
                 children_processes,
                 "load stats",

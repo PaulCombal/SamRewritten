@@ -41,7 +41,7 @@ impl BidirChild {
         };
         let (parent_to_child_tx, parent_to_child_rx) = make_pipe()?;
         let (child_to_parent_tx, child_to_parent_rx) = make_pipe()?;
-        
+
         let process = match command
             .arg(format!("--tx={}", child_to_parent_tx.as_raw_fd()))
             .arg(format!("--rx={}", parent_to_child_rx.as_raw_fd()))

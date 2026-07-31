@@ -54,7 +54,7 @@
   "description": "A free, open-source Steam Achievement Manager for Linux and Windows. Unlock and relock Steam achievements, edit game stats in real time, schedule achievement unlocks, and idle apps. Includes a GTK graphical interface and a command-line tool.",
   "url": "https://paulcombal.github.io/SamRewritten/",
   "downloadUrl": "https://github.com/PaulCombal/SamRewritten/releases",
-  "softwareVersion": "1.4.6",
+  "softwareVersion": "1.4.7",
   "license": "https://github.com/PaulCombal/SamRewritten/blob/master/LICENSE",
   "image": [
     "https://paulcombal.github.io/SamRewritten/img/og-card.png",
@@ -137,7 +137,7 @@
       "name": "Can I use SamRewritten from the command line?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. SamRewritten includes a CLI that does not require GTK. It can list apps, achievements and stats, lock/unlock achievements in bulk, import/export as JSON, and idle apps."
+        "text": "Yes. SamRewritten includes a CLI that does not require GTK. It can list apps, achievements and stats, lock/unlock achievements in bulk, edit stat values, import/export as JSON, and idle apps. Full documentation is at https://paulcombal.github.io/SamRewritten/cli.html"
       }
     }
   ]
@@ -367,6 +367,7 @@
       <a class="nav-link" href="#features">Features</a>
       <a class="nav-link" href="#compare">Compare</a>
       <a class="nav-link" href="#install">Install</a>
+      <a class="nav-link" href="cli.html">CLI</a>
       <a class="nav-link" href="#faq">FAQ</a>
       <a class="btn" href="https://github.com/PaulCombal/SamRewritten/releases/latest">Download</a>
     </div>
@@ -439,7 +440,7 @@
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Idle apps: appear in-game until you toggle it off</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Light and dark themes</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Translated into French, Spanish, Japanese, and Brazilian Portuguese (in addition to English)</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Full-featured CLI that does not require GTK</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span>Full-featured CLI that does not require GTK (<a href="cli.html">read the guide</a>)</span></li>
       </ul>
     </div>
   </section>
@@ -580,7 +581,8 @@
       <details>
         <summary>Can I use SamRewritten from the command line?</summary>
         <p>Yes. The CLI does not require GTK and can list apps/achievements/stats, lock/unlock in bulk,
-          import/export JSON, and idle apps.</p>
+          edit stats, import/export JSON, and idle apps. Every command prints JSON, so it scripts well —
+          see the <a href="cli.html">CLI guide</a> for the full reference.</p>
       </details>
     </div>
   </section>
@@ -616,7 +618,11 @@
     </p>
     <p class="links"><a href="https://github.com/PaulCombal/SamRewritten">GitHub</a> &middot;
        <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">Download</a> &middot;
+       <a href="cli.html">CLI guide</a> &middot;
        <a href="https://github.com/PaulCombal/SamRewritten/issues">Report an issue</a></p>
+    <p class="links"><a href="zh-hans/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a> &middot;
+       <a href="zh-hant/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a> &middot;
+       <a href="sitemap.xml">Sitemap</a></p>
   </div>
 </footer>
 

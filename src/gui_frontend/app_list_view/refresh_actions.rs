@@ -13,9 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+use super::PrefetchedProgress;
 use super::achievement_loader::AchievementLoader;
 use crate::gui_frontend::MainApplication;
-use crate::gui_frontend::application_actions::set_app_action_enabled;
+use crate::gui_frontend::application_actions::{
+    set_app_action_enabled, set_timed_unlock_actions_enabled,
+};
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::gobjects::stat::GStatObject;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
@@ -23,13 +26,14 @@ use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::request::{
     AppProgress, GetAchievementsAndStats, GetRunningApps, GetSubscribedAppList, Request, ResetStats,
 };
+use crate::gui_frontend::ui_components::set_achievement_languages;
 use crate::utils::format::format_achievement_progress;
 use crate::utils::ipc_types::SamError;
-use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
+use gtk::gio::{ListStore, Settings, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{GridView, Label, ScrolledWindow, SearchEntry, Stack, glib};
-use std::cell::{Cell, RefCell};
+use std::cell::Cell;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
@@ -191,7 +195,8 @@ pub fn create_refresh_achievements_action(
     app_stack: &Stack,
     app_achievements_stack: &Stack,
     cancel_timed_unlock: &Arc<AtomicBool>,
-    prefetched_progress: &Rc<RefCell<Option<AppProgress>>>,
+    prefetched_progress: &PrefetchedProgress,
+    settings: &Settings,
 ) -> SimpleAction {
     let action_refresh_achievements_list = SimpleAction::new("refresh_achievements_list", None);
     action_refresh_achievements_list.set_enabled(false);
@@ -218,7 +223,14 @@ pub fn create_refresh_achievements_action(
         cancel_timed_unlock,
         #[strong]
         prefetched_progress,
+        #[strong]
+        settings,
         move |_, _| {
+            // Before the teardown below, which would leave nothing to rebuild from.
+            let Some(app_id_copy) = app_id.get() else {
+                return;
+            };
+
             app_stack.set_visible_child_name("loading");
             set_app_action_enabled(&application, "refresh_achievements_list", false);
             app_achievements_model.remove_all();
@@ -226,13 +238,23 @@ pub fn create_refresh_achievements_action(
             cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
             app_achievements_stack.set_visible_child_name("manual");
 
-            let prefetched = prefetched_progress.borrow_mut().take();
-            let app_id_copy = app_id.get().unwrap();
+            let language = settings.string("achievement-language").to_string();
+            // The slot is global and a late prefetch can outlive the page it was
+            // started from, so a payload only counts if it is this app's and current.
+            let prefetched = prefetched_progress
+                .borrow_mut()
+                .take()
+                .filter(|(fetched_for, fetched_in, _)| {
+                    *fetched_for == app_id_copy && *fetched_in == language
+                })
+                .map(|(_, _, progress)| progress);
+            let requested_language = language.clone();
             let handle = spawn_blocking(move || match prefetched {
                 Some(progress) => Ok(progress),
                 None => GetAchievementsAndStats {
                     app_id: app_id_copy,
                     launch: false,
+                    language,
                 }
                 .request(),
             });
@@ -240,43 +262,66 @@ pub fn create_refresh_achievements_action(
             MainContext::default().spawn_local(clone!(
                 #[strong]
                 app_unlocked_achievements_count,
+                #[strong]
+                settings,
+                #[strong]
+                app_id,
                 async move {
-                    let Ok(Ok((achievements, stats))) = handle.await else {
-                        return app_stack.set_visible_child_name("failed");
-                    };
+                    let result = handle.await;
 
-                    let achievement_len = achievements.len();
-                    let stat_len = stats.len();
-                    let achievement_unlocked_len =
-                        achievements.iter().filter(|ach| ach.is_achieved).count();
-                    app_unlocked_achievements_count.set(achievement_unlocked_len);
-
-                    app_stats_count_value.set_label(&format!("{stat_len}"));
-                    app_achievement_count_value.set_label(&format_achievement_progress(
-                        achievement_unlocked_len,
-                        achievement_len,
-                    ));
-
-                    let objects: Vec<GAchievementObject> = achievements
-                        .into_iter()
-                        .map(GAchievementObject::new)
-                        .collect();
-                    app_achievements_model.extend_from_slice(&objects);
-
-                    let objects: Vec<GStatObject> =
-                        stats.into_iter().map(GStatObject::new).collect();
-                    app_stat_model.extend_from_slice(&objects);
-
-                    if achievement_len > 0 {
-                        app_stack.set_visible_child_name("achievements");
-                    } else if stat_len > 0 {
-                        app_stack.set_visible_child_name("stats");
-                    } else {
-                        app_stack.set_visible_child_name("empty");
+                    // Another game may own the models by now.
+                    if app_id.get() != Some(app_id_copy) {
+                        return;
                     }
 
-                    set_app_action_enabled(&application, "refresh_achievements_list", true);
-                    set_app_action_enabled(&application, "clear_all_stats_and_achievements", true);
+                    if let Ok(Ok(AppProgress {
+                        achievements,
+                        stats,
+                        languages,
+                    })) = result
+                    {
+                        set_achievement_languages(&languages);
+
+                        let achievement_len = achievements.len();
+                        let stat_len = stats.len();
+                        let achievement_unlocked_len =
+                            achievements.iter().filter(|ach| ach.is_achieved).count();
+                        app_unlocked_achievements_count.set(achievement_unlocked_len);
+
+                        app_stats_count_value.set_label(&format!("{stat_len}"));
+                        app_achievement_count_value.set_label(&format_achievement_progress(
+                            achievement_unlocked_len,
+                            achievement_len,
+                        ));
+
+                        let objects: Vec<GAchievementObject> = achievements
+                            .into_iter()
+                            .map(GAchievementObject::new)
+                            .collect();
+                        app_achievements_model.extend_from_slice(&objects);
+
+                        let objects: Vec<GStatObject> =
+                            stats.into_iter().map(GStatObject::new).collect();
+                        app_stat_model.extend_from_slice(&objects);
+
+                        if achievement_len > 0 {
+                            app_stack.set_visible_child_name("achievements");
+                        } else if stat_len > 0 {
+                            app_stack.set_visible_child_name("stats");
+                        } else {
+                            app_stack.set_visible_child_name("empty");
+                        }
+                    } else {
+                        app_stack.set_visible_child_name("failed");
+                    }
+
+                    set_timed_unlock_actions_enabled(&application, true);
+
+                    // Disabled for the whole round-trip, so a language picked
+                    // meanwhile was swallowed. Honour it now.
+                    if settings.string("achievement-language") != requested_language {
+                        application.activate_action("refresh_achievements_list", None);
+                    }
                 }
             ));
         }
@@ -339,12 +384,16 @@ pub fn create_clear_all_action(
                         return;
                     }
 
+                    // The dialog was awaited, so the page may have been left since.
+                    let Some(app_id_copy) = app_id.get() else {
+                        return;
+                    };
+
                     app_stack.set_visible_child_name("loading");
                     set_app_action_enabled(&application, "clear_all_stats_and_achievements", false);
                     app_achievements_model.remove_all();
                     app_stat_model.remove_all();
 
-                    let app_id_copy = app_id.get().unwrap();
                     let handle = spawn_blocking(move || {
                         ResetStats {
                             app_id: app_id_copy,
@@ -353,7 +402,19 @@ pub fn create_clear_all_action(
                         .request()
                     });
 
-                    let Ok(Ok(_success)) = handle.await else {
+                    let result = handle.await;
+                    if app_id.get() != Some(app_id_copy) {
+                        return;
+                    }
+
+                    let Ok(Ok(_success)) = result else {
+                        // Only this one: a refresh may be in flight, and its own
+                        // disabled state is what stops a second one starting.
+                        set_app_action_enabled(
+                            &application,
+                            "clear_all_stats_and_achievements",
+                            true,
+                        );
                         return app_stack.set_visible_child_name("failed");
                     };
 

@@ -68,7 +68,7 @@
   "description": "一款免費、開放原始碼的 Steam 成就管理器，支援 Linux 與 Windows。可解鎖與重新鎖定 Steam 成就、即時編輯遊戲統計資料、排程成就解鎖，以及掛機（偽裝遊戲中）。內含 GTK 圖形介面與命令列工具。",
   "url": "https://paulcombal.github.io/SamRewritten/zh-hant/",
   "downloadUrl": "https://github.com/PaulCombal/SamRewritten/releases",
-  "softwareVersion": "1.4.5",
+  "softwareVersion": "1.4.7",
   "license": "https://github.com/PaulCombal/SamRewritten/blob/master/LICENSE",
   "image": [
     "https://paulcombal.github.io/SamRewritten/img/og-card.png",
@@ -134,7 +134,7 @@
       "name": "我可以透過命令列使用 SamRewritten 嗎？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "可以。SamRewritten 內含不需要 GTK 的 CLI。它可以列出 App、成就與統計資料，批次鎖定／解鎖成就，以 JSON 匯入／匯出，以及掛機（偽裝遊戲中）。"
+        "text": "可以。SamRewritten 內含不需要 GTK 的 CLI。它可以列出 App、成就與統計資料，批次鎖定／解鎖成就，編輯統計資料，以 JSON 匯入／匯出，以及掛機（偽裝遊戲中）。完整說明文件（英文）見 https://paulcombal.github.io/SamRewritten/cli.html"
       }
     }
   ]
@@ -364,6 +364,7 @@
       <a class="nav-link" href="#features">功能特色</a>
       <a class="nav-link" href="#compare">比較</a>
       <a class="nav-link" href="#install">安裝</a>
+      <a class="nav-link" href="/SamRewritten/cli.html" hreflang="en" lang="en">CLI</a>
       <a class="nav-link" href="#faq">常見問題</a>
       <a class="nav-link" href="/SamRewritten/" hreflang="en" lang="en">English</a>
       <a class="btn" href="https://github.com/PaulCombal/SamRewritten/releases/latest">下載</a>
@@ -437,7 +438,7 @@
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 掛機（偽裝遊戲中）：在你關閉前持續顯示為遊戲中</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 淺色與深色主題</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 除英文外，還支援法文、西班牙文、日文與巴西葡萄牙文</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 功能完整、不需要 GTK 的 CLI</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span>功能完整、不需要 GTK 的 CLI（<a href="/SamRewritten/cli.html" hreflang="en" lang="en">使用說明，英文</a>）</span></li>
       </ul>
       <p class="note">
         SamRewritten 的翻譯皆由社群貢獻，但<strong>目前尚未有人提交中文翻譯</strong>。你不需要是程式設計師也能協助——翻譯大多只是填寫一個文字檔而已。歡迎任何語言的貢獻，請參閱<a href="https://github.com/PaulCombal/SamRewritten#translations">翻譯指南</a>開始參與。
@@ -581,7 +582,8 @@
       <details>
         <summary>我可以透過命令列使用 SamRewritten 嗎？</summary>
         <p>可以。CLI 不需要 GTK，可列出 App／成就／統計資料、批次鎖定／解鎖、
-          匯入／匯出 JSON，以及掛機（偽裝遊戲中）。</p>
+          編輯統計資料、匯入／匯出 JSON，以及掛機（偽裝遊戲中）。每個指令都以 JSON 輸出，方便編寫指令碼 ——
+          完整的指令參考請見 <a href="/SamRewritten/cli.html" hreflang="en" lang="en">CLI 使用說明（英文）</a>。</p>
       </details>
     </div>
   </section>
@@ -610,7 +612,9 @@
     </p>
     <p class="links"><a href="https://github.com/PaulCombal/SamRewritten">GitHub</a> &middot;
        <a href="https://github.com/PaulCombal/SamRewritten/releases/latest">下載</a> &middot;
+       <a href="/SamRewritten/cli.html" hreflang="en" lang="en">CLI 說明文件</a> &middot;
        <a href="https://github.com/PaulCombal/SamRewritten/issues">回報問題</a></p>
+    <p class="links"><a href="/SamRewritten/zh-hans/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></p>
   </div>
 </footer>
 

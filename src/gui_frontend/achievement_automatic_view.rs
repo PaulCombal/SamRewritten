@@ -14,6 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::application_actions::set_app_action_enabled;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
@@ -46,6 +47,8 @@ fn create_header(application: &MainApplication) -> (ListBox, Button) {
         #[weak]
         application,
         move |_| {
+            // Refresh is disabled while the unlock runs, and this is the way out.
+            set_app_action_enabled(&application, "refresh_achievements_list", true);
             application.activate_action("refresh_achievements_list", None);
         }
     ));
