@@ -14,6 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::dev_println;
+use crate::utils::inherit::keep_private;
 use interprocess::unnamed_pipe::{Recver, Sender};
 use std::cell::Cell;
 use std::env;
@@ -104,6 +105,14 @@ pub fn parse_cli_arguments() -> CliArguments {
     if args.tx.is_some() != args.rx.is_some() {
         eprintln!("Invalid arguments, tx and rx must be provided.");
         exit(1);
+    }
+
+    // Inheritable so we could receive them; our own children have no use for them.
+    if let Some(tx) = &args.tx {
+        keep_private(tx);
+    }
+    if let Some(rx) = &args.rx {
+        keep_private(rx);
     }
 
     dev_println!(

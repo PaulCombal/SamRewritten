@@ -19,6 +19,7 @@ pub mod bidir_child;
 pub mod dev_println;
 pub mod export_file;
 pub mod format;
+pub mod inherit;
 pub mod ipc_client;
 pub mod ipc_types;
 #[cfg(all(unix, feature = "gui"))]
