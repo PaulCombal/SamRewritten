@@ -173,6 +173,7 @@ SamRewritten's behavior can be altered via environment variables:
 * `SAM_STEAMCLIENT_PATH` (Linux only) override which `steamclient.so` file to load.
 * `SAM_GSCHEMA_DIR_FALLBACK` Fallback path for the `gschema.compiled` directory.
 * `SAM_APP_LIST_URL` which URL to download the app list from
+* `SAM_CACHE_DIR` (ignored under Snap) override the persistent cache directory.
 
 ## End User Agreement
 

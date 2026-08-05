@@ -361,8 +361,8 @@ mod imp {
                             url_string.hash(&mut hasher);
                             let hash_name = format!("{:x}.cache", hasher.finish());
 
-                            let mut cache_path = std::env::temp_dir();
-                            cache_path.push(hash_name);
+                            let cache_path =
+                                crate::utils::app_paths::get_temp_cache_dir().join(hash_name);
 
                             if cache_path.exists() {
                                 std::fs::read(&cache_path).map_err(|_| ())

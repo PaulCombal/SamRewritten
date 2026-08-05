@@ -68,7 +68,7 @@ fn register_app_icon() {
         if theme.has_icon(crate::APP_ID) {
             return;
         }
-        let base = gtk::glib::user_cache_dir().join("samrewritten/icons");
+        let base = crate::utils::app_paths::get_app_cache_dir().join("icons");
         let apps = base.join("hicolor/256x256/apps");
         let icon = apps.join(format!("{}.png", crate::APP_ID));
         if !icon.exists()

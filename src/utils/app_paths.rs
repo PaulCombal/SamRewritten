@@ -23,31 +23,102 @@ pub fn get_executable_path() -> PathBuf {
         .expect("Failed to canonicalize path")
 }
 
+/// User override for the persistent cache location, checked before any platform default.
+const CACHE_DIR_ENV: &str = "SAM_CACHE_DIR";
+
 /// This function returns a valid directory where app data can be stored for a longer period of time.
 #[inline]
 #[cfg(target_os = "linux")]
-pub fn get_app_cache_dir() -> String {
+pub fn get_app_cache_dir() -> PathBuf {
     use std::fs;
+
+    // Checked before CACHE_DIR_ENV: confinement makes an arbitrary path unwritable anyway.
     if let Ok(snap_name) = env::var("SNAP_NAME") {
         if snap_name == "samrewritten" {
-            return env::var("SNAP_USER_COMMON").unwrap_or(String::from("/tmp"));
+            return env::var_os("SNAP_USER_COMMON")
+                .map(PathBuf::from)
+                .unwrap_or(PathBuf::from("/tmp"));
         }
 
         // Most likely a dev config
-        return ".".to_owned();
+        return PathBuf::from(".");
     }
 
-    // Non-snap release
-    let folder = env::var("HOME").unwrap_or("/tmp".to_owned()) + "/.cache/samrewritten";
-    fs::create_dir_all(&folder).expect("Could not create temp folder");
+    if let Some(folder) = env::var_os(CACHE_DIR_ENV).filter(|dir| !dir.is_empty()) {
+        let folder = PathBuf::from(folder);
+        match fs::create_dir_all(&folder) {
+            Ok(()) => return folder,
+            Err(e) => eprintln!(
+                "Could not create {CACHE_DIR_ENV} folder {}: {e}",
+                folder.display()
+            ),
+        }
+    }
+
+    let folder = env::var_os("XDG_CACHE_HOME")
+        .map(PathBuf::from)
+        .filter(|dir| !dir.as_os_str().is_empty())
+        .unwrap_or_else(|| {
+            env::var_os("HOME")
+                .filter(|dir| !dir.is_empty())
+                .map(PathBuf::from)
+                .unwrap_or(PathBuf::from("/tmp"))
+                .join(".cache")
+        })
+        .join("samrewritten");
+    if let Err(e) = fs::create_dir_all(&folder) {
+        eprintln!("Could not create cache folder {}: {e}", folder.display());
+    }
     folder
 }
 
 #[inline]
 #[cfg(target_os = "windows")]
-pub fn get_app_cache_dir() -> String {
-    std::env::temp_dir()
-        .to_str()
-        .expect("Failed to convert temp dir to string")
-        .to_owned()
+pub fn get_app_cache_dir() -> PathBuf {
+    if let Some(folder) = env::var_os(CACHE_DIR_ENV).filter(|dir| !dir.is_empty()) {
+        let folder = PathBuf::from(folder);
+        match std::fs::create_dir_all(&folder) {
+            Ok(()) => return folder,
+            Err(e) => eprintln!(
+                "Could not create {CACHE_DIR_ENV} folder {}: {e}",
+                folder.display()
+            ),
+        }
+    }
+
+    let folder = env::var_os("LOCALAPPDATA")
+        .filter(|dir| !dir.is_empty())
+        .map(PathBuf::from)
+        .unwrap_or_else(env::temp_dir)
+        .join("samrewritten");
+    if let Err(e) = std::fs::create_dir_all(&folder) {
+        eprintln!("Could not create cache folder {}: {e}", folder.display());
+    }
+    folder
+}
+
+// Ensure <temp>/samrewritten-<uid>
+// The dir name is resolved once; create_dir_all still runs per call so it self-heals
+#[cfg(feature = "gui")]
+pub fn get_temp_cache_dir() -> &'static std::path::Path {
+    static DIR: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| {
+        // /tmp is shared and sticky, so a plain `samrewritten` would be owned by whoever
+        // launched first and unwritable for every other user on the machine.
+        #[cfg(target_os = "linux")]
+        let name = {
+            use std::os::unix::fs::MetadataExt;
+            match std::fs::metadata("/proc/self") {
+                Ok(m) => format!("samrewritten-{}", m.uid()),
+                Err(_) => String::from("samrewritten"),
+            }
+        };
+        // %TEMP% is already per-user
+        #[cfg(not(target_os = "linux"))]
+        let name = String::from("samrewritten");
+
+        env::temp_dir().join(name)
+    });
+
+    let _ = std::fs::create_dir_all(&*DIR);
+    &DIR
 }
