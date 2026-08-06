@@ -139,6 +139,9 @@ pub enum SteamCommand {
     /// The current user's friends list (for the copy-timing picker). Served by the
     /// orchestrator from localconfig.vdf — not app-scoped.
     GetFriends,
+    /// The signed-in user's SteamID64, read from `ISteamUser`. Served by the
+    /// orchestrator from its own connection — not app-scoped.
+    GetCurrentUser,
     /// Fetch a user's avatar natively from Steam as raw RGBA, for SteamIDs that
     /// lack a cached CDN url (e.g. a pasted custom one). Global friends interface.
     GetUserAvatar(u64),

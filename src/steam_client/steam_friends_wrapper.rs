@@ -17,10 +17,10 @@ use crate::steam_client::steam_friends_vtable::ISteamFriends;
 use crate::steam_client::steamworks_types::CSteamID;
 use crate::steam_client::wrapper_types::SteamClientError;
 use std::ffi::CStr;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct SteamFriends {
-    inner: Arc<SteamFriendsInner>,
+    inner: Rc<SteamFriendsInner>,
 }
 
 struct SteamFriendsInner {
@@ -30,7 +30,7 @@ struct SteamFriendsInner {
 impl SteamFriends {
     pub unsafe fn from_raw(ptr: *mut ISteamFriends) -> Self {
         Self {
-            inner: Arc::new(SteamFriendsInner { ptr }),
+            inner: Rc::new(SteamFriendsInner { ptr }),
         }
     }
 

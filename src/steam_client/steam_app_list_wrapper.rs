@@ -20,10 +20,10 @@ use crate::steam_client::steamworks_types::AppId_t;
 use crate::steam_client::wrapper_types::SteamClientError;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct SteamAppList {
-    inner: Arc<SteamAppListInner>,
+    inner: Rc<SteamAppListInner>,
 }
 
 struct SteamAppListInner {
@@ -33,7 +33,7 @@ struct SteamAppListInner {
 impl SteamAppList {
     pub unsafe fn from_raw(ptr: *mut ISteamAppList) -> Self {
         Self {
-            inner: Arc::new(SteamAppListInner { ptr }),
+            inner: Rc::new(SteamAppListInner { ptr }),
         }
     }
 

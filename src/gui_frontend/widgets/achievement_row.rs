@@ -103,8 +103,10 @@ impl AchievementRow {
                 .unwrap_or(false);
             Some(if is_achieved { "normal" } else { "locked" }.to_value())
         });
-        let icon_visible_expr =
-            ClosureExpression::new::<String>(&[is_achieved_expr.clone()], icon_visible_closure);
+        let icon_visible_expr = ClosureExpression::new::<String>(
+            std::slice::from_ref(&is_achieved_expr),
+            icon_visible_closure,
+        );
         icon_visible_expr.bind(&imp.icon_stack, "visible-child-name", Widget::NONE);
 
         let trailing_visible_closure = glib::RustClosure::new(|values: &[glib::Value]| {
@@ -144,8 +146,10 @@ impl AchievementRow {
             std::slice::from_ref(&permission_expr),
             sensitive_closure,
         );
-        let protected_expr =
-            ClosureExpression::new::<bool>(&[permission_expr.clone()], protected_closure);
+        let protected_expr = ClosureExpression::new::<bool>(
+            std::slice::from_ref(&permission_expr),
+            protected_closure,
+        );
         sensitive_expr.bind(&imp.switch, "sensitive", Widget::NONE);
         sensitive_expr.bind(&imp.toggle, "sensitive", Widget::NONE);
         protected_expr.bind(&imp.ac_protected_icon, "visible", Widget::NONE);
@@ -155,8 +159,10 @@ impl AchievementRow {
             let pos = values.get(1).and_then(|v| v.get::<u32>().ok()).unwrap_or(0);
             Some((pos != 0).to_value())
         });
-        let toggle_active_expr =
-            ClosureExpression::new::<bool>(&[queue_position_expr.clone()], toggle_active_closure);
+        let toggle_active_expr = ClosureExpression::new::<bool>(
+            std::slice::from_ref(&queue_position_expr),
+            toggle_active_closure,
+        );
         toggle_active_expr.bind(&imp.toggle, "active", Widget::NONE);
 
         // The stage toggle is interactive only in deferred mode; copy-timing
@@ -169,8 +175,10 @@ impl AchievementRow {
                 .unwrap_or_default();
             Some((mode == MODE_DEFERRED).to_value())
         });
-        let toggle_visible_expr =
-            ClosureExpression::new::<bool>(&[mode_expr.clone()], toggle_visible_closure);
+        let toggle_visible_expr = ClosureExpression::new::<bool>(
+            std::slice::from_ref(&mode_expr),
+            toggle_visible_closure,
+        );
         toggle_visible_expr.bind(&imp.toggle, "visible", Widget::NONE);
 
         // Copy-timing mode shows "<position> • <hh:mm>"; deferred shows just the

@@ -59,32 +59,20 @@ single multi-app command — `ExportApps`, `ImportApps`, `UnlockAllApps`,
   and replies once with `Vec<(app_id, Result<T, SamError>)>` (`bool` for
   unlock/reset, `AppExport` for export, `ImportSummary` for import).
 
-**The orchestrator is the sole spawner of app-server children.** Earlier the
-front-ends called `run_command_on_apps_concurrent` directly, spawning bulk
-workers themselves. That breaks the Flatpak namespace join (see below), where
-only the orchestrator and its descendants live inside Steam's PID namespace —
-so all fan-out is routed through the orchestrator to keep every
-Steam-touching process inside that namespace. Progress reporting for bulk ops
-is not surfaced over IPC yet.
+**The orchestrator is the sole spawner of app-server children.** Front-ends
+used to fan out themselves, which breaks the Flatpak namespace join (below):
+only the orchestrator and its descendants live inside Steam's PID namespace.
+Progress reporting for bulk ops is not surfaced over IPC yet.
 
 ### The 30-app cap
 
 `MAX_CONCURRENT_APPS = 30` is empirical, not documented by Valve. Past
 ~30 concurrent `SteamAPI_Init` clients, Steam silently drops in-game
 presence (multiple idler tools — Idle Master Extended, Steam Game Idler,
-ASF — converge on the same number). The same constant gates:
-
-* **The GUI's "max apps you can idle at once"** — cards whose app isn't
-  already idling have their idle button greyed out when the cap is
-  reached. Mechanism: `GSteamAppObject.can_start_idling: bool` property,
-  recomputed across the store by `recompute_idle_cap` after every idle
-  toggle and after the `GetRunningApps` sync; cards bind
-  `idle_button.sensitive` to a closure expression
-  `is_idling || can_start_idling`.
-* **The bulk-op helper's concurrency cap.**
-
-The GUI re-exports the constant as `MAX_CONCURRENT_IDLE`; both names
-refer to the same value.
+ASF — converge on the same number). It gates both the bulk-op helper's
+concurrency and the GUI's "max apps you can idle at once" — greyed-out idle
+buttons, driven by `GSteamAppObject.can_start_idling` and `recompute_idle_cap`
+in `app_list_view/`. The GUI re-exports the constant as `MAX_CONCURRENT_IDLE`.
 
 ## CLI mode
 
@@ -140,19 +128,13 @@ loads `steamclient.so` inside Steam's PID namespace.
 {
   "format_version": 1,
   "exported_at": "2026-05-14T10:30:00Z",
-  "apps": [
-    {
-      "app_id": 440,
-      "app_name": "Team Fortress 2",
-      "achievements": [
-        {"id": "...", "is_achieved": true, "permission": 0}
-      ],
-      "stats": [
-        {"id": "...", "value": {"int": 100}, "permission": 0},
-        {"id": "...", "value": {"float": 0.85}, "permission": 2}
-      ]
-    }
-  ]
+  "apps": [{
+    "app_id": 440,
+    "app_name": "Team Fortress 2",
+    "achievements": [{"id": "...", "is_achieved": true, "permission": 0}],
+    "stats": [{"id": "...", "value": {"int": 100}, "permission": 0},
+              {"id": "...", "value": {"float": 0.85}, "permission": 2}]
+  }]
 }
 ```
 
@@ -180,12 +162,17 @@ glib so it uses a hand-rolled UTC formatter).
 Schema id `org.samrewritten.SamRewritten`
 (`assets/org.samrewritten.SamRewritten.gschema.xml`). The schema is
 recompiled into `assets/gschemas.compiled` by `build.rs` whenever the
-XML changes. Current keys:
+XML changes. It carries a summary and description per key; by group:
 
-* `filter-junk` (b) — hide junk entries in the app list.
-* `app-theme` (s) — `'system' | 'light' | 'dark'`.
-* `app-sort` (s) — `'app_id' | 'alphabetical' | 'last_played' | 'playtime'`.
-* `disable-animations` (b) — disables the card hover image-pan effect.
+* `filter-*`, `app-sort`, `sidebar-visible` — app-list filters, sorting and
+  layout, bound in `app_list_view/settings_bindings.rs`.
+* `app-theme`, `app-language`, `achievement-language`, `disable-animations` —
+  appearance and locale (`gui_frontend/i18n.rs`, `ui_components.rs`).
+* `unlock-mode`, `unlock-duration-minutes`, `unlock-spacing`, `auto-fill-*` —
+  deferred unlocking (`achievement_manual_view/config_popover.rs`,
+  `unlock_queue.rs`, `unlock_scheduler.rs`).
+* `copy-timing-*` — copy-timing mode (`achievement_manual_view/copy_mode.rs`).
+* `action-journal-enabled` — opt-in change history, off by default.
 
 Loading paths (`gui_frontend::gsettings::get_settings`): `$APPDIR`
 (AppImage), `./assets` (dev), `$SAM_GSCHEMA_DIR_FALLBACK`, then the
@@ -222,12 +209,23 @@ the compiled schema into `$SNAP/usr/share/glib-2.0/schemas/` via the
   * `stat_definitions.rs` — `AchievementInfo`, `StatInfo` (Int/Float),
     permission bit semantics.
   * `local_config.rs` — `localconfig.vdf` parser (playtime, last-played).
+  * `local_stats.rs`, `key_value.rs` — on-disk fast path for achievement
+    counts, over the Steam binary KeyValue parser.
+  * `user_unlock_times/` — bulk parse of on-disk unlock timestamps, and the
+    friends queries behind copy-timing mode.
 * **`gui_frontend/`** — only built with `--features gui` (the default).
   * `app_list_view/` — main grid, search, sort, idle toggle, manage
     button, the bulk-process actions (`bulk_actions.rs`,
     `progress_actions.rs`, `refresh_actions.rs`), and the
     `settings_bindings.rs` GSettings glue.
   * `app_view.rs` — single-app manage view (achievements + stats lists).
+  * `achievement_manual_view/` — the achievement list itself, including
+    copy-timing mode; `unlock_queue.rs` / `unlock_scheduler.rs` hold deferred
+    unlocking and `friend_picker.rs` the friend chooser.
+  * `profile_view/` — library stats page: tiles, unlock heatmap
+    (`heatmap.rs`), completion curve (`timeline.rs`, `completion_graph.rs`),
+    irregular-activity list, and the change-history section
+    (`journal_section.rs`).
   * `widgets/` — custom GTK widgets including `SteamAppCard` (hover
     image-pan animation, idle button, sensitivity binding) and
     `ShimmerImage` (async-loaded shimmer-while-loading texture).
@@ -250,6 +248,9 @@ the compiled schema into `$SNAP/usr/share/glib-2.0/schemas/` via the
     listed first).
   * `steam_ns.rs` — Linux Flatpak Steam PID-namespace join.
   * `export_file.rs` — `ExportFile`, `iso8601_utc_now`, `FORMAT_VERSION`.
+  * `action_journal.rs` — append-only JSONL change history, and the batch id
+    that makes an operation the unit undo works in.
+  * `snap.rs` — Snap portal Steam-folder flow.
 
 ## Build features
 

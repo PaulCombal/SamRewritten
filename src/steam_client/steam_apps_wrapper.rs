@@ -14,10 +14,10 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::steam_client::steam_apps_vtable::ISteamApps;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct SteamApps {
-    inner: Arc<SteamAppsInner>,
+    inner: Rc<SteamAppsInner>,
 }
 
 struct SteamAppsInner {
@@ -27,7 +27,7 @@ struct SteamAppsInner {
 impl SteamApps {
     pub unsafe fn from_raw(ptr: *mut ISteamApps) -> Self {
         Self {
-            inner: Arc::new(SteamAppsInner { ptr }),
+            inner: Rc::new(SteamAppsInner { ptr }),
         }
     }
 

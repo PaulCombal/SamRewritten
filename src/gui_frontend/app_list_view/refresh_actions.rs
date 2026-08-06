@@ -27,6 +27,7 @@ use crate::gui_frontend::request::{
     AppProgress, GetAchievementsAndStats, GetRunningApps, GetSubscribedAppList, Request, ResetStats,
 };
 use crate::gui_frontend::ui_components::set_achievement_languages;
+use crate::utils::action_journal::{self, Batch, Change, Op};
 use crate::utils::format::format_achievement_progress;
 use crate::utils::ipc_types::SamError;
 use gtk::gio::{ListStore, Settings, SimpleAction, spawn_blocking};
@@ -166,11 +167,7 @@ pub fn create_refresh_app_list_action(
                         },
                         Ok(Err(sam_error)) => {
                             eprintln!("[CLIENT] Unknown error: {}", sam_error);
-                            let label = Label::new(Some(
-                                tr("SamRewritten could not connect to Steam. Is it running?").as_str(),
-                            ));
-                            list_scrolled_window.set_child(Some(&label));
-                            list_stack.set_visible_child_name("list");
+                            list_stack.set_visible_child_name("disconnected");
                         }
                         Err(join_error) => {
                             eprintln!("Spawn blocking error: {:?}", join_error);
@@ -239,8 +236,6 @@ pub fn create_refresh_achievements_action(
             app_achievements_stack.set_visible_child_name("manual");
 
             let language = settings.string("achievement-language").to_string();
-            // The slot is global and a late prefetch can outlive the page it was
-            // started from, so a payload only counts if it is this app's and current.
             let prefetched = prefetched_progress
                 .borrow_mut()
                 .take()
@@ -317,8 +312,6 @@ pub fn create_refresh_achievements_action(
 
                     set_timed_unlock_actions_enabled(&application, true);
 
-                    // Disabled for the whole round-trip, so a language picked
-                    // meanwhile was swallowed. Honour it now.
                     if settings.string("achievement-language") != requested_language {
                         application.activate_action("refresh_achievements_list", None);
                     }
@@ -337,6 +330,59 @@ pub fn create_clear_all_action(
     action_refresh_achievements_list: &SimpleAction,
     app_stack: &Stack,
 ) -> SimpleAction {
+    /// What a reset is about to destroy, as changes that would put it back, and
+    /// only what actually moves.
+    ///
+    /// Stats are recorded as landing on zero: Steam restores each to its schema
+    /// default, so the history says what a stat *was* rather than claiming to
+    /// know what the reset left it at.
+    fn wiped_by_reset(achievements: &ListStore, stats: &ListStore) -> Vec<Change> {
+        if !action_journal::is_enabled() {
+            return Vec::new();
+        }
+        let mut changes = Vec::new();
+        for achievement in achievements
+            .into_iter()
+            .flatten()
+            .filter_map(|o| o.downcast::<GAchievementObject>().ok())
+        {
+            if achievement.is_achieved() && achievement.permission() == 0 {
+                changes.push(Change::Achievement {
+                    id: achievement.id(),
+                    name: achievement.name(),
+                    before: true,
+                    after: false,
+                });
+            }
+        }
+        for stat in stats
+            .into_iter()
+            .flatten()
+            .filter_map(|o| o.downcast::<GStatObject>().ok())
+        {
+            let before = stat.original_value();
+            if (stat.permission() & 2) != 0 || before == 0.0 {
+                continue;
+            }
+            changes.push(if stat.is_integer() {
+                Change::IntStat {
+                    id: stat.id(),
+                    name: stat.display_name(),
+                    before: before as i32,
+                    after: 0,
+                }
+            } else {
+                Change::FloatStat {
+                    id: stat.id(),
+                    name: stat.display_name(),
+                    before: before as f32,
+                    after: 0.0,
+                }
+            });
+        }
+        changes
+    }
+
     let action_clear_all_stats_and_achievements =
         SimpleAction::new("clear_all_stats_and_achievements", None);
     action_clear_all_stats_and_achievements.set_enabled(false);
@@ -389,6 +435,8 @@ pub fn create_clear_all_action(
                         return;
                     };
 
+                    let undo = wiped_by_reset(&app_achievements_model, &app_stat_model);
+
                     app_stack.set_visible_child_name("loading");
                     set_app_action_enabled(&application, "clear_all_stats_and_achievements", false);
                     app_achievements_model.remove_all();
@@ -407,9 +455,9 @@ pub fn create_clear_all_action(
                         return;
                     }
 
-                    let Ok(Ok(_success)) = result else {
-                        // Only this one: a refresh may be in flight, and its own
-                        // disabled state is what stops a second one starting.
+                    // `Ok(Ok(false))` is Steam taking the reset and failing to
+                    // store it, so it belongs with the failures.
+                    let Ok(Ok(true)) = result else {
                         set_app_action_enabled(
                             &application,
                             "clear_all_stats_and_achievements",
@@ -418,6 +466,7 @@ pub fn create_clear_all_action(
                         return app_stack.set_visible_child_name("failed");
                     };
 
+                    Batch::new(Op::ResetApp, app_id_copy, "").record(undo);
                     action_refresh_achievements_list.activate(None);
                 }
             ));

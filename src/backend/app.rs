@@ -60,7 +60,7 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
         let command: SteamCommand = match read_message(parent_rx) {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("[APP SERVER] Parent pipe error: {e} — shutting down");
+                eprintln!("[APP SERVER] Parent pipe error: {e}. Shutting down");
                 return 1;
             }
         };
@@ -110,17 +110,17 @@ pub fn app(app_id: AppId_t, parent_tx: &mut Sender, parent_rx: &mut Recver) -> u
             SteamCommand::SetFloatStat(id, stat_id, value) => {
                 dispatch(parent_tx, id, app_id, || am.set_stat_f32(&stat_id, value))
             }
-            SteamCommand::StoreStatsAndAchievements(id) => dispatch(parent_tx, id, app_id, || {
-                am.store_stats_and_achievements().map(|_| true)
-            }),
+            SteamCommand::StoreStatsAndAchievements(id) => {
+                dispatch(parent_tx, id, app_id, || am.store_stats_and_achievements())
+            }
             SteamCommand::ResetStats(id, achievements_too) => {
                 dispatch(parent_tx, id, app_id, || {
                     am.reset_all_stats(achievements_too)
                 })
             }
-            SteamCommand::UnlockAllAchievements(id) => dispatch(parent_tx, id, app_id, || {
-                am.unlock_all_achievements().map(|_| true)
-            }),
+            SteamCommand::UnlockAllAchievements(id) => {
+                dispatch(parent_tx, id, app_id, || am.unlock_all_achievements())
+            }
             SteamCommand::ExportAppProgress(id) => {
                 dispatch(parent_tx, id, app_id, || collect_app_export(am, app_id))
             }

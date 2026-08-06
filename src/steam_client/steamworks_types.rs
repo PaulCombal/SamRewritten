@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 #![allow(non_camel_case_types, non_snake_case, dead_code)]
+#![allow(clippy::upper_case_acronyms, clippy::enum_variant_names)]
 
 use crate::steam_client::steam_client_vtable::ISteamClient;
 use std::os::raw::{c_char, c_int, c_uint};

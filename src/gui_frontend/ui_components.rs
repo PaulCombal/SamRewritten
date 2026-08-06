@@ -139,7 +139,7 @@ pub fn create_context_menu_button() -> (
         .build();
 
     let context_menu_model = gtk::gio::Menu::new();
-    setup_app_list_popover_menu(&context_menu_model);
+    setup_app_list_popover_menu(&context_menu_model, true);
 
     let popover = PopoverMenu::builder()
         .position(PositionType::Bottom)
@@ -178,8 +178,12 @@ pub fn create_context_menu_button() -> (
     )
 }
 
+/// `with_bulk` adds the bulk-process section, which acts on the app list's
+/// selection. The profile page has no selection to act on, so it asks for the
+/// same menu without it rather than offering entries that would silently do
+/// nothing.
 #[inline]
-fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
+fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu, with_bulk: bool) {
     menu_model.remove_all();
     let bulk_process_section = gtk::gio::Menu::new();
     bulk_process_section.append(
@@ -211,9 +215,6 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
         Some(tr("Refresh app list").as_str()),
         Some("app.refresh_app_list"),
     );
-    let check_item =
-        gtk::gio::MenuItem::new(Some(tr("Filter junk").as_str()), Some("app.filter-junk"));
-    menu_model.append_item(&check_item);
     menu_model.append(Some(tr("About").as_str()), Some("app.about"));
     #[cfg(unix)]
     if crate::utils::snap::is_snap() {
@@ -223,22 +224,10 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu) {
         );
     }
 
-    let sort_section = gtk::gio::Menu::new();
-    // tr_noop marks labels for extraction; the second element is the action target.
-    let sort_options = [
-        (tr_noop("App ID"), "app_id"),
-        (tr_noop("Alphabetical"), "alphabetical"),
-        (tr_noop("Recently played"), "last_played"),
-        (tr_noop("Time played"), "playtime"),
-    ];
-    for (label, value) in sort_options {
-        let item = gtk::gio::MenuItem::new(Some(tr(label).as_str()), Some("app.app-sort"));
-        item.set_action_and_target_value(Some("app.app-sort"), Some(&value.to_variant()));
-        sort_section.append_item(&item);
+    // Sorting and the library filters live in the app list's sidebar now.
+    if with_bulk {
+        menu_model.append_section(Some(tr("Bulk process").as_str()), &bulk_process_section);
     }
-    menu_model.append_section(Some(tr("Sort by").as_str()), &sort_section);
-
-    menu_model.append_section(Some(tr("Bulk process").as_str()), &bulk_process_section);
 
     let theme_section = gtk::gio::Menu::new();
     let theme_options = [
@@ -291,6 +280,10 @@ fn fill_language_menu<'a>(
     }
 }
 
+/// Only for the menu that changes the UI language: if the app came up in a
+/// language you can't read, the English half is how you find your way back.
+/// Nothing else needs it — everywhere else the UI language is the one you asked
+/// for.
 fn bilingual_label(english: &str) -> String {
     let native = tr(english);
     if native == english {
@@ -304,7 +297,15 @@ pub fn set_context_popover_to_app_list_context(
     menu_model: &gtk::gio::Menu,
     application: &MainApplication,
 ) {
-    setup_app_list_popover_menu(menu_model);
+    setup_app_list_popover_menu(menu_model, true);
+    set_app_action_enabled(application, "refresh_achievements_list", false);
+}
+
+pub fn set_context_popover_to_profile_context(
+    menu_model: &gtk::gio::Menu,
+    application: &MainApplication,
+) {
+    setup_app_list_popover_menu(menu_model, false);
     set_app_action_enabled(application, "refresh_achievements_list", false);
 }
 
@@ -403,10 +404,7 @@ pub fn set_context_popover_to_app_details_context(
     ACHIEVEMENT_LANGUAGES_FROM_FETCH.with(|f| f.set(false));
     fill_achievement_language_menu(&[]);
     ACHIEVEMENT_LANGUAGE_MENU.with(|menu| {
-        menu_model.append_submenu(
-            Some(&bilingual_label(tr_noop("Achievement language"))),
-            menu,
-        );
+        menu_model.append_submenu(Some(tr("Achievement language").as_str()), menu);
     });
 
     set_app_action_enabled(application, "refresh_app_list", false);

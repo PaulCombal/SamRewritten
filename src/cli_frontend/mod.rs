@@ -215,9 +215,13 @@ fn run_command(command: Command) -> ExitCode {
         Command::Lock { app_id, ids } => set_achievements(app_id, ids.ids, false),
 
         Command::UnlockAll { app_id } => match (UnlockAllAchievements { app_id }).request() {
-            Ok(_) => {
+            Ok(true) => {
                 println!("{}", json!({"success": true}));
                 ExitCode::SUCCESS
+            }
+            Ok(false) => {
+                eprintln!("Steam did not store the unlocked achievements");
+                ExitCode::FAILURE
             }
             Err(e) => {
                 eprintln!("Failed to unlock all achievements: {e}");
@@ -231,9 +235,13 @@ fn run_command(command: Command) -> ExitCode {
         })
         .request()
         {
-            Ok(_) => {
+            Ok(true) => {
                 println!("{}", json!({"success": true}));
                 ExitCode::SUCCESS
+            }
+            Ok(false) => {
+                eprintln!("Steam did not store the reset");
+                ExitCode::FAILURE
             }
             Err(e) => {
                 eprintln!("Failed to reset all achievements: {e}");
@@ -392,16 +400,25 @@ fn set_achievements(app_id: u32, ids: Vec<String>, unlocked: bool) -> ExitCode {
             store: false,
         })
         .request()
-        .is_ok();
+        .unwrap_or(false);
         if !success {
             println!("Failed to {verb} achievement {id}");
         }
         results.push(AchievedResult { id, success });
     }
 
-    if let Err(e) = (StoreStatsAndAchievements { app_id }).request() {
-        eprintln!("Failed to store stats and achievements: {e:?}");
-        return ExitCode::FAILURE;
+    // Every set above used `store: false`, so none of them exist outside
+    // Steam's client until this returns true.
+    match (StoreStatsAndAchievements { app_id }).request() {
+        Ok(true) => {}
+        Ok(false) => {
+            eprintln!("Steam did not store the achievements");
+            return ExitCode::FAILURE;
+        }
+        Err(e) => {
+            eprintln!("Failed to store stats and achievements: {e:?}");
+            return ExitCode::FAILURE;
+        }
     }
 
     print_json(&results)

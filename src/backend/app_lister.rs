@@ -199,39 +199,43 @@ impl<'a> AppLister<'a> {
     }
 
     fn get_app_image_url(&self, app_id: &AppId_t) -> Option<String> {
-        let candidate = self
-            .steam_apps_001
-            .get_app_data(
-                app_id,
-                &SteamApps001AppDataKeys::SmallCapsule(&self.current_language).as_string(),
-            )
-            .unwrap_or("".to_owned());
-        if !candidate.is_empty() {
-            return Some(format!(
-                "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/{app_id}/{candidate}"
-            ));
-        }
+        let asset = |key: String| {
+            self.steam_apps_001
+                .get_app_data(app_id, &key)
+                .ok()
+                .filter(|value| !value.is_empty())
+        };
 
-        if self.current_language != "english" {
-            let candidate = self
-                .steam_apps_001
-                .get_app_data(
-                    app_id,
-                    &SteamApps001AppDataKeys::SmallCapsule("english").as_string(),
-                )
-                .unwrap_or("".to_owned());
-            if !candidate.is_empty() {
+        let fallback = [self.current_language.as_str(), "english"];
+        let languages = if self.current_language == "english" {
+            &fallback[..1]
+        } else {
+            &fallback[..]
+        };
+
+        // The same 460x215 artwork as a local hit; small_capsule is a
+        // different, logo-style design.
+        for language in languages {
+            if let Some(candidate) =
+                asset(SteamApps001AppDataKeys::HeaderImage(language).as_string())
+            {
                 return Some(format!(
                     "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/{app_id}/{candidate}"
                 ));
             }
         }
 
-        let candidate = self
-            .steam_apps_001
-            .get_app_data(app_id, &SteamApps001AppDataKeys::Logo.as_string())
-            .unwrap_or("".to_owned());
-        if !candidate.is_empty() {
+        for language in languages {
+            if let Some(candidate) =
+                asset(SteamApps001AppDataKeys::SmallCapsule(language).as_string())
+            {
+                return Some(format!(
+                    "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/{app_id}/{candidate}"
+                ));
+            }
+        }
+
+        if let Some(candidate) = asset(SteamApps001AppDataKeys::Logo.as_string()) {
             return Some(format!(
                 "https://cdn.steamstatic.com/steamcommunity/public/images/apps/{app_id}/{candidate}.jpg"
             ));

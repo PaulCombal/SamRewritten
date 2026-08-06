@@ -18,8 +18,9 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::set_bulk_actions_enabled;
 use crate::gui_frontend::dialogs::show_list_dialog;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
-use crate::gui_frontend::i18n::tr;
+use crate::gui_frontend::i18n::{tr, tr_noop};
 use crate::gui_frontend::request::{ExportApps, ImportApps, Request};
+use crate::utils::action_journal::{Batch, Change, Op};
 use crate::utils::export_file::{ExportFile, FORMAT_VERSION, iso8601_utc_now};
 use crate::utils::ipc_types::AppExport;
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
@@ -529,6 +530,7 @@ pub fn create_progress_actions(
                     let mut total_skipped_unwriteable: usize = 0;
                     let mut errors: Vec<String> = Vec::new();
                     let mut reset_candidates: Vec<String> = Vec::new();
+                    let mut imported = Vec::new();
                     for (app_id, res) in results {
                         let label = names_by_id
                             .get(&app_id)
@@ -536,6 +538,23 @@ pub fn create_progress_actions(
                             .unwrap_or_else(|| format!("App {}", app_id));
                         match res {
                             Ok(summary) => {
+                                // Only a clean, non-empty import is history: an
+                                // entry for a run Steam refused would read as
+                                // something that happened to the game.
+                                if summary.errors.is_empty()
+                                    && summary.achievements_applied + summary.stats_applied > 0
+                                {
+                                    imported.push((
+                                        app_id,
+                                        label.clone(),
+                                        Change::Opaque {
+                                            detail: tr_noop(
+                                                "achievements and stats written from a file",
+                                            )
+                                            .to_string(),
+                                        },
+                                    ));
+                                }
                                 total_ach += summary.achievements_applied;
                                 total_stat += summary.stats_applied;
                                 total_skipped_protected += summary.skipped_protected.len();
@@ -552,6 +571,7 @@ pub fn create_progress_actions(
                             }
                         }
                     }
+                    Batch::across(Op::Import).record_per_app(imported);
                     (
                         total_ach,
                         total_stat,

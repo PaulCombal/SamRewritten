@@ -17,11 +17,11 @@ use crate::steam_client::steam_apps_001_vtable::ISteamApps001;
 use crate::steam_client::wrapper_types::SteamClientError;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
-use std::sync::Arc;
+use std::rc::Rc;
 
 /// Safe wrapper for ISteamApps
 pub struct SteamApps001 {
-    inner: Arc<SteamApps001Inner>,
+    inner: Rc<SteamApps001Inner>,
 }
 
 struct SteamApps001Inner {
@@ -32,6 +32,7 @@ struct SteamApps001Inner {
 pub enum SteamApps001AppDataKeys<'a> {
     Name,
     Logo,
+    HeaderImage(&'a str),
     SmallCapsule(&'a str),
     MetacriticScore,
     Developer,
@@ -41,6 +42,9 @@ impl<'a> SteamApps001AppDataKeys<'a> {
     pub fn as_string(&self) -> String {
         match self {
             SteamApps001AppDataKeys::Name => "name\0".to_string(),
+            SteamApps001AppDataKeys::HeaderImage(language) => {
+                format!("header_image/{language}\0")
+            }
             SteamApps001AppDataKeys::SmallCapsule(language) => {
                 format!("small_capsule/{language}\0")
             }
@@ -57,7 +61,7 @@ impl SteamApps001 {
     /// The pointer must be valid and remain valid for the lifetime of the SteamApps
     pub unsafe fn from_raw(ptr: *mut ISteamApps001) -> Self {
         Self {
-            inner: Arc::new(SteamApps001Inner { ptr }),
+            inner: Rc::new(SteamApps001Inner { ptr }),
         }
     }
 

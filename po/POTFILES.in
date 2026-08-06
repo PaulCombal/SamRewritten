@@ -14,6 +14,11 @@ src/gui_frontend/achievement_manual_view/row_factory.rs
 src/gui_frontend/friend_picker.rs
 src/gui_frontend/unlock_scheduler.rs
 src/gui_frontend/app_list_view/mod.rs
+src/gui_frontend/app_list_view/sidebar.rs
+src/gui_frontend/profile_view/mod.rs
+src/gui_frontend/profile_view/heatmap.rs
+src/gui_frontend/profile_view/completion_graph.rs
+src/gui_frontend/profile_view/journal_section.rs
 src/gui_frontend/app_list_view/settings_bindings.rs
 src/gui_frontend/app_list_view/bulk_actions.rs
 src/gui_frontend/app_list_view/progress_actions.rs

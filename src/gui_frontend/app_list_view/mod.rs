@@ -14,10 +14,12 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 mod achievement_loader;
+mod app_index;
 mod bulk_actions;
 mod progress_actions;
 mod refresh_actions;
 mod settings_bindings;
+mod sidebar;
 
 use crate::backend::app_lister::{AppModel, AppModelType};
 use crate::gui_frontend::MainApplication;
@@ -30,11 +32,15 @@ use crate::gui_frontend::dialogs::choose_steam_install_then;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
 use crate::gui_frontend::gsettings::get_settings;
 use crate::gui_frontend::i18n::tr;
+use crate::gui_frontend::profile_view::build_profile_view;
+use crate::gui_frontend::profile_view::identity::{Identity, SharedIdentity, load_identity};
 use crate::gui_frontend::request::{AppProgress, LaunchApp, Request, StopApp};
 use crate::gui_frontend::ui_components::{
     create_context_menu_button, set_context_popover_to_app_list_context,
+    set_context_popover_to_profile_context,
 };
-use crate::gui_frontend::widgets::steam_app_card::SteamAppCard;
+use crate::gui_frontend::widgets::steam_app_card::{CARD_HEIGHT, CARD_MIN_WIDTH, SteamAppCard};
+use crate::utils::action_journal;
 use crate::utils::app_paths::get_executable_path;
 use crate::utils::arguments::parse_gui_arguments;
 use achievement_loader::AchievementLoader;
@@ -46,7 +52,8 @@ use gtk::prelude::*;
 use gtk::{
     Align, ApplicationWindow, Box, Button, CustomSorter, FilterListModel, GridView, HeaderBar,
     Image, Label, ListItem, MultiSelection, Orientation, PolicyType, ScrolledWindow, SearchEntry,
-    SignalListItemFactory, SortListModel, Spinner, Stack, StackTransitionType, Widget,
+    SignalListItemFactory, SortListModel, Spinner, Stack, StackTransitionType, ToggleButton,
+    Widget,
 };
 use gtk::{IconSize, glib};
 use progress_actions::create_progress_actions;
@@ -54,9 +61,132 @@ use refresh_actions::{
     create_clear_all_action, create_refresh_achievements_action, create_refresh_app_list_action,
 };
 use settings_bindings::setup_settings_bindings;
+use sidebar::{build_sidebar, sort_needs_counts};
 use std::cell::{Cell, RefCell};
+use std::cmp::Ordering;
+use std::collections::HashSet;
 use std::process::Command;
 use std::rc::Rc;
+
+#[derive(Default)]
+pub(super) struct FilterState {
+    pub junk: Cell<bool>,
+    pub only_idling: Cell<bool>,
+    pub hide_fully_unlocked: Cell<bool>,
+    pub hide_never_launched: Cell<bool>,
+    pub hide_no_unlocked: Cell<bool>,
+    pub hide_without_achievements: Cell<bool>,
+}
+
+impl FilterState {
+    fn from_settings(settings: &gtk::gio::Settings) -> Self {
+        let state = Self::default();
+        state.reload(settings);
+        state
+    }
+
+    pub(super) fn reload(&self, settings: &gtk::gio::Settings) {
+        self.junk.set(settings.boolean("filter-junk"));
+        self.only_idling.set(settings.boolean("filter-only-idling"));
+        self.hide_fully_unlocked
+            .set(settings.boolean("filter-hide-fully-unlocked"));
+        self.hide_never_launched
+            .set(settings.boolean("filter-hide-never-launched"));
+        self.hide_no_unlocked
+            .set(settings.boolean("filter-hide-no-unlocked"));
+        self.hide_without_achievements
+            .set(settings.boolean("filter-hide-without-achievements"));
+    }
+
+    fn depends_on_counts(&self) -> bool {
+        self.hide_fully_unlocked.get()
+            || self.hide_no_unlocked.get()
+            || self.hide_without_achievements.get()
+    }
+}
+
+const COUNT_FILTER_KEYS: &[&str] = &[
+    "filter-hide-fully-unlocked",
+    "filter-hide-no-unlocked",
+    "filter-hide-without-achievements",
+];
+
+#[cfg(feature = "adwaita")]
+const SIDEBAR_COLLAPSE_WIDTH: i32 = 1150;
+
+#[cfg(feature = "adwaita")]
+fn build_list_page(
+    settings: &gtk::gio::Settings,
+    sidebar: &Box,
+    content: &Stack,
+    toggle: &ToggleButton,
+) -> gtk::Widget {
+    use adw::prelude::*;
+
+    let split = adw::OverlaySplitView::builder()
+        .sidebar(sidebar)
+        .content(content)
+        .min_sidebar_width(f64::from(sidebar::SIDEBAR_WIDTH))
+        .max_sidebar_width(f64::from(sidebar::SIDEBAR_WIDTH))
+        .build();
+
+    settings
+        .bind("sidebar-visible", &split, "show-sidebar")
+        .flags(gtk::gio::SettingsBindFlags::GET)
+        .build();
+    split.connect_show_sidebar_notify(clone!(
+        #[strong]
+        settings,
+        move |split| {
+            if !split.is_collapsed() {
+                let _ = settings.set_boolean("sidebar-visible", split.shows_sidebar());
+            }
+        }
+    ));
+    split.connect_collapsed_notify(clone!(
+        #[strong]
+        settings,
+        move |split| {
+            if !split.is_collapsed() {
+                split.set_show_sidebar(settings.boolean("sidebar-visible"));
+            }
+        }
+    ));
+    split
+        .bind_property("show-sidebar", toggle, "active")
+        .bidirectional()
+        .sync_create()
+        .build();
+
+    let bin = adw::BreakpointBin::new();
+    bin.set_child(Some(&split));
+    bin.set_size_request(360, 200);
+
+    let condition =
+        adw::BreakpointCondition::parse(&format!("max-width: {SIDEBAR_COLLAPSE_WIDTH}px"))
+            .expect("static breakpoint condition");
+    let breakpoint = adw::Breakpoint::new(condition);
+    breakpoint.add_setter(&split, "collapsed", Some(&true.to_value()));
+    bin.add_breakpoint(breakpoint);
+
+    bin.upcast()
+}
+
+#[cfg(not(feature = "adwaita"))]
+fn build_list_page(
+    settings: &gtk::gio::Settings,
+    sidebar: &Box,
+    content: &Stack,
+    toggle: &ToggleButton,
+) -> gtk::Widget {
+    settings.bind("sidebar-visible", sidebar, "visible").build();
+    settings.bind("sidebar-visible", toggle, "active").build();
+
+    let page = Box::builder().orientation(Orientation::Horizontal).build();
+    page.append(sidebar);
+    page.append(content);
+    page.upcast()
+}
 
 /// Maximum number of apps the GUI lets the user idle simultaneously. Unrelated
 /// to bulk fan-out concurrency: idle sessions are long-running app-server
@@ -109,8 +239,6 @@ fn apply_idle_cap_delta(list_store: &ListStore, idle_count: &Cell<usize>, delta:
     }
 }
 
-/// Tagged with the app id and language it was fetched for: the slot is global and
-/// a late arrival can outlive the page it was started from.
 pub type PrefetchedProgress = Rc<RefCell<Option<(u32, String, AppProgress)>>>;
 
 pub fn create_main_ui(
@@ -137,7 +265,13 @@ pub fn create_main_ui(
     let settings = get_settings();
     // Apply the saved language before any widgets are built with translated text.
     crate::gui_frontend::i18n::set_language(&settings.string("app-language"));
-    let launch_app_by_id_visible = Rc::new(Cell::new(false));
+    // Mirrored into a plain flag: the recording call sites run on workers,
+    // which cannot touch a `Settings`.
+    action_journal::set_enabled(settings.boolean(action_journal::ENABLED_KEY));
+    settings.connect_changed(Some(action_journal::ENABLED_KEY), |settings, key| {
+        action_journal::set_enabled(settings.boolean(key));
+    });
+    let search_card: Rc<RefCell<Option<GSteamAppObject>>> = Rc::new(RefCell::new(None));
     let app_id = Rc::new(Cell::new(Option::<u32>::None));
     let app_unlocked_achievements_count = Rc::new(Cell::new(0usize));
     let prefetched_progress: PrefetchedProgress = Rc::new(RefCell::new(None));
@@ -192,6 +326,28 @@ pub fn create_main_ui(
     app_list_no_result_box.append(&app_list_no_result_icon);
     app_list_no_result_box.append(&app_list_no_result_label);
 
+    let list_disconnected_icon = Image::from_icon_name("dialog-warning-symbolic");
+    list_disconnected_icon.set_icon_size(IconSize::Large);
+    let list_disconnected_label = Label::builder()
+        .label(tr("SamRewritten could not connect to Steam. Is it running?").as_str())
+        .wrap(true)
+        .justify(gtk::Justification::Center)
+        .build();
+    let list_disconnected_retry = Button::builder()
+        .label(tr("Try again").as_str())
+        .action_name("app.refresh_app_list")
+        .halign(Align::Center)
+        .build();
+    let list_disconnected_box = Box::builder()
+        .spacing(20)
+        .valign(Align::Center)
+        .halign(Align::Center)
+        .orientation(Orientation::Vertical)
+        .build();
+    list_disconnected_box.append(&list_disconnected_icon);
+    list_disconnected_box.append(&list_disconnected_label);
+    list_disconnected_box.append(&list_disconnected_retry);
+
     // Header bar
     let header_bar = HeaderBar::builder().show_title_buttons(true).build();
     let search_entry = SearchEntry::builder()
@@ -199,7 +355,7 @@ pub fn create_main_ui(
         .build();
     let back_button = Button::builder()
         .icon_name("go-previous")
-        .sensitive(false)
+        .visible(false)
         .build();
     let (
         context_menu_button,
@@ -209,7 +365,12 @@ pub fn create_main_ui(
         context_menu_button_loading_progress_label,
         context_menu_button_info_label,
     ) = create_context_menu_button();
+    let sidebar_button = ToggleButton::builder()
+        .icon_name("sidebar-show-symbolic")
+        .tooltip_text(tr("Show or hide the sidebar").as_str())
+        .build();
     header_bar.pack_start(&back_button);
+    header_bar.pack_start(&sidebar_button);
     header_bar.pack_start(&search_entry);
     header_bar.pack_end(&context_menu_button);
     header_bar.pack_end(&context_menu_button_loading);
@@ -221,39 +382,81 @@ pub fn create_main_ui(
 
     let list_of_apps_or_no_result = Stack::builder()
         .transition_type(StackTransitionType::Crossfade)
+        .hexpand(true)
         .build();
     list_of_apps_or_no_result.add_named(&list_scrolled_window, Some("list"));
     list_of_apps_or_no_result.add_named(&app_list_no_result_box, Some("empty"));
+
+    // Inside the "list" page, not beside the stack, so the details page keeps
+    // the full width. It stays up over the "empty" child on purpose: a filter
+    // that hides everything has to remain undoable.
+    let sidebar = Rc::new(build_sidebar(&settings));
+    let list_page = build_list_page(
+        &settings,
+        &sidebar.widget,
+        &list_of_apps_or_no_result,
+        &sidebar_button,
+    );
 
     // Main application stack component
     let list_stack = Stack::builder()
         .transition_type(StackTransitionType::SlideLeftRight)
         .build();
     list_stack.add_named(&list_spinner_box, Some("loading"));
-    list_stack.add_named(&list_of_apps_or_no_result, Some("list"));
+    list_stack.add_named(&list_page, Some("list"));
+    list_stack.add_named(&list_disconnected_box, Some("disconnected"));
     list_stack.add_named(&app_pane, Some("app"));
 
     // App list models
     let list_factory = SignalListItemFactory::new();
     let list_store = ListStore::new::<GSteamAppObject>();
+    achievement_loader.attach(&list_store);
 
     // Hot-path caches — avoid repeated GSettings reads and to_lowercase() allocations
     // inside the filter/sort closures. Updated by their respective change handlers.
-    let filter_junk_cache: Rc<Cell<bool>> = Rc::new(Cell::new(settings.boolean("filter-junk")));
+    let filter_state: Rc<FilterState> = Rc::new(FilterState::from_settings(&settings));
     let sort_mode_cache: Rc<RefCell<String>> =
         Rc::new(RefCell::new(settings.string("app-sort").to_string()));
     let search_text_lower: Rc<RefCell<String>> = Rc::new(RefCell::new(String::new()));
+    let counts_ready: Rc<Cell<bool>> = Rc::new(Cell::new(false));
+    let counts_wanted_by_profile: Rc<Cell<bool>> = Rc::new(Cell::new(false));
 
     let list_custom_filter = gtk::CustomFilter::new(clone!(
         #[strong]
-        filter_junk_cache,
+        filter_state,
+        #[strong]
+        counts_ready,
         #[strong]
         search_text_lower,
         move |obj| {
             let app = obj.downcast_ref::<GSteamAppObject>().unwrap();
 
-            if filter_junk_cache.get() && app.is_junk() {
+            if app.is_synthetic() {
+                return true;
+            }
+
+            if filter_state.junk.get() && app.is_junk() {
                 return false;
+            }
+            if filter_state.only_idling.get() && !app.is_idling() {
+                return false;
+            }
+            if filter_state.hide_never_launched.get() && app.last_played() == 0 {
+                return false;
+            }
+
+            if counts_ready.get() {
+                let total = app.achievement_count();
+                let unlocked = app.unlocked_achievement_count();
+                if filter_state.hide_without_achievements.get() && total == 0 {
+                    return false;
+                }
+                if filter_state.hide_fully_unlocked.get() && total > 0 && unlocked >= total {
+                    return false;
+                }
+                if filter_state.hide_no_unlocked.get() && unlocked == 0 {
+                    return false;
+                }
             }
 
             let search_text = search_text_lower.borrow();
@@ -273,6 +476,8 @@ pub fn create_main_ui(
     let list_custom_sorter = CustomSorter::new(clone!(
         #[strong]
         sort_mode_cache,
+        #[strong]
+        counts_ready,
         move |a, b| {
             let a = a.downcast_ref::<GSteamAppObject>().unwrap();
             let b = b.downcast_ref::<GSteamAppObject>().unwrap();
@@ -291,9 +496,227 @@ pub fn create_main_ui(
                     .playtime_minutes()
                     .cmp(&a.playtime_minutes())
                     .then_with(alphabetical),
+                "completion" if counts_ready.get() => b
+                    .completion()
+                    .partial_cmp(&a.completion())
+                    .unwrap_or(Ordering::Equal)
+                    .then_with(alphabetical),
+                "remaining" if counts_ready.get() => {
+                    a.remaining().cmp(&b.remaining()).then_with(alphabetical)
+                }
+                "completion" | "remaining" => alphabetical(),
                 _ => a.app_id().cmp(&b.app_id()),
             };
             ord.into()
+        }
+    ));
+
+    // `FilterListModel` only signals items-changed when the *filtered* count
+    // moves, so a filter that rejects everything never fires at all.
+    let sync_empty_state: Rc<dyn Fn()> = Rc::new(clone!(
+        #[weak]
+        list_filter_model,
+        #[weak]
+        list_of_apps_or_no_result,
+        move || {
+            let child = if list_filter_model.n_items() == 0 {
+                "empty"
+            } else {
+                "list"
+            };
+            if list_of_apps_or_no_result.visible_child_name().as_deref() != Some(child) {
+                list_of_apps_or_no_result.set_visible_child_name(child);
+            }
+        }
+    ));
+
+    let sync_counts_state: Rc<dyn Fn(bool)> = Rc::new(clone!(
+        #[weak]
+        list_store,
+        #[weak]
+        list_custom_filter,
+        #[weak]
+        list_custom_sorter,
+        #[strong]
+        counts_ready,
+        #[strong]
+        filter_state,
+        #[strong]
+        sort_mode_cache,
+        #[strong]
+        sidebar,
+        #[strong]
+        achievement_loader,
+        #[strong]
+        counts_wanted_by_profile,
+        // Only landed counts can change what a completion filter decides, and
+        // the search box mutates the store twice per keystroke.
+        move |counts_moved: bool| {
+            let needs_counts = filter_state.depends_on_counts()
+                || sort_needs_counts(sort_mode_cache.borrow().as_str())
+                || counts_wanted_by_profile.get();
+            let (loaded, total) = achievement_loader.counts_progress(&list_store);
+            let ready = total > 0 && loaded == total;
+            if ready {
+                counts_wanted_by_profile.set(false);
+            }
+
+            // Once measured, every count change re-runs them: unlocking a
+            // game's last achievement is what makes it match "hide at 100%".
+            // Mid-sweep only the flip counts.
+            let readiness_changed = counts_ready.replace(ready) != ready;
+            if readiness_changed || (ready && counts_moved) {
+                if filter_state.depends_on_counts() {
+                    list_custom_filter.changed(gtk::FilterChange::Different);
+                }
+                if sort_needs_counts(sort_mode_cache.borrow().as_str()) {
+                    list_custom_sorter.changed(gtk::SorterChange::Different);
+                }
+            }
+
+            if !needs_counts || total == 0 {
+                achievement_loader.cancel_backlog();
+                sidebar.set_counts_loading(false, 0.0);
+            } else if ready {
+                sidebar.set_counts_loading(false, 1.0);
+            } else {
+                achievement_loader.queue_remaining(&list_store);
+                sidebar.set_counts_loading(true, f64::from(loaded) / f64::from(total));
+            }
+        }
+    ));
+
+    let on_filters_changed: Rc<dyn Fn()> = Rc::new(clone!(
+        #[strong]
+        sync_counts_state,
+        #[strong]
+        sync_empty_state,
+        move || {
+            sync_counts_state(false);
+            sync_empty_state();
+        }
+    ));
+
+    let identity: SharedIdentity = Rc::new(Identity::default());
+    let on_open_app: Rc<dyn Fn(&GSteamAppObject)> = Rc::new(clone!(
+        #[weak]
+        application,
+        #[weak]
+        menu_model,
+        #[weak]
+        app_achievement_count_value,
+        #[weak]
+        app_stats_count_value,
+        #[weak]
+        app_type_value,
+        #[weak]
+        app_developer_value,
+        #[weak]
+        app_metacritic_value,
+        #[weak]
+        app_playtime_value,
+        #[weak]
+        app_metacritic_box,
+        #[weak]
+        app_stack,
+        #[weak]
+        list_stack,
+        #[weak]
+        app_label,
+        #[weak]
+        app_shimmer_image,
+        #[strong]
+        app_id,
+        #[strong]
+        prefetched_progress,
+        #[strong]
+        settings,
+        move |app: &GSteamAppObject| {
+            switch_from_app_list_to_app(
+                app,
+                application,
+                &app_type_value,
+                &app_developer_value,
+                &app_achievement_count_value,
+                &app_stats_count_value,
+                app_stack,
+                &app_id,
+                &app_metacritic_box,
+                &app_metacritic_value,
+                &app_playtime_value,
+                &app_shimmer_image,
+                &app_label,
+                &menu_model,
+                &list_stack,
+                &prefetched_progress,
+                &settings,
+            );
+        }
+    ));
+    let on_measure_all: Rc<dyn Fn()> = Rc::new(clone!(
+        #[strong]
+        counts_wanted_by_profile,
+        #[strong]
+        sync_counts_state,
+        move || {
+            counts_wanted_by_profile.set(true);
+            sync_counts_state(false);
+        }
+    ));
+    let counts_loading: Rc<dyn Fn() -> bool> = Rc::new(clone!(
+        #[strong]
+        achievement_loader,
+        move || achievement_loader.is_working()
+    ));
+    let profile = Rc::new(build_profile_view(
+        identity.clone(),
+        on_open_app,
+        on_measure_all,
+        counts_loading,
+    ));
+    list_stack.add_named(&profile.widget, Some("profile"));
+
+    sidebar.connect_profile_clicked(clone!(
+        #[weak]
+        list_stack,
+        #[weak]
+        list_store,
+        #[strong]
+        profile,
+        #[weak]
+        application,
+        #[weak]
+        menu_model,
+        move || {
+            profile.load(&list_store);
+            set_context_popover_to_profile_context(&menu_model, &application);
+            list_stack.set_visible_child_name("profile");
+        }
+    ));
+
+    sidebar.connect_counts_load_clicked(clone!(
+        #[strong]
+        settings,
+        #[strong]
+        achievement_loader,
+        #[strong]
+        counts_wanted_by_profile,
+        move || {
+            achievement_loader.cancel_backlog();
+            counts_wanted_by_profile.set(false);
+
+            if sort_needs_counts(settings.string("app-sort").as_str())
+                && let Err(e) = settings.set_string("app-sort", "alphabetical")
+            {
+                eprintln!("[CLIENT] Error saving app-sort setting: {e:?}");
+            }
+            for key in COUNT_FILTER_KEYS {
+                if settings.boolean(key)
+                    && let Err(e) = settings.set_boolean(key, false)
+                {
+                    eprintln!("[CLIENT] Error saving {key} setting: {e:?}");
+                }
+            }
         }
     ));
 
@@ -302,9 +725,32 @@ pub fn create_main_ui(
         &settings,
         &list_custom_filter,
         &list_custom_sorter,
-        filter_junk_cache.clone(),
+        filter_state.clone(),
         sort_mode_cache.clone(),
+        on_filters_changed.clone(),
     );
+
+    achievement_loader.on_counts_applied(clone!(
+        #[strong]
+        sync_counts_state,
+        #[strong]
+        profile,
+        #[weak]
+        list_store,
+        #[weak]
+        list_stack,
+        move || {
+            sync_counts_state(true);
+            if list_stack.visible_child_name().as_deref() == Some("profile") {
+                profile.queue_refresh(&list_store);
+            }
+        }
+    ));
+    list_store.connect_items_changed(clone!(
+        #[strong]
+        on_filters_changed,
+        move |_, _, _, _| on_filters_changed()
+    ));
 
     let list_sort_model = SortListModel::builder()
         .model(&list_filter_model)
@@ -321,6 +767,49 @@ pub fn create_main_ui(
         .model(&list_selection_model)
         .factory(&list_factory)
         .build();
+
+    profile.connect_select_apps(clone!(
+        #[weak]
+        list_selection_model,
+        #[weak]
+        list_stack,
+        #[weak]
+        application,
+        #[weak]
+        menu_model,
+        move |app_ids: &[u32]| {
+            let wanted: HashSet<u32> = app_ids.iter().copied().collect();
+            list_selection_model.unselect_all();
+            for position in 0..list_selection_model.n_items() {
+                if let Some(app) = list_selection_model
+                    .item(position)
+                    .and_downcast::<GSteamAppObject>()
+                    && wanted.contains(&app.app_id())
+                {
+                    list_selection_model.select_item(position, false);
+                }
+            }
+
+            let has_selection = !list_selection_model.selection().is_empty();
+            set_app_action_enabled(&application, "unlock_all_apps", has_selection);
+            set_app_action_enabled(&application, "lock_all_apps", has_selection);
+            set_app_action_enabled(&application, "export_selected_progress", has_selection);
+            set_context_popover_to_app_list_context(&menu_model, &application);
+            list_stack.set_visible_child_name("list");
+        }
+    ));
+
+    profile.connect_undone(clone!(
+        #[weak]
+        list_store,
+        #[strong]
+        achievement_loader,
+        move |app_ids: &[u32]| {
+            for app_id in app_ids {
+                achievement_loader.refresh_app(*app_id, &list_store);
+            }
+        }
+    ));
 
     let window = ApplicationWindow::builder()
         .application(application)
@@ -407,8 +896,14 @@ pub fn create_main_ui(
         idle_count,
         #[strong]
         prefetched_progress,
+        #[strong]
+        filter_state,
+        #[strong]
+        sync_empty_state,
         #[weak]
         application,
+        #[weak]
+        list_custom_filter,
         #[weak]
         list_store,
         #[weak]
@@ -441,7 +936,7 @@ pub fn create_main_ui(
         settings,
         move |_, list_item| {
             let card = SteamAppCard::default();
-            card.set_size_request(400, 150);
+            card.set_size_request(CARD_MIN_WIDTH, CARD_HEIGHT);
             card.set_margin_start(5);
             card.set_margin_end(5);
             card.set_margin_top(5);
@@ -528,11 +1023,19 @@ pub fn create_main_ui(
                         return;
                     };
                     let app_id_to_bind = app.app_id();
-                    // TODO: Find a way to gracefully wait for this
-                    Command::new(get_executable_path())
+                    match Command::new(get_executable_path())
                         .arg(format!("--auto-open={app_id_to_bind}"))
                         .spawn()
-                        .expect("Could not start child process");
+                    {
+                        // Without the wait every window opened this way stays a
+                        // zombie until this process exits.
+                        Ok(mut child) => {
+                            std::thread::spawn(move || {
+                                let _ = child.wait();
+                            });
+                        }
+                        Err(e) => eprintln!("[CLIENT] Could not open {app_id_to_bind}: {e}"),
+                    }
                 }
             ));
 
@@ -543,6 +1046,12 @@ pub fn create_main_ui(
                 list_store,
                 #[strong]
                 idle_count,
+                #[weak]
+                list_custom_filter,
+                #[strong]
+                filter_state,
+                #[strong]
+                sync_empty_state,
                 move |button| {
                     let Some(app) = card.app_object() else {
                         return;
@@ -557,6 +1066,10 @@ pub fn create_main_ui(
                     let app_id = app.app_id();
                     app.set_is_idling(active);
                     apply_idle_cap_delta(&list_store, &idle_count, if active { 1 } else { -1 });
+                    if filter_state.only_idling.get() {
+                        list_custom_filter.changed(gtk::FilterChange::Different);
+                        sync_empty_state();
+                    }
 
                     let handle = spawn_blocking(move || {
                         if active {
@@ -571,6 +1084,10 @@ pub fn create_main_ui(
                         list_store,
                         #[strong]
                         idle_count,
+                        #[weak]
+                        list_custom_filter,
+                        #[strong]
+                        filter_state,
                         async move {
                             if let Ok(Err(e)) = handle.await {
                                 eprintln!(
@@ -583,6 +1100,9 @@ pub fn create_main_ui(
                                     &idle_count,
                                     if active { -1 } else { 1 },
                                 );
+                                if filter_state.only_idling.get() {
+                                    list_custom_filter.changed(gtk::FilterChange::Different);
+                                }
                             }
                         }
                     ));
@@ -659,41 +1179,20 @@ pub fn create_main_ui(
         list_store,
         #[strong]
         search_text_lower,
+        #[strong]
+        search_card,
         move |entry| {
             let text = Some(entry.text()).filter(|s| !s.is_empty());
             // Refresh the lowercased cache that the list filter reads on every item.
             *search_text_lower.borrow_mut() =
                 text.as_ref().map(|s| s.to_lowercase()).unwrap_or_default();
 
-            // This logic is needed to have flashes of "no results found"
-            if launch_app_by_id_visible.take() {
-                if let Some(app_id) = text.as_ref().and_then(|t| t.parse::<u32>().ok()) {
-                    launch_app_by_id_visible.set(true);
-                    let synthetic = GSteamAppObject::new(AppModel {
-                        app_id,
-                        app_name: format!("App {app_id}"),
-                        app_type: AppModelType::App,
-                        developer: "Unknown".to_string(),
-                        image_url: None,
-                        metacritic_score: None,
-                        playtime_minutes: None,
-                        last_played: None,
-                        achievement_count: None,
-                        unlocked_achievement_count: None,
-                    });
-                    synthetic.set_is_synthetic(true);
-                    list_store.insert(1, &synthetic);
-                }
+            let previous = search_card
+                .borrow()
+                .as_ref()
+                .and_then(|card| list_store.find(card));
 
-                app_achievement_string_filter.set_search(text.as_deref());
-                app_stat_string_filter.set_search(text.as_deref());
-                list_custom_filter.changed(gtk::FilterChange::Different);
-                list_store.remove(0);
-                return;
-            }
-
-            if let Some(app_id) = text.clone().and_then(|t| t.parse::<u32>().ok()) {
-                launch_app_by_id_visible.set(true);
+            if let Some(app_id) = text.as_ref().and_then(|t| t.parse::<u32>().ok()) {
                 let synthetic = GSteamAppObject::new(AppModel {
                     app_id,
                     app_name: format!("App {app_id}"),
@@ -707,25 +1206,26 @@ pub fn create_main_ui(
                     unlocked_achievement_count: None,
                 });
                 synthetic.set_is_synthetic(true);
-                list_store.insert(0, &synthetic);
+                list_store.insert(previous.map_or(0, |at| at + 1), &synthetic);
+                *search_card.borrow_mut() = Some(synthetic);
+            } else {
+                *search_card.borrow_mut() = None;
             }
 
             app_achievement_string_filter.set_search(text.as_deref());
             app_stat_string_filter.set_search(text.as_deref());
             list_custom_filter.changed(gtk::FilterChange::Different);
+
+            if let Some(at) = previous {
+                list_store.remove(at);
+            }
         }
     ));
 
     list_filter_model.connect_items_changed(clone!(
-        #[weak]
-        list_of_apps_or_no_result,
-        move |model, _, _, _| {
-            if model.n_items() == 0 {
-                list_of_apps_or_no_result.set_visible_child_name("empty");
-            } else {
-                list_of_apps_or_no_result.set_visible_child_name("list");
-            }
-        }
+        #[strong]
+        sync_empty_state,
+        move |_, _, _, _| sync_empty_state()
     ));
 
     // Back button handler
@@ -749,10 +1249,16 @@ pub fn create_main_ui(
         #[strong]
         cancel_timed_unlock,
         move |_| {
+            if list_stack.visible_child_name().as_deref() == Some("profile") {
+                set_context_popover_to_app_list_context(&menu_model, &application);
+                list_stack.set_visible_child_name("list");
+                return;
+            }
+
             cancel_timed_unlock.store(true, std::sync::atomic::Ordering::Relaxed);
             list_stack.set_visible_child_name("list");
-            // The one way out of a timed unlock that skips the refresh, so it has
-            // to lift the lockout itself or the next app page inherits it.
+            // The one way out of a timed unlock that skips the refresh, so it
+            // has to lift the lockout itself.
             set_timed_unlock_actions_enabled(&application, true);
             set_context_popover_to_app_list_context(&menu_model, &application);
             application.activate_action("app_page_closed", None);
@@ -857,6 +1363,8 @@ pub fn create_main_ui(
         #[weak]
         back_button,
         #[weak]
+        sidebar_button,
+        #[weak]
         application,
         #[weak]
         app_stack,
@@ -869,22 +1377,33 @@ pub fn create_main_ui(
         #[strong]
         settings,
         move |stack| {
-            if stack.visible_child_name().as_deref() == Some("loading") {
-                back_button.set_sensitive(false);
+            let page = stack.visible_child_name();
+            let page = page.as_deref();
+            let on_own_page = page == Some("app") || page == Some("profile");
+            sidebar_button.set_visible(!on_own_page);
+            sidebar_button.set_sensitive(page == Some("list"));
+            search_entry.set_sensitive(page != Some("profile"));
+
+            if page == Some("loading") {
+                back_button.set_visible(false);
                 action_refresh_app_list.set_enabled(false);
-            } else if stack.visible_child_name().as_deref() == Some("app") {
+            } else if page == Some("profile") {
+                search_entry.set_text("");
+                back_button.set_visible(true);
+                action_refresh_app_list.set_enabled(false);
+            } else if page == Some("app") {
                 search_entry.set_text("");
                 search_entry.set_placeholder_text(Some(tr("Achievement or stat...").as_str()));
-                back_button.set_sensitive(true);
+                back_button.set_visible(true);
                 action_refresh_app_list.set_enabled(false);
             } else {
                 search_entry.set_text("");
                 search_entry.set_placeholder_text(Some(tr("Name or AppId (Ctrl+K)").as_str()));
-                back_button.set_sensitive(false);
+                back_button.set_visible(false);
                 action_refresh_app_list.set_enabled(true);
 
                 let auto_launch_app = gui_args.auto_open.get();
-                if auto_launch_app > 0 {
+                if auto_launch_app > 0 && page == Some("list") {
                     gui_args.auto_open.set(0);
 
                     let target_app = list_store
@@ -962,6 +1481,9 @@ pub fn create_main_ui(
 
     window.add_controller(key_controller);
 
+    #[cfg(debug_assertions)]
+    crate::gui_frontend::dev_widgets::install(&window);
+
     choose_steam_install_then(
         &window,
         clone!(
@@ -974,9 +1496,6 @@ pub fn create_main_ui(
             #[strong]
             window,
             move |chosen| {
-                // This process reads Steam's files too, so it has to land on the
-                // same install the orchestrator is about to be pinned to. The snap
-                // chooser pins its own; this covers the multi-install one.
                 #[cfg(unix)]
                 if let Some(root) = chosen.as_ref() {
                     crate::utils::snap::pin_install_root(root);
@@ -988,6 +1507,19 @@ pub fn create_main_ui(
                 list_stack.set_visible_child_name("loading");
                 action_refresh_app_list.activate(None);
                 action_refresh_app_list.set_enabled(false);
+                load_identity(
+                    identity.clone(),
+                    clone!(
+                        #[strong]
+                        sidebar,
+                        #[strong]
+                        profile,
+                        move |id| {
+                            sidebar.set_identity(id);
+                            profile.refresh_identity();
+                        }
+                    ),
+                );
                 window.present();
             }
         ),

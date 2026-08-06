@@ -19,6 +19,7 @@ use crate::gui_frontend::achievement_view::create_achievements_view;
 use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use gtk::gio::ListStore;
+use gtk::glib;
 use gtk::glib::clone;
 use gtk::pango::{EllipsizeMode, WrapMode};
 use gtk::prelude::*;
@@ -26,7 +27,6 @@ use gtk::{
     Align, Box, Label, Orientation, Separator, Spinner, Stack, StackTransitionType, StringFilter,
     ToggleButton,
 };
-use gtk::{Paned, glib};
 use std::cell::Cell;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -54,7 +54,7 @@ pub fn create_app_view(
     StringFilter,
     ListStore,
     StringFilter,
-    Paned,
+    Box,
     Arc<AtomicBool>,
     Stack,
 ) {
@@ -199,8 +199,12 @@ pub fn create_app_view(
         .margin_top(20)
         .build();
 
+    // hexpand is pinned off on purpose: expand propagates up to whichever
+    // ancestor last leaves it unset. Without this the sidebar shares the window's
+    // extra width with the details stack instead of staying at its own size.
     let app_sidebar = Box::builder()
         .orientation(Orientation::Vertical)
+        .hexpand(false)
         .margin_top(20)
         .margin_bottom(20)
         .margin_start(20)
@@ -297,15 +301,19 @@ pub fn create_app_view(
         }
     ));
 
-    // Create app pane with sidebar and main content
-    let app_pane = Paned::builder()
-        .orientation(Orientation::Horizontal)
-        .shrink_start_child(false)
-        .shrink_end_child(false)
-        .resize_start_child(false)
-        .start_child(&app_sidebar)
-        .end_child(&app_stack)
-        .build();
+    // Create app pane with sidebar and main content. A Box rather than a Paned:
+    // the split is not meant to be user-adjustable, and since no position was ever
+    // set the Paned already allocated the sidebar its natural width — so dropping
+    // it removes the drag handle without changing any size.
+    let app_pane = Box::builder().orientation(Orientation::Horizontal).build();
+    app_stack.set_hexpand(true);
+    app_pane.append(&app_sidebar);
+    app_pane.append(
+        &Separator::builder()
+            .orientation(Orientation::Vertical)
+            .build(),
+    );
+    app_pane.append(&app_stack);
 
     // Return relevant widgets that need to be accessed from outside
     (

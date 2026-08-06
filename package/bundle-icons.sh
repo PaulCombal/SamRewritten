@@ -68,7 +68,10 @@ cp -f "$SRC/symbolic/actions/action-unavailable-symbolic.svg" \
       "$SRC/symbolic/actions/media-playback-start-symbolic.svg" \
       "$SRC/symbolic/actions/object-select-symbolic.svg" \
       "$SRC/symbolic/actions/open-menu-symbolic.svg" \
+      "$SRC/symbolic/actions/sidebar-show-symbolic.svg" \
+      "$SRC/symbolic/actions/sidebar-show-symbolic-rtl.svg" \
       "$SRC/symbolic/actions/system-search-symbolic.svg" \
+      "$SRC/symbolic/actions/view-more-symbolic.svg" \
       "$DST/symbolic/actions/"
 
 cp -f "$SRC/symbolic/ui/pan-down-symbolic.svg" \

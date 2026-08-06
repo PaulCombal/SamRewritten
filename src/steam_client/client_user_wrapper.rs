@@ -16,21 +16,21 @@
 use crate::steam_client::client_engine_wrapper::ClientEngineInner;
 use crate::steam_client::client_user_vtable::IClientUser;
 use crate::steam_client::steamworks_types::AppId_t;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct ClientUser {
-    inner: Arc<ClientUserInner>,
+    inner: Rc<ClientUserInner>,
 }
 
 struct ClientUserInner {
     ptr: *mut IClientUser,
-    _engine: Arc<ClientEngineInner>,
+    _engine: Rc<ClientEngineInner>,
 }
 
 impl ClientUser {
-    pub unsafe fn from_raw(ptr: *mut IClientUser, engine: Arc<ClientEngineInner>) -> Self {
+    pub unsafe fn from_raw(ptr: *mut IClientUser, engine: Rc<ClientEngineInner>) -> Self {
         Self {
-            inner: Arc::new(ClientUserInner {
+            inner: Rc::new(ClientUserInner {
                 ptr,
                 _engine: engine,
             }),

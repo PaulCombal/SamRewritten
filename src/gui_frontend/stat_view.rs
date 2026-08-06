@@ -16,6 +16,7 @@
 use super::gobjects::stat::GStatObject;
 use super::request::{Request, SetFloatStat, SetIntStat};
 use crate::gui_frontend::i18n::tr;
+use crate::utils::action_journal::{Batch, Change, Op};
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::SignalHandlerId;
 use gtk::glib::object::Cast;
@@ -303,6 +304,24 @@ pub fn create_stats_view() -> (Frame, ListStore, StringFilter) {
                     join_handle.await.expect("spawn_blocking task panicked");
 
                 if success {
+                    let before = stat_object_clone.original_value();
+                    Batch::new(Op::StatEdit, app_id, "").record(vec![if stat_object_clone
+                        .is_integer()
+                    {
+                        Change::IntStat {
+                            id: stat_object_clone.id(),
+                            name: stat_object_clone.display_name(),
+                            before: before as i32,
+                            after: debounced_value as i32,
+                        }
+                    } else {
+                        Change::FloatStat {
+                            id: stat_object_clone.id(),
+                            name: stat_object_clone.display_name(),
+                            before: before as f32,
+                            after: debounced_value as f32,
+                        }
+                    }]);
                     stat_object_clone.set_original_value(debounced_value);
                 } else {
                     stat_object_clone.set_current_value(stat_object_clone.original_value());

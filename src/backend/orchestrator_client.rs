@@ -210,6 +210,8 @@ request!(GetFriendAchievementCount { app_id: u32, steam_id64: u64 } -> (u32, u32
 
 request!(GetFriends -> Vec<Friend> => SteamCommand::GetFriends);
 
+request!(GetCurrentUser -> u64 => SteamCommand::GetCurrentUser);
+
 request!(GetUserAvatar { steam_id64: u64 } -> Option<AvatarImage>
     => SteamCommand::GetUserAvatar(steam_id64));
 

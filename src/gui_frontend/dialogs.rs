@@ -105,6 +105,55 @@ pub fn show_list_dialog(
     dialog.present();
 }
 
+/// Ask before going ahead, and wait for the answer. `go_ahead` labels the
+/// button that does; the other one always cancels. `destructive` paints that
+/// button as a warning and leaves the cancel as the default, for the answers
+/// there is no way back from. Returns whether the user went ahead.
+#[cfg(feature = "adwaita")]
+pub async fn confirm_dialog(
+    parent: Option<&gtk::Window>,
+    title: &str,
+    body: &str,
+    go_ahead: &str,
+    destructive: bool,
+) -> bool {
+    use adw::prelude::*;
+
+    let dialog = adw::AlertDialog::new(Some(title), Some(body));
+    dialog.add_response("cancel", tr("Cancel").as_str());
+    dialog.add_response("go-ahead", go_ahead);
+    dialog.set_response_appearance(
+        "go-ahead",
+        if destructive {
+            adw::ResponseAppearance::Destructive
+        } else {
+            adw::ResponseAppearance::Suggested
+        },
+    );
+    dialog.set_default_response(Some(if destructive { "cancel" } else { "go-ahead" }));
+    dialog.set_close_response("cancel");
+    dialog.choose_future(parent).await == "go-ahead"
+}
+
+#[cfg(not(feature = "adwaita"))]
+pub async fn confirm_dialog(
+    parent: Option<&gtk::Window>,
+    title: &str,
+    body: &str,
+    go_ahead: &str,
+    destructive: bool,
+) -> bool {
+    let dialog = gtk::AlertDialog::builder()
+        .modal(true)
+        .message(title)
+        .detail(body)
+        .buttons([tr("Cancel").as_str(), go_ahead])
+        .cancel_button(0)
+        .default_button(if destructive { 0 } else { 1 })
+        .build();
+    dialog.choose_future(parent).await == Ok(1)
+}
+
 #[cfg(feature = "adwaita")]
 pub fn show_message_dialog(parent: Option<&gtk::Window>, title: &str, body: &str) {
     use adw::prelude::*;
@@ -304,12 +353,12 @@ where
 {
     let (radio_box, buttons) = build_install_radio(&dirs);
     let body = tr(
-        "SamRewritten found more than one Steam installation. The one Steam is currently running from is preselected — the others won't work unless you start Steam from them first.",
+        "SamRewritten found more than one Steam installation. The one Steam is currently running from is preselected, the others won't work unless you start Steam from them first.",
     );
     let hint = gtk::Label::builder()
         .use_markup(true)
         .label(
-            tr("You'll be asked again next launch. To skip this for good, set the <tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install you want — see the <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-file#environment-variables\">README</a>.")
+            tr("You'll be asked again next launch. To skip this for good, set the <tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install you want. See the <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-file#environment-variables\">README</a>.")
             .as_str(),
         )
         .wrap(true)
@@ -491,7 +540,7 @@ where
     use crate::utils::snap;
 
     let body = tr(
-        "This is the sandboxed <b>Snap</b> version of SamRewritten, so it needs your permission to read your Steam files. Pick your Steam folder once — a system dialog will open, just confirm it to grant access. You won't be asked again.\n\n<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam with Flatpak, please use the AppImage instead.",
+        "This is the sandboxed <b>Snap</b> version of SamRewritten, so it needs your permission to read your Steam files. Pick your Steam folder once: a system dialog will open, just confirm it to grant access. You won't be asked again.\n\n<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam with Flatpak, please use the AppImage instead.",
     );
 
     #[cfg(feature = "adwaita")]

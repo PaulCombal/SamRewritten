@@ -54,7 +54,7 @@
   "description": "A free, open-source Steam Achievement Manager for Linux and Windows. Unlock and relock Steam achievements, edit game stats in real time, schedule achievement unlocks, and idle apps. Includes a GTK graphical interface and a command-line tool.",
   "url": "https://paulcombal.github.io/SamRewritten/",
   "downloadUrl": "https://github.com/PaulCombal/SamRewritten/releases",
-  "softwareVersion": "1.4.7",
+  "softwareVersion": "1.5.0",
   "license": "https://github.com/PaulCombal/SamRewritten/blob/master/LICENSE",
   "image": [
     "https://paulcombal.github.io/SamRewritten/img/og-card.png",
@@ -130,6 +130,14 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "Yes. SamRewritten works with the Flatpak version of Steam. The Snap and .deb versions of Steam are supported too."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can SamRewritten show my Steam achievement statistics?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. SamRewritten includes a stats page for your whole library: totals for games owned, achievements unlocked, average completion, perfect games and playtime, a per-day unlock activity heatmap with a year switcher, a graph of average completion over time, and a review of unlock bursts that look irregular. Everything is computed locally from the achievement records Steam already keeps on your disk. SamRewritten can also keep an optional local history of every change it makes, which you can review and undo; it is off by default."
       }
     },
     {
@@ -438,10 +446,35 @@
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Edit game statistics in real time</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Per-app or bulk import/export of achievements and stats (JSON)</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Idle apps: appear in-game until you toggle it off</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span>Advanced stats: library totals, a per-day unlock activity heatmap, and average completion over time (<a href="#stats">see below</a>)</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Review of unlock bursts that look irregular, so you can see what stands out in your own history</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Optional local history of every change SamRewritten makes, with one-click undo</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Light and dark themes</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Translated into French, Spanish, Japanese, and Brazilian Portuguese (in addition to English)</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span>Full-featured CLI that does not require GTK (<a href="cli.html">read the guide</a>)</span></li>
       </ul>
+    </div>
+  </section>
+
+  <section class="block" id="stats">
+    <div class="wrap">
+      <div class="section-head"><h2>Advanced stats</h2></div>
+      <p class="lead">
+        Click your Steam profile in the sidebar to open a page about your library rather than any single game.
+        Everything on it is computed <strong>locally</strong>, from the achievement records Steam already keeps on
+        your disk — so it is exactly as complete as those records are.
+      </p>
+      <ul class="features">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>Library totals</strong> — games owned, achievements unlocked, average completion, perfect games and total playtime.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>Unlock activity</strong> — a calendar heatmap, one square per day, with a year switcher. Hover any day to see how many achievements it holds and which game they came from.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>Completion over time</strong> — your average completion across the games you have started, from your first unlock to today. It dips whenever you start something new, which is the honest shape of a library.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>Irregular activity</strong> — runs of unlocks that arrived too fast or too neatly to look like ordinary play, each with a short note on why it stands out.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>What SamRewritten changed</strong> — opt-in and off by default. Turn it on and every unlock, relock and stat edit the app makes is recorded to a local file you can review and undo.</span></li>
+      </ul>
+      <p class="note">
+        Irregular activity flags candidates, never verdicts. A game that grants its whole catalogue on first launch
+        looks exactly like a bulk unlock, and the page says so rather than guessing.
+      </p>
     </div>
   </section>
 
@@ -576,6 +609,14 @@
       <details>
         <summary>Does SamRewritten support Flatpak Steam?</summary>
         <p>Yes. SamRewritten works with the Flatpak version of Steam. Snap and .deb installations of Steam are supported as well.</p>
+      </details>
+
+      <details>
+        <summary>Can SamRewritten show my Steam achievement statistics?</summary>
+        <p>Yes. Click your profile in the sidebar to open a stats page with your library totals, a per-day unlock
+          activity heatmap with a year switcher, a graph of your average completion over time, and a review of unlock
+          bursts that look irregular — see <a href="#stats">Advanced stats</a>. Everything is computed locally from the
+          achievement records Steam already keeps on your disk.</p>
       </details>
 
       <details>

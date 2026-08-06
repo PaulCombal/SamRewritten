@@ -1,5 +1,29 @@
 ### Low priority
 
+- default completion sort -> where in the scrolling are we?
+- Make the library-wide bulk actions undoable. The action journal records that
+  "Unlock all in selection", "Reset all in selection" and an import happened,
+  and to which apps, but not what they changed: the per-item before-state only
+  ever exists inside the app-server child, and nothing carries it back. So the
+  very misclick worth undoing — a bulk unlock across a whole selection — still
+  cannot be. Fix: have the child call `collect_app_export` before it mutates and
+  return that snapshot alongside its result, then record it as the operation's
+  before-image. The undo path already knows what to do with one — it hands
+  `AppExport`s to `ImportApps`.
+- Record the achievements Steam grants by itself. Storing one unlock makes Steam
+  re-evaluate every stat-driven achievement in that game, so a single click can
+  unlock several — SamRewritten asked for one, Steam did nine. The journal only
+  knows what was asked for, so those extras are neither listed nor undoable, and
+  they would re-grant themselves anyway while the stats behind them stand.
+  Catching them means re-reading the app's achievements after a store and
+  recording the difference; worth doing for the record even though the undo
+  cannot help.
+- Undo a single stat edit. Deliberately left out: Steam refuses a decrease on an
+  increment-only stat (`progress_io.rs:classify_stat` spells out which), so the
+  button would fail often enough to be worse than not offering it. The per-app
+  reset's undo does restore stats, because `apply_app_export` puts both halves
+  back in one pass.
+
 - Recover when Flatpak Steam is started *after* SamRewritten. The orchestrator
   only joins Flatpak Steam's PID namespace at startup (`enter_flatpak_steam_ns_if_needed`),
   and the join must happen before any threads exist, so a Flatpak Steam launched

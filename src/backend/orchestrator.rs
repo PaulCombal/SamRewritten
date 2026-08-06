@@ -67,7 +67,7 @@ pub fn orchestrator(parent_tx: &mut Sender, parent_rx: &mut Recver) -> u8 {
         let message: SteamCommand = match read_message(parent_rx) {
             Ok(m) => m,
             Err(e) => {
-                eprintln!("[ORCHESTRATOR] Parent pipe error: {e} — shutting down");
+                eprintln!("[ORCHESTRATOR] Parent pipe error: {e}. Shutting down");
                 for (_, (ipc, _)) in children_processes.iter_mut() {
                     let _ = send_app_command(ipc, SteamCommand::Shutdown);
                     let _ = ipc.wait();
@@ -611,6 +611,17 @@ fn process_command(
                 Err(()) => Err(SamError::SteamConnectionFailed),
             };
             send(tx, &SteamResponse::from(friends));
+        }
+
+        SteamCommand::GetCurrentUser => {
+            let steam_id: Result<u64, SamError> = match orchestrator_connection(connected_steam) {
+                Ok(cs) => cs.user.get_steam_id().map(|id| id.m_steamid).map_err(|e| {
+                    eprintln!("[ORCHESTRATOR] Failed to read the current SteamID: {e}");
+                    SamError::SteamConnectionFailed
+                }),
+                Err(()) => Err(SamError::SteamConnectionFailed),
+            };
+            send(tx, &SteamResponse::from(steam_id));
         }
 
         SteamCommand::GetUserAvatar(steam_id64) => {

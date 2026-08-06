@@ -20,6 +20,7 @@ use crate::gui_frontend::gobjects::mode_state::GUnlockModeState;
 use crate::gui_frontend::request::{Request, SetAchievement};
 use crate::gui_frontend::unlock_queue::UnlockQueue;
 use crate::gui_frontend::widgets::achievement_row::AchievementRow;
+use crate::utils::action_journal::{Batch, Change, Op};
 use crate::utils::format::format_achievement_progress;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib::{self, MainContext, clone};
@@ -144,8 +145,18 @@ pub(super) fn install_row_factory(
                         start_button,
                         async move {
                             let result = handle.await.expect("spawn_blocking task panicked");
+                            // Steam accepting the call and then failing to
+                            // store it, which is a failure like any other.
                             match result {
-                                Ok(_) => {
+                                Ok(true) => {
+                                    Batch::new(Op::ManualToggle, app_id_val, "").record(vec![
+                                        Change::Achievement {
+                                            id: achievement_object.id(),
+                                            name: achievement_object.name(),
+                                            before: !unlocked,
+                                            after: unlocked,
+                                        },
+                                    ]);
                                     let cur = app_unlocked_achievements_count.get();
                                     let new_unlocked = if unlocked { cur + 1 } else { cur - 1 };
                                     app_unlocked_achievements_count.set(new_unlocked);
@@ -158,6 +169,10 @@ pub(super) fn install_row_factory(
                                     start_button
                                         .set_sensitive(new_unlocked != raw_model_len as usize);
                                     update_autofill();
+                                }
+                                Ok(false) => {
+                                    eprintln!("[CLIENT] Steam did not store the achievement");
+                                    achievement_object.set_is_achieved(!unlocked);
                                 }
                                 Err(e) => {
                                     eprintln!("[CLIENT] Error setting achievement: {e}");

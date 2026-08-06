@@ -18,13 +18,29 @@ use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::application_actions::{set_app_action_enabled, set_bulk_actions_enabled};
 use crate::gui_frontend::dialogs::show_list_dialog;
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
-use crate::gui_frontend::i18n::tr;
+use crate::gui_frontend::i18n::{tr, tr_noop};
 use crate::gui_frontend::request::{Request, ResetApps, UnlockAllApps};
+use crate::utils::action_journal::{Batch, Change, Op};
 use gtk::gio::{ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{GridView, Label, MenuButton, glib};
 use std::collections::HashMap;
+
+/// Never empty: an unnamed app would drop out of the failure list entirely.
+fn app_label(names: &HashMap<u32, String>, app_id: u32) -> String {
+    names
+        .get(&app_id)
+        .cloned()
+        .filter(|n| !n.is_empty())
+        .unwrap_or_else(|| format!("App {app_id}"))
+}
+
+fn all_names(names: HashMap<u32, String>) -> Vec<String> {
+    let mut out: Vec<String> = names.keys().map(|id| app_label(&names, *id)).collect();
+    out.sort();
+    out
+}
 
 pub fn create_bulk_actions(
     application: &MainApplication,
@@ -167,19 +183,35 @@ pub fn create_bulk_actions(
                         Ok(results) => results,
                         Err(e) => {
                             eprintln!("[CLIENT] Bulk unlock failed: {e}");
-                            return names.into_values().collect::<Vec<_>>();
+                            return all_names(names);
                         }
                     };
 
                 let mut failed_apps = Vec::new();
+                let mut unlocked = Vec::new();
                 for (app_id, res) in results {
-                    if let Err(e) = res {
-                        eprintln!("[CLIENT] Error unlocking app {}: {}", app_id, e);
-                        if let Some(name) = names.get(&app_id) {
-                            failed_apps.push(name.clone());
+                    let name = app_label(&names, app_id);
+                    match res {
+                        Err(e) => {
+                            eprintln!("[CLIENT] Error unlocking app {}: {}", app_id, e);
+                            failed_apps.push(name);
                         }
+                        // The per-app store failing leaves that app untouched,
+                        // so it belongs with the outright errors.
+                        Ok(false) => {
+                            eprintln!("[CLIENT] App {app_id} was not stored");
+                            failed_apps.push(name);
+                        }
+                        Ok(true) => unlocked.push((
+                            app_id,
+                            name,
+                            Change::Opaque {
+                                detail: tr_noop("every achievement unlocked").to_string(),
+                            },
+                        )),
                     }
                 }
+                Batch::across(Op::BulkUnlock).record_per_app(unlocked);
 
                 failed_apps
             });
@@ -207,7 +239,7 @@ pub fn create_bulk_actions(
                     {
                         show_list_dialog(
                             &parent,
-                            tr("Unlock Incomplete").as_str(),
+                            tr("Unlock incomplete").as_str(),
                             tr("Failed to unlock achievements for the following apps:").as_str(),
                             &failed_apps.join("\n"),
                         );
@@ -301,6 +333,7 @@ pub fn create_bulk_actions(
             });
 
             let handle = spawn_blocking(move || {
+                let names: HashMap<u32, String> = apps_to_lock.clone();
                 let app_ids: Vec<u32> = apps_to_lock.into_keys().collect();
                 let mut last_done = 0usize;
                 match (ResetApps {
@@ -324,13 +357,36 @@ pub fn create_bulk_actions(
                     });
                 }) {
                     Ok(results) => {
+                        let mut locked = Vec::new();
+                        let mut failed_apps = Vec::new();
                         for (app_id, res) in results {
-                            if let Err(e) = res {
-                                eprintln!("[CLIENT] Error locking app {}: {}", app_id, e);
+                            let name = app_label(&names, app_id);
+                            match res {
+                                Err(e) => {
+                                    eprintln!("[CLIENT] Error locking app {}: {}", app_id, e);
+                                    failed_apps.push(name);
+                                }
+                                Ok(false) => {
+                                    eprintln!("[CLIENT] App {app_id} was not reset");
+                                    failed_apps.push(name);
+                                }
+                                Ok(true) => locked.push((
+                                    app_id,
+                                    name,
+                                    Change::Opaque {
+                                        detail: tr_noop("every achievement and stat reset")
+                                            .to_string(),
+                                    },
+                                )),
                             }
                         }
+                        Batch::across(Op::BulkLock).record_per_app(locked);
+                        failed_apps
                     }
-                    Err(e) => eprintln!("[CLIENT] Bulk lock failed: {e}"),
+                    Err(e) => {
+                        eprintln!("[CLIENT] Bulk lock failed: {e}");
+                        all_names(names)
+                    }
                 }
             });
 
@@ -348,7 +404,21 @@ pub fn create_bulk_actions(
                 #[weak]
                 context_menu_button,
                 async move {
-                    let _ = handle.await;
+                    let failed_apps = handle
+                        .await
+                        .expect("[CLIENT] Failed to wait for lock thread to finish");
+
+                    if !failed_apps.is_empty()
+                        && let Some(parent) = application.active_window()
+                    {
+                        show_list_dialog(
+                            &parent,
+                            tr("Reset incomplete").as_str(),
+                            tr("The following apps were left as they were:").as_str(),
+                            &failed_apps.join("\n"),
+                        );
+                    }
+
                     set_bulk_actions_enabled(&application, true);
                     context_menu_button_loading.set_visible(false);
                     context_menu_button.set_visible(true);

@@ -32,6 +32,7 @@ use crate::gui_frontend::unlock_queue::{UnlockQueue, resolve_target_count};
 use crate::gui_frontend::unlock_scheduler::{
     SPACING_EVEN, SPACING_RANDOM, compute_unlock_times_ms, run_timed_unlock, unlock_all_immediately,
 };
+use crate::utils::action_journal::Op;
 use crate::utils::format::format_achievement_progress;
 use config_popover::create_config_popover;
 use copy_controls::create_copy_controls;
@@ -388,6 +389,7 @@ pub fn create_achievements_manual_view(
                 async move {
                     run_timed_unlock(
                         app_id_val,
+                        Op::TimedUnlock,
                         achievements,
                         times_ms,
                         timed_raw_model,

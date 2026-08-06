@@ -211,7 +211,14 @@ fn apply_stat_decision<T: Display>(
 ) {
     match decision {
         WriteDecision::Write => match write() {
-            Ok(_) => summary.stats_applied += 1,
+            Ok(true) => summary.stats_applied += 1,
+            // Not among the applied ones, which the undo path counts.
+            Ok(false) => {
+                summary
+                    .errors
+                    .push(format!("stat:{} failed: Steam did not store it", id));
+                *had_hard_block = true;
+            }
             Err(e) => {
                 summary.errors.push(format!("stat:{} failed: {}", id, e));
                 *had_hard_block = true;
@@ -299,8 +306,16 @@ pub fn apply_app_export(manager: &mut AppManager, payload: AppExport) -> ImportS
             summary.skipped_protected.push(format!("ach:{}", ach.id));
             continue;
         }
+        // `store: false` means this can only be `Ok(true)` today, but the bool
+        // is the store result whenever it is not.
         match manager.set_achievement(&ach.id, ach.is_achieved, false) {
-            Ok(_) => summary.achievements_applied += 1,
+            Ok(true) => summary.achievements_applied += 1,
+            Ok(false) => {
+                summary
+                    .errors
+                    .push(format!("ach:{} failed: Steam did not store it", ach.id));
+                had_hard_block = true;
+            }
             Err(e) => {
                 summary.errors.push(format!("ach:{} failed: {}", ach.id, e));
                 had_hard_block = true;
@@ -308,9 +323,20 @@ pub fn apply_app_export(manager: &mut AppManager, payload: AppExport) -> ImportS
         }
     }
 
-    if let Err(e) = manager.store_stats_and_achievements() {
-        summary.errors.push(format!("store failed: {}", e));
-        had_hard_block = true;
+    // The sets are held in Steam's client until this commits them, so nothing
+    // above counts as applied until it returns true.
+    match manager.store_stats_and_achievements() {
+        Ok(true) => {}
+        Ok(false) => {
+            summary
+                .errors
+                .push("store failed: Steam did not store the changes".to_string());
+            had_hard_block = true;
+        }
+        Err(e) => {
+            summary.errors.push(format!("store failed: {}", e));
+            had_hard_block = true;
+        }
     }
 
     summary.reset_would_help = had_reset_fixable && !had_hard_block;

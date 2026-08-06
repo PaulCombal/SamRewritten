@@ -16,10 +16,10 @@
 use crate::steam_client::steam_user_vtable::ISteamUser;
 use crate::steam_client::steamworks_types::CSteamID;
 use crate::steam_client::wrapper_types::SteamClientError;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct SteamUser {
-    inner: Arc<SteamUserInner>,
+    inner: Rc<SteamUserInner>,
 }
 
 struct SteamUserInner {
@@ -29,7 +29,7 @@ struct SteamUserInner {
 impl SteamUser {
     pub unsafe fn from_raw(ptr: *mut ISteamUser) -> Self {
         Self {
-            inner: Arc::new(SteamUserInner { ptr }),
+            inner: Rc::new(SteamUserInner { ptr }),
         }
     }
 

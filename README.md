@@ -126,6 +126,8 @@ If the installation fails or behaves unexpectedly, please open a GitHub issue wi
 * Edit statistics in real-time
 * Per-app or bulk import and export of achievements and stats
 * Idle apps: Appear in-game until you toggle it off
+* Advanced stats: library totals, unlock activity heatmap, average completion plotted over time, and a review of activity that look irregular
+* An optional local history of every change SamRewritten makes, with one-click undo (off by default)
 * A light and dark theme
 
 ## Translations

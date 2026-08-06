@@ -7,6 +7,42 @@
             <description>Whether SamRewritten should filter junk items.</description>
         </key>
 
+        <key name="filter-only-idling" type="b">
+            <default>false</default>
+            <summary>Only Currently Idling</summary>
+            <description>Whether the app list should show only the apps that are currently being idled.</description>
+        </key>
+
+        <key name="filter-hide-fully-unlocked" type="b">
+            <default>false</default>
+            <summary>Hide Fully Unlocked</summary>
+            <description>Whether to hide apps whose achievements are all unlocked.</description>
+        </key>
+
+        <key name="filter-hide-never-launched" type="b">
+            <default>false</default>
+            <summary>Hide Never Launched</summary>
+            <description>Whether to hide apps that have never been played.</description>
+        </key>
+
+        <key name="filter-hide-no-unlocked" type="b">
+            <default>false</default>
+            <summary>Hide Apps With No Unlocked Achievement</summary>
+            <description>Whether to hide apps where no achievement has been unlocked yet.</description>
+        </key>
+
+        <key name="filter-hide-without-achievements" type="b">
+            <default>false</default>
+            <summary>Hide Apps Without Achievements</summary>
+            <description>Whether to hide apps that expose no achievements at all.</description>
+        </key>
+
+        <key name="sidebar-visible" type="b">
+            <default>true</default>
+            <summary>Show Sidebar</summary>
+            <description>Whether the app list sidebar (profile, filters and sort) is shown.</description>
+        </key>
+
         <key name="app-theme" type="s">
             <default>'system'</default>
             <summary>Application Theme</summary>
@@ -28,7 +64,7 @@
         <key name="app-sort" type="s">
             <default>'app_id'</default>
             <summary>App List Sort Order</summary>
-            <description>How the app list is sorted. Valid values are 'app_id', 'alphabetical', 'last_played', and 'playtime'.</description>
+            <description>How the app list is sorted. Valid values are 'app_id', 'alphabetical', 'last_played', 'playtime', 'completion' (highest completion percentage first), and 'remaining' (fewest achievements left to unlock first).</description>
         </key>
 
         <key name="disable-animations" type="b">
@@ -89,6 +125,12 @@
             <default>'even'</default>
             <summary>Unlock Spacing</summary>
             <description>How deferred unlocks are spread over the duration. Valid values are 'even' (equally spaced) and 'random' (first and last pinned to even positions, middle jittered).</description>
+        </key>
+
+        <key name="action-journal-enabled" type="b">
+            <default>false</default>
+            <summary>Keep A History Of Changes</summary>
+            <description>Whether every change SamRewritten makes is recorded to a local history file, so it can be reviewed and undone. Turning this off stops recording; anything already recorded is kept.</description>
         </key>
     </schema>
 </schemalist>

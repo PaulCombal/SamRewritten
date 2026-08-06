@@ -32,10 +32,10 @@ use crate::steam_client::steamworks_types::{
 use crate::steam_client::wrapper_types::SteamClientError;
 use libloading::Symbol;
 use std::os::raw::c_char;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct SteamClient {
-    inner: Arc<SteamClientInner>,
+    inner: Rc<SteamClientInner>,
 }
 
 struct SteamClientInner {
@@ -49,7 +49,7 @@ impl<'a> SteamClient {
         _free_callback_fn: Symbol<'a, SteamFreeLastCallbackFn>,
     ) -> Self {
         Self {
-            inner: Arc::new(SteamClientInner { ptr }),
+            inner: Rc::new(SteamClientInner { ptr }),
             // callback_fn,
             // free_callback_fn,
             // running_callback: false

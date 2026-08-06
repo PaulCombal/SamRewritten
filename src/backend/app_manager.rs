@@ -744,12 +744,14 @@ impl AppManager {
         }
     }
 
-    pub fn store_stats_and_achievements(&self) -> Result<(), SamError> {
+    /// `Ok(false)` is Steam accepting the call and declining to store. Nothing
+    /// set before this point is committed until it returns true, so callers
+    /// file history entries and report success on the answer.
+    pub fn store_stats_and_achievements(&self) -> Result<bool, SamError> {
         self.connected_steam
             .user_stats
             .store_stats()
-            .map_err(|_| SamError::StatStoreFailed)?;
-        Ok(())
+            .map_err(|_| SamError::StatStoreFailed)
     }
 
     pub fn read_int_stat_state(&self, id: &str) -> StatState<i32> {
@@ -792,7 +794,7 @@ impl AppManager {
         }
     }
 
-    pub fn unlock_all_achievements(&mut self) -> Result<(), SamError> {
+    pub fn unlock_all_achievements(&mut self) -> Result<bool, SamError> {
         // Only ids and flags are used here, so reuse whatever is already parsed
         // rather than forcing a re-parse in another language.
         let language = self.loaded_language.clone().unwrap_or_default();
@@ -823,7 +825,8 @@ impl AppManager {
             }
         }
 
-        self.connected_steam
+        let stored = self
+            .connected_steam
             .user_stats
             .store_stats()
             .map_err(|_| SamError::StatStoreFailed)?;
@@ -831,7 +834,7 @@ impl AppManager {
         if has_failures {
             Err(SamError::LockUnlockAchievementFailed)
         } else {
-            Ok(())
+            Ok(stored)
         }
     }
 

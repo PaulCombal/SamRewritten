@@ -20,10 +20,10 @@ use crate::steam_client::steam_utils_vtable::ISteamUtils;
 use crate::steam_client::steamworks_types::{AppId_t, SteamAPICall_t};
 use crate::steam_client::wrapper_types::{SteamCallbackId, SteamClientError};
 use std::ffi::{c_int, c_void};
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct SteamUtils {
-    inner: Arc<SteamUtilsInner>,
+    inner: Rc<SteamUtilsInner>,
 }
 
 struct SteamUtilsInner {
@@ -33,7 +33,7 @@ struct SteamUtilsInner {
 impl SteamUtils {
     pub unsafe fn from_raw(ptr: *mut ISteamUtils) -> Self {
         Self {
-            inner: Arc::new(SteamUtilsInner { ptr }),
+            inner: Rc::new(SteamUtilsInner { ptr }),
         }
     }
 

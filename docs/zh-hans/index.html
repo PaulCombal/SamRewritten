@@ -68,7 +68,7 @@
   "description": "一款免费、开源的 Steam 成就管理器，支持 Linux 和 Windows。可解锁和重新锁定 Steam 成就、实时编辑游戏统计数据、定时解锁成就，以及挂机（伪装游戏中）。同时包含 GTK 图形界面和命令行工具。",
   "url": "https://paulcombal.github.io/SamRewritten/zh-hans/",
   "downloadUrl": "https://github.com/PaulCombal/SamRewritten/releases",
-  "softwareVersion": "1.4.7",
+  "softwareVersion": "1.5.0",
   "license": "https://github.com/PaulCombal/SamRewritten/blob/master/LICENSE",
   "image": [
     "https://paulcombal.github.io/SamRewritten/img/og-card.png",
@@ -127,6 +127,14 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "支持。SamRewritten 可与 Flatpak 版本的 Steam 配合使用。Snap 和 .deb 版本的 Steam 也同样受支持。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "SamRewritten 能显示我的 Steam 成就统计吗？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "可以。SamRewritten 提供针对整个游戏库的统计页面：拥有的游戏数、已解锁成就数、平均完成度、完美游戏数与总游戏时长，可切换年份的每日解锁活动热力图，平均完成度随时间变化的曲线图，以及对看起来异常的解锁高峰的审视。所有内容均在本地根据 Steam 早已保存在你磁盘上的成就记录计算得出。SamRewritten 还可以选择性地记录它自己所做的每一次改动，供你查看与撤销；该功能默认关闭。"
       }
     },
     {
@@ -436,12 +444,34 @@
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 实时编辑游戏统计数据</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 按单个应用或批量导入/导出成就和统计数据（JSON）</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 挂机（伪装游戏中）：显示为游戏中，直到你手动关闭</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span>进阶统计：游戏库总览、按天显示的解锁活动热力图，以及随时间变化的平均完成度（<a href="#stats">详见下文</a>）</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 审视看起来异常的成就解锁高峰，看清自己历史记录中的突出之处</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 可选的本地变更记录，记下 SamRewritten 的每一次改动，并可一键撤销</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 浅色和深色主题</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 除英语外，还支持法语、西班牙语、日语和巴西葡萄牙语</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span>功能完备且无需 GTK 的命令行工具（<a href="/SamRewritten/cli.html" hreflang="en" lang="en">使用文档，英文</a>）</span></li>
       </ul>
       <p class="note">
         SamRewritten 的翻译均由社区贡献，但<strong>目前尚未有人提交中文翻译</strong>。你无需是程序员也能参与——翻译大多只是填写一个文本文件而已。欢迎任何语言的贡献，请参阅<a href="https://github.com/PaulCombal/SamRewritten#translations">翻译指南</a>开始。
+      </p>
+    </div>
+  </section>
+
+  <section class="block" id="stats">
+    <div class="wrap">
+      <div class="section-head"><h2>进阶统计</h2></div>
+      <p class="lead">
+        点击侧边栏中的 Steam 个人资料，即可打开一个关于整个游戏库（而非单个游戏）的页面。页面上的所有内容都在<strong>本地</strong>计算，数据来自 Steam 早已保存在你磁盘上的成就记录 —— 因此其完整程度与那些记录完全一致。
+      </p>
+      <ul class="features">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>游戏库总览</strong> —— 拥有的游戏数、已解锁成就数、平均完成度、完美游戏数与总游戏时长。</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>解锁活动</strong> —— 日历热力图，每天一格，并可切换年份。将鼠标悬停在任意一天上，即可看到当天解锁了多少成就，以及来自哪款游戏。</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>完成度变化</strong> —— 在你已经开始游玩的游戏中，平均完成度自第一次解锁至今的变化曲线。每当你开始一款新游戏，它都会下降，这正是游戏库真实的样子。</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>异常活动</strong> —— 解锁速度过快或过于整齐、不像正常游玩的成就序列，并附上简短说明指出其突出之处。</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <span><strong>SamRewritten 的改动记录</strong> —— 需手动开启，默认关闭。开启后，SamRewritten 的每一次解锁、重新锁定与统计数据修改都会记录到本地文件中，可供查看与撤销。</span></li>
+      </ul>
+      <p class="note">
+        异常活动只提供线索，而非结论。某些游戏会在首次启动时一次性授予全部成就，看起来与批量解锁完全相同；页面会如实说明这一点，而不会妄下判断。
       </p>
     </div>
   </section>
@@ -577,6 +607,11 @@
       <details>
         <summary>SamRewritten 支持 Flatpak 版的 Steam 吗？</summary>
         <p>支持。SamRewritten 可与 Flatpak 版本的 Steam 配合使用。Snap 和 .deb 安装的 Steam 也同样受支持。</p>
+      </details>
+
+      <details>
+        <summary>SamRewritten 能显示我的 Steam 成就统计吗？</summary>
+        <p>可以。点击侧边栏中的个人资料即可打开统计页面，其中包含游戏库总览、可切换年份的每日解锁活动热力图、平均完成度随时间变化的曲线图，以及对看起来异常的解锁高峰的审视 —— 详见<a href="#stats">进阶统计</a>。所有内容均在本地根据 Steam 早已保存在你磁盘上的成就记录计算得出。</p>
       </details>
 
       <details>

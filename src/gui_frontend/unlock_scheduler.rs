@@ -17,6 +17,7 @@ use crate::dev_println;
 use crate::gui_frontend::gobjects::achievement::GAchievementObject;
 use crate::gui_frontend::i18n::tr;
 use crate::gui_frontend::request::{Request, SetAchievement};
+use crate::utils::action_journal::{Batch, Change, Op};
 use crate::utils::format::format_seconds_to_hh_mm_ss;
 use gtk::gio::{ListStore, spawn_blocking};
 use gtk::glib;
@@ -57,11 +58,9 @@ pub fn compute_unlock_times_ms(count: usize, total_ms: u64, spacing: &str) -> Ve
     out
 }
 
-/// Turn a friend's absolute unlock timestamps (unix seconds, ascending) into
-/// "from now" offsets in ms. The order is preserved; each real gap is kept as-is
-/// but capped at `max_gap_s` (so multi-day breaks between play sessions don't
-/// stretch the replay over years); `first_delay_s` shifts the whole timeline.
-/// Bursts (gap 0) are kept faithfully — equal offsets fire in the same tick.
+/// A friend's absolute unlock times as "from now" offsets in ms. Gaps are kept
+/// as they were but capped at `max_gap_s`, so a multi-day break between play
+/// sessions does not stretch the replay over years.
 pub fn compute_copy_timing_ms(times_s: &[u32], max_gap_s: u64, first_delay_s: u64) -> Vec<u64> {
     if times_s.is_empty() {
         return Vec::new();
@@ -93,6 +92,7 @@ fn enforce_min_gap(times: &mut [u64], min_gap: u64, total_ms: u64) {
 
 pub async fn run_timed_unlock(
     app_id: u32,
+    op: Op,
     achievements: Vec<GAchievementObject>,
     times_ms: Vec<u64>,
     timed_raw_model: ListStore,
@@ -113,6 +113,10 @@ pub async fn run_timed_unlock(
         .unwrap_or(1_000);
     let refresh_ms = smallest_gap.clamp(50, 1_000);
     let refresh_duration = std::time::Duration::from_millis(refresh_ms);
+
+    // Recorded as each fires, not up front: a run this long is routinely
+    // cancelled part way.
+    let batch = Batch::new(op, app_id, "");
 
     let start_time = std::time::Instant::now();
     let mut next_index = 0usize;
@@ -145,9 +149,30 @@ pub async fn run_timed_unlock(
             })
             .await;
 
+            // Only `Ok(Ok(true))` is Steam saying it stored the thing.
             match result {
-                Ok(response) => dev_println!("CLIENT", "Achievement result: {:?}", response),
-                Err(e) => eprintln!("[CLIENT] Achievement failed: {:?}", e),
+                Ok(Ok(true)) => {
+                    batch.record(vec![Change::Achievement {
+                        id: achievement.id(),
+                        name: achievement.name(),
+                        before: false,
+                        after: true,
+                    }]);
+                }
+                // Switched on before the request went out, so a refusal has to
+                // switch it back.
+                Ok(Ok(false)) => {
+                    eprintln!("[CLIENT] Steam did not store {}", achievement.id());
+                    achievement.set_is_achieved(false);
+                }
+                Ok(Err(e)) => {
+                    eprintln!("[CLIENT] Achievement refused: {e}");
+                    achievement.set_is_achieved(false);
+                }
+                Err(e) => {
+                    eprintln!("[CLIENT] Achievement failed: {e:?}");
+                    achievement.set_is_achieved(false);
+                }
             }
 
             next_index += 1;
@@ -174,6 +199,7 @@ pub async fn run_timed_unlock(
 pub fn unlock_all_immediately(app_id: u32, achievements: &[GAchievementObject]) {
     use crate::gui_frontend::request::StoreStatsAndAchievements;
 
+    let mut unlocked = Vec::with_capacity(achievements.len());
     for ach in achievements {
         let res = SetAchievement {
             app_id,
@@ -182,14 +208,32 @@ pub fn unlock_all_immediately(app_id: u32, achievements: &[GAchievementObject]) 
             store: false,
         }
         .request();
-        if let Err(e) = res {
-            eprintln!("[CLIENT] Failed to set achievement: {:?}", e);
+        match res {
+            Ok(true) => unlocked.push(Change::Achievement {
+                id: ach.id(),
+                name: ach.name(),
+                before: false,
+                after: true,
+            }),
+            Ok(false) => eprintln!("[CLIENT] Steam refused achievement {}", ach.id()),
+            Err(e) => eprintln!("[CLIENT] Failed to set achievement: {e:?}"),
         }
     }
 
-    if let Err(e) = (StoreStatsAndAchievements { app_id }.request()) {
-        eprintln!("[CLIENT] Failed to store stats and achievements: {:?}", e);
+    // Nothing above was committed until this lands.
+    match (StoreStatsAndAchievements { app_id }).request() {
+        Ok(true) => {}
+        Ok(false) => {
+            eprintln!("[CLIENT] Steam did not store the unlocks");
+            return;
+        }
+        Err(e) => {
+            eprintln!("[CLIENT] Failed to store stats and achievements: {e:?}");
+            return;
+        }
     }
+
+    Batch::new(Op::StagedUnlock, app_id, "").record(unlocked);
 }
 
 struct SeededRng {

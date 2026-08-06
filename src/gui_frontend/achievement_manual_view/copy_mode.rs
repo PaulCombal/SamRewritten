@@ -25,6 +25,7 @@ use crate::gui_frontend::request::{GetFriendUnlockTimes, GetFriends, GetUserAvat
 use crate::gui_frontend::unlock_queue::UnlockQueue;
 use crate::gui_frontend::unlock_scheduler::{compute_copy_timing_ms, run_timed_unlock};
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
+use crate::utils::action_journal::Op;
 use crate::utils::format::format_seconds_to_hh_mm_ss;
 use crate::utils::ipc_types::SamError;
 use gtk::Stack;
@@ -427,6 +428,7 @@ pub(super) fn install_copy_mode(
                 async move {
                     run_timed_unlock(
                         app_id_val,
+                        Op::CopyTiming,
                         achievements,
                         times_ms,
                         timed_raw_model,

@@ -7,6 +7,12 @@ use std::sync::atomic::AtomicBool;
 
 pub static ANIMATIONS_DISABLED: AtomicBool = AtomicBool::new(false);
 
+/// The card measures itself at almost nothing, so this request alone sets the
+/// grid's column pitch — and with it how wide cards stretch before the grid takes
+/// another column (roughly `(WIDTH + 10) * 1.5`).
+pub const CARD_MIN_WIDTH: i32 = 360;
+pub const CARD_HEIGHT: i32 = 150;
+
 glib::wrapper! {
     pub struct SteamAppCard(ObjectSubclass<imp::SteamAppCard>)
         @extends gtk::Widget,
@@ -579,7 +585,7 @@ mod tests {
         // Replicate your Factory Logic
         list_factory.connect_setup(move |_, list_item| {
             let entry = SteamAppCard::default();
-            entry.set_size_request(400, 150);
+            entry.set_size_request(CARD_MIN_WIDTH, CARD_HEIGHT);
             entry.set_margin_start(5);
             entry.set_margin_end(5);
             entry.set_margin_top(5);

@@ -14,6 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::gui_frontend::MainApplication;
+use crate::gui_frontend::app_list_view::FilterState;
 use crate::gui_frontend::dialogs::show_message_dialog;
 use crate::gui_frontend::i18n::{STEAM_LANGUAGES, tr, tr_noop};
 use crate::gui_frontend::widgets::steam_app_card::ANIMATIONS_DISABLED;
@@ -21,31 +22,51 @@ use gtk::gio::{Settings, SimpleAction};
 use gtk::glib::clone;
 use gtk::prelude::*;
 use gtk::{CustomFilter, CustomSorter, glib};
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::atomic::Ordering;
+
+/// Every boolean filter key the sidebar exposes. Kept in sync with `FILTERS` in
+/// `sidebar.rs`, which owns their labels and ordering.
+const FILTER_KEYS: &[&str] = &[
+    "filter-junk",
+    "filter-only-idling",
+    "filter-hide-fully-unlocked",
+    "filter-hide-never-launched",
+    "filter-hide-no-unlocked",
+    "filter-hide-without-achievements",
+];
 
 pub fn setup_settings_bindings(
     application: &MainApplication,
     settings: &Settings,
     list_custom_filter: &CustomFilter,
     list_custom_sorter: &CustomSorter,
-    filter_junk_cache: Rc<Cell<bool>>,
+    filter_state: Rc<FilterState>,
     sort_mode_cache: Rc<RefCell<String>>,
+    on_filters_changed: Rc<dyn Fn()>,
 ) {
-    // Filter junk: two-way bound to gsettings; re-runs the filter on any change.
-    application.add_action(&settings.create_action("filter-junk"));
-    settings.connect_changed(
-        Some("filter-junk"),
-        clone!(
-            #[weak]
-            list_custom_filter,
-            move |s, _| {
-                filter_junk_cache.set(s.boolean("filter-junk"));
-                list_custom_filter.changed(gtk::FilterChange::Different);
-            }
-        ),
-    );
+    // One handler per key rather than one for the lot: a `connect_changed`
+    // with no key fires for every setting, including language and theme.
+    for key in FILTER_KEYS {
+        application.add_action(&settings.create_action(key));
+        settings.connect_changed(
+            Some(key),
+            clone!(
+                #[weak]
+                list_custom_filter,
+                #[strong]
+                filter_state,
+                #[strong]
+                on_filters_changed,
+                move |s, _| {
+                    filter_state.reload(s);
+                    list_custom_filter.changed(gtk::FilterChange::Different);
+                    on_filters_changed();
+                }
+            ),
+        );
+    }
 
     // Sort radio: two-way bound to gsettings; re-sorts on any change.
     application.add_action(&settings.create_action("app-sort"));
@@ -54,9 +75,12 @@ pub fn setup_settings_bindings(
         clone!(
             #[weak]
             list_custom_sorter,
+            #[strong]
+            on_filters_changed,
             move |s, _| {
                 *sort_mode_cache.borrow_mut() = s.string("app-sort").to_string();
                 list_custom_sorter.changed(gtk::SorterChange::Different);
+                on_filters_changed();
             }
         ),
     );

@@ -21,11 +21,15 @@ mod app_list_view_callbacks;
 mod app_view;
 mod application_actions;
 mod custom_progress_bar_widget;
+/// Scripting aid for driving the UI from outside; never built into a release.
+#[cfg(debug_assertions)]
+mod dev_widgets;
 mod dialogs;
 mod friend_picker;
 mod gobjects;
 mod gsettings;
 mod i18n;
+mod profile_view;
 mod request;
 mod stat_view;
 mod ui_components;

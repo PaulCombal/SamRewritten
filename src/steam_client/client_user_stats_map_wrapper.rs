@@ -16,21 +16,21 @@
 use crate::steam_client::client_engine_wrapper::ClientEngineInner;
 use crate::steam_client::client_user_stats_map_vtable::{CGameID, IClientUserStatsMap};
 use crate::steam_client::steamworks_types::AppId_t;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct ClientUserStatsMap {
-    inner: Arc<ClientUserStatsMapInner>,
+    inner: Rc<ClientUserStatsMapInner>,
 }
 
 struct ClientUserStatsMapInner {
     ptr: *mut IClientUserStatsMap,
-    engine: Arc<ClientEngineInner>,
+    engine: Rc<ClientEngineInner>,
 }
 
 impl ClientUserStatsMap {
-    pub unsafe fn from_raw(ptr: *mut IClientUserStatsMap, engine: Arc<ClientEngineInner>) -> Self {
+    pub unsafe fn from_raw(ptr: *mut IClientUserStatsMap, engine: Rc<ClientEngineInner>) -> Self {
         Self {
-            inner: Arc::new(ClientUserStatsMapInner { ptr, engine }),
+            inner: Rc::new(ClientUserStatsMapInner { ptr, engine }),
         }
     }
 

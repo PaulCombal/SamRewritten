@@ -20,11 +20,11 @@ use crate::steam_client::client_user_vtable::IClientUser;
 use crate::steam_client::client_user_wrapper::ClientUser;
 use crate::steam_client::steamworks_types::{HSteamPipe, HSteamUser};
 use crate::steam_client::wrapper_types::SteamClientError;
-use std::sync::Arc;
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct ClientEngine {
-    inner: Arc<ClientEngineInner>,
+    inner: Rc<ClientEngineInner>,
 }
 
 pub(crate) struct ClientEngineInner {
@@ -43,7 +43,7 @@ impl ClientEngineInner {
 impl ClientEngine {
     pub unsafe fn from_raw(ptr: *mut IClientEngine) -> Self {
         Self {
-            inner: Arc::new(ClientEngineInner { ptr }),
+            inner: Rc::new(ClientEngineInner { ptr }),
         }
     }
 
