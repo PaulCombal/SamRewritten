@@ -8,6 +8,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"PO-Revision-Date: 2026-08-11 22:26+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Japanese <https://hosted.weblate.org/projects/samrewritten/"
+"samrewritten/ja/>\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:177
@@ -141,8 +146,8 @@ msgid ""
 "official repository or app store."
 msgstr ""
 "SamRewrittenは標準的な場所のいずれにもSteamを見つけることができませんでした。"
-"まだSteamをインストールしていない場合は、ディストリビューションの公式リポジト"
-"リまたはアプリストアからインストールしてください。"
+"まだSteamをインストールしていない場合は、ディストリビューションの公式"
+"リポジトリまたはアプリストアからインストールしてください。"
 
 #: src/gui_frontend/dialogs.rs:239
 msgid "<b>Already have Steam installed?</b>"
@@ -178,8 +183,8 @@ msgid ""
 "start Steam from them first."
 msgstr ""
 "SamRewrittenは複数のSteamインストールフォルダを検出しました。現在のSteamが起"
-"動しているインストールフォルダが自動的に選択されています。その他のインストー"
-"ルフォルダは、それらの場所からSteamを起動しない限り使用できません。"
+"動しているインストールフォルダが自動的に選択されています。その他の"
+"インストールフォルダは、それらの場所からSteamを起動しない限り使用できません。"
 
 #: src/gui_frontend/dialogs.rs:312
 msgid ""
@@ -190,8 +195,9 @@ msgid ""
 msgstr ""
 "次回起動時に再度確認が表示されます。この確認を完全にスキップするには、環境変"
 "数 <tt>SAM_STEAM_INSTALL_ROOT</tt> を、希望するインストールフォルダに設定して"
-"ください。詳細は <a href=\"https://github.com/PaulCombal/SamRewritten?"
-"tab=readme-ov-file#environment-variables\">README</a> をご覧ください。"
+"ください。詳細は <a href=\"https://github.com/PaulCombal/"
+"SamRewritten?tab=readme-ov-file#environment-variables\">README</a> をご覧くだ"
+"さい。"
 
 #: src/gui_frontend/dialogs.rs:328 src/gui_frontend/dialogs.rs:377
 msgid "Choose a Steam installation"
@@ -216,12 +222,12 @@ msgid ""
 "with Flatpak, please use the AppImage instead."
 msgstr ""
 "これはサンドボックス化された<b>Snap</b>版のSamRewrittenです。そのため、Steam"
-"のファイルを読み取るための許可が必要です。Steamフォルダを一度選択してくださ"
-"い。システムダイアログが開くので、許可を確認すればアクセスが付与されます。以"
-"後、この操作を再度求められることはありません。\n"
+"のファイルを読み取るための許可が必要です。Steamフォルダを一度選択してください"
+"。システムダイアログが開くので、許可を確認すればアクセスが付与されます。以後"
+"、この操作を再度求められることはありません。\n"
 "\n"
-"<b>Flatpak版のSteamはSnapではサポートされていません</b>。FlatpakでSteamをイン"
-"ストールしている場合は、代わりにAppImage版を使用してください。"
+"<b>Flatpak版のSteamはSnapではサポートされていません</b>。FlatpakでSteamを"
+"インストールしている場合は、代わりにAppImage版を使用してください。"
 
 #: src/gui_frontend/dialogs.rs:501 src/gui_frontend/dialogs.rs:540
 msgid "Connect to Steam"
@@ -650,13 +656,12 @@ msgstr "インポート完了"
 #: src/gui_frontend/app_list_view/refresh_actions.rs:113
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
-"アカウント内にアプリが見つかりませんでした。App IDを検索して開始してくださ"
-"い。"
+"アカウント内にアプリが見つかりませんでした。App IDを検索して開始してください"
+"。"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:130
 msgid "No results. Check for spelling mistakes or try typing an App Id."
-msgstr ""
-"結果が見つかりませんでした。スペルを確認するか、App IDを入力してください。"
+msgstr "結果が見つかりませんでした。スペルを確認するか、App IDを入力してください。"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:162
 msgid ""
