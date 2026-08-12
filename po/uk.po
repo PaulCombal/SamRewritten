@@ -1,0 +1,666 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the SamRewritten package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: SamRewritten\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-31 19:47+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+
+#: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
+#: src/gui_frontend/app_list_view/mod.rs:177
+msgid "Loading..."
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:186
+msgid "Select all visible apps"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:190
+msgid "Deselect all apps"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:194
+msgid "Unlock all in selection"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:198
+msgid "Reset all in selection"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:202
+#: src/gui_frontend/app_list_view/progress_actions.rs:115
+msgid "Export selected apps progress"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:206
+msgid "Import progress..."
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:211
+msgid "Refresh app list"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:215
+msgid "Filter junk"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:401
+msgid "About"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:221
+msgid "Change Steam folder…"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:229
+msgid "App ID"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:230
+msgid "Alphabetical"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:231
+msgid "Recently played"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:232
+msgid "Time played"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:239
+msgid "Sort by"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:241
+msgid "Bulk process"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:246
+msgid "System"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:247
+msgid "Light"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:248
+msgid "Dark"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:257
+msgid "Disable animations"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:261
+msgid "Appearance"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:267
+msgid "System default"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:270
+msgid "Language"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:375
+msgid "Game default"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:394
+msgid "Refresh achievements & stats"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:398
+msgid "Reset everything"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:407
+msgid "Achievement language"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:113
+#: src/gui_frontend/dialogs.rs:136 src/gui_frontend/dialogs.rs:184
+#: src/gui_frontend/unlock_scheduler.rs:160
+#: src/gui_frontend/app_list_view/progress_actions.rs:42
+msgid "OK"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:235
+msgid "<b>No Steam installations were found on your system.</b>"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:237
+msgid ""
+"SamRewritten couldn't find Steam in any of the standard locations. If you "
+"haven't installed Steam yet, please install it through your distribution's "
+"official repository or app store."
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:239
+msgid "<b>Already have Steam installed?</b>"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:241
+msgid ""
+"If you've installed Steam in a custom location, you can point SamRewritten "
+"to it using environment variables. Please check the <a href=\"https://github."
+"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
+"your issue."
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:246
+msgid "No compatible version of Steam found"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:282
+msgid "    (Steam is running here)"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:284
+msgid "    (Steam not running here)"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:307
+msgid ""
+"SamRewritten found more than one Steam installation. The one Steam is "
+"currently running from is preselected — the others won't work unless you "
+"start Steam from them first."
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:312
+msgid ""
+"You'll be asked again next launch. To skip this for good, set the "
+"<tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install you want "
+"— see the <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
+"file#environment-variables\">README</a>."
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:328 src/gui_frontend/dialogs.rs:377
+msgid "Choose a Steam installation"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:340 src/gui_frontend/dialogs.rs:504
+msgid "Quit"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:341 src/gui_frontend/dialogs.rs:417
+msgid "Use this installation"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:494
+msgid ""
+"This is the sandboxed <b>Snap</b> version of SamRewritten, so it needs your "
+"permission to read your Steam files. Pick your Steam folder once — a system "
+"dialog will open, just confirm it to grant access. You won't be asked "
+"again.\n"
+"\n"
+"<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam "
+"with Flatpak, please use the AppImage instead."
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:501 src/gui_frontend/dialogs.rs:540
+msgid "Connect to Steam"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:505 src/gui_frontend/dialogs.rs:571
+msgid "Choose a folder…"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:506 src/gui_frontend/dialogs.rs:588
+msgid "Use Snap Steam"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:642
+msgid "Steam folder not usable"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:650
+msgid ""
+"SamRewritten couldn't read <tt>steamclient.so</tt> in the folder you "
+"selected. Pick the <b>Steam</b> directory — the one containing a "
+"<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
+"use the AppImage."
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:658
+msgid "Choose again"
+msgstr ""
+
+#: src/gui_frontend/dialogs.rs:816
+msgid "Select your Steam folder"
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:68
+msgid "Achievements:"
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:82
+msgid "Stats:"
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:96
+msgid "Last playtime:"
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:110
+msgid "Type:"
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:124
+msgid "Developer:"
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:141
+msgid "Metacritic:"
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:155
+msgid "Failed to load app."
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:161
+msgid "No entries found."
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:178
+msgid "Achievements"
+msgstr ""
+
+#: src/gui_frontend/app_view.rs:181
+msgid "Stats"
+msgstr ""
+
+#: src/gui_frontend/stat_view.rs:101
+msgid "Increment only"
+msgstr ""
+
+#: src/gui_frontend/stat_view.rs:106
+msgid "This statistic is protected."
+msgstr ""
+
+#: src/gui_frontend/achievement_automatic_view.rs:40
+msgid "Stop and go back"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:56
+msgid "No achievements staged"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:57
+msgid "{count} staged"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:95
+msgid "Already at or above target ({progress})"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:101
+msgid "Auto-fill {count} achievement(s) ({progress})"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:49
+msgid "Instant"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:52
+msgid "Stage"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:56
+msgid "Copy user"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:74
+msgid "Auto-fill"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:77
+msgid "Configuration"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:103
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
+msgid "Start"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/header.rs:108
+msgid "Changes apply instantly"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:63
+msgid "Count"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:65
+msgid "Percent"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:99
+msgid "minutes (0 = instant)"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:108
+msgid "Even"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:112
+msgid "Random"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:132
+msgid "Target"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:136
+msgid "Spread over"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:140
+msgid "Spacing"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:233
+msgid "Choose a friend to copy timing from"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
+msgid "Advanced"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:68
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:89
+msgid "minutes"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:103
+msgid "Max gap"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:105
+msgid "First delay"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:100
+msgid "No friend loaded"
+msgstr ""
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:110
+msgid "{count} achievements over {time}"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:76
+msgid "Private"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:98
+msgid "Copy timing from a friend"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:202
+msgid "Use the pasted SteamID64"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:497
+msgid "This profile is private"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:499
+msgid "Couldn't load this user"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:511
+msgid "Search friends or paste a SteamID64"
+msgstr ""
+
+#: src/gui_frontend/friend_picker.rs:598
+msgid "Clear selected user"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/mod.rs:198
+#: src/gui_frontend/app_list_view/mod.rs:882
+msgid "Name or AppId (Ctrl+K)"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/mod.rs:877
+msgid "Achievement or stat..."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/settings_bindings.rs:110
+msgid "The new language will be applied the next time you start SamRewritten."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/settings_bindings.rs:120
+msgid "Language changed"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:136
+#: src/gui_frontend/app_list_view/bulk_actions.rs:160
+msgid "Unlocking {done} / {total} app(s)…"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:210
+msgid "Unlock Incomplete"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:211
+msgid "Failed to unlock achievements for the following apps:"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:293
+#: src/gui_frontend/app_list_view/bulk_actions.rs:319
+msgid "Locking {done} / {total} app(s)…"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:157
+#: src/gui_frontend/app_list_view/progress_actions.rs:180
+msgid "Exporting {done} / {total} app(s)…"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:246
+msgid "Export complete"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:247
+msgid "Exported {count} app(s) to {path}"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:257
+msgid "Export partially complete"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:258
+msgid ""
+"Wrote {path}\n"
+"\n"
+"Failed to read data for these apps:"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:265
+msgid "Export failed"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:301
+msgid "Import progress"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:337
+#: src/gui_frontend/app_list_view/progress_actions.rs:350
+#: src/gui_frontend/app_list_view/progress_actions.rs:360
+msgid "Import failed"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:338
+msgid "Could not read file: {error}"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:351
+msgid "Could not parse file: {error}"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:361
+msgid "Unsupported format version: {found} (this build expects {expected})"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:376
+#: src/gui_frontend/app_list_view/progress_actions.rs:398
+#: src/gui_frontend/app_list_view/progress_actions.rs:487
+msgid "App {id}"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:387
+#: src/gui_frontend/app_list_view/progress_actions.rs:444
+msgid "Nothing to import"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:388
+msgid "None of the apps in the file are in your current library."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:408
+msgid ""
+"{list}\n"
+"... and {count} more"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:417
+msgid "Some apps contain protected fields."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:419
+msgid ""
+"The following apps contain fields that may not be importable. Proceed at "
+"your own risk.\n"
+"\n"
+"{list}"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:423
+#: src/gui_frontend/app_list_view/refresh_actions.rs:375
+msgid "Cancel"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:424
+msgid "Skip these apps"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:425
+msgid "Proceed anyway"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:445
+msgid "All remaining apps were skipped."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:473
+#: src/gui_frontend/app_list_view/progress_actions.rs:506
+msgid "Importing {done} / {total} app(s)…"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:587
+msgid "Applied {achievements} achievement(s) and {stats} stat(s)."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:592
+msgid ""
+"\n"
+"Skipped {count} protected field(s)."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:598
+msgid ""
+"\n"
+"Skipped {count} unwriteable stat(s) (out of range or increment-only)."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:606
+msgid ""
+"Would succeed if you reset stats first:\n"
+"{list}"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:612
+msgid ""
+"Skipped (not in your library):\n"
+"{list}"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:617
+msgid ""
+"Errors:\n"
+"{list}"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:622
+#: src/gui_frontend/app_list_view/progress_actions.rs:624
+msgid "Import complete"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:113
+msgid "No apps found on your account. Search for App Id to get started."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:130
+msgid "No results. Check for spelling mistakes or try typing an App Id."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:162
+msgid ""
+"Failed to load library. Check your internet connection. Search for App Id to "
+"get started."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:170
+msgid "SamRewritten could not connect to Steam. Is it running?"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:373
+msgid "Reset Everything"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:374
+msgid "This will reset all achievements and stats for this app. Are you sure?"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:375
+msgid "Sure, reset"
+msgstr ""
+
+#: src/gui_frontend/widgets/steam_app_card.rs:106
+msgid "Idle"
+msgstr ""
+
+#: src/gui_frontend/widgets/steam_app_card.rs:130
+msgid "Manage"
+msgstr ""
+
+#: src/gui_frontend/widgets/steam_app_card.rs:149
+msgid "Manage this app in a new window"
+msgstr ""
+
+#: src/gui_frontend/widgets/achievement_row.rs:257
+#: src/gui_frontend/widgets/achievement_row.rs:262
+msgid "This achievement is protected."
+msgstr ""
+
+#: src/gui_frontend/widgets/achievement_row.rs:277
+msgid "Click to stage this achievement; click again to remove."
+msgstr ""
+
+#: src/gui_frontend/widgets/achievement_row.rs:287
+msgid "Already unlocked."
+msgstr ""
