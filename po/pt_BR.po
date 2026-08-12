@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"PO-Revision-Date: 2026-08-11 22:26+0000\n"
+"PO-Revision-Date: 2026-08-13 07:51+0000\n"
 "Last-Translator: PaulCombal <paulcombal@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "samrewritten/samrewritten/pt_BR/>\n"
@@ -62,7 +62,7 @@ msgstr "Mudar diretório da Steam…"
 
 #: src/gui_frontend/ui_components.rs:229
 msgid "App ID"
-msgstr "App ID"
+msgstr ""
 
 #: src/gui_frontend/ui_components.rs:230
 msgid "Alphabetical"
