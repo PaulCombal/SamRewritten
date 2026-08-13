@@ -8,140 +8,142 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-31 19:47+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2026-08-13 07:51+0000\n"
+"Last-Translator: Dan <jonweblin2205@protonmail.com>\n"
+"Language-Team: Ukrainian <https://hosted.weblate.org/projects/samrewritten/"
+"samrewritten/uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:177
 msgid "Loading..."
-msgstr ""
+msgstr "Завантаження..."
 
 #: src/gui_frontend/ui_components.rs:186
 msgid "Select all visible apps"
-msgstr ""
+msgstr "Вибрати всі видимі застосунки"
 
 #: src/gui_frontend/ui_components.rs:190
 msgid "Deselect all apps"
-msgstr ""
+msgstr "Зняти вибір з усіх застосунків"
 
 #: src/gui_frontend/ui_components.rs:194
 msgid "Unlock all in selection"
-msgstr ""
+msgstr "Розблокувати все вибране"
 
 #: src/gui_frontend/ui_components.rs:198
 msgid "Reset all in selection"
-msgstr ""
+msgstr "Скинути все вибране"
 
 #: src/gui_frontend/ui_components.rs:202
 #: src/gui_frontend/app_list_view/progress_actions.rs:115
 msgid "Export selected apps progress"
-msgstr ""
+msgstr "Експорт поступу вибраних застосунків"
 
 #: src/gui_frontend/ui_components.rs:206
 msgid "Import progress..."
-msgstr ""
+msgstr "Імпорт поступу..."
 
 #: src/gui_frontend/ui_components.rs:211
 msgid "Refresh app list"
-msgstr ""
+msgstr "Оновити перелік застосунків"
 
 #: src/gui_frontend/ui_components.rs:215
 msgid "Filter junk"
-msgstr ""
+msgstr "Відфільтрувати зайве"
 
 #: src/gui_frontend/ui_components.rs:217 src/gui_frontend/ui_components.rs:401
 msgid "About"
-msgstr ""
+msgstr "Про застосунок"
 
 #: src/gui_frontend/ui_components.rs:221
 msgid "Change Steam folder…"
-msgstr ""
+msgstr "Змінити теку Steam…"
 
 #: src/gui_frontend/ui_components.rs:229
 msgid "App ID"
-msgstr ""
+msgstr "ID застосунку"
 
 #: src/gui_frontend/ui_components.rs:230
 msgid "Alphabetical"
-msgstr ""
+msgstr "За алфавітом"
 
 #: src/gui_frontend/ui_components.rs:231
 msgid "Recently played"
-msgstr ""
+msgstr "Нещодавно відтворені"
 
 #: src/gui_frontend/ui_components.rs:232
 msgid "Time played"
-msgstr ""
+msgstr "Зіграно часу"
 
 #: src/gui_frontend/ui_components.rs:239
 msgid "Sort by"
-msgstr ""
+msgstr "Сортувати за"
 
 #: src/gui_frontend/ui_components.rs:241
 msgid "Bulk process"
-msgstr ""
+msgstr "Масова обробка"
 
 #: src/gui_frontend/ui_components.rs:246
 msgid "System"
-msgstr ""
+msgstr "Системна"
 
 #: src/gui_frontend/ui_components.rs:247
 msgid "Light"
-msgstr ""
+msgstr "Світла"
 
 #: src/gui_frontend/ui_components.rs:248
 msgid "Dark"
-msgstr ""
+msgstr "Темна"
 
 #: src/gui_frontend/ui_components.rs:257
 msgid "Disable animations"
-msgstr ""
+msgstr "Вимкнути анімації"
 
 #: src/gui_frontend/ui_components.rs:261
 msgid "Appearance"
-msgstr ""
+msgstr "Вигляд"
 
 #: src/gui_frontend/ui_components.rs:267
 msgid "System default"
-msgstr ""
+msgstr "Як у системі"
 
 #: src/gui_frontend/ui_components.rs:270
 msgid "Language"
-msgstr ""
+msgstr "Мова"
 
 #: src/gui_frontend/ui_components.rs:375
 msgid "Game default"
-msgstr ""
+msgstr "Мова гри"
 
 #: src/gui_frontend/ui_components.rs:394
 msgid "Refresh achievements & stats"
-msgstr ""
+msgstr "Оновити досягнення та статистику"
 
 #: src/gui_frontend/ui_components.rs:398
 msgid "Reset everything"
-msgstr ""
+msgstr "Скинути все"
 
 #: src/gui_frontend/ui_components.rs:407
 msgid "Achievement language"
-msgstr ""
+msgstr "Мова досягнень"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:113
 #: src/gui_frontend/dialogs.rs:136 src/gui_frontend/dialogs.rs:184
 #: src/gui_frontend/unlock_scheduler.rs:160
 #: src/gui_frontend/app_list_view/progress_actions.rs:42
 msgid "OK"
-msgstr ""
+msgstr "Гаразд"
 
 #: src/gui_frontend/dialogs.rs:235
 msgid "<b>No Steam installations were found on your system.</b>"
-msgstr ""
+msgstr "<b>На вашій системі не знайдено встановленого Steam.</b>"
 
 #: src/gui_frontend/dialogs.rs:237
 msgid ""
@@ -149,10 +151,13 @@ msgid ""
 "haven't installed Steam yet, please install it through your distribution's "
 "official repository or app store."
 msgstr ""
+"SamRewritten не вдалося знайти Steam у жодному зі стандартних місць. Якщо ви "
+"ще не встановили Steam, зробіть це через офіційний репозиторій вашого "
+"дистрибутива або крамницю застосунків."
 
 #: src/gui_frontend/dialogs.rs:239
 msgid "<b>Already have Steam installed?</b>"
-msgstr ""
+msgstr "<b>Уже встановили Steam?</b>"
 
 #: src/gui_frontend/dialogs.rs:241
 msgid ""
@@ -161,18 +166,22 @@ msgid ""
 "com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
 "your issue."
 msgstr ""
+"Якщо ви встановили Steam у власну теку, ви можете вказати шлях до неї для "
+"SamRewritten за допомогою змінних середовища. Перегляньте інструкції на <a "
+"href=\"https://github.com/PaulCombal/SamRewritten\">сторінці GitHub</a> або "
+"повідомте там про свою проблему."
 
 #: src/gui_frontend/dialogs.rs:246
 msgid "No compatible version of Steam found"
-msgstr ""
+msgstr "Не знайдено сумісної версії Steam"
 
 #: src/gui_frontend/dialogs.rs:282
 msgid "    (Steam is running here)"
-msgstr ""
+msgstr "    (Тут запущено Steam)"
 
 #: src/gui_frontend/dialogs.rs:284
 msgid "    (Steam not running here)"
-msgstr ""
+msgstr "    (Тут не запущено Steam)"
 
 #: src/gui_frontend/dialogs.rs:307
 msgid ""
@@ -180,6 +189,9 @@ msgid ""
 "currently running from is preselected — the others won't work unless you "
 "start Steam from them first."
 msgstr ""
+"SamRewritten виявив кілька встановлень Steam. Ту, через яку зараз запущено "
+"Steam, вибрано автоматично — інші не працюватимуть, доки ви не запустите "
+"Steam саме з них."
 
 #: src/gui_frontend/dialogs.rs:312
 msgid ""
@@ -188,18 +200,22 @@ msgid ""
 "— see the <a href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
 "file#environment-variables\">README</a>."
 msgstr ""
+"Вас запитають знову під час наступного запуску. Щоб пропустити це назавжди, "
+"встановіть змінну середовища <tt>SAM_STEAM_INSTALL_ROOT</tt> для потрібного "
+"встановлення — дивіться <a href=\"https://github.com/PaulCombal/"
+"SamRewritten?tab=readme-ov-file#environment-variables\">README</a>."
 
 #: src/gui_frontend/dialogs.rs:328 src/gui_frontend/dialogs.rs:377
 msgid "Choose a Steam installation"
-msgstr ""
+msgstr "Обрати встановлення Steam"
 
 #: src/gui_frontend/dialogs.rs:340 src/gui_frontend/dialogs.rs:504
 msgid "Quit"
-msgstr ""
+msgstr "Вийти"
 
 #: src/gui_frontend/dialogs.rs:341 src/gui_frontend/dialogs.rs:417
 msgid "Use this installation"
-msgstr ""
+msgstr "Використовувати це встановлення"
 
 #: src/gui_frontend/dialogs.rs:494
 msgid ""
@@ -211,22 +227,29 @@ msgid ""
 "<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam "
 "with Flatpak, please use the AppImage instead."
 msgstr ""
+"Це пісочниця SamRewritten у версії <b>Snap</b>, тому їй потрібен ваш дозвіл "
+"на читання файлів Steam. Виберіть теку Steam один раз — відкриється системне "
+"діалогове вікно, просто підтвердьте його, щоб надати доступ. Вас більше не "
+"запитуватимуть.\n"
+"\n"
+"<b>Flatpak Steam не підтримується</b> версією Snap. Якщо ви встановили Steam "
+"через Flatpak, використовуйте AppImage замість нього."
 
 #: src/gui_frontend/dialogs.rs:501 src/gui_frontend/dialogs.rs:540
 msgid "Connect to Steam"
-msgstr ""
+msgstr "Прив’язати Steam"
 
 #: src/gui_frontend/dialogs.rs:505 src/gui_frontend/dialogs.rs:571
 msgid "Choose a folder…"
-msgstr ""
+msgstr "Оберіть теку…"
 
 #: src/gui_frontend/dialogs.rs:506 src/gui_frontend/dialogs.rs:588
 msgid "Use Snap Steam"
-msgstr ""
+msgstr "Використовувати Steam Snap"
 
 #: src/gui_frontend/dialogs.rs:642
 msgid "Steam folder not usable"
-msgstr ""
+msgstr "Неможливо використовувати теку Steam"
 
 #: src/gui_frontend/dialogs.rs:650
 msgid ""
@@ -235,253 +258,256 @@ msgid ""
 "<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
 "use the AppImage."
 msgstr ""
+"SamRewritten не вдалося зчитати <tt>steamclient.so</tt> у вказаній теці. "
+"Оберіть директорію <b>Steam</b>, яка містить підтеку <tt>linux64</tt>. Snap-"
+"версія не підтримує Steam із Flatpak; скористайтеся AppImage."
 
 #: src/gui_frontend/dialogs.rs:658
 msgid "Choose again"
-msgstr ""
+msgstr "Оберіть знову"
 
 #: src/gui_frontend/dialogs.rs:816
 msgid "Select your Steam folder"
-msgstr ""
+msgstr "Виберіть теку Steam"
 
 #: src/gui_frontend/app_view.rs:68
 msgid "Achievements:"
-msgstr ""
+msgstr "Досягнення:"
 
 #: src/gui_frontend/app_view.rs:82
 msgid "Stats:"
-msgstr ""
+msgstr "Статистика:"
 
 #: src/gui_frontend/app_view.rs:96
 msgid "Last playtime:"
-msgstr ""
+msgstr "Востаннє зіграно:"
 
 #: src/gui_frontend/app_view.rs:110
 msgid "Type:"
-msgstr ""
+msgstr "Тип:"
 
 #: src/gui_frontend/app_view.rs:124
 msgid "Developer:"
-msgstr ""
+msgstr "Розробник:"
 
 #: src/gui_frontend/app_view.rs:141
 msgid "Metacritic:"
-msgstr ""
+msgstr "Metacritic:"
 
 #: src/gui_frontend/app_view.rs:155
 msgid "Failed to load app."
-msgstr ""
+msgstr "Не вдалося завантажити застосунок."
 
 #: src/gui_frontend/app_view.rs:161
 msgid "No entries found."
-msgstr ""
+msgstr "Записів не знайдено."
 
 #: src/gui_frontend/app_view.rs:178
 msgid "Achievements"
-msgstr ""
+msgstr "Досягнення"
 
 #: src/gui_frontend/app_view.rs:181
 msgid "Stats"
-msgstr ""
+msgstr "Статистика"
 
 #: src/gui_frontend/stat_view.rs:101
 msgid "Increment only"
-msgstr ""
+msgstr "Тільки приріст"
 
 #: src/gui_frontend/stat_view.rs:106
 msgid "This statistic is protected."
-msgstr ""
+msgstr "Ця статистика захищена."
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
-msgstr ""
+msgstr "Зупинись і повернутись"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:56
 msgid "No achievements staged"
-msgstr ""
+msgstr "Немає запланованих досягнень"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:57
 msgid "{count} staged"
-msgstr ""
+msgstr "{count} заплановано"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:95
 msgid "Already at or above target ({progress})"
-msgstr ""
+msgstr "Ціль досягнута або перевищена ({progress})"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:101
 msgid "Auto-fill {count} achievement(s) ({progress})"
-msgstr ""
+msgstr "Автозаповнення: {count} досягнення(-нь) ({progress})"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:49
 msgid "Instant"
-msgstr ""
+msgstr "Миттєвий"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:52
 msgid "Stage"
-msgstr ""
+msgstr "Етап"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:56
 msgid "Copy user"
-msgstr ""
+msgstr "Копіювати користувача"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:74
 msgid "Auto-fill"
-msgstr ""
+msgstr "Автозаповнення"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:77
 msgid "Configuration"
-msgstr ""
+msgstr "Конфігурація"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:103
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
 msgid "Start"
-msgstr ""
+msgstr "Почати"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:108
 msgid "Changes apply instantly"
-msgstr ""
+msgstr "Зміни застосовуються миттєво"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:63
 msgid "Count"
-msgstr ""
+msgstr "Кількість"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:65
 msgid "Percent"
-msgstr ""
+msgstr "Відсоток"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:99
 msgid "minutes (0 = instant)"
-msgstr ""
+msgstr "хвилин (0 = миттєво)"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:108
 msgid "Even"
-msgstr ""
+msgstr "Рівномірний"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:112
 msgid "Random"
-msgstr ""
+msgstr "Випадковий"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:132
 msgid "Target"
-msgstr ""
+msgstr "Ціль"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:136
 msgid "Spread over"
-msgstr ""
+msgstr "Розподілено на"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:140
 msgid "Spacing"
-msgstr ""
+msgstr "Інтервал"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:233
 msgid "Choose a friend to copy timing from"
-msgstr ""
+msgstr "Оберіть друга, щоб скопіювати час"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
 msgid "Advanced"
-msgstr ""
+msgstr "Розширені"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:68
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:89
 msgid "minutes"
-msgstr ""
+msgstr "хвилин"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:103
 msgid "Max gap"
-msgstr ""
+msgstr "Максимальний проміжок"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:105
 msgid "First delay"
-msgstr ""
+msgstr "Перша затримка"
 
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:100
 msgid "No friend loaded"
-msgstr ""
+msgstr "Список друзів порожній"
 
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:110
 msgid "{count} achievements over {time}"
-msgstr ""
+msgstr "{count} досягнень за {time}"
 
 #: src/gui_frontend/friend_picker.rs:76
 msgid "Private"
-msgstr ""
+msgstr "Приватний"
 
 #: src/gui_frontend/friend_picker.rs:98
 msgid "Copy timing from a friend"
-msgstr ""
+msgstr "Скопіювати часові мітки у друга"
 
 #: src/gui_frontend/friend_picker.rs:202
 msgid "Use the pasted SteamID64"
-msgstr ""
+msgstr "Використовувати вставлений SteamID64"
 
 #: src/gui_frontend/friend_picker.rs:497
 msgid "This profile is private"
-msgstr ""
+msgstr "Цей профіль приватний"
 
 #: src/gui_frontend/friend_picker.rs:499
 msgid "Couldn't load this user"
-msgstr ""
+msgstr "Помилка завантаження користувача"
 
 #: src/gui_frontend/friend_picker.rs:511
 msgid "Search friends or paste a SteamID64"
-msgstr ""
+msgstr "Шукайте друзів або вставте SteamID64"
 
 #: src/gui_frontend/friend_picker.rs:598
 msgid "Clear selected user"
-msgstr ""
+msgstr "Очистити вибраного користувача"
 
 #: src/gui_frontend/app_list_view/mod.rs:198
 #: src/gui_frontend/app_list_view/mod.rs:882
 msgid "Name or AppId (Ctrl+K)"
-msgstr ""
+msgstr "Назва або AppId (Ctrl+K)"
 
 #: src/gui_frontend/app_list_view/mod.rs:877
 msgid "Achievement or stat..."
-msgstr ""
+msgstr "Досягнення або статистика..."
 
 #: src/gui_frontend/app_list_view/settings_bindings.rs:110
 msgid "The new language will be applied the next time you start SamRewritten."
-msgstr ""
+msgstr "Нова мова буде застосована під час наступного запуску SamRewritten."
 
 #: src/gui_frontend/app_list_view/settings_bindings.rs:120
 msgid "Language changed"
-msgstr ""
+msgstr "Мову змінено"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:136
 #: src/gui_frontend/app_list_view/bulk_actions.rs:160
 msgid "Unlocking {done} / {total} app(s)…"
-msgstr ""
+msgstr "Розблокування {done} / {total} застосунку(-ів)…"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:210
 msgid "Unlock Incomplete"
-msgstr ""
+msgstr "Розблокування не завершено"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:211
 msgid "Failed to unlock achievements for the following apps:"
-msgstr ""
+msgstr "Не вдалося розблокувати досягнення для наступних застосунків:"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:293
 #: src/gui_frontend/app_list_view/bulk_actions.rs:319
 msgid "Locking {done} / {total} app(s)…"
-msgstr ""
+msgstr "Блокування {done} / {total} застосунку(-ів)…"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:157
 #: src/gui_frontend/app_list_view/progress_actions.rs:180
 msgid "Exporting {done} / {total} app(s)…"
-msgstr ""
+msgstr "Експортування {done} / {total} застосунку(-ів)…"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:246
 msgid "Export complete"
-msgstr ""
+msgstr "Експорт завершено"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:247
 msgid "Exported {count} app(s) to {path}"
-msgstr ""
+msgstr "Експортовано {count} застосунок(-и) до {path}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:257
 msgid "Export partially complete"
-msgstr ""
+msgstr "Експорт частково завершено"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:258
 msgid ""
@@ -489,57 +515,62 @@ msgid ""
 "\n"
 "Failed to read data for these apps:"
 msgstr ""
+"Записано в {path}\n"
+"\n"
+"Не вдалося прочитати дані для цих застосунків:"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:265
 msgid "Export failed"
-msgstr ""
+msgstr "Помилка експорту"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:301
 msgid "Import progress"
-msgstr ""
+msgstr "Прогрес імпорту"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:337
 #: src/gui_frontend/app_list_view/progress_actions.rs:350
 #: src/gui_frontend/app_list_view/progress_actions.rs:360
 msgid "Import failed"
-msgstr ""
+msgstr "Помилка імпорту"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:338
 msgid "Could not read file: {error}"
-msgstr ""
+msgstr "Не вдалося прочитати файл: {error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:351
 msgid "Could not parse file: {error}"
-msgstr ""
+msgstr "Не вдалося розібрати файл: {error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:361
 msgid "Unsupported format version: {found} (this build expects {expected})"
-msgstr ""
+msgstr "Непідтримувана версія формату: {found} (ця збірка очікує {expected})"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:376
 #: src/gui_frontend/app_list_view/progress_actions.rs:398
 #: src/gui_frontend/app_list_view/progress_actions.rs:487
 msgid "App {id}"
-msgstr ""
+msgstr "Застосунок {id}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:387
 #: src/gui_frontend/app_list_view/progress_actions.rs:444
 msgid "Nothing to import"
-msgstr ""
+msgstr "Нічого імпортувати"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:388
 msgid "None of the apps in the file are in your current library."
-msgstr ""
+msgstr "У вашій поточній бібліотеці відсутні застосунки з цього файлу."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:408
 msgid ""
 "{list}\n"
 "... and {count} more"
 msgstr ""
+"{list}\n"
+"... та ще {count}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:417
 msgid "Some apps contain protected fields."
-msgstr ""
+msgstr "Деякі застосунки містять захищені поля."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:419
 msgid ""
@@ -548,119 +579,143 @@ msgid ""
 "\n"
 "{list}"
 msgstr ""
+"Наведені нижче застосунки містять поля, які можуть бути непридатними для "
+"імпорту. Ви дієте на власний страх і ризик.\n"
+"\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:423
 #: src/gui_frontend/app_list_view/refresh_actions.rs:375
 msgid "Cancel"
-msgstr ""
+msgstr "Скасувати"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
 msgid "Skip these apps"
-msgstr ""
+msgstr "Пропустити ці застосунки"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:425
 msgid "Proceed anyway"
-msgstr ""
+msgstr "Усе одно продовжити"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:445
 msgid "All remaining apps were skipped."
-msgstr ""
+msgstr "Решту застосунків було пропущено."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:473
 #: src/gui_frontend/app_list_view/progress_actions.rs:506
 msgid "Importing {done} / {total} app(s)…"
-msgstr ""
+msgstr "Імпортування {done} / {total} застосунку(-ів)…"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:587
 msgid "Applied {achievements} achievement(s) and {stats} stat(s)."
-msgstr ""
+msgstr "Застосовано {achievements} досягнень та {stats} показників."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:592
 msgid ""
 "\n"
 "Skipped {count} protected field(s)."
 msgstr ""
+"\n"
+"Пропущено {count} захищене(-их) поле(-ів)."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:598
 msgid ""
 "\n"
 "Skipped {count} unwriteable stat(s) (out of range or increment-only)."
 msgstr ""
+"\n"
+"Пропущено {count} неможливих для запису показників (поза діапазоном або лише "
+"для приросту)."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:606
 msgid ""
 "Would succeed if you reset stats first:\n"
 "{list}"
 msgstr ""
+"Мало б успіх, якби ви спочатку скинули статистику:\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:612
 msgid ""
 "Skipped (not in your library):\n"
 "{list}"
 msgstr ""
+"Пропущено (немає у вашій бібліотеці):\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:617
 msgid ""
 "Errors:\n"
 "{list}"
 msgstr ""
+"Помилки:\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:622
 #: src/gui_frontend/app_list_view/progress_actions.rs:624
 msgid "Import complete"
-msgstr ""
+msgstr "Імпорт завершено"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:113
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
+"На вашому обліковому записі не знайдено жодних застосунків. Щоб розпочати, "
+"виконайте пошук за App Id."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:130
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr ""
+"Результатів немає. Перевірте, чи немає орфографічних помилок, або спробуйте "
+"ввести App Id."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:162
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
 msgstr ""
+"Не вдалося завантажити бібліотеку. Перевірте з’єднання з інтернетом. "
+"Знайдіть по App Id, щоб розпочати."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:170
 msgid "SamRewritten could not connect to Steam. Is it running?"
-msgstr ""
+msgstr "SamRewritten не зміг під’єднатися до Steam. Він запущений?"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:373
 msgid "Reset Everything"
-msgstr ""
+msgstr "Скинути все"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:374
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr ""
+"Це призведе до скидання всіх досягнень і статистики для цього застосунку. "
+"Упевнені?"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:375
 msgid "Sure, reset"
-msgstr ""
+msgstr "Звісно, скинути"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:106
 msgid "Idle"
-msgstr ""
+msgstr "Бездіяльний"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:130
 msgid "Manage"
-msgstr ""
+msgstr "Керувати"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:149
 msgid "Manage this app in a new window"
-msgstr ""
+msgstr "Керуйте цим застосунком у новому вікні"
 
 #: src/gui_frontend/widgets/achievement_row.rs:257
 #: src/gui_frontend/widgets/achievement_row.rs:262
 msgid "This achievement is protected."
-msgstr ""
+msgstr "Це досягнення захищене."
 
 #: src/gui_frontend/widgets/achievement_row.rs:277
 msgid "Click to stage this achievement; click again to remove."
 msgstr ""
+"Натисніть, щоб додати це досягнення до черги; натисніть ще раз, щоб видалити."
 
 #: src/gui_frontend/widgets/achievement_row.rs:287
 msgid "Already unlocked."
-msgstr ""
+msgstr "Уже розблоковано."
