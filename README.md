@@ -132,14 +132,16 @@ If the installation fails or behaves unexpectedly, please open a GitHub issue wi
 
 ## Translations
 
-SamRewritten is translated by its community, and **we'd love your help** to
-support more languages. You don't need to be a programmer — translating is just
-filling in a text file, and you can submit it by opening an issue or a PR.
+SamRewritten is translated by its community on
+[Weblate](https://hosted.weblate.org/engage/samrewritten/), and **we'd love your
+help** to support more languages. You don't need to be a programmer or a GitHub
+user: translate in your browser, and your work reaches us on its own.
 
-In addition to English, SamRewritten is currently available in French, Spanish,
-Japanese, and Brazilian Portuguese.
+<a href="https://hosted.weblate.org/engage/samrewritten/">
+    <img src="https://hosted.weblate.org/widget/samrewritten/samrewritten/multi-auto.svg" alt="Translation status per language">
+</a>
 
-See [`po/README.md`](po/README.md) for a short, step-by-step guide.
+See [`po/README.md`](po/README.md) for a short, step-by-step guide, without a Weblate account.
 
 ## Steam compatibility
 

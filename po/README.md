@@ -5,8 +5,17 @@ Rust crate). The English source string is the catalogue key.
 
 ## Want to translate SamRewritten?
 
-You don't need to be a programmer. A translation is just a text file that pairs
-each English phrase with your version — here's the whole process.
+You don't need to be a programmer. The easiest way by far is
+**[Weblate](https://hosted.weblate.org/engage/samrewritten/)**: pick your
+language, type your translations in the browser, and they reach us on their own
+— no file to download, no GitHub account, no pull request. Weblate also shows
+you where each phrase appears in the app and flags the ones that changed.
+
+If your language isn't listed there yet, Weblate can create it: use *Start new
+translation* on the project page.
+
+The rest of this section covers the manual route, for when you'd rather work
+offline in a `.po` editor.
 
 ### 1. Get the file
 
@@ -43,7 +52,10 @@ A few things to keep in mind:
 
 ### 3. Send it to us
 
-- **Easiest:** open a
+- **Easiest:** upload it to
+  [Weblate](https://hosted.weblate.org/engage/samrewritten/) from your language's
+  page — it merges your file with whatever is already there.
+- **No account:** open a
   [new issue](https://github.com/PaulCombal/SamRewritten/issues) and attach your
   `.po` file. We'll handle the rest.
 - **If you're comfortable with GitHub:** fork the project, add your file under
@@ -78,11 +90,18 @@ app's own chrome. Keep each translatable string on one physical line; for
 multi-paragraph text, use one `tr()` per paragraph and join them in code, so the
 catalogue keys stay clean and stable.
 
-After adding/changing strings, refresh the catalogues:
+After adding/changing strings, refresh the template:
 
 ```sh
-./po/update-pot.sh        # needs gettext (xgettext, msgmerge)
+./po/update-pot.sh        # needs gettext (xgettext)
 ```
+
+This rewrites `po/samrewritten.pot` only. The `po/<lang>.po` files belong to
+[Weblate](https://hosted.weblate.org/projects/samrewritten/samrewritten/), which
+merges the new template into each of them and pushes the result back — so don't
+edit them by hand, or your commit and Weblate's will conflict over the same
+lines. If you do need to merge locally (Weblate down, or an offline release),
+lock the component first with `wlc lock` and pass `--merge`.
 
 `build.rs` compiles each `po/<lang>.po` to
 `locale/<lang>/LC_MESSAGES/samrewritten.mo` on the next `cargo build`, so a dev
@@ -96,9 +115,9 @@ List every source file with translatable strings in `POTFILES.in`.
 Install the compiled `.mo` files into the platform's locale prefix and point
 `i18n::locale_dir()` at it. The existing branches cover:
 
-| Target   | Directory                          |
-|----------|------------------------------------|
-| AppImage | `$APPDIR/usr/share/locale`         |
-| Snap     | `$SNAP/usr/share/locale`           |
+| Target   | Directory                             |
+|----------|---------------------------------------|
+| AppImage | `$APPDIR/usr/share/locale`            |
+| Snap     | `$SNAP/usr/share/locale`              |
 | System   | `/usr/share/locale` (gettext default) |
-| Override | `$SAM_LOCALE_DIR_FALLBACK`          |
+| Override | `$SAM_LOCALE_DIR_FALLBACK`            |
