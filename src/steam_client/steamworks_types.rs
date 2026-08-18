@@ -211,6 +211,10 @@ pub enum EResult {
     k_EResultOfflineAppCacheInvalid = 130,
 }
 
+// Steam packs its callback structs to 4 bytes on Linux and macOS but to 8 on
+// Windows (`VALVE_CALLBACK_PACK_SMALL` against `_LARGE`).
+
+// Not a callback: the SDK packs this one to 8 on every platform.
 #[repr(C)]
 pub struct LeaderboardEntry_t {
     pub m_steamIDUser: CSteamID,
@@ -220,21 +224,23 @@ pub struct LeaderboardEntry_t {
     pub m_hUGC: UGCHandle_t,
 }
 
-#[repr(C)]
-#[derive(Debug)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct UserStatsReceived_t {
     pub m_nGameID: u64,
     pub m_eResult: EResult,
     pub m_steamIDUser: CSteamID,
 }
 
-#[repr(C)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct UserStatsStored_t {
     pub m_nGameID: u64,
     pub m_eResult: EResult,
 }
 
-#[repr(C)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct UserAchievementStored_t {
     pub m_nGameID: u64,
     pub m_bGroupAchievement: bool,
@@ -243,20 +249,23 @@ pub struct UserAchievementStored_t {
     pub m_nMaxProgress: u32,
 }
 
-#[repr(C)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct LeaderboardFindResult_t {
     pub m_hSteamLeaderboard: SteamLeaderboard_t,
     pub m_bLeaderboardFound: u8,
 }
 
-#[repr(C)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct LeaderboardScoresDownloaded_t {
     pub m_hSteamLeaderboard: SteamLeaderboard_t,
     pub m_hSteamLeaderboardEntries: SteamLeaderboardEntries_t,
     pub m_cEntryCount: c_int,
 }
 
-#[repr(C)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct LeaderboardScoreUploaded_t {
     pub m_bSuccess: u8,
     pub m_hSteamLeaderboard: SteamLeaderboard_t,
@@ -266,18 +275,21 @@ pub struct LeaderboardScoreUploaded_t {
     pub m_nGlobalRankPrevious: c_int,
 }
 
-#[repr(C)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct NumberOfCurrentPlayers_t {
     pub m_bSuccess: u8,
     pub m_cPlayers: c_int,
 }
 
-#[repr(C)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct UserStatsUnloaded_t {
     pub m_steamIDUser: CSteamID,
 }
 
-#[repr(C)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct UserAchievementIconFetched_t {
     pub m_nGameID: u64,
     pub m_rgchAchievementName: [c_char; k_cchStatNameMax],
@@ -285,21 +297,22 @@ pub struct UserAchievementIconFetched_t {
     pub m_nIconHandle: c_int,
 }
 
-#[repr(C)]
-#[derive(Debug)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct GlobalAchievementPercentagesReady_t {
     pub m_nGameID: u64,
     pub m_eResult: EResult,
 }
 
-#[repr(C)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct LeaderboardUGCSet_t {
     pub m_eResult: EResult,
     pub m_hSteamLeaderboard: SteamLeaderboard_t,
 }
 
-#[repr(C)]
-#[derive(Debug)]
+#[cfg_attr(windows, repr(C, packed(8)))]
+#[cfg_attr(not(windows), repr(C, packed(4)))]
 pub struct GlobalStatsReceived_t {
     pub m_nGameID: u64,
     pub m_eResult: EResult,

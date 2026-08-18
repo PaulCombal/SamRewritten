@@ -43,6 +43,9 @@ pub struct UnlockCache {
     /// Games there was a file for, unlocks or not. One with achievements
     /// missing from here has had its file deleted since Steam last started.
     pub apps: HashSet<u32>,
+    /// Oldest write time among these files, unix seconds. A sweep rewrites them
+    /// all at once, so it only moves when one finishes.
+    pub last_full_scan: Option<u64>,
 }
 
 pub fn stats_dir() -> Result<PathBuf, SamError> {
@@ -107,6 +110,7 @@ pub fn read_all_unlock_stamps(account_id: u32) -> Result<UnlockCache, SamError> 
     })?;
 
     let prefix = format!("UserGameStats_{account_id}_");
+    let mut last_full_scan: Option<u64> = None;
     let files: Vec<(u32, PathBuf)> = entries
         .flatten()
         .filter_map(|entry| {
@@ -116,6 +120,15 @@ pub fn read_all_unlock_stamps(account_id: u32) -> Result<UnlockCache, SamError> 
                 .strip_suffix(".bin")?
                 .parse::<u32>()
                 .ok()?;
+            if let Some(secs) = entry
+                .metadata()
+                .and_then(|m| m.modified())
+                .ok()
+                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| d.as_secs())
+            {
+                last_full_scan = Some(last_full_scan.map_or(secs, |old: u64| old.min(secs)));
+            }
             Some((app_id, entry.path()))
         })
         .collect();
@@ -142,7 +155,11 @@ pub fn read_all_unlock_stamps(account_id: u32) -> Result<UnlockCache, SamError> 
             out.extend(worker.join().unwrap_or_default());
         }
     });
-    Ok(UnlockCache { stamps: out, apps })
+    Ok(UnlockCache {
+        stamps: out,
+        apps,
+        last_full_scan,
+    })
 }
 
 fn dirty_mask(group: &KeyValue) -> u32 {

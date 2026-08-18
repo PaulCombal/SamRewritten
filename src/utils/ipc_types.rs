@@ -124,7 +124,7 @@ pub enum SteamCommand {
     ImportApps(Vec<AppExport>),
     UnlockAllApps(Vec<u32>),
     ResetApps(Vec<u32>, bool),
-    GetAchievementCounts(Vec<u32>),
+    GetAchievementCounts(Vec<u32>, bool),
     /// Fetch `app_id`'s achievements and stats in a single round-trip, so an
     /// unrelated batch command can't interleave between the two fetches on the
     /// serial channel. When `launch` is true the app is launched (or its

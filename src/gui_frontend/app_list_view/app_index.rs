@@ -92,6 +92,19 @@ impl AppIndex {
         }
     }
 
+    pub fn clear_loaded(&self) {
+        for i in 0..self.store.n_items() {
+            let Some(app) = self.store.item(i).and_downcast::<GSteamAppObject>() else {
+                continue;
+            };
+            if !app.is_synthetic() {
+                app.set_counts(0, 0, false);
+            }
+        }
+        *self.state.borrow_mut() = None;
+        self.generation.set(self.generation.get().wrapping_add(1));
+    }
+
     fn ensure(&self) {
         if self.state.borrow().is_some() {
             return;

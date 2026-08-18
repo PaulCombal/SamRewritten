@@ -28,11 +28,12 @@ mod timeline;
 
 use crate::backend::user_unlock_times::{account_id, read_all_unlock_stamps};
 use crate::gui_frontend::gobjects::steam_app::GSteamAppObject;
+use crate::gui_frontend::gsettings::{LAST_SCAN_KEY, get_settings};
 use crate::gui_frontend::i18n::{tr, tr_noop};
 use crate::gui_frontend::widgets::clamp::Clamp;
 use crate::gui_frontend::widgets::shimmer_image::ShimmerImage;
 use completion_graph::CompletionGraph;
-use gtk::gio::{ListStore, spawn_blocking};
+use gtk::gio::{ListStore, Settings, spawn_blocking};
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
 use gtk::{
@@ -211,7 +212,7 @@ struct LibraryStats {
     started_rate_sum: f64,
 }
 
-fn collect_stats(list_store: &ListStore) -> LibraryStats {
+fn collect_stats(list_store: &ListStore, counts: &HashMap<u32, (u32, u32)>) -> LibraryStats {
     let mut stats = LibraryStats::default();
     for i in 0..list_store.n_items() {
         let Some(app) = list_store.item(i).and_downcast::<GSteamAppObject>() else {
@@ -222,12 +223,10 @@ fn collect_stats(list_store: &ListStore) -> LibraryStats {
         }
         stats.apps += 1;
         stats.playtime_minutes += u64::from(app.playtime_minutes());
-        if !app.achievements_loaded() {
+        let Some(&(total, unlocked)) = counts.get(&app.app_id()) else {
             continue;
-        }
+        };
         stats.measured += 1;
-        let total = app.achievement_count();
-        let unlocked = app.unlocked_achievement_count();
         stats.total += u64::from(total);
         stats.unlocked += u64::from(unlocked);
         if total > 0 && unlocked >= total {
@@ -420,14 +419,21 @@ pub(crate) struct ProfileView {
     pub widget: ScrolledWindow,
     identity: SharedIdentity,
     counts_loading: Rc<dyn Fn() -> bool>,
+    counts_progress: Rc<dyn Fn() -> (u32, u32)>,
+    rescanning: Rc<dyn Fn() -> bool>,
     avatar: ShimmerImage,
     name_label: Label,
     steam_id_label: Label,
     tiles: Vec<Tile>,
-    coverage_row: Box,
+    coverage_row: Frame,
     coverage_label: Label,
+    coverage_hint: Label,
     coverage_progress: ProgressBar,
     measure_button: Button,
+    cancel_button: Button,
+    coverage_complete: Rc<Cell<bool>>,
+    cache_written: Rc<Cell<Option<u64>>>,
+    settings: Settings,
     history_spinner: Spinner,
     bursts_spinner: Spinner,
     heatmap: Heatmap,
@@ -446,18 +452,29 @@ pub(crate) struct ProfileView {
     cache_banner_label: Label,
     journal: Rc<JournalSection>,
     on_open_app: Rc<dyn Fn(&GSteamAppObject)>,
+    on_measure_apps: Rc<dyn Fn(Vec<u32>)>,
     select_apps: SelectApps,
     generation: Rc<Cell<u64>>,
     history_drawn: Rc<Cell<bool>>,
     library_refresh_queued: Cell<bool>,
     history_refresh_queued: Cell<bool>,
+    /// Sticky: a rescan empties the list's counters, and these must not blink out.
+    counts: Rc<RefCell<HashMap<u32, (u32, u32)>>>,
+    /// Asked once: re-asking would undo the user's stop on every timeline redraw.
+    measured: Rc<RefCell<HashSet<u32>>>,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn build_profile_view(
     identity: SharedIdentity,
     on_open_app: Rc<dyn Fn(&GSteamAppObject)>,
     on_measure_all: Rc<dyn Fn()>,
+    on_measure_apps: Rc<dyn Fn(Vec<u32>)>,
+    on_rescan_all: Rc<dyn Fn()>,
+    on_cancel_scan: Rc<dyn Fn()>,
     counts_loading: Rc<dyn Fn() -> bool>,
+    counts_progress: Rc<dyn Fn() -> (u32, u32)>,
+    rescanning: Rc<dyn Fn() -> bool>,
 ) -> ProfileView {
     let avatar = ShimmerImage::new();
     avatar.set_size_request(AVATAR_SIZE, AVATAR_SIZE);
@@ -541,27 +558,75 @@ pub(crate) fn build_profile_view(
     }
 
     let coverage_label = caption("");
-    coverage_label.set_hexpand(true);
-    coverage_label.set_valign(Align::Center);
+    let coverage_hint = caption(
+        tr("Rescan for up-to-date numbers if you also use Steam on another computer.").as_str(),
+    );
+    coverage_hint.add_css_class("dim-label");
+    coverage_hint.set_visible(false);
+    let coverage_lines = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(2)
+        .hexpand(true)
+        .valign(Align::Center)
+        .build();
+    coverage_lines.append(&coverage_label);
+    coverage_lines.append(&coverage_hint);
     let measure_button = Button::builder()
         .label(tr("Read all my games").as_str())
         .valign(Align::Center)
         .build();
-    measure_button.connect_clicked(move |_| on_measure_all());
+    let coverage_complete = Rc::new(Cell::new(false));
+    let coverage_icon = Image::from_icon_name("dialog-information-symbolic");
+    coverage_icon.set_valign(Align::Center);
     let coverage_text = Box::builder()
         .orientation(Orientation::Horizontal)
-        .spacing(12)
+        .spacing(10)
         .build();
-    coverage_text.append(&coverage_label);
-    coverage_text.append(&measure_button);
-    let coverage_progress = ProgressBar::builder().margin_top(6).visible(false).build();
-    let coverage_row = Box::builder()
-        .orientation(Orientation::Vertical)
-        .margin_top(10)
+    let cancel_button = Button::builder()
+        .label(tr("Cancel").as_str())
+        .valign(Align::Center)
         .visible(false)
         .build();
-    coverage_row.append(&coverage_text);
-    coverage_row.append(&coverage_progress);
+    cancel_button.connect_clicked(move |button| {
+        button.set_visible(false);
+        on_cancel_scan();
+    });
+    coverage_text.append(&coverage_icon);
+    coverage_text.append(&coverage_lines);
+    coverage_text.append(&measure_button);
+    coverage_text.append(&cancel_button);
+    let coverage_progress = ProgressBar::builder().margin_top(8).visible(false).build();
+    measure_button.connect_clicked(clone!(
+        #[strong]
+        coverage_complete,
+        #[strong]
+        coverage_progress,
+        move |button| {
+            button.set_visible(false);
+            // A measure only reaches `refresh_library` once the first chunk
+            // lands, and the card would sit there with no button and no bar.
+            coverage_progress.set_visible(true);
+            if coverage_complete.get() {
+                on_rescan_all();
+            } else {
+                on_measure_all();
+            }
+        }
+    ));
+    let coverage_card = Box::builder()
+        .orientation(Orientation::Vertical)
+        .margin_top(10)
+        .margin_bottom(10)
+        .margin_start(12)
+        .margin_end(12)
+        .build();
+    coverage_card.append(&coverage_text);
+    coverage_card.append(&coverage_progress);
+    let coverage_row = Frame::builder()
+        .child(&coverage_card)
+        .margin_top(12)
+        .visible(false)
+        .build();
 
     let heatmap = Heatmap::default();
     heatmap.set_halign(Align::Center);
@@ -699,14 +764,21 @@ pub(crate) fn build_profile_view(
         widget,
         identity,
         counts_loading,
+        counts_progress,
+        rescanning,
         avatar,
         name_label,
         steam_id_label,
         tiles: tile_widgets,
         coverage_row,
         coverage_label,
+        coverage_hint,
         coverage_progress,
         measure_button,
+        cancel_button,
+        coverage_complete,
+        cache_written: Rc::new(Cell::new(None)),
+        settings: get_settings(),
         history_spinner,
         bursts_spinner,
         heatmap,
@@ -725,11 +797,14 @@ pub(crate) fn build_profile_view(
         cache_banner_label,
         journal,
         on_open_app,
+        on_measure_apps,
         select_apps: SelectApps::default(),
         generation: Rc::new(Cell::new(0)),
         history_drawn: Rc::new(Cell::new(false)),
         library_refresh_queued: Cell::new(false),
         history_refresh_queued: Cell::new(false),
+        counts: Rc::new(RefCell::new(HashMap::new())),
+        measured: Rc::new(RefCell::new(HashSet::new())),
     }
 }
 
@@ -756,7 +831,8 @@ impl ProfileView {
         }
     }
 
-    pub(crate) fn load(&self, list_store: &ListStore) {
+    pub(crate) fn load(self: &Rc<Self>, list_store: &ListStore) {
+        self.measured.borrow_mut().clear();
         self.refresh_library(list_store);
         self.load_timeline(list_store);
         self.journal.set_app_names(
@@ -792,7 +868,8 @@ impl ProfileView {
     }
 
     pub(crate) fn refresh_library(&self, list_store: &ListStore) {
-        let stats = collect_stats(list_store);
+        self.learn_counts(list_store);
+        let stats = collect_stats(list_store, &self.counts.borrow());
         let percent = completion_percent(&stats);
         let values = [
             stats.apps.to_string(),
@@ -803,29 +880,40 @@ impl ProfileView {
         ];
         let complete = stats.measured >= stats.apps;
         let loading = (self.counts_loading)();
+        let rescanning = (self.rescanning)();
         for (tile, value) in self.tiles.iter().zip(values) {
             tile.value.set_label(&value);
-            tile.faces
-                .set_visible_child_name(match tile.needs_counts && !complete {
+            tile.faces.set_visible_child_name(
+                match tile.needs_counts && (!complete || rescanning) {
                     false => "value",
-                    true if loading => "loading",
+                    true if loading || rescanning => "loading",
                     true => "unknown",
-                });
+                },
+            );
         }
 
-        self.coverage_row.set_visible(!complete);
+        self.coverage_complete.set(complete);
+        self.coverage_row.set_visible(stats.apps > 0);
+        self.coverage_hint.set_visible(complete);
         self.coverage_progress.set_visible(loading);
         self.measure_button.set_visible(!loading);
+        self.cancel_button.set_visible(loading && rescanning);
+        self.measure_button.set_label(&if complete {
+            tr("Rescan now")
+        } else {
+            tr("Read all my games")
+        });
         self.history_spinner.set_visible(loading);
         self.completion_spinner.set_visible(loading);
         self.bursts_spinner.set_visible(loading);
+        let (scanned, to_scan) = (self.counts_progress)();
+        self.coverage_progress.set_fraction(if to_scan > 0 {
+            f64::from(scanned) / f64::from(to_scan)
+        } else {
+            0.0
+        });
         if !complete {
             let text = if loading {
-                self.coverage_progress.set_fraction(if stats.apps > 0 {
-                    f64::from(stats.measured) / f64::from(stats.apps)
-                } else {
-                    0.0
-                });
                 tr(
                     "Reading your games' achievements ({measured}/{total}). The activity and the runs below fill in as it goes.",
                 )
@@ -839,10 +927,35 @@ impl ProfileView {
                     .replace("{measured}", &stats.measured.to_string())
                     .replace("{total}", &stats.apps.to_string()),
             );
+        } else {
+            self.coverage_label
+                .set_label(&cache_age_text(&self.settings, self.cache_written.get()));
         }
     }
 
-    fn load_timeline(&self, list_store: &ListStore) {
+    fn learn_counts(&self, list_store: &ListStore) {
+        let mut counts = self.counts.borrow_mut();
+        for i in 0..list_store.n_items() {
+            let Some(app) = list_store.item(i).and_downcast::<GSteamAppObject>() else {
+                continue;
+            };
+            if app.is_synthetic() || !app.achievements_loaded() {
+                continue;
+            }
+            let total = app.achievement_count();
+            // Zero is also what a sweep reports for an unanswered game.
+            if total == 0
+                && counts
+                    .get(&app.app_id())
+                    .is_some_and(|(known, _)| *known > 0)
+            {
+                continue;
+            }
+            counts.insert(app.app_id(), (total, app.unlocked_achievement_count()));
+        }
+    }
+
+    fn load_timeline(self: &Rc<Self>, list_store: &ListStore) {
         let steam_id64 = self.identity.steam_id64.get();
         if steam_id64 == 0 {
             self.heatmap_caption
@@ -860,6 +973,8 @@ impl ProfileView {
         let account = account_id(steam_id64);
         let handle = spawn_blocking(move || read_all_unlock_stamps(account).map(timeline::build));
         let apps = apps_by_id(list_store);
+        let view = self.clone();
+        let store = list_store.clone();
         MainContext::default().spawn_local(clone!(
             #[strong(rename_to = heatmap)]
             self.heatmap,
@@ -883,6 +998,14 @@ impl ProfileView {
             self.bursts_clean,
             #[strong(rename_to = bursts_more)]
             self.bursts_more,
+            #[strong(rename_to = coverage_label)]
+            self.coverage_label,
+            #[strong(rename_to = coverage_complete)]
+            self.coverage_complete,
+            #[strong(rename_to = cache_written)]
+            self.cache_written,
+            #[strong(rename_to = settings)]
+            self.settings,
             #[strong(rename_to = cache_banner)]
             self.cache_banner,
             #[strong(rename_to = cache_banner_label)]
@@ -914,6 +1037,11 @@ impl ProfileView {
                 }
 
                 history_drawn.set(true);
+                view.refresh_library(&store);
+                cache_written.set(timeline.last_full_scan);
+                if coverage_complete.get() {
+                    coverage_label.set_label(&cache_age_text(&settings, timeline.last_full_scan));
+                }
                 let today = timeline::today();
 
                 let this_year = timeline::civil_from_days(today).0;
@@ -980,12 +1108,29 @@ impl ProfileView {
                     selected,
                 );
 
-                let totals: HashMap<u32, u32> = apps
-                    .iter()
-                    .filter(|(_, app)| !app.is_synthetic() && !app.is_junk())
-                    .filter(|(_, app)| app.achievements_loaded())
-                    .map(|(id, app)| (*id, app.achievement_count()))
-                    .collect();
+                let (gaps, totals): (Vec<u32>, HashMap<u32, u32>) = {
+                    let known = view.counts.borrow();
+                    let measurable = || {
+                        apps.iter()
+                            .filter(|(_, app)| !app.is_synthetic() && !app.is_junk())
+                    };
+                    (
+                        measurable()
+                            .filter(|(id, _)| !known.contains_key(id))
+                            .map(|(id, _)| *id)
+                            .collect(),
+                        measurable()
+                            .filter_map(|(id, _)| Some((*id, known.get(id)?.0)))
+                            .collect(),
+                    )
+                };
+                let fresh: Vec<u32> = {
+                    let mut measured = view.measured.borrow_mut();
+                    gaps.into_iter().filter(|id| measured.insert(*id)).collect()
+                };
+                if !fresh.is_empty() {
+                    (view.on_measure_apps)(fresh);
+                }
                 let curve = timeline::completion_curve(&timeline.chronology, &totals);
                 completion_graph.set_data(&curve, today);
                 completion_caption.set_label(&match curve.last() {
@@ -1097,6 +1242,25 @@ impl ProfileView {
             }
         ));
     }
+}
+
+fn cache_age_text(settings: &Settings, steam_wrote: Option<u64>) -> String {
+    let scanned = u64::try_from(settings.int64(LAST_SCAN_KEY))
+        .ok()
+        .filter(|secs| *secs > 0);
+    let text = match scanned {
+        Some(scanned) => u32::try_from(scanned)
+            .ok()
+            .and_then(format_day)
+            .map(|date| tr("Last full scan on {date}.").replace("{date}", &date)),
+        None => steam_wrote
+            .and_then(|secs| u32::try_from(secs).ok())
+            .and_then(format_day)
+            .map(|date| {
+                tr("Steam last refreshed these figures on {date}.").replace("{date}", &date)
+            }),
+    };
+    text.unwrap_or_else(|| tr("How old these figures are is unknown.").to_string())
 }
 
 fn format_day(unix_seconds: u32) -> Option<String> {

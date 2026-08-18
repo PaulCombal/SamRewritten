@@ -54,6 +54,7 @@ pub(super) struct Timeline {
     pub first: Option<u32>,
     pub cached_apps: HashSet<u32>,
     pub chronology: Vec<DayStamp>,
+    pub last_full_scan: Option<u64>,
 }
 
 pub(super) struct DayStamp {
@@ -70,6 +71,7 @@ pub(super) fn build(cache: UnlockCache) -> Timeline {
     let UnlockCache {
         mut stamps,
         apps: cached_apps,
+        last_full_scan,
     } = cache;
     let total = stamps.len();
     let first = stamps.iter().map(|s| s.unlock_time).min();
@@ -155,6 +157,7 @@ pub(super) fn build(cache: UnlockCache) -> Timeline {
         first,
         cached_apps,
         chronology,
+        last_full_scan,
     }
 }
 
@@ -343,6 +346,7 @@ mod tests {
                 })
                 .collect(),
             apps: entries.iter().map(|&(app_id, _)| app_id).collect(),
+            last_full_scan: None,
         }
     }
 

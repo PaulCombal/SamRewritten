@@ -156,3 +156,13 @@ pub fn create_client_engine(silent: bool) -> Result<ClientEngine, Box<dyn std::e
         Ok(ClientEngine::from_raw(engine))
     }
 }
+
+/// Callbacks are per pipe, and `RunFrame` never hands them over.
+pub fn callback_pump() -> Option<(SteamGetCallbackFn, SteamFreeLastCallbackFn)> {
+    let lib = STEAM_CLIENT_LIB.get()?;
+    unsafe {
+        let get: Symbol<SteamGetCallbackFn> = lib.get(b"Steam_BGetCallback").ok()?;
+        let free: Symbol<SteamFreeLastCallbackFn> = lib.get(b"Steam_FreeLastCallback").ok()?;
+        Some((*get, *free))
+    }
+}

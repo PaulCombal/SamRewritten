@@ -22,6 +22,8 @@ mod settings_bindings;
 mod sidebar;
 
 use crate::backend::app_lister::{AppModel, AppModelType};
+use crate::backend::local_stats::LocalIndex;
+use crate::backend::user_unlock_times::account_id;
 use crate::gui_frontend::MainApplication;
 use crate::gui_frontend::app_list_view_callbacks::switch_from_app_list_to_app;
 use crate::gui_frontend::app_view::create_app_view;
@@ -59,6 +61,7 @@ use gtk::{IconSize, glib};
 use progress_actions::create_progress_actions;
 use refresh_actions::{
     create_clear_all_action, create_refresh_achievements_action, create_refresh_app_list_action,
+    create_rescan_counts_action,
 };
 use settings_bindings::setup_settings_bindings;
 use sidebar::{build_sidebar, sort_needs_counts};
@@ -240,6 +243,23 @@ fn apply_idle_cap_delta(list_store: &ListStore, idle_count: &Cell<usize>, delta:
 }
 
 pub type PrefetchedProgress = Rc<RefCell<Option<(u32, String, AppProgress)>>>;
+
+fn counts_complete(list_store: &ListStore) -> bool {
+    let mut any = false;
+    for i in 0..list_store.n_items() {
+        let Some(app) = list_store.item(i).and_downcast::<GSteamAppObject>() else {
+            continue;
+        };
+        if app.is_synthetic() {
+            continue;
+        }
+        any = true;
+        if !app.achievements_loaded() {
+            return false;
+        }
+    }
+    any
+}
 
 pub fn create_main_ui(
     application: &MainApplication,
@@ -598,6 +618,56 @@ pub fn create_main_ui(
     ));
 
     let identity: SharedIdentity = Rc::new(Identity::default());
+    // Without this the sweep stops as soon as what is on screen is satisfied.
+    let counts_prefilled = Rc::new(Cell::new(false));
+    let prefill_counts: Rc<dyn Fn()> = Rc::new(clone!(
+        #[strong]
+        identity,
+        #[weak]
+        list_store,
+        #[strong]
+        achievement_loader,
+        #[strong]
+        counts_prefilled,
+        move || {
+            let steam_id64 = identity.steam_id64.get();
+            if steam_id64 == 0 || list_store.n_items() == 0 || counts_prefilled.replace(true) {
+                return;
+            }
+            achievement_loader.hold_sweep();
+            let account = account_id(steam_id64);
+            let handle = spawn_blocking(move || {
+                LocalIndex::build(account)
+                    .map(|index| index.read_all())
+                    .unwrap_or_default()
+            });
+            MainContext::default().spawn_local(clone!(
+                #[weak]
+                list_store,
+                #[strong]
+                achievement_loader,
+                async move {
+                    let counts = handle.await.unwrap_or_default();
+                    crate::dev_println!("APP_LIST", "local files settled {} apps", counts.len());
+                    if counts.is_empty() {
+                        achievement_loader.release_sweep(&list_store);
+                        return;
+                    }
+                    achievement_loader.apply_local(&list_store, &counts);
+                }
+            ));
+        }
+    ));
+    let on_library_loaded: Rc<dyn Fn()> = Rc::new(clone!(
+        #[strong]
+        counts_prefilled,
+        #[strong]
+        prefill_counts,
+        move || {
+            counts_prefilled.set(false);
+            prefill_counts();
+        }
+    ));
     let on_open_app: Rc<dyn Fn(&GSteamAppObject)> = Rc::new(clone!(
         #[weak]
         application,
@@ -663,16 +733,74 @@ pub fn create_main_ui(
             sync_counts_state(false);
         }
     ));
+    let on_measure_apps: Rc<dyn Fn(Vec<u32>)> = Rc::new(clone!(
+        #[strong]
+        achievement_loader,
+        #[weak]
+        list_store,
+        #[strong]
+        counts_wanted_by_profile,
+        #[strong]
+        sync_counts_state,
+        move |app_ids: Vec<u32>| {
+            counts_wanted_by_profile.set(true);
+            achievement_loader.queue_apps(&app_ids, &list_store);
+            sync_counts_state(false);
+        }
+    ));
     let counts_loading: Rc<dyn Fn() -> bool> = Rc::new(clone!(
         #[strong]
         achievement_loader,
         move || achievement_loader.is_working()
     ));
+    let counts_progress: Rc<dyn Fn() -> (u32, u32)> = Rc::new(clone!(
+        #[strong]
+        achievement_loader,
+        #[weak]
+        list_store,
+        #[upgrade_or]
+        (0, 0),
+        move || achievement_loader.counts_progress(&list_store)
+    ));
+    let action_rescan_counts = create_rescan_counts_action(
+        &list_store,
+        &achievement_loader,
+        &counts_wanted_by_profile,
+        &sync_counts_state,
+    );
+    application.add_action(&action_rescan_counts);
+    let on_rescan_all: Rc<dyn Fn()> = Rc::new(clone!(
+        #[strong]
+        action_rescan_counts,
+        move || action_rescan_counts.activate(None)
+    ));
+    let on_cancel_scan: Rc<dyn Fn()> = Rc::new(clone!(
+        #[strong]
+        achievement_loader,
+        #[weak]
+        list_store,
+        #[strong]
+        sync_counts_state,
+        move || {
+            achievement_loader.cancel_sweep(&list_store);
+            sync_counts_state(false);
+        }
+    ));
+    let rescanning: Rc<dyn Fn() -> bool> = Rc::new(clone!(
+        #[strong]
+        achievement_loader,
+        move || achievement_loader.is_rescanning()
+    ));
     let profile = Rc::new(build_profile_view(
         identity.clone(),
         on_open_app,
         on_measure_all,
+        on_measure_apps,
+        on_rescan_all,
+        on_cancel_scan,
         counts_loading,
+        counts_progress,
+        rescanning,
     ));
     list_stack.add_named(&profile.widget, Some("profile"));
 
@@ -730,6 +858,28 @@ pub fn create_main_ui(
         on_filters_changed.clone(),
     );
 
+    achievement_loader.on_rescan_started(clone!(
+        #[strong]
+        profile,
+        #[weak]
+        list_store,
+        move || profile.refresh_library(&list_store)
+    ));
+    achievement_loader.on_sweep_finished(clone!(
+        #[strong]
+        settings,
+        #[strong]
+        profile,
+        #[weak]
+        list_store,
+        move |forced| {
+            if forced && counts_complete(&list_store) {
+                let now = gtk::glib::DateTime::now_utc().map_or(0, |now| now.to_unix());
+                let _ = settings.set_int64(crate::gui_frontend::gsettings::LAST_SCAN_KEY, now);
+            }
+            profile.refresh_library(&list_store);
+        }
+    ));
     achievement_loader.on_counts_applied(clone!(
         #[strong]
         sync_counts_state,
@@ -1333,6 +1483,7 @@ pub fn create_main_ui(
         &search_entry,
         idle_count.clone(),
         achievement_loader.clone(),
+        on_library_loaded.clone(),
     );
 
     let action_refresh_achievements_list = create_refresh_achievements_action(
@@ -1514,9 +1665,12 @@ pub fn create_main_ui(
                         sidebar,
                         #[strong]
                         profile,
+                        #[strong]
+                        prefill_counts,
                         move |id| {
                             sidebar.set_identity(id);
                             profile.refresh_identity();
+                            prefill_counts();
                         }
                     ),
                 );

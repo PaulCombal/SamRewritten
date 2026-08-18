@@ -127,6 +127,12 @@
             <description>How deferred unlocks are spread over the duration. Valid values are 'even' (equally spaced) and 'random' (first and last pinned to even positions, middle jittered).</description>
         </key>
 
+        <key name="last-counts-scan" type="x">
+            <default>0</default>
+            <summary>Last Full Achievement Scan</summary>
+            <description>Unix time of the last completed scan that asked Steam for every game's achievement counts, ignoring the local cache. Zero means no such scan has finished yet.</description>
+        </key>
+
         <key name="action-journal-enabled" type="b">
             <default>false</default>
             <summary>Keep A History Of Changes</summary>

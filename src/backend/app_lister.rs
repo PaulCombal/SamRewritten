@@ -18,13 +18,13 @@ use crate::steam_client::client_user_stats_map_wrapper::ClientUserStatsMap;
 use crate::steam_client::client_user_wrapper::ClientUser;
 use crate::steam_client::steam_apps_001_wrapper::{SteamApps001, SteamApps001AppDataKeys};
 use crate::steam_client::steam_apps_wrapper::SteamApps;
-use crate::steam_client::steamworks_types::AppId_t;
+use crate::steam_client::steamworks_types::{AppId_t, EResult};
 use crate::utils::app_paths::get_app_cache_dir;
 use crate::utils::ipc_types::SamError;
 use quick_xml::Reader;
 use quick_xml::events::Event;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::fs;
 use std::fs::File;
@@ -341,21 +341,53 @@ impl<'a> AppLister<'a> {
 pub const ACHIEVEMENT_COUNT_CHUNK_SIZE: usize = 8;
 
 /// Apps whose schema fails to load within the per-chunk window are omitted.
+/// Reads counts as the callback lands: Steam unloads stats nobody looks at.
+fn take_answers(
+    map: &ClientUserStatsMap,
+    answered: &mut HashMap<AppId_t, Option<(u32, u32)>>,
+) -> Vec<AppId_t> {
+    let mut arrived = Vec::new();
+    for (app_id, result) in map.drain_user_stats_callbacks() {
+        let counts = if result == EResult::k_EResultOK as i32 {
+            let total = map.get_num_achievements(app_id);
+            let unlocked = if total > 0 {
+                map.get_num_achieved_achievements(app_id)
+            } else {
+                0
+            };
+            Some((total, unlocked))
+        } else {
+            eprintln!("[APP LISTER] Stats for {app_id} came back with result {result}");
+            None
+        };
+        answered.insert(app_id, counts);
+        arrived.push(app_id);
+    }
+    arrived
+}
+
 pub fn fetch_achievement_counts(
     map: &ClientUserStatsMap,
     app_ids: &[AppId_t],
 ) -> Vec<(AppId_t, u32, u32)> {
     const PER_CHUNK_HARD_CAP: Duration = Duration::from_secs(45);
     const NO_PROGRESS_CAP: Duration = Duration::from_secs(3);
-    const POLL_INTERVAL: Duration = Duration::from_millis(50);
+    const POLL_INTERVAL: Duration = Duration::from_millis(20);
 
-    let mut out: Vec<(AppId_t, u32, u32)> = Vec::with_capacity(app_ids.len());
+    map.drain_user_stats_callbacks();
+
+    let mut answered: HashMap<AppId_t, Option<(u32, u32)>> = HashMap::with_capacity(app_ids.len());
 
     for chunk in app_ids.chunks(ACHIEVEMENT_COUNT_CHUNK_SIZE) {
         let mut pending: HashSet<AppId_t> = HashSet::with_capacity(chunk.len());
         for &app_id in chunk.iter() {
+            if answered.contains_key(&app_id) {
+                continue;
+            }
             if map.request_current_stats(app_id) {
                 pending.insert(app_id);
+            } else {
+                dev_println!("APP LISTER", "Steam refused a stats request for {app_id}");
             }
         }
 
@@ -363,27 +395,29 @@ pub fn fetch_achievement_counts(
         let mut last_progress = Instant::now();
         while !pending.is_empty() && Instant::now() < hard_deadline {
             map.run_engine_frame();
-            let before = pending.len();
-            pending.retain(|&app_id| !map.is_schema_loaded(app_id));
-            if pending.len() < before {
-                last_progress = Instant::now();
+            for app_id in take_answers(map, &mut answered) {
+                if pending.remove(&app_id) {
+                    last_progress = Instant::now();
+                }
             }
             if pending.is_empty() || last_progress.elapsed() >= NO_PROGRESS_CAP {
                 break;
             }
             std::thread::sleep(POLL_INTERVAL);
         }
+    }
 
-        for &app_id in chunk.iter() {
-            if !pending.contains(&app_id) {
-                let total = map.get_num_achievements(app_id);
-                let unlocked = if total > 0 {
-                    map.get_num_achieved_achievements(app_id)
-                } else {
-                    0
-                };
-                out.push((app_id, total, unlocked));
-            }
+    map.run_engine_frame();
+    take_answers(map, &mut answered);
+
+    let mut out: Vec<(AppId_t, u32, u32)> = Vec::with_capacity(app_ids.len());
+    let mut seen: HashSet<AppId_t> = HashSet::with_capacity(app_ids.len());
+    for &app_id in app_ids {
+        if !seen.insert(app_id) {
+            continue;
+        }
+        if let Some(Some((total, unlocked))) = answered.get(&app_id) {
+            out.push((app_id, *total, *unlocked));
         }
     }
 

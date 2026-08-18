@@ -189,7 +189,13 @@ impl AppManager {
                     }
                 };
 
-                dev_println!("APPSRV", "User stats received callback result: {result:?}");
+                let (game_id, code, user) =
+                    (result.m_nGameID, result.m_eResult, result.m_steamIDUser);
+                dev_println!(
+                    "APPSRV",
+                    "User stats received callback: game {game_id}, result {code:?}, user {}",
+                    user.m_steamid
+                );
                 return Ok(result.m_eResult);
             }
 
@@ -516,9 +522,10 @@ impl AppManager {
                         )
                         .map_err(|_| SamError::UnknownError)?;
                     global_stats_fetched = result.m_eResult;
+                    let (game_id, code) = (result.m_nGameID, result.m_eResult);
                     dev_println!(
                         "APPSRV",
-                        "Global achievement percentages callback result: {result:?}"
+                        "Global achievement percentages callback: game {game_id}, result {code:?}"
                     );
                     break;
                 }

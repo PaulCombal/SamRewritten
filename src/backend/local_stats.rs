@@ -21,8 +21,8 @@
 use crate::backend::key_value::KeyValue;
 use crate::utils::steam_locator::SteamLocator;
 use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
-use std::sync::{LazyLock, Mutex};
+use std::path::{Path, PathBuf};
+use std::sync::{Arc, LazyLock, Mutex, PoisonError};
 use std::time::SystemTime;
 
 pub struct LocalIndex {
@@ -76,7 +76,40 @@ impl LocalIndex {
         if !self.schemas_present.contains(&app_id) || !self.user_stats_present.contains(&app_id) {
             return None;
         }
+        self.read_one(app_id)
+    }
 
+    pub fn read_all(&self) -> HashMap<u32, (u32, u32)> {
+        let ids: Vec<u32> = self
+            .schemas_present
+            .intersection(&self.user_stats_present)
+            .copied()
+            .collect();
+        let per_thread = ids.len().div_ceil(SWEEP_THREADS).max(1);
+        let mut out = HashMap::with_capacity(ids.len());
+        std::thread::scope(|scope| {
+            let workers: Vec<_> = ids
+                .chunks(per_thread)
+                .map(|chunk| {
+                    scope.spawn(move || {
+                        chunk
+                            .iter()
+                            .filter_map(|&app_id| Some((app_id, self.read_one(app_id)?)))
+                            .collect::<Vec<_>>()
+                    })
+                })
+                .collect();
+            for worker in workers {
+                match worker.join() {
+                    Ok(read) => out.extend(read),
+                    Err(e) => eprintln!("[LOCAL_STATS] Sweep worker panicked: {e:?}"),
+                }
+            }
+        });
+        out
+    }
+
+    fn read_one(&self, app_id: u32) -> Option<(u32, u32)> {
         let schema_path = self
             .stats_dir
             .join(format!("UserGameStatsSchema_{app_id}.bin"));
@@ -84,15 +117,41 @@ impl LocalIndex {
             .stats_dir
             .join(format!("UserGameStats_{}_{app_id}.bin", self.account_id));
 
-        let schema = KeyValue::load_as_binary(&schema_path).ok()?;
+        let bits = cached_schema_bits(app_id, &schema_path)?;
         let user_stats = KeyValue::load_as_binary(&user_path).ok()?;
 
-        let (total, unlocked) = count_pair(&schema, &user_stats, app_id);
-        if total == 0 || unlocked > total {
-            return None;
-        }
-        Some((total, unlocked))
+        let (total, unlocked) = count_from_bits(&bits, &user_stats);
+        (total != 0 && unlocked <= total).then_some((total, unlocked))
     }
+}
+
+const SWEEP_THREADS: usize = 4;
+
+/// Only the bit layout is kept: schemas dwarf the user-stats files beside them
+/// (47 MB against 3.3 MB here) and change only when Steam re-downloads them.
+fn cached_schema_bits(app_id: u32, schema_path: &Path) -> Option<Arc<SchemaBits>> {
+    type BitsCache = Mutex<HashMap<u32, (Option<SystemTime>, Arc<SchemaBits>)>>;
+    static CACHE: LazyLock<BitsCache> = LazyLock::new(|| Mutex::new(HashMap::new()));
+
+    let mtime = std::fs::metadata(schema_path)
+        .and_then(|m| m.modified())
+        .ok();
+    if let Some((cached_mtime, bits)) = CACHE
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .get(&app_id)
+        && *cached_mtime == mtime
+    {
+        return Some(Arc::clone(bits));
+    }
+
+    let schema = KeyValue::load_as_binary(schema_path).ok()?;
+    let bits = Arc::new(schema_bits(&schema, app_id));
+    CACHE
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .insert(app_id, (mtime, Arc::clone(&bits)));
+    Some(bits)
 }
 
 /// Empty when the schema is missing or unparseable, leaving only the game default.
@@ -113,7 +172,10 @@ pub fn read_schema_languages(app_id: u32) -> Vec<String> {
         .and_then(|m| m.modified())
         .ok();
 
-    if let Some((cached_mtime, languages)) = CACHE.lock().unwrap().get(&app_id)
+    if let Some((cached_mtime, languages)) = CACHE
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .get(&app_id)
         && *cached_mtime == mtime
     {
         return languages.clone();
@@ -126,7 +188,7 @@ pub fn read_schema_languages(app_id: u32) -> Vec<String> {
         .unwrap_or_default();
     CACHE
         .lock()
-        .unwrap()
+        .unwrap_or_else(PoisonError::into_inner)
         .insert(app_id, (mtime, languages.clone()));
     languages
 }
@@ -167,30 +229,21 @@ fn locate_stats_dir() -> Option<PathBuf> {
     sample.parent().map(PathBuf::from)
 }
 
-/// Walks the schema for any node with a `bits` subtree, popcounting the
-/// matching `cache/<stat_idx>/data` integer from the user-stats file.
-fn count_pair(schema: &KeyValue, user_stats: &KeyValue, app_id: u32) -> (u32, u32) {
-    let cache = find_first(user_stats, "cache");
-    let mut total: u32 = 0;
-    let mut unlocked: u32 = 0;
-    walk(schema, cache, &mut total, &mut unlocked, app_id);
-    (total, unlocked)
+type SchemaBits = Vec<(String, Vec<u32>)>;
+
+fn schema_bits(schema: &KeyValue, app_id: u32) -> SchemaBits {
+    let mut out = SchemaBits::new();
+    walk(schema, app_id, &mut out);
+    out
 }
 
-fn walk(
-    node: &KeyValue,
-    cache: Option<&KeyValue>,
-    total: &mut u32,
-    unlocked: &mut u32,
-    app_id: u32,
-) {
+fn walk(node: &KeyValue, app_id: u32, out: &mut SchemaBits) {
     if let Some(bits) = node.children.get("bits") {
         let positions: Vec<u32> = bits
             .children
             .keys()
             .filter_map(|k| k.parse::<u32>().ok())
             .collect();
-        *total += positions.len() as u32;
 
         // Single i32 `data` slot per stat group caps achievements at 32 bits.
         // If Steam ever ships a stat with >32 bits we'd silently undercount.
@@ -201,23 +254,35 @@ fn walk(
             );
         }
 
-        if let Some(cache) = cache {
-            let mask = cache
-                .children
-                .get(&node.name)
-                .and_then(|s| s.children.get("data"))
-                .map(|d| d.as_i32(0) as u32)
-                .unwrap_or(0);
-            for pos in &positions {
-                if *pos < 32 && (mask >> *pos) & 1 == 1 {
-                    *unlocked += 1;
-                }
+        out.push((node.name.clone(), positions));
+    }
+    for child in node.children.values() {
+        walk(child, app_id, out);
+    }
+}
+
+fn count_from_bits(bits: &SchemaBits, user_stats: &KeyValue) -> (u32, u32) {
+    let cache = find_first(user_stats, "cache");
+    let mut total: u32 = 0;
+    let mut unlocked: u32 = 0;
+    for (group, positions) in bits {
+        total += positions.len() as u32;
+        let Some(cache) = cache else {
+            continue;
+        };
+        let mask = cache
+            .children
+            .get(group)
+            .and_then(|s| s.children.get("data"))
+            .map(|d| d.as_i32(0) as u32)
+            .unwrap_or(0);
+        for pos in positions {
+            if *pos < 32 && (mask >> *pos) & 1 == 1 {
+                unlocked += 1;
             }
         }
     }
-    for child in node.children.values() {
-        walk(child, cache, total, unlocked, app_id);
-    }
+    (total, unlocked)
 }
 
 fn find_first<'a>(node: &'a KeyValue, name: &str) -> Option<&'a KeyValue> {

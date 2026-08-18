@@ -116,7 +116,7 @@ impl ClientEngine {
                     "IClientUserStatsMap".to_owned(),
                 ))
             } else {
-                Ok(ClientUserStatsMap::from_raw(ptr, self.inner.clone()))
+                Ok(ClientUserStatsMap::from_raw(ptr, self.inner.clone(), pipe))
             }
         }
     }

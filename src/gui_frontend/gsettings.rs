@@ -1,6 +1,8 @@
 use crate::{APP_ID, dev_println};
 use gtk::gio::Settings;
 
+pub const LAST_SCAN_KEY: &str = "last-counts-scan";
+
 pub fn get_settings() -> Settings {
     if let Ok(schema_dir) = std::env::var("APPDIR") {
         // AppImages

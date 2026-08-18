@@ -51,6 +51,7 @@ pub fn create_refresh_app_list_action(
     search_entry: &SearchEntry,
     idle_count: Rc<Cell<usize>>,
     achievement_loader: AchievementLoader,
+    on_library_loaded: Rc<dyn Fn()>,
 ) -> SimpleAction {
     let action_refresh_app_list = SimpleAction::new("refresh_app_list", None);
     action_refresh_app_list.connect_activate(clone!(
@@ -74,6 +75,8 @@ pub fn create_refresh_app_list_action(
         idle_count,
         #[strong]
         achievement_loader,
+        #[strong]
+        on_library_loaded,
         move |_, _| {
             list_stack.set_visible_child_name("loading");
             set_app_action_enabled(&application, "unlock_all_apps", false);
@@ -105,6 +108,8 @@ pub fn create_refresh_app_list_action(
                 idle_count,
                 #[strong]
                 achievement_loader,
+                #[strong]
+                on_library_loaded,
                 async move {
                     match apps.await {
                         Ok(Ok(app_vec)) => {
@@ -129,6 +134,7 @@ pub fn create_refresh_app_list_action(
                                 list_scrolled_window.set_child(Some(&grid_view));
                                 list_stack.set_visible_child_name("list");
                                 app_list_no_result_label.set_text(tr("No results. Check for spelling mistakes or try typing an App Id.").as_str());
+                                on_library_loaded();
 
                                 // Sync idle state from the orchestrator: any app it's
                                 // currently holding open should show as idling in the UI.
@@ -178,6 +184,36 @@ pub fn create_refresh_app_list_action(
         }
     ));
     action_refresh_app_list
+}
+
+pub fn create_rescan_counts_action(
+    list_store: &ListStore,
+    achievement_loader: &AchievementLoader,
+    counts_wanted_by_profile: &Rc<Cell<bool>>,
+    sync_counts_state: &Rc<dyn Fn(bool)>,
+) -> SimpleAction {
+    let action = SimpleAction::new("rescan_achievement_counts", None);
+    action.connect_activate(clone!(
+        #[weak]
+        list_store,
+        #[strong]
+        achievement_loader,
+        #[strong]
+        counts_wanted_by_profile,
+        #[strong]
+        sync_counts_state,
+        move |_, _| {
+            if achievement_loader.is_rescanning() {
+                return;
+            }
+            // Without this the sweep is cancelled as soon as nothing on screen
+            // needs counts, which is the usual case on the app list.
+            counts_wanted_by_profile.set(true);
+            achievement_loader.rescan_all(&list_store);
+            sync_counts_state(false);
+        }
+    ));
+    action
 }
 
 #[allow(clippy::too_many_arguments)]

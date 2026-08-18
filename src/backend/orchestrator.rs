@@ -33,7 +33,7 @@ use crate::utils::steam_locator::SteamLocator;
 use interprocess::unnamed_pipe::{Recver, Sender};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::Write;
 use std::process::Command;
 use std::sync::{LazyLock, Mutex};
@@ -231,6 +231,21 @@ where
         .collect();
     let tx = tx_lock.into_inner().unwrap();
     send(tx, &ProgressMsg::Done(SteamResponse::Success(results)));
+}
+
+#[cfg(debug_assertions)]
+fn debug_counts_delay() {
+    let Ok(raw) = std::env::var("ACHIEVEMENTS_COUNT_DELAY") else {
+        return;
+    };
+    match raw.parse::<f64>() {
+        Ok(seconds) if seconds > 0.0 => {
+            dev_println!("ORCH", "Delaying counts batch by {seconds}s");
+            std::thread::sleep(std::time::Duration::from_secs_f64(seconds));
+        }
+        Ok(_) => {}
+        Err(e) => dev_println!("ORCH", "Ignoring ACHIEVEMENTS_COUNT_DELAY={raw}: {e}"),
+    }
 }
 
 fn process_command(
@@ -704,7 +719,7 @@ fn process_command(
             }
         }
 
-        SteamCommand::GetAchievementCounts(app_ids) => {
+        SteamCommand::GetAchievementCounts(app_ids, force) => {
             let connected_steam = match ensure_connected(connected_steam) {
                 Ok(cs) => cs,
                 Err(()) => {
@@ -716,28 +731,32 @@ fn process_command(
                 }
             };
 
-            // Local-disk fast path; IPC fallback for misses.
-            let local_index = connected_steam
+            let account = connected_steam
                 .user
                 .get_steam_id()
                 .ok()
-                .map(|sid| user_unlock_times::account_id(sid.m_steamid))
-                .and_then(LocalIndex::build);
+                .map(|sid| user_unlock_times::account_id(sid.m_steamid));
+            let local_index = (!force)
+                .then(|| account.and_then(LocalIndex::build))
+                .flatten();
 
             let mut counts: Vec<(u32, u32, u32)> = Vec::with_capacity(app_ids.len());
             let mut remaining: Vec<u32> = Vec::new();
-            if let Some(index) = &local_index {
-                for &app_id in &app_ids {
-                    match index.try_read(app_id) {
-                        Some((total, unlocked)) => counts.push((app_id, total, unlocked)),
-                        None => remaining.push(app_id),
+            match local_index.as_ref() {
+                Some(index) => {
+                    for &app_id in &app_ids {
+                        match index.try_read(app_id) {
+                            Some((total, unlocked)) => counts.push((app_id, total, unlocked)),
+                            None => remaining.push(app_id),
+                        }
                     }
                 }
-            } else {
-                remaining = app_ids.clone();
+                None => remaining = app_ids.clone(),
             }
 
             if !remaining.is_empty() {
+                #[cfg(debug_assertions)]
+                debug_counts_delay();
                 let stats_map = match connected_steam.client_user_stats_map() {
                     Ok(m) => m,
                     Err(e) => {
@@ -750,6 +769,31 @@ fn process_command(
                     }
                 };
                 counts.extend(fetch_achievement_counts(&stats_map, &remaining));
+
+                // Steam reports an app it could not answer for as zero, and
+                // drops one whose schema never loaded; the files cover both.
+                if force {
+                    let answered: HashSet<u32> = counts.iter().map(|(id, _, _)| *id).collect();
+                    let has_gaps = counts.iter().any(|&(_, total, _)| total == 0)
+                        || remaining.iter().any(|id| !answered.contains(id));
+                    let index = has_gaps
+                        .then(|| account.and_then(LocalIndex::build))
+                        .flatten();
+                    if let Some(index) = index {
+                        for (app_id, total, unlocked) in counts.iter_mut().filter(|c| c.1 == 0) {
+                            if let Some(local) = index.try_read(*app_id) {
+                                dev_println!("ORCH", "app {app_id} unanswered; using local files");
+                                (*total, *unlocked) = local;
+                            }
+                        }
+                        for &app_id in remaining.iter().filter(|id| !answered.contains(id)) {
+                            if let Some((total, unlocked)) = index.try_read(app_id) {
+                                dev_println!("ORCH", "app {app_id} unanswered; using local files");
+                                counts.push((app_id, total, unlocked));
+                            }
+                        }
+                    }
+                }
             }
 
             send(tx, &SteamResponse::Success(counts));

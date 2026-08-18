@@ -215,6 +215,10 @@ fn setup_app_list_popover_menu(menu_model: &gtk::gio::Menu, with_bulk: bool) {
         Some(tr("Refresh app list").as_str()),
         Some("app.refresh_app_list"),
     );
+    menu_model.append(
+        Some(tr("Refresh achievement counts").as_str()),
+        Some("app.rescan_achievement_counts"),
+    );
     menu_model.append(Some(tr("About").as_str()), Some("app.about"));
     #[cfg(unix)]
     if crate::utils::snap::is_snap() {

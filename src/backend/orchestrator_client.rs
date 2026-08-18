@@ -196,8 +196,8 @@ request!(SetFloatStat { app_id: u32, stat_id: String, value: f32 } -> bool
 request!(ResetStats { app_id: u32, achievements_too: bool } -> bool
     => SteamCommand::ResetStats(app_id, achievements_too));
 
-request!(GetAchievementCounts { app_ids: Vec<u32> } -> Vec<(u32, u32, u32)>
-    => SteamCommand::GetAchievementCounts(app_ids));
+request!(GetAchievementCounts { app_ids: Vec<u32>, force: bool } -> Vec<(u32, u32, u32)>
+    => SteamCommand::GetAchievementCounts(app_ids, force));
 
 request!(GetAchievementsAndStats { app_id: u32, launch: bool, language: String } -> AppProgress
     => SteamCommand::GetAchievementsAndStats(app_id, launch, language));
