@@ -8,27 +8,30 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-19 01:06+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2026-08-22 17:17+0000\n"
+"Last-Translator: Ktonel475 <xylonchal666@gmail.com>\n"
+"Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
+"projects/samrewritten/samrewritten/zh_Hant/>\n"
 "Language: zh_Hant\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:330
 msgid "Loading..."
-msgstr ""
+msgstr "加載中…"
 
 #: src/gui_frontend/ui_components.rs:190
 msgid "Select all visible apps"
-msgstr ""
+msgstr "選擇全部可見應用程式"
 
 #: src/gui_frontend/ui_components.rs:194
+#, fuzzy
 msgid "Deselect all apps"
-msgstr ""
+msgstr "取消選擇所有應用程式"
 
 #: src/gui_frontend/ui_components.rs:198
 msgid "Unlock all in selection"
@@ -69,15 +72,17 @@ msgstr ""
 
 #: src/gui_frontend/ui_components.rs:239
 msgid "System"
-msgstr ""
+msgstr "系統"
 
 #: src/gui_frontend/ui_components.rs:240
+#, fuzzy
 msgid "Light"
-msgstr ""
+msgstr "明亮"
 
 #: src/gui_frontend/ui_components.rs:241
+#, fuzzy
 msgid "Dark"
-msgstr ""
+msgstr "黑暗"
 
 #: src/gui_frontend/ui_components.rs:250
 msgid "Disable animations"
@@ -85,19 +90,19 @@ msgstr ""
 
 #: src/gui_frontend/ui_components.rs:254
 msgid "Appearance"
-msgstr ""
+msgstr "外觀"
 
 #: src/gui_frontend/ui_components.rs:260
 msgid "System default"
-msgstr ""
+msgstr "系統預設"
 
 #: src/gui_frontend/ui_components.rs:263
 msgid "Language"
-msgstr ""
+msgstr "語言"
 
 #: src/gui_frontend/ui_components.rs:380
 msgid "Game default"
-msgstr ""
+msgstr "遊戲預設"
 
 #: src/gui_frontend/ui_components.rs:399
 msgid "Refresh achievements & stats"
@@ -180,8 +185,9 @@ msgid "Choose a Steam installation"
 msgstr ""
 
 #: src/gui_frontend/dialogs.rs:389 src/gui_frontend/dialogs.rs:553
+#, fuzzy
 msgid "Quit"
-msgstr ""
+msgstr "離開"
 
 #: src/gui_frontend/dialogs.rs:390 src/gui_frontend/dialogs.rs:466
 msgid "Use this installation"
