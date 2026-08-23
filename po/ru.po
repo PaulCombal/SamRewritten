@@ -557,7 +557,6 @@ msgid "Time played"
 msgstr "Время в играх"
 
 #: src/gui_frontend/profile_view/mod.rs:184
-#, fuzzy
 msgid "never played"
 msgstr "никогда не играли"
 
@@ -692,12 +691,10 @@ msgstr ""
 "появились."
 
 #: src/gui_frontend/profile_view/mod.rs:1118
-#, fuzzy
 msgid "Select these {games} games"
 msgstr "Выбрать эти игры ({games})"
 
 #: src/gui_frontend/profile_view/mod.rs:1136
-#, fuzzy
 msgid "{count} achievements across {games} games"
 msgstr "{count} достиж. в {games} игр."
 
@@ -863,7 +860,6 @@ msgid "Undone"
 msgstr "Отменено"
 
 #: src/gui_frontend/profile_view/journal_section.rs:400
-#, fuzzy
 msgid "and {count} more"
 msgstr "и ещё {count}"
 
@@ -873,27 +869,22 @@ msgid "Undo"
 msgstr "Отменить"
 
 #: src/gui_frontend/profile_view/journal_section.rs:433
-#, fuzzy
 msgid "{count} games"
-msgstr "{count} игр."
+msgstr "{count} игр"
 
 #: src/gui_frontend/profile_view/journal_section.rs:451
-#, fuzzy
 msgid "Unlocked {count} achievement(s) in {app}"
 msgstr "Разблокировано достижений в {app}: {count}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:453
-#, fuzzy
 msgid "Locked {count} achievement(s) in {app}"
 msgstr "Заблокировано достижений в {app}: {count}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:455
-#, fuzzy
 msgid "Changed {count} achievement(s) in {app}"
 msgstr "Изменено достижений в {app}: {count}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:463
-#, fuzzy
 msgid "Changed {count} stat(s) in {app}"
 msgstr "Изменено показателей в {app}: {count}"
 
@@ -980,7 +971,6 @@ msgid "An unexpected failure occurred while putting this back:"
 msgstr "Неожиданная ошибка при откате:"
 
 #: src/gui_frontend/profile_view/journal_section.rs:764
-#, fuzzy
 msgid "Undo incomplete"
 msgstr "Откат неполный"
 
@@ -998,12 +988,10 @@ msgid "Unlocking {done} / {total} app(s)…"
 msgstr "Разблокировка {done} / {total} прил.…"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:209
-#, fuzzy
 msgid "every achievement unlocked"
 msgstr "все достижения разблокированы"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:242
-#, fuzzy
 msgid "Unlock incomplete"
 msgstr "Разблокировка неполная"
 
@@ -1017,12 +1005,10 @@ msgid "Locking {done} / {total} app(s)…"
 msgstr "Блокировка {done} / {total} прил.…"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:377
-#, fuzzy
 msgid "every achievement and stat reset"
 msgstr "все достижения и статистика сброшены"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:416
-#, fuzzy
 msgid "Reset incomplete"
 msgstr "Сброс неполный"
 
