@@ -53,7 +53,7 @@ msgstr "Обновить список приложений"
 
 #: src/gui_frontend/ui_components.rs:219
 msgid "Refresh achievement counts"
-msgstr ""
+msgstr "Обновить счётчики достижений"
 
 #: src/gui_frontend/ui_components.rs:222 src/gui_frontend/ui_components.rs:406
 msgid "About"
@@ -598,6 +598,8 @@ msgstr "{count} в {year}, {total} с {since}."
 msgid ""
 "Rescan for up-to-date numbers if you also use Steam on another computer."
 msgstr ""
+"Пересканируйте, чтобы получить актуальные цифры, если вы также пользуетесь "
+"Steam на другом компьютере."
 
 #: src/gui_frontend/profile_view/mod.rs:572
 #: src/gui_frontend/profile_view/mod.rs:898
@@ -638,7 +640,7 @@ msgstr "{hours} ч"
 
 #: src/gui_frontend/profile_view/mod.rs:896
 msgid "Rescan now"
-msgstr ""
+msgstr "Пересканировать"
 
 #: src/gui_frontend/profile_view/mod.rs:911
 msgid ""
@@ -737,15 +739,15 @@ msgstr "… и ещё {count}, которые выделяются меньше.
 
 #: src/gui_frontend/profile_view/mod.rs:1208
 msgid "Last full scan on {date}."
-msgstr ""
+msgstr "Последнее полное сканирование: {date}."
 
 #: src/gui_frontend/profile_view/mod.rs:1212
 msgid "Steam last refreshed these figures on {date}."
-msgstr ""
+msgstr "Steam последний раз обновлял эти цифры {date}."
 
 #: src/gui_frontend/profile_view/mod.rs:1215
 msgid "How old these figures are is unknown."
-msgstr ""
+msgstr "Неизвестно, насколько эти цифры устарели."
 
 #: src/gui_frontend/profile_view/heatmap.rs:30
 msgid "Jan"
