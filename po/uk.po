@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-15 13:52+0200\n"
+"POT-Creation-Date: 2026-08-19 01:06+0200\n"
 "PO-Revision-Date: 2026-08-13 07:51+0000\n"
 "Last-Translator: Dan <jonweblin2205@protonmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/samrewritten/"
@@ -21,7 +21,7 @@ msgstr ""
 "X-Generator: Weblate 2026.9.dev0\n"
 
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
-#: src/gui_frontend/app_list_view/mod.rs:311
+#: src/gui_frontend/app_list_view/mod.rs:330
 msgid "Loading..."
 msgstr "Завантаження..."
 
@@ -54,59 +54,63 @@ msgstr "Імпорт поступу..."
 msgid "Refresh app list"
 msgstr "Оновити перелік застосунків"
 
-#: src/gui_frontend/ui_components.rs:218 src/gui_frontend/ui_components.rs:402
+#: src/gui_frontend/ui_components.rs:219
+msgid "Refresh achievement counts"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:222 src/gui_frontend/ui_components.rs:406
 msgid "About"
 msgstr "Про застосунок"
 
-#: src/gui_frontend/ui_components.rs:222
+#: src/gui_frontend/ui_components.rs:226
 msgid "Change Steam folder…"
 msgstr "Змінити теку Steam…"
 
-#: src/gui_frontend/ui_components.rs:229
+#: src/gui_frontend/ui_components.rs:233
 msgid "Bulk process"
 msgstr "Масова обробка"
 
-#: src/gui_frontend/ui_components.rs:235
+#: src/gui_frontend/ui_components.rs:239
 msgid "System"
 msgstr "Системна"
 
-#: src/gui_frontend/ui_components.rs:236
+#: src/gui_frontend/ui_components.rs:240
 msgid "Light"
 msgstr "Світла"
 
-#: src/gui_frontend/ui_components.rs:237
+#: src/gui_frontend/ui_components.rs:241
 msgid "Dark"
 msgstr "Темна"
 
-#: src/gui_frontend/ui_components.rs:246
+#: src/gui_frontend/ui_components.rs:250
 msgid "Disable animations"
 msgstr "Вимкнути анімації"
 
-#: src/gui_frontend/ui_components.rs:250
+#: src/gui_frontend/ui_components.rs:254
 msgid "Appearance"
 msgstr "Вигляд"
 
-#: src/gui_frontend/ui_components.rs:256
+#: src/gui_frontend/ui_components.rs:260
 msgid "System default"
 msgstr "Як у системі"
 
-#: src/gui_frontend/ui_components.rs:259
+#: src/gui_frontend/ui_components.rs:263
 msgid "Language"
 msgstr "Мова"
 
-#: src/gui_frontend/ui_components.rs:376
+#: src/gui_frontend/ui_components.rs:380
 msgid "Game default"
 msgstr "Мова гри"
 
-#: src/gui_frontend/ui_components.rs:395
+#: src/gui_frontend/ui_components.rs:399
 msgid "Refresh achievements & stats"
 msgstr "Оновити досягнення та статистику"
 
-#: src/gui_frontend/ui_components.rs:399
+#: src/gui_frontend/ui_components.rs:403
 msgid "Reset everything"
 msgstr "Скинути все"
 
-#: src/gui_frontend/ui_components.rs:407
+#: src/gui_frontend/ui_components.rs:411
 msgid "Achievement language"
 msgstr "Мова досягнень"
 
@@ -118,8 +122,9 @@ msgid "OK"
 msgstr "Гаразд"
 
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
+#: src/gui_frontend/profile_view/mod.rs:599
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
-#: src/gui_frontend/app_list_view/refresh_actions.rs:421
+#: src/gui_frontend/app_list_view/refresh_actions.rs:455
 msgid "Cancel"
 msgstr "Скасувати"
 
@@ -144,9 +149,9 @@ msgstr "<b>Уже встановили Steam?</b>"
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
-"to it using environment variables. Please check the <a href=\"https://github."
-"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
-"your issue."
+"to it using environment variables. Please check the <a href=\"https://"
+"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
+"report your issue."
 msgstr ""
 "Якщо ви встановили Steam у власну теку, ви можете вказати шлях до неї для "
 "SamRewritten за допомогою змінних середовища. Перегляньте інструкції на <a "
@@ -442,24 +447,24 @@ msgstr "Шукайте друзів або вставте SteamID64"
 msgid "Clear selected user"
 msgstr "Очистити вибраного користувача"
 
-#: src/gui_frontend/app_list_view/mod.rs:332
+#: src/gui_frontend/app_list_view/mod.rs:351
 msgid "SamRewritten could not connect to Steam. Is it running?"
 msgstr "SamRewritten не зміг під’єднатися до Steam. Він запущений?"
 
-#: src/gui_frontend/app_list_view/mod.rs:337
+#: src/gui_frontend/app_list_view/mod.rs:356
 msgid "Try again"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:354
-#: src/gui_frontend/app_list_view/mod.rs:1401
+#: src/gui_frontend/app_list_view/mod.rs:373
+#: src/gui_frontend/app_list_view/mod.rs:1476
 msgid "Name or AppId (Ctrl+K)"
 msgstr "Назва або AppId (Ctrl+K)"
 
-#: src/gui_frontend/app_list_view/mod.rs:370
+#: src/gui_frontend/app_list_view/mod.rs:389
 msgid "Show or hide the sidebar"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:1396
+#: src/gui_frontend/app_list_view/mod.rs:1471
 msgid "Achievement or stat..."
 msgstr "Досягнення або статистика..."
 
@@ -519,7 +524,7 @@ msgid "View profile"
 msgstr ""
 
 #: src/gui_frontend/app_list_view/sidebar.rs:208
-#: src/gui_frontend/profile_view/mod.rs:467
+#: src/gui_frontend/profile_view/mod.rs:481
 msgid "Steam user"
 msgstr ""
 
@@ -544,154 +549,164 @@ msgstr "Сортувати за"
 msgid "Reset filters"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:70
+#: src/gui_frontend/profile_view/mod.rs:71
 msgid "Games in library"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:74
+#: src/gui_frontend/profile_view/mod.rs:75
 #, fuzzy
 msgid "Achievements unlocked"
 msgstr "Досягнення"
 
-#: src/gui_frontend/profile_view/mod.rs:78
+#: src/gui_frontend/profile_view/mod.rs:79
 msgid "Average completion"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:82
+#: src/gui_frontend/profile_view/mod.rs:83
 msgid "Perfect games"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:86
+#: src/gui_frontend/profile_view/mod.rs:87
 msgid "Time played"
 msgstr "Зіграно часу"
 
-#: src/gui_frontend/profile_view/mod.rs:183
+#: src/gui_frontend/profile_view/mod.rs:184
 #, fuzzy
 msgid "never played"
 msgstr "Зіграно часу"
 
-#: src/gui_frontend/profile_view/mod.rs:185
+#: src/gui_frontend/profile_view/mod.rs:186
 msgid "{minutes} minute(s) played, ever"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:189
+#: src/gui_frontend/profile_view/mod.rs:190
 msgid "nothing else was unlocked for this game outside this moment"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:192
+#: src/gui_frontend/profile_view/mod.rs:193
 msgid "the rest of your unlocks in this game came at other times"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:195
+#: src/gui_frontend/profile_view/mod.rs:196
 msgid "at the very start of this game's history, ordinary unlocks after it"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:265
-#: src/gui_frontend/profile_view/mod.rs:289
+#: src/gui_frontend/profile_view/mod.rs:266
+#: src/gui_frontend/profile_view/mod.rs:290
 msgid "No unlocks yet."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:293
+#: src/gui_frontend/profile_view/mod.rs:294
 msgid "{total} unlocked since {since}."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:297
+#: src/gui_frontend/profile_view/mod.rs:298
 msgid "{year} in the last year, {total} since {since}."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:302
+#: src/gui_frontend/profile_view/mod.rs:303
 msgid "{count} in {year}, {total} since {since}."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:547
+#: src/gui_frontend/profile_view/mod.rs:559
+msgid ""
+"Rescan for up-to-date numbers if you also use Steam on another computer."
+msgstr ""
+
+#: src/gui_frontend/profile_view/mod.rs:572
+#: src/gui_frontend/profile_view/mod.rs:898
 msgid "Read all my games"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:581
+#: src/gui_frontend/profile_view/mod.rs:642
 msgid "Year to show"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:596
+#: src/gui_frontend/profile_view/mod.rs:657
 msgid "Everything here looks like ordinary play."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:640
+#: src/gui_frontend/profile_view/mod.rs:701
 msgid "Unlock activity"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:658
+#: src/gui_frontend/profile_view/mod.rs:719
 msgid "Completion over time"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:664
+#: src/gui_frontend/profile_view/mod.rs:725
 msgid "Irregular activity history"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:667
+#: src/gui_frontend/profile_view/mod.rs:728
 msgid ""
 "Anyone visiting your Steam profile sees when each achievement was unlocked. "
 "Listed here are the moments that do not look like ordinary play."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:802
+#: src/gui_frontend/profile_view/mod.rs:869
 msgid "{hours} h"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:830
+#: src/gui_frontend/profile_view/mod.rs:896
+msgid "Rescan now"
+msgstr ""
+
+#: src/gui_frontend/profile_view/mod.rs:911
 msgid ""
 "Reading your games' achievements ({measured}/{total}). The activity and the "
 "runs below fill in as it goes."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:834
+#: src/gui_frontend/profile_view/mod.rs:915
 msgid ""
 "Only {measured} of your {total} games have been read from Steam, so the "
 "figures above cannot be totalled yet."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:849
+#: src/gui_frontend/profile_view/mod.rs:933
 msgid "Waiting for Steam to say who is signed in."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:857
+#: src/gui_frontend/profile_view/mod.rs:941
 msgid "Reading your unlock history…"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:903
-#: src/gui_frontend/profile_view/mod.rs:908
+#: src/gui_frontend/profile_view/mod.rs:995
+#: src/gui_frontend/profile_view/mod.rs:1000
 msgid "Your unlock history could not be read."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:992
+#: src/gui_frontend/profile_view/mod.rs:1088
 msgid "No completion to plot yet."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:994
+#: src/gui_frontend/profile_view/mod.rs:1090
 msgid ""
 "Averaged over the games you have started, so it dips when you start a new "
 "one. Now at {percent}%."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1003
+#: src/gui_frontend/profile_view/mod.rs:1099
 msgid ""
 "The activity below is missing {count} game(s). Restart Steam to get them "
 "back."
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1022
+#: src/gui_frontend/profile_view/mod.rs:1118
 msgid "Select these {games} games"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1040
+#: src/gui_frontend/profile_view/mod.rs:1136
 #, fuzzy
 msgid "{count} achievements across {games} games"
 msgstr "{count} досягнень за {time}"
 
-#: src/gui_frontend/profile_view/mod.rs:1043
+#: src/gui_frontend/profile_view/mod.rs:1139
 msgid "{when} — one game after another, in a single sitting"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1050
+#: src/gui_frontend/profile_view/mod.rs:1146
 #: src/gui_frontend/profile_view/journal_section.rs:251
 #: src/gui_frontend/app_list_view/progress_actions.rs:377
 #: src/gui_frontend/app_list_view/progress_actions.rs:399
@@ -699,29 +714,41 @@ msgstr ""
 msgid "App {id}"
 msgstr "Застосунок {id}"
 
-#: src/gui_frontend/profile_view/mod.rs:1058
+#: src/gui_frontend/profile_view/mod.rs:1154
 msgid "Open {app}"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1072
+#: src/gui_frontend/profile_view/mod.rs:1168
 msgid "{when}, all in the same second"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1074
+#: src/gui_frontend/profile_view/mod.rs:1170
 msgid "{when}, inside {span} second(s)"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1079
+#: src/gui_frontend/profile_view/mod.rs:1175
 #, fuzzy
 msgid "{count} achievements in {app}"
 msgstr "{count} досягнень за {time}"
 
-#: src/gui_frontend/profile_view/mod.rs:1082
+#: src/gui_frontend/profile_view/mod.rs:1178
 msgid "{timing} — {reading}"
 msgstr ""
 
-#: src/gui_frontend/profile_view/mod.rs:1094
+#: src/gui_frontend/profile_view/mod.rs:1190
 msgid "… and {count} more that stand out less."
+msgstr ""
+
+#: src/gui_frontend/profile_view/mod.rs:1208
+msgid "Last full scan on {date}."
+msgstr ""
+
+#: src/gui_frontend/profile_view/mod.rs:1212
+msgid "Steam last refreshed these figures on {date}."
+msgstr ""
+
+#: src/gui_frontend/profile_view/mod.rs:1215
+msgid "How old these figures are is unknown."
 msgstr ""
 
 #: src/gui_frontend/profile_view/heatmap.rs:30
@@ -1179,17 +1206,17 @@ msgstr ""
 "Не вдалося завантажити бібліотеку. Перевірте з’єднання з інтернетом. "
 "Знайдіть по App Id, щоб розпочати."
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:419
+#: src/gui_frontend/app_list_view/refresh_actions.rs:453
 msgid "Reset Everything"
 msgstr "Скинути все"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:420
+#: src/gui_frontend/app_list_view/refresh_actions.rs:454
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr ""
 "Це призведе до скидання всіх досягнень і статистики для цього застосунку. "
 "Упевнені?"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:421
+#: src/gui_frontend/app_list_view/refresh_actions.rs:455
 msgid "Sure, reset"
 msgstr "Звісно, скинути"
 
