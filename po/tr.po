@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-19 01:06+0200\n"
 "PO-Revision-Date: 2026-08-25 22:07+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Deniz Çolak <28dnzclk@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/samrewritten/"
 "samrewritten/tr/>\n"
 "Language: tr\n"
@@ -22,114 +22,114 @@ msgstr ""
 #: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:330
 msgid "Loading..."
-msgstr ""
+msgstr "Yükleniyor..."
 
 #: src/gui_frontend/ui_components.rs:190
 msgid "Select all visible apps"
-msgstr ""
+msgstr "Görünür tüm uygulamaları seç"
 
 #: src/gui_frontend/ui_components.rs:194
 msgid "Deselect all apps"
-msgstr ""
+msgstr "Tüm seçimleri kaldır"
 
 #: src/gui_frontend/ui_components.rs:198
 msgid "Unlock all in selection"
-msgstr ""
+msgstr "Seçili başarımları aç"
 
 #: src/gui_frontend/ui_components.rs:202
 msgid "Reset all in selection"
-msgstr ""
+msgstr "Seçilenleri sıfırla"
 
 #: src/gui_frontend/ui_components.rs:206
 #: src/gui_frontend/app_list_view/progress_actions.rs:116
 msgid "Export selected apps progress"
-msgstr ""
+msgstr "Seçilen uygulamaların ilerlemesini dışa aktar"
 
 #: src/gui_frontend/ui_components.rs:210
 msgid "Import progress..."
-msgstr ""
+msgstr "İlerlemeyi içe aktar..."
 
 #: src/gui_frontend/ui_components.rs:215
 msgid "Refresh app list"
-msgstr ""
+msgstr "Uygulama listesini yenile"
 
 #: src/gui_frontend/ui_components.rs:219
 msgid "Refresh achievement counts"
-msgstr ""
+msgstr "Başarım sayılarını yenile"
 
 #: src/gui_frontend/ui_components.rs:222 src/gui_frontend/ui_components.rs:406
 msgid "About"
-msgstr ""
+msgstr "Hakkında"
 
 #: src/gui_frontend/ui_components.rs:226
 msgid "Change Steam folder…"
-msgstr ""
+msgstr "Steam klasörünü değiştir…"
 
 #: src/gui_frontend/ui_components.rs:233
 msgid "Bulk process"
-msgstr ""
+msgstr "Toplu işlem"
 
 #: src/gui_frontend/ui_components.rs:239
 msgid "System"
-msgstr ""
+msgstr "Sistem"
 
 #: src/gui_frontend/ui_components.rs:240
 msgid "Light"
-msgstr ""
+msgstr "Açık"
 
 #: src/gui_frontend/ui_components.rs:241
 msgid "Dark"
-msgstr ""
+msgstr "Karanlık"
 
 #: src/gui_frontend/ui_components.rs:250
 msgid "Disable animations"
-msgstr ""
+msgstr "Animasyonları kapat"
 
 #: src/gui_frontend/ui_components.rs:254
 msgid "Appearance"
-msgstr ""
+msgstr "Görünüm"
 
 #: src/gui_frontend/ui_components.rs:260
 msgid "System default"
-msgstr ""
+msgstr "Sistem Varsayılanı"
 
 #: src/gui_frontend/ui_components.rs:263
 msgid "Language"
-msgstr ""
+msgstr "Dil"
 
 #: src/gui_frontend/ui_components.rs:380
 msgid "Game default"
-msgstr ""
+msgstr "Oyun varsayılanı"
 
 #: src/gui_frontend/ui_components.rs:399
 msgid "Refresh achievements & stats"
-msgstr ""
+msgstr "Başarımları ve istatistikleri yenile"
 
 #: src/gui_frontend/ui_components.rs:403
 msgid "Reset everything"
-msgstr ""
+msgstr "Herşeyi sıfırla"
 
 #: src/gui_frontend/ui_components.rs:411
 msgid "Achievement language"
-msgstr ""
+msgstr "Başarım dili"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
 #: src/gui_frontend/unlock_scheduler.rs:185
 #: src/gui_frontend/app_list_view/progress_actions.rs:43
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
 #: src/gui_frontend/profile_view/mod.rs:599
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
 #: src/gui_frontend/app_list_view/refresh_actions.rs:455
 msgid "Cancel"
-msgstr ""
+msgstr "İptal"
 
 #: src/gui_frontend/dialogs.rs:284
 msgid "<b>No Steam installations were found on your system.</b>"
-msgstr ""
+msgstr "<b>Sisteminizde Steam kurulumu bulunamadı.</b>"
 
 #: src/gui_frontend/dialogs.rs:286
 msgid ""
@@ -137,10 +137,13 @@ msgid ""
 "haven't installed Steam yet, please install it through your distribution's "
 "official repository or app store."
 msgstr ""
+"SamRewritten bilgisayarınızda Steam kurulumu bulamadı. Steam henüz yüklü "
+"değilse, lütfen kullandığınız işletim sisteminin uygulama mağazasından "
+"yükleyin."
 
 #: src/gui_frontend/dialogs.rs:288
 msgid "<b>Already have Steam installed?</b>"
-msgstr ""
+msgstr "<b>Steam zaten yüklü mü?</b>"
 
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
@@ -149,10 +152,14 @@ msgid ""
 "com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
 "your issue."
 msgstr ""
+"Steam'i farklı bir konuma kurduysanız, ortam değişkenlerini kullanarak "
+"SamRewritten'a bu konumu gösterebilirsiniz. Talimatlar veya yaşadığınız "
+"sorunu bildirmek için lütfen <a href=\"https://github.com/PaulCombal/"
+"SamRewritten\">GitHub</a> sayfasını ziyaret edin."
 
 #: src/gui_frontend/dialogs.rs:295
 msgid "No compatible version of Steam found"
-msgstr ""
+msgstr "Uyumlu bir Steam sürümü bulunamadı"
 
 #: src/gui_frontend/dialogs.rs:331
 msgid "    (Steam is running here)"
@@ -168,6 +175,9 @@ msgid ""
 "currently running from is preselected, the others won't work unless you "
 "start Steam from them first."
 msgstr ""
+"SamRewritten birden fazla Steam kurulumu buldu. Şu anda çalışan Steam "
+"otomatik olarak seçildi; diğerleri, Steam'i önce o konumdan başlatmadığınız "
+"sürece çalışmaz."
 
 #: src/gui_frontend/dialogs.rs:361
 msgid ""
@@ -176,18 +186,23 @@ msgid ""
 "want. See the <a href=\"https://github.com/PaulCombal/SamRewritten?"
 "tab=readme-ov-file#environment-variables\">README</a>."
 msgstr ""
+"Bir sonraki açılışta bu durum tekrar sorulacak. Bunu kalıcı olarak atlamak "
+"için <tt>SAM_STEAM_INSTALL_ROOT</tt> ortam değişkenini istediğiniz kuruluma "
+"ayarlayın. Detaylar için <a href=\"https://github.com/PaulCombal/"
+"SamRewritten?tab=readme-ov-file#environment-variables\">README</a> sayfasına "
+"göz atabilirsiniz."
 
 #: src/gui_frontend/dialogs.rs:377 src/gui_frontend/dialogs.rs:426
 msgid "Choose a Steam installation"
-msgstr ""
+msgstr "Bir Steam kurulumu seçin"
 
 #: src/gui_frontend/dialogs.rs:389 src/gui_frontend/dialogs.rs:553
 msgid "Quit"
-msgstr ""
+msgstr "Çık"
 
 #: src/gui_frontend/dialogs.rs:390 src/gui_frontend/dialogs.rs:466
 msgid "Use this installation"
-msgstr ""
+msgstr "Bu kurulumu kullan"
 
 #: src/gui_frontend/dialogs.rs:543
 msgid ""
@@ -199,22 +214,29 @@ msgid ""
 "<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam "
 "with Flatpak, please use the AppImage instead."
 msgstr ""
+"Bu, SamRewritten'ın izole edilmiş <b>Snap</b> sürümüdür ve Steam "
+"dosyalarınıza erişmek için izin gerektirir. Steam klasörünüzü bir kez seçin: "
+"Açılan sistem penceresini onaylamanız yeterli olacaktır. Bu işlem tekrar "
+"istenmeyecektir.\n"
+"\n"
+"Snap sürümü <b>Flatpak Steam'i desteklemez</b>. Steam'i Flatpak üzerinden "
+"yüklediyseniz, lütfen AppImage sürümünü tercih edin."
 
 #: src/gui_frontend/dialogs.rs:550 src/gui_frontend/dialogs.rs:589
 msgid "Connect to Steam"
-msgstr ""
+msgstr "Steam'e bağlan"
 
 #: src/gui_frontend/dialogs.rs:554 src/gui_frontend/dialogs.rs:620
 msgid "Choose a folder…"
-msgstr ""
+msgstr "Bir klasör seçin…"
 
 #: src/gui_frontend/dialogs.rs:555 src/gui_frontend/dialogs.rs:637
 msgid "Use Snap Steam"
-msgstr ""
+msgstr "Snap Steam kullan"
 
 #: src/gui_frontend/dialogs.rs:691
 msgid "Steam folder not usable"
-msgstr ""
+msgstr "Bu Steam klasörü kullanılamaz"
 
 #: src/gui_frontend/dialogs.rs:699
 msgid ""
