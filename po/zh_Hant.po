@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-19 01:06+0200\n"
 "PO-Revision-Date: 2026-08-25 22:06+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Ktonel475 <xylonchal666@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/samrewritten/samrewritten/zh_Hant/>\n"
 "Language: zh_Hant\n"
@@ -26,67 +26,64 @@ msgstr "加載中…"
 
 #: src/gui_frontend/ui_components.rs:190
 msgid "Select all visible apps"
-msgstr "選擇全部可見應用程式"
+msgstr "選取全部可見應用程式"
 
 #: src/gui_frontend/ui_components.rs:194
-#, fuzzy
 msgid "Deselect all apps"
-msgstr "取消選擇所有應用程式"
+msgstr "取消選取所有應用程式"
 
 #: src/gui_frontend/ui_components.rs:198
 msgid "Unlock all in selection"
-msgstr ""
+msgstr "解鎖選取項目中的全部內容"
 
 #: src/gui_frontend/ui_components.rs:202
 msgid "Reset all in selection"
-msgstr ""
+msgstr "重置選取項目中的全部內容"
 
 #: src/gui_frontend/ui_components.rs:206
 #: src/gui_frontend/app_list_view/progress_actions.rs:116
 msgid "Export selected apps progress"
-msgstr ""
+msgstr "導出選取項目中的應用程式進程"
 
 #: src/gui_frontend/ui_components.rs:210
 msgid "Import progress..."
-msgstr ""
+msgstr "導入進程…"
 
 #: src/gui_frontend/ui_components.rs:215
 msgid "Refresh app list"
-msgstr ""
+msgstr "重新整理應用程式清單"
 
 #: src/gui_frontend/ui_components.rs:219
 msgid "Refresh achievement counts"
-msgstr ""
+msgstr "重新整理成就數量"
 
 #: src/gui_frontend/ui_components.rs:222 src/gui_frontend/ui_components.rs:406
 msgid "About"
-msgstr ""
+msgstr "關於"
 
 #: src/gui_frontend/ui_components.rs:226
 msgid "Change Steam folder…"
-msgstr ""
+msgstr "更改Steam文件夾…"
 
 #: src/gui_frontend/ui_components.rs:233
 msgid "Bulk process"
-msgstr ""
+msgstr "批量處理"
 
 #: src/gui_frontend/ui_components.rs:239
 msgid "System"
 msgstr "系統"
 
 #: src/gui_frontend/ui_components.rs:240
-#, fuzzy
 msgid "Light"
 msgstr "明亮"
 
 #: src/gui_frontend/ui_components.rs:241
-#, fuzzy
 msgid "Dark"
 msgstr "黑暗"
 
 #: src/gui_frontend/ui_components.rs:250
 msgid "Disable animations"
-msgstr ""
+msgstr "停用動畫"
 
 #: src/gui_frontend/ui_components.rs:254
 msgid "Appearance"
@@ -106,33 +103,33 @@ msgstr "遊戲預設"
 
 #: src/gui_frontend/ui_components.rs:399
 msgid "Refresh achievements & stats"
-msgstr ""
+msgstr "重新整理成就與狀態"
 
 #: src/gui_frontend/ui_components.rs:403
 msgid "Reset everything"
-msgstr ""
+msgstr "重置所有設定"
 
 #: src/gui_frontend/ui_components.rs:411
 msgid "Achievement language"
-msgstr ""
+msgstr "成就語言"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
 #: src/gui_frontend/unlock_scheduler.rs:185
 #: src/gui_frontend/app_list_view/progress_actions.rs:43
 msgid "OK"
-msgstr ""
+msgstr "確定"
 
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
 #: src/gui_frontend/profile_view/mod.rs:599
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
 #: src/gui_frontend/app_list_view/refresh_actions.rs:455
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: src/gui_frontend/dialogs.rs:284
 msgid "<b>No Steam installations were found on your system.</b>"
-msgstr ""
+msgstr "<b>找不到您系統上的 Steam 安裝。</b>"
 
 #: src/gui_frontend/dialogs.rs:286
 msgid ""
@@ -206,19 +203,19 @@ msgstr ""
 
 #: src/gui_frontend/dialogs.rs:550 src/gui_frontend/dialogs.rs:589
 msgid "Connect to Steam"
-msgstr ""
+msgstr "連接至Steam"
 
 #: src/gui_frontend/dialogs.rs:554 src/gui_frontend/dialogs.rs:620
 msgid "Choose a folder…"
-msgstr ""
+msgstr "選取文件夾…"
 
 #: src/gui_frontend/dialogs.rs:555 src/gui_frontend/dialogs.rs:637
 msgid "Use Snap Steam"
-msgstr ""
+msgstr "使用Snap版Steam"
 
 #: src/gui_frontend/dialogs.rs:691
 msgid "Steam folder not usable"
-msgstr ""
+msgstr "Steam文件夾不可用"
 
 #: src/gui_frontend/dialogs.rs:699
 msgid ""
@@ -230,63 +227,63 @@ msgstr ""
 
 #: src/gui_frontend/dialogs.rs:707
 msgid "Choose again"
-msgstr ""
+msgstr "再選取"
 
 #: src/gui_frontend/dialogs.rs:865
 msgid "Select your Steam folder"
-msgstr ""
+msgstr "選取您的Steam文件夾"
 
 #: src/gui_frontend/app_view.rs:68
 msgid "Achievements:"
-msgstr ""
+msgstr "成就："
 
 #: src/gui_frontend/app_view.rs:82
 msgid "Stats:"
-msgstr ""
+msgstr "狀態："
 
 #: src/gui_frontend/app_view.rs:96
 msgid "Last playtime:"
-msgstr ""
+msgstr "上次遊玩時長："
 
 #: src/gui_frontend/app_view.rs:110
 msgid "Type:"
-msgstr ""
+msgstr "類型："
 
 #: src/gui_frontend/app_view.rs:124
 msgid "Developer:"
-msgstr ""
+msgstr "開發者："
 
 #: src/gui_frontend/app_view.rs:141
 msgid "Metacritic:"
-msgstr ""
+msgstr "評價："
 
 #: src/gui_frontend/app_view.rs:155
 msgid "Failed to load app."
-msgstr ""
+msgstr "無法載入程式。"
 
 #: src/gui_frontend/app_view.rs:161
 msgid "No entries found."
-msgstr ""
+msgstr "找不到項目。"
 
 #: src/gui_frontend/app_view.rs:178
 msgid "Achievements"
-msgstr ""
+msgstr "成就"
 
 #: src/gui_frontend/app_view.rs:181
 msgid "Stats"
-msgstr ""
+msgstr "狀態"
 
 #: src/gui_frontend/stat_view.rs:102
 msgid "Increment only"
-msgstr ""
+msgstr "僅遞增"
 
 #: src/gui_frontend/stat_view.rs:107
 msgid "This statistic is protected."
-msgstr ""
+msgstr "次統計被保護。"
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
-msgstr ""
+msgstr "停止並返回"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:57
 msgid "No achievements staged"
@@ -306,7 +303,7 @@ msgstr ""
 
 #: src/gui_frontend/achievement_manual_view/header.rs:49
 msgid "Instant"
-msgstr ""
+msgstr "即時"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:52
 msgid "Stage"
@@ -351,7 +348,7 @@ msgstr ""
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:112
 msgid "Random"
-msgstr ""
+msgstr "隨機"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:132
 msgid "Target"
@@ -368,20 +365,20 @@ msgstr ""
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:234
 msgid "Choose a friend to copy timing from"
-msgstr ""
+msgstr "選取朋友並複製時長格式"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
 msgid "Advanced"
-msgstr ""
+msgstr "進階"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:68
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:89
 msgid "minutes"
-msgstr ""
+msgstr "分鐘"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:103
 msgid "Max gap"
-msgstr ""
+msgstr "最大間隔"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:105
 msgid "First delay"
