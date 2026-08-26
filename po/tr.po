@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-19 01:06+0200\n"
-"PO-Revision-Date: 2026-08-25 19:14+0000\n"
-"Last-Translator: Deniz Çolak <28dnzclk@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2026-08-26 11:12+0000\n"
+"Last-Translator: Deniz Çolak <28dnzclk@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/samrewritten/"
 "samrewritten/tr/>\n"
 "Language: tr\n"
@@ -245,34 +245,38 @@ msgid ""
 "<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
 "use the AppImage."
 msgstr ""
+"SamRewritten, seçtiğiniz klasördeki <tt>steamclient.so</tt> dosyasını "
+"okuyamadı. <b>Steam</b> dizinini seçin — bir <tt>linux64</tt> klasörü içeren "
+"dizini. Flatpak Steam, Snap tarafından kullanılamaz; lütfen AppImage "
+"sürümünü kullanın."
 
 #: src/gui_frontend/dialogs.rs:707
 msgid "Choose again"
-msgstr ""
+msgstr "Tekrar seçin"
 
 #: src/gui_frontend/dialogs.rs:865
 msgid "Select your Steam folder"
-msgstr ""
+msgstr "Steam klasörünüzü seçin"
 
 #: src/gui_frontend/app_view.rs:68
 msgid "Achievements:"
-msgstr ""
+msgstr "Başarımlar:"
 
 #: src/gui_frontend/app_view.rs:82
 msgid "Stats:"
-msgstr ""
+msgstr "İstatistikler:"
 
 #: src/gui_frontend/app_view.rs:96
 msgid "Last playtime:"
-msgstr ""
+msgstr "Son oynama zamanı:"
 
 #: src/gui_frontend/app_view.rs:110
 msgid "Type:"
-msgstr ""
+msgstr "Tip:"
 
 #: src/gui_frontend/app_view.rs:124
 msgid "Developer:"
-msgstr ""
+msgstr "Geliştirici:"
 
 #: src/gui_frontend/app_view.rs:141
 msgid "Metacritic:"
@@ -280,418 +284,432 @@ msgstr ""
 
 #: src/gui_frontend/app_view.rs:155
 msgid "Failed to load app."
-msgstr ""
+msgstr "Uygulama yüklenemedi."
 
 #: src/gui_frontend/app_view.rs:161
 msgid "No entries found."
-msgstr ""
+msgstr "istatistik bulunamadı."
 
 #: src/gui_frontend/app_view.rs:178
 msgid "Achievements"
-msgstr ""
+msgstr "Başarımlar"
 
 #: src/gui_frontend/app_view.rs:181
 msgid "Stats"
-msgstr ""
+msgstr "İstatistikler"
 
 #: src/gui_frontend/stat_view.rs:102
 msgid "Increment only"
-msgstr ""
+msgstr "Sadece artış"
 
 #: src/gui_frontend/stat_view.rs:107
 msgid "This statistic is protected."
-msgstr ""
+msgstr "Bu istatistik korumalı."
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
-msgstr ""
+msgstr "Dur ve geri dön"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:57
 msgid "No achievements staged"
-msgstr ""
+msgstr "Kuyrukta başarım yok"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:58
 msgid "{count} staged"
-msgstr ""
+msgstr "{count} kuyrukta"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:96
 msgid "Already at or above target ({progress})"
-msgstr ""
+msgstr "Zaten hedefe ulaşıldı veya aşıldı ({progress})"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:102
 msgid "Auto-fill {count} achievement(s) ({progress})"
-msgstr ""
+msgstr "{count} başarımı otomatik tamamla ({progress})"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:49
 msgid "Instant"
-msgstr ""
+msgstr "Anında"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:52
 msgid "Stage"
-msgstr ""
+msgstr "Kuyruk"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:56
 msgid "Copy user"
-msgstr ""
+msgstr "Kullanıcı Kopyala"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:74
 msgid "Auto-fill"
-msgstr ""
+msgstr "Otomatik doldur"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:77
 msgid "Configuration"
-msgstr ""
+msgstr "Ayarlar"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:103
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
 msgid "Start"
-msgstr ""
+msgstr "Başla"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:108
 msgid "Changes apply instantly"
-msgstr ""
+msgstr "Değişiklikler anında uygulanır"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:63
 msgid "Count"
-msgstr ""
+msgstr "Adet"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:65
 msgid "Percent"
-msgstr ""
+msgstr "Yüzde"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:99
 msgid "minutes (0 = instant)"
-msgstr ""
+msgstr "dakika (0 = anında)"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:108
 msgid "Even"
-msgstr ""
+msgstr "Eşit"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:112
 msgid "Random"
-msgstr ""
+msgstr "Raskele"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:132
 msgid "Target"
-msgstr ""
+msgstr "Hedef"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:136
 msgid "Spread over"
-msgstr ""
+msgstr "Süreye yay"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:140
 msgid "Spacing"
-msgstr ""
+msgstr "Aralık"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:234
 msgid "Choose a friend to copy timing from"
-msgstr ""
+msgstr "Zamanlamasını kopyalamak için bir arkadaş seçin"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
 msgid "Advanced"
-msgstr ""
+msgstr "Gelişmiş"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:68
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:89
 msgid "minutes"
-msgstr ""
+msgstr "dakika"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:103
 msgid "Max gap"
-msgstr ""
+msgstr "Max aralık"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:105
 msgid "First delay"
-msgstr ""
+msgstr "Başlangıç gecikmesi"
 
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:101
 msgid "No friend loaded"
-msgstr ""
+msgstr "Arkadaş yüklenmedi"
 
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:111
 msgid "{count} achievements over {time}"
-msgstr ""
+msgstr "{time} boyunca {count} başarım"
 
 #: src/gui_frontend/friend_picker.rs:76
 msgid "Private"
-msgstr ""
+msgstr "Gizli"
 
 #: src/gui_frontend/friend_picker.rs:98
 msgid "Copy timing from a friend"
-msgstr ""
+msgstr "Zamanlamayı arkadaştan kopyala"
 
 #: src/gui_frontend/friend_picker.rs:202
 msgid "Use the pasted SteamID64"
-msgstr ""
+msgstr "Yapıştırılan SteamID64'ü kullan"
 
 #: src/gui_frontend/friend_picker.rs:497
 msgid "This profile is private"
-msgstr ""
+msgstr "Bu profil gizli"
 
 #: src/gui_frontend/friend_picker.rs:499
 msgid "Couldn't load this user"
-msgstr ""
+msgstr "Kullanıcı yüklenilemedi"
 
 #: src/gui_frontend/friend_picker.rs:511
 msgid "Search friends or paste a SteamID64"
-msgstr ""
+msgstr "Arkadaşlarda ara veya SteamID64 yapıştır"
 
 #: src/gui_frontend/friend_picker.rs:598
 msgid "Clear selected user"
-msgstr ""
+msgstr "Seçili kullanıcıyı kaldır"
 
 #: src/gui_frontend/app_list_view/mod.rs:351
 msgid "SamRewritten could not connect to Steam. Is it running?"
-msgstr ""
+msgstr "SamRewritten Steam'a bağlanamadı. Steam açık mı?"
 
 #: src/gui_frontend/app_list_view/mod.rs:356
 msgid "Try again"
-msgstr ""
+msgstr "Tekrar deneyin"
 
 #: src/gui_frontend/app_list_view/mod.rs:373
 #: src/gui_frontend/app_list_view/mod.rs:1476
 msgid "Name or AppId (Ctrl+K)"
-msgstr ""
+msgstr "İsim veya AppId (Ctrl+K)"
 
 #: src/gui_frontend/app_list_view/mod.rs:389
 msgid "Show or hide the sidebar"
-msgstr ""
+msgstr "Yan paneli göster/gizle"
 
 #: src/gui_frontend/app_list_view/mod.rs:1471
 msgid "Achievement or stat..."
-msgstr ""
+msgstr "Başarım veya istatistik..."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:47
 msgid "Hide with no achievements"
-msgstr ""
+msgstr "Başarımı bulunmayanları gizle"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:52
 msgid "Hide at 100%"
-msgstr ""
+msgstr "%100 olanları gizle"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:57
 msgid "Hide at 0%"
-msgstr ""
+msgstr "%0 olanları gizle"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:62
 msgid "Hide never launched"
-msgstr ""
+msgstr "Hiç oynanmayanları gizle"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:67
 msgid "Only currently idling"
-msgstr ""
+msgstr "Arka planda çalışanlar"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:72
 msgid "Show junk"
-msgstr ""
+msgstr "Çöpleri göster"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:86
 msgid "App ID"
-msgstr ""
+msgstr "App ID"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:91
 msgid "Name"
-msgstr ""
+msgstr "İsim"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:96
 msgid "Last played"
-msgstr ""
+msgstr "En son oynama"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:101
 msgid "Playtime"
-msgstr ""
+msgstr "Oynama süresi"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:106
 msgid "Completion"
-msgstr ""
+msgstr "Tamamlanma"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:111
 msgid "Achievements left"
-msgstr ""
+msgstr "Kalan Başarımlar"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:153
 msgid "View profile"
-msgstr ""
+msgstr "Profili görüntüle"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:208
 #: src/gui_frontend/profile_view/mod.rs:481
 msgid "Steam user"
-msgstr ""
+msgstr "Steam kullanıcısı"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:229
 msgid "Fetching completion…"
-msgstr ""
+msgstr "Tamamlanma durumu alınıyor…"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:235
 msgid "Click to cancel"
-msgstr ""
+msgstr "İptal etmek için tıklayın"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:266
 msgid "Filters"
-msgstr ""
+msgstr "Filtreler"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:274
 msgid "Sort by"
-msgstr ""
+msgstr "Sıralama"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:313
 msgid "Reset filters"
-msgstr ""
+msgstr "Filtreleri sıfırla"
 
 #: src/gui_frontend/profile_view/mod.rs:71
 msgid "Games in library"
-msgstr ""
+msgstr "Kütüphanedeki Oyunlar"
 
 #: src/gui_frontend/profile_view/mod.rs:75
 msgid "Achievements unlocked"
-msgstr ""
+msgstr "Kazanılan başarımlar"
 
 #: src/gui_frontend/profile_view/mod.rs:79
 msgid "Average completion"
-msgstr ""
+msgstr "Ortalama tamamlanma"
 
 #: src/gui_frontend/profile_view/mod.rs:83
 msgid "Perfect games"
-msgstr ""
+msgstr "Tamamlanan oyunlar"
 
 #: src/gui_frontend/profile_view/mod.rs:87
 msgid "Time played"
-msgstr ""
+msgstr "Toplam oynama süresi"
 
 #: src/gui_frontend/profile_view/mod.rs:184
 msgid "never played"
-msgstr ""
+msgstr "Hiç oynanılmamış"
 
 #: src/gui_frontend/profile_view/mod.rs:186
 msgid "{minutes} minute(s) played, ever"
-msgstr ""
+msgstr "Bugüne kadar toplam {minutes} dakika oynandı"
 
 #: src/gui_frontend/profile_view/mod.rs:190
 msgid "nothing else was unlocked for this game outside this moment"
-msgstr ""
+msgstr "Bu an dışında bu oyun için başka hiç bir başarım açılmadı"
 
 #: src/gui_frontend/profile_view/mod.rs:193
 msgid "the rest of your unlocks in this game came at other times"
-msgstr ""
+msgstr "Bu oyundaki diğer başarımlar farklı zamanlarda açıldı"
 
 #: src/gui_frontend/profile_view/mod.rs:196
 msgid "at the very start of this game's history, ordinary unlocks after it"
-msgstr ""
+msgstr "Bu oyun geçmişinin en başında, sonrasında normal açılan başarımlar var"
 
 #: src/gui_frontend/profile_view/mod.rs:266
 #: src/gui_frontend/profile_view/mod.rs:290
 msgid "No unlocks yet."
-msgstr ""
+msgstr "Henüz açılan başarım yok."
 
 #: src/gui_frontend/profile_view/mod.rs:294
 msgid "{total} unlocked since {since}."
-msgstr ""
+msgstr "{since} tarihinden bu yana {total} başarım açıldı."
 
 #: src/gui_frontend/profile_view/mod.rs:298
 msgid "{year} in the last year, {total} since {since}."
 msgstr ""
+"Son bir yılda {year}, {since} tarihinden bu yana toplam {total} başarım "
+"açıldı."
 
 #: src/gui_frontend/profile_view/mod.rs:303
 msgid "{count} in {year}, {total} since {since}."
-msgstr ""
+msgstr "{year} yılında {count}, {since} itibarıyla {total} başarım."
 
 #: src/gui_frontend/profile_view/mod.rs:559
 msgid ""
 "Rescan for up-to-date numbers if you also use Steam on another computer."
 msgstr ""
+"Başka bir bilgisayarda Steam kullanıyorsanız daha güncel bilgiler için "
+"yeniden tarayın."
 
 #: src/gui_frontend/profile_view/mod.rs:572
 #: src/gui_frontend/profile_view/mod.rs:898
 msgid "Read all my games"
-msgstr ""
+msgstr "Bütün oyunları tara"
 
 #: src/gui_frontend/profile_view/mod.rs:642
 msgid "Year to show"
-msgstr ""
+msgstr "Gösterilen yıl"
 
 #: src/gui_frontend/profile_view/mod.rs:657
 msgid "Everything here looks like ordinary play."
-msgstr ""
+msgstr "Buradaki her şey normal oynanışa benziyor."
 
 #: src/gui_frontend/profile_view/mod.rs:701
 msgid "Unlock activity"
-msgstr ""
+msgstr "Başarım aktivitesi"
 
 #: src/gui_frontend/profile_view/mod.rs:719
 msgid "Completion over time"
-msgstr ""
+msgstr "Zamanla tamamlanma"
 
 #: src/gui_frontend/profile_view/mod.rs:725
 msgid "Irregular activity history"
-msgstr ""
+msgstr "Sıradışı aktivite geçmişi"
 
 #: src/gui_frontend/profile_view/mod.rs:728
 msgid ""
 "Anyone visiting your Steam profile sees when each achievement was unlocked. "
 "Listed here are the moments that do not look like ordinary play."
 msgstr ""
+"Steam profilinizi ziyaret eden herkes başarımlarınızın ne zaman açıldığını "
+"görebilir. Bu listede normal oynanışa uymayan anlar gösterilmiştir."
 
 #: src/gui_frontend/profile_view/mod.rs:869
 msgid "{hours} h"
-msgstr ""
+msgstr "{hours} sa"
 
 #: src/gui_frontend/profile_view/mod.rs:896
 msgid "Rescan now"
-msgstr ""
+msgstr "Yeniden tara"
 
 #: src/gui_frontend/profile_view/mod.rs:911
 msgid ""
 "Reading your games' achievements ({measured}/{total}). The activity and the "
 "runs below fill in as it goes."
 msgstr ""
+"Oyunlarınızın başarımları taranıyor ({measured}/{total}). Aşağıdaki aktivite "
+"ve oturumlar işlem ilerledikçe dolacaktır."
 
 #: src/gui_frontend/profile_view/mod.rs:915
 msgid ""
 "Only {measured} of your {total} games have been read from Steam, so the "
 "figures above cannot be totalled yet."
 msgstr ""
+"{total} oyundan sadece {measured} tanesi tarandı, bu nedenle yukarıdaki "
+"veriler henüz toplanamıyor."
 
 #: src/gui_frontend/profile_view/mod.rs:933
 msgid "Waiting for Steam to say who is signed in."
-msgstr ""
+msgstr "Giriş yapan hesabın belirlenmesi için Steam bekleniyor."
 
 #: src/gui_frontend/profile_view/mod.rs:941
 msgid "Reading your unlock history…"
-msgstr ""
+msgstr "Başarım açma geçmişiniz taranıyor…"
 
 #: src/gui_frontend/profile_view/mod.rs:995
 #: src/gui_frontend/profile_view/mod.rs:1000
 msgid "Your unlock history could not be read."
-msgstr ""
+msgstr "Başarım açma geçmişiniz taranılamadı."
 
 #: src/gui_frontend/profile_view/mod.rs:1088
 msgid "No completion to plot yet."
-msgstr ""
+msgstr "Henüz grafikte gösterilebilecek bir tamamlanma bulunmuyor."
 
 #: src/gui_frontend/profile_view/mod.rs:1090
 msgid ""
 "Averaged over the games you have started, so it dips when you start a new "
 "one. Now at {percent}%."
 msgstr ""
+"Başladığınız oyunların ortalamasıdır; bu nedenle yeni bir oyuna "
+"başladığınızda düşer. Şu an %{percent}."
 
 #: src/gui_frontend/profile_view/mod.rs:1099
 msgid ""
 "The activity below is missing {count} game(s). Restart Steam to get them "
 "back."
 msgstr ""
+"Aşağıdaki aktivitede {count} oyun eksik. Bunları geri getirmek için Steam'i "
+"yeniden başlatın."
 
 #: src/gui_frontend/profile_view/mod.rs:1118
 msgid "Select these {games} games"
-msgstr ""
+msgstr "Bu {games} oyunu seç"
 
 #: src/gui_frontend/profile_view/mod.rs:1136
 msgid "{count} achievements across {games} games"
-msgstr ""
+msgstr "{games} oyunda toplam {count} başarım"
 
 #: src/gui_frontend/profile_view/mod.rs:1139
 msgid "{when} — one game after another, in a single sitting"
-msgstr ""
+msgstr "{when} — tek oturuşta, iki oyun peş peşe"
 
 #: src/gui_frontend/profile_view/mod.rs:1146
 #: src/gui_frontend/profile_view/journal_section.rs:251
