@@ -142,9 +142,9 @@ msgstr "<b>Steam est déjà installé ?</b>"
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
-"to it using environment variables. Please check the <a href=\"https://github."
-"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
-"your issue."
+"to it using environment variables. Please check the <a href=\"https://"
+"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
+"report your issue."
 msgstr ""
 "Si vous avez installé Steam dans un emplacement personnalisé, vous pouvez "
 "l'indiquer à SamRewritten à l'aide de variables d'environnement. Consultez "
@@ -469,7 +469,8 @@ msgstr "Impossible de changer l'option in-game"
 #: src/gui_frontend/app_list_view/mod.rs:1721
 #: src/gui_frontend/app_list_view/settings_bindings.rs:266
 msgid "The change could not be applied. Restart SamRewritten and try again."
-msgstr "Le changement n'a pas pu être appliqué. Redémarrez SamRewritten et réessayez."
+msgstr ""
+"Le changement n'a pas pu être appliqué. Redémarrez SamRewritten et réessayez."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:47
 msgid "Hide with no achievements"
