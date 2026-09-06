@@ -1,0 +1,1359 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the SamRewritten package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: SamRewritten\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-03 21:30+0200\n"
+"PO-Revision-Date: 2026-09-06 19:03+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: none\n"
+"Language: el\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
+#: src/gui_frontend/app_list_view/mod.rs:421
+msgid "Loading..."
+msgstr "Φόρτωση..."
+
+#: src/gui_frontend/ui_components.rs:191
+msgid "Select all visible apps"
+msgstr "Επιλέξτε όλες τις ορατές εφαρμογές"
+
+#: src/gui_frontend/ui_components.rs:195
+msgid "Deselect all apps"
+msgstr "Αποεπιλέξτε όλες τις εφαρμογές"
+
+#: src/gui_frontend/ui_components.rs:199
+msgid "Unlock all in selection"
+msgstr "Ξεκλειδώστε όλα στην επιλογή"
+
+#: src/gui_frontend/ui_components.rs:203
+msgid "Reset all in selection"
+msgstr "Επαναφορά όλων στην επιλογή"
+
+#: src/gui_frontend/ui_components.rs:207
+#: src/gui_frontend/app_list_view/progress_actions.rs:116
+msgid "Export selected apps progress"
+msgstr "Εξαγωγή προόδου επιλεγμένων εφαρμογών"
+
+#: src/gui_frontend/ui_components.rs:211
+msgid "Import progress..."
+msgstr "Εισαγωγή προόδου..."
+
+#: src/gui_frontend/ui_components.rs:217
+msgid "Appear in-game while managing"
+msgstr "Εμφάνιση στο παιχνίδι κατά τη διαχείριση"
+
+#: src/gui_frontend/ui_components.rs:223
+msgid "Refresh app list"
+msgstr "Ανανέωση λίστας εφαρμογών"
+
+#: src/gui_frontend/ui_components.rs:227
+msgid "Refresh achievement counts"
+msgstr "Ανανέωση πλήθους επιτευγμάτων"
+
+#: src/gui_frontend/ui_components.rs:230 src/gui_frontend/ui_components.rs:471
+msgid "About"
+msgstr "Σχετικά"
+
+#: src/gui_frontend/ui_components.rs:234
+msgid "Change Steam folder…"
+msgstr "Αλλαγή φακέλου Steam…"
+
+#: src/gui_frontend/ui_components.rs:241
+msgid "Bulk process"
+msgstr "Μαζική επεξεργασία"
+
+#: src/gui_frontend/ui_components.rs:247
+msgid "System"
+msgstr "Σύστημα"
+
+#: src/gui_frontend/ui_components.rs:248
+msgid "Light"
+msgstr "Φωτεινό"
+
+#: src/gui_frontend/ui_components.rs:249
+msgid "Dark"
+msgstr "Σκοτεινό"
+
+#: src/gui_frontend/ui_components.rs:258
+msgid "Disable animations"
+msgstr "Aπενεργοποίηση γραφικών παραστάσεων"
+
+#: src/gui_frontend/ui_components.rs:262
+msgid "Appearance"
+msgstr "Εμφάνιση"
+
+#: src/gui_frontend/ui_components.rs:268
+msgid "System default"
+msgstr "Προεπιλογή συστήματος"
+
+#: src/gui_frontend/ui_components.rs:271
+msgid "Language"
+msgstr "Γλώσσα"
+
+#: src/gui_frontend/ui_components.rs:388
+msgid "Game default"
+msgstr "Προεπιλογή παιχνιδιού"
+
+#: src/gui_frontend/ui_components.rs:411
+msgid "Refresh achievements & stats"
+msgstr "Ανανέωση επιτευγμάτων & στατιστικών"
+
+#: src/gui_frontend/ui_components.rs:415
+msgid "Reset everything"
+msgstr "Επαναφορά όλων"
+
+#: src/gui_frontend/ui_components.rs:435
+msgid "Achievement language"
+msgstr "Γλώσσα επιτευγμάτων"
+
+#: src/gui_frontend/ui_components.rs:440
+msgid "Achievement order"
+msgstr "Σειρά επιτευγμάτων"
+
+#: src/gui_frontend/ui_components.rs:443 src/gui_frontend/ui_components.rs:465
+msgid "Steam default"
+msgstr "Προεπιλογή Steam"
+
+#: src/gui_frontend/ui_components.rs:444 src/gui_frontend/ui_components.rs:466
+msgid "Alphabetically"
+msgstr "Αλφαβητικά"
+
+#: src/gui_frontend/ui_components.rs:445
+msgid "Global percentage"
+msgstr "Ποσοστό παγκοσμίως"
+
+#: src/gui_frontend/ui_components.rs:446
+msgid "Unlock date"
+msgstr "Ημερομηνία ξεκλειδώματος"
+
+#: src/gui_frontend/ui_components.rs:451
+msgid "Achievement state"
+msgstr "Κατάσταση επιτευγμάτων"
+
+#: src/gui_frontend/ui_components.rs:454
+msgid "All"
+msgstr "Όλα"
+
+#: src/gui_frontend/ui_components.rs:455
+msgid "Locked"
+msgstr "Κλειδωμένα"
+
+#: src/gui_frontend/ui_components.rs:456
+msgid "Unlocked"
+msgstr "Ξεκλειδωμένα"
+
+#: src/gui_frontend/ui_components.rs:462
+msgid "Stat order"
+msgstr "Σειρά στατιστικών"
+
+#: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
+#: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
+#: src/gui_frontend/unlock_scheduler.rs:217
+#: src/gui_frontend/app_list_view/progress_actions.rs:43
+msgid "OK"
+msgstr "ΟΚ"
+
+#: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
+#: src/gui_frontend/profile_view/mod.rs:587
+#: src/gui_frontend/app_list_view/progress_actions.rs:424
+#: src/gui_frontend/app_list_view/refresh_actions.rs:437
+msgid "Cancel"
+msgstr "Ακύρωση"
+
+#: src/gui_frontend/dialogs.rs:284
+msgid "<b>No Steam installations were found on your system.</b>"
+msgstr "<b>Δεν βρέθηκαν εγκαταστάσεις του Steam στο σύστημά σας.</b>"
+
+#: src/gui_frontend/dialogs.rs:286
+msgid ""
+"SamRewritten couldn't find Steam in any of the standard locations. If you "
+"haven't installed Steam yet, please install it through your distribution's "
+"official repository or app store."
+msgstr ""
+"Το SamRewritten δεν μπόρεσε να βρει το Steam σε καμία από τις "
+"προκαθορισμένες τοποθεσίες. Αν δεν έχετε εγκαταστήσει ακόμα το Steam, "
+"παρακαλούμε εγκαταστήστε το μέσω του επίσημου αποθετηρίου ή του καταστήματος "
+"εφαρμογών της διανομής σας."
+
+#: src/gui_frontend/dialogs.rs:288
+msgid "<b>Already have Steam installed?</b>"
+msgstr "<b>Έχετε ήδη εγκατεστημένο το Steam?</b>"
+
+#: src/gui_frontend/dialogs.rs:290
+msgid ""
+"If you've installed Steam in a custom location, you can point SamRewritten "
+"to it using environment variables. Please check the <a href=\"https://github."
+"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
+"your issue."
+msgstr ""
+"Αν έχετε εγκαταστήσει το Steam σε προσαρμοσμένη τοποθεσία, μπορείτε να "
+"υποδείξετε τη διαδρομή στο SamRewritten χρησιμοποιώντας μεταβλητές "
+"περιβάλλοντος. Παρακαλούμε ανατρέξτε στη σελίδα <a href=\"https://github.com/"
+"PaulCombal/SamRewritten\">στο GitHub</a> για οδηγίες ή για να αναφέρετε το "
+"πρόβλημά σας."
+
+#: src/gui_frontend/dialogs.rs:295
+msgid "No compatible version of Steam found"
+msgstr "Δεν βρέθηκε συμβατή έκδοση του Steam"
+
+#: src/gui_frontend/dialogs.rs:331
+msgid "    (Steam is running here)"
+msgstr "    (Το Steam εκτελείται εδώ)"
+
+#: src/gui_frontend/dialogs.rs:333
+msgid "    (Steam not running here)"
+msgstr "    (Το Steam δεν εκτελείται εδώ)"
+
+#: src/gui_frontend/dialogs.rs:356
+msgid ""
+"SamRewritten found more than one Steam installation. The one Steam is "
+"currently running from is preselected, the others won't work unless you "
+"start Steam from them first."
+msgstr ""
+"Το SamRewritten βρήκε περισσότερες από μία εγκαταστάσεις του Steam. Αυτή από "
+"την οποία εκτελείται αυτή τη στιγμή το Steam είναι προεπιλεγμένη· οι "
+"υπόλοιπες δεν θα λειτουργήσουν εκτός αν εκκινήσετε πρώτα το Steam από αυτές."
+
+#: src/gui_frontend/dialogs.rs:361
+msgid ""
+"You'll be asked again next launch. To skip this for good, set the "
+"<tt>SAM_STEAM_INSTALL_ROOT</tt> environment variable to the install you "
+"want. See the <a href=\"https://github.com/PaulCombal/SamRewritten?"
+"tab=readme-ov-file#environment-variables\">README</a>."
+msgstr ""
+"Θα ερωτηθείτε ξανά στην επόμενη εκκίνηση. Για να παραλείψετε μόνιμα αυτό το "
+"βήμα, ορίστε τη μεταβλητή περιβάλλοντος <tt>SAM_STEAM_INSTALL_ROOT</tt> στην "
+"εγκατάσταση που επιθυμείτε. Δείτε το <a href=\"https://github.com/PaulCombal/"
+"SamRewritten?tab=readme-ov-file#environment-variables\">README</a>."
+
+#: src/gui_frontend/dialogs.rs:377 src/gui_frontend/dialogs.rs:426
+msgid "Choose a Steam installation"
+msgstr "Επιλέξτε μια εγκατάσταση του Steam"
+
+#: src/gui_frontend/dialogs.rs:389 src/gui_frontend/dialogs.rs:553
+msgid "Quit"
+msgstr "Έξοδος"
+
+#: src/gui_frontend/dialogs.rs:390 src/gui_frontend/dialogs.rs:466
+msgid "Use this installation"
+msgstr "Χρήση αυτής της εγκατάστασης"
+
+#: src/gui_frontend/dialogs.rs:543
+msgid ""
+"This is the sandboxed <b>Snap</b> version of SamRewritten, so it needs your "
+"permission to read your Steam files. Pick your Steam folder once: a system "
+"dialog will open, just confirm it to grant access. You won't be asked "
+"again.\n"
+"\n"
+"<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam "
+"with Flatpak, please use the AppImage instead."
+msgstr ""
+"Αυτή είναι η απομονωμένη (sandboxed) έκδοση <b>Snap</b> του SamRewritten, "
+"επομένως χρειάζεται την άδειά σας για την ανάγνωση των αρχείων του Steam. "
+"Επιλέξτε τον φάκελο του Steam μία φορά: θα ανοίξει ένα παράθυρο διαλόγου του "
+"συστήματος, απλώς επιβεβαιώστε το για να παραχωρήσετε πρόσβαση. Δεν θα σας "
+"ζητηθεί ξανά.\n"
+"\n"
+"<b>Το Steam μέσω Flatpak δεν υποστηρίζεται</b> από την έκδοση Snap. Αν "
+"εγκαταστήσατε το Steam μέσω Flatpak, παρακαλούμε χρησιμοποιήστε την έκδοση "
+"AppImage."
+
+#: src/gui_frontend/dialogs.rs:550 src/gui_frontend/dialogs.rs:589
+msgid "Connect to Steam"
+msgstr "Σύνδεση στο Steam"
+
+#: src/gui_frontend/dialogs.rs:554 src/gui_frontend/dialogs.rs:620
+msgid "Choose a folder…"
+msgstr "Επιλέξτε έναν φάκελο…"
+
+#: src/gui_frontend/dialogs.rs:555 src/gui_frontend/dialogs.rs:637
+msgid "Use Snap Steam"
+msgstr "Χρήση έκδοσης Snap του Steam"
+
+#: src/gui_frontend/dialogs.rs:691
+msgid "Steam folder not usable"
+msgstr "Δεν είναι δυνατή η χρήση του φακέλου του Steam"
+
+#: src/gui_frontend/dialogs.rs:699
+msgid ""
+"SamRewritten couldn't read <tt>steamclient.so</tt> in the folder you "
+"selected. Pick the <b>Steam</b> directory — the one containing a "
+"<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
+"use the AppImage."
+msgstr ""
+"Το SamRewritten δεν μπόρεσε να αναγνώσει το <tt>steamclient.so</tt> στον "
+"φάκελο που επιλέξατε. Επιλέξτε τον κατάλογο του <b>Steam</b> — αυτόν που "
+"περιέχει έναν φάκελο <tt>linux64</tt>. Το Steam μέσω Flatpak δεν μπορεί να "
+"χρησιμοποιηθεί από την έκδοση Snap· παρακαλούμε χρησιμοποιήστε την έκδοση "
+"AppImage."
+
+#: src/gui_frontend/dialogs.rs:707
+msgid "Choose again"
+msgstr "Επιλέξτε ξανά"
+
+#: src/gui_frontend/dialogs.rs:865
+msgid "Select your Steam folder"
+msgstr "Επιλέξτε τον φάκελο του Steam"
+
+#: src/gui_frontend/app_view.rs:68
+msgid "Achievements:"
+msgstr "Επιτεύγματα:"
+
+#: src/gui_frontend/app_view.rs:82
+msgid "Stats:"
+msgstr "Στατιστικά:"
+
+#: src/gui_frontend/app_view.rs:96
+msgid "Last playtime:"
+msgstr "Τελευταία περίοδος χρήσης:"
+
+#: src/gui_frontend/app_view.rs:110
+msgid "Type:"
+msgstr "Τύπος:"
+
+#: src/gui_frontend/app_view.rs:124
+msgid "Developer:"
+msgstr "Προγραμματιστής:"
+
+#: src/gui_frontend/app_view.rs:141
+msgid "Metacritic:"
+msgstr "Metacritic:"
+
+#: src/gui_frontend/app_view.rs:155
+msgid "Failed to load app."
+msgstr "Aποτυχία φόρτωσης εφαρμογής."
+
+#: src/gui_frontend/app_view.rs:161
+msgid "No entries found."
+msgstr "Δεν βρέθηκαν καταχωρίσεις."
+
+#: src/gui_frontend/app_view.rs:178
+msgid "Achievements"
+msgstr "Επιτεύγματα"
+
+#: src/gui_frontend/app_view.rs:181
+msgid "Stats"
+msgstr "Στατιστικά"
+
+#: src/gui_frontend/stat_view.rs:166
+msgid "Increment only"
+msgstr "Μόνο αύξηση"
+
+#: src/gui_frontend/stat_view.rs:171
+msgid "This statistic is protected."
+msgstr "Αυτό το στατιστικό είναι προστατευμένο."
+
+#: src/gui_frontend/achievement_automatic_view.rs:40
+msgid "Stop and go back"
+msgstr "Διακοπή και επιστροφή"
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:58
+msgid "No achievements staged"
+msgstr "Δεν υπάρχουν σταδιακά αποθηκευμένα επιτεύγματα"
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:59
+msgid "{count} staged"
+msgstr "{count} σταδιακά αποθηκευμένα"
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:97
+msgid "Already at or above target ({progress})"
+msgstr "Ήδη ίσο ή μεγαλύτερο από τον στόχο ({progress})"
+
+#: src/gui_frontend/achievement_manual_view/mod.rs:103
+msgid "Auto-fill {count} achievement(s) ({progress})"
+msgstr "Αυτόματη συμπλήρωση {count} επιτεύγματος/ων ({progress})"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:50
+msgid "Instant"
+msgstr "Άμεση"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:53
+msgid "Stage"
+msgstr "Σταδιοποίηση"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:57
+msgid "Copy user"
+msgstr "Αντιγραφή αναγνωριστικού χρήστη"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:75
+msgid "Auto-fill"
+msgstr "Αυτόματη συμπλήρωση"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:78
+msgid "Configuration"
+msgstr "Ρυθμίσεις"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:104
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
+msgid "Start"
+msgstr "Έναρξη"
+
+#: src/gui_frontend/achievement_manual_view/header.rs:109
+msgid "Changes apply instantly"
+msgstr "Οι αλλαγές εφαρμόζονται αμέσως"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:63
+msgid "Count"
+msgstr "Πλήθος"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:65
+msgid "Percent"
+msgstr "Ποσοστό"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:99
+msgid "minutes (0 = instant)"
+msgstr "λεπτά (0 = άμεσο)"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:108
+msgid "Even"
+msgstr "Ομοιόμορφα"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:112
+msgid "Random"
+msgstr "Τυχαία"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:132
+msgid "Target"
+msgstr "Στόχος"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:136
+msgid "Spread over"
+msgstr "Κατανομή σε"
+
+#: src/gui_frontend/achievement_manual_view/config_popover.rs:140
+msgid "Spacing"
+msgstr "Διαστήματα"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:238
+msgid "Choose a friend to copy timing from"
+msgstr "Επιλογή φίλου για αντιγραφή χρονισμού"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
+msgid "Advanced"
+msgstr "Για προχωρημένους"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:68
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:89
+msgid "minutes"
+msgstr "Λεπτά"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:103
+msgid "Max gap"
+msgstr "Μέγιστο διάκενο"
+
+#: src/gui_frontend/achievement_manual_view/copy_controls.rs:105
+msgid "First delay"
+msgstr "Αρχική καθυστέρηση"
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:105
+msgid "No friend loaded"
+msgstr "Δεν φορτώθηκε φίλος"
+
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:115
+msgid "{count} achievements over {time}"
+msgstr "{count} επιτεύγματα σε {time}"
+
+#: src/gui_frontend/friend_picker.rs:76
+msgid "Private"
+msgstr "Ιδιωτικό"
+
+#: src/gui_frontend/friend_picker.rs:98
+msgid "Copy timing from a friend"
+msgstr "Αντιγραφή χρονισμού από φίλο"
+
+#: src/gui_frontend/friend_picker.rs:202
+msgid "Use the pasted SteamID64"
+msgstr "Χρήση του επικολλημένου SteamID64"
+
+#: src/gui_frontend/friend_picker.rs:497
+msgid "This profile is private"
+msgstr "Αυτό το προφίλ είναι ιδιωτικό"
+
+#: src/gui_frontend/friend_picker.rs:499
+msgid "Couldn't load this user"
+msgstr "Αδυναμία φόρτωσης αυτού του χρήστη"
+
+#: src/gui_frontend/friend_picker.rs:511
+msgid "Search friends or paste a SteamID64"
+msgstr "Αναζήτηση φίλων ή επικόλληση SteamID64"
+
+#: src/gui_frontend/friend_picker.rs:598
+msgid "Clear selected user"
+msgstr "Εκκαθάριση επιλεγμένου χρήστη"
+
+#: src/gui_frontend/app_list_view/mod.rs:442
+msgid "SamRewritten could not connect to Steam. Is it running?"
+msgstr "Το SamRewritten δεν μπόρεσε να συνδεθεί στο Steam. Εκτελείται;"
+
+#: src/gui_frontend/app_list_view/mod.rs:447
+msgid "Try again"
+msgstr "Δοκιμάστε ξανά"
+
+#: src/gui_frontend/app_list_view/mod.rs:464
+#: src/gui_frontend/app_list_view/mod.rs:1769
+msgid "Name or AppId (Ctrl+K)"
+msgstr "Όνομα ή AppId (Ctrl+K)"
+
+#: src/gui_frontend/app_list_view/mod.rs:499
+msgid "Show or hide the sidebar"
+msgstr "Εμφάνιση ή απόκρυψη της πλευρικής γραμμής"
+
+#: src/gui_frontend/app_list_view/mod.rs:1764
+msgid "Achievement or stat..."
+msgstr "Επίτευγμα ή στατιστικό..."
+
+#: src/gui_frontend/app_list_view/mod.rs:1883
+#: src/gui_frontend/app_list_view/settings_bindings.rs:328
+msgid "Could not change the in-game setting"
+msgstr "Αδυναμία αλλαγής της ρύθμισης εντός του παιχνιδιού"
+
+#: src/gui_frontend/app_list_view/mod.rs:1885
+#: src/gui_frontend/app_list_view/settings_bindings.rs:329
+msgid "The change could not be applied. Restart SamRewritten and try again."
+msgstr ""
+"Η αλλαγή δεν ήταν δυνατόν να εφαρμοστεί. Επανεκκινήστε το SamRewritten και "
+"δοκιμάστε ξανά."
+
+#: src/gui_frontend/app_list_view/sidebar.rs:57
+msgid "Hide with no achievements"
+msgstr "Απόκρυψη χωρίς επιτεύγματα"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:63
+msgid "Hide at 100%"
+msgstr "Απόκρυψη στο 100%"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:69
+msgid "Hide at 0%"
+msgstr "Απόκρυψη στο 0%"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:75
+msgid "Hide never launched"
+msgstr "Απόκρυψη μη εκκινημένων"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:81
+msgid "Only currently idling"
+msgstr "Μόνο όσα βρίσκονται σε αδράνεια"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:87
+msgid "Hide hidden in Steam"
+msgstr "Απόκρυψη κρυμμένων στο Steam"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:93
+msgid "Show junk"
+msgstr "Εμφάνιση άχρηστων"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:107
+msgid "App ID"
+msgstr "App ID"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:112
+msgid "Name"
+msgstr "Όνομα"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:117
+msgid "Last played"
+msgstr "Τελευταία φορά"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:122
+msgid "Playtime"
+msgstr "Χρόνος παιχνιδιού"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:127
+msgid "Completion"
+msgstr "Ολοκλήρωση"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:132
+msgid "Achievements left"
+msgstr "Υπολειπόμενα επιτεύγματα"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:180
+msgid "Filters on a search term, which SamRewritten cannot reproduce exactly."
+msgstr ""
+"Φιλτράρισμα με βάση όρο αναζήτησης, τον οποίο το SamRewritten δεν μπορεί να "
+"αναπαραγάγει ακριβώς."
+
+#: src/gui_frontend/app_list_view/sidebar.rs:183
+msgid "Uses a Steam filter SamRewritten cannot reproduce exactly."
+msgstr ""
+"Χρησιμοποιεί φίλτρο του Steam που το SamRewritten δεν μπορεί να αναπαραγάγει "
+"ακριβώς."
+
+#: src/gui_frontend/app_list_view/sidebar.rs:186
+msgid ""
+"Needs information from Steam that could not be read. Refresh to try again."
+msgstr ""
+"Απαιτούνται πληροφορίες από το Steam που δεν ήταν δυνατό να αναγνωστούν. "
+"Ανανεώστε για να προσπαθήσετε ξανά."
+
+#: src/gui_frontend/app_list_view/sidebar.rs:189
+msgid ""
+"Needs your friends' games, which Steam can only tell us when it is online."
+msgstr ""
+"Απαιτεί τα παιχνίδια των φίλων σας, τα οποία το Steam μπορεί να εμφανίσει "
+"μόνο όταν είναι συνδεδεμένο στο διαδίκτυο."
+
+#: src/gui_frontend/app_list_view/sidebar.rs:198
+msgid "Favorites"
+msgstr "Αγαπημένα"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:225
+msgid "View profile"
+msgstr "Προβολή προφίλ"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:280
+#: src/gui_frontend/profile_view/mod.rs:484
+msgid "Steam user"
+msgstr "Χρήστης Steam"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:300
+msgid "Steam is offline. What needs its servers is turned off."
+msgstr ""
+"Το Steam είναι εκτός σύνδεσης. Όσα στοιχεία απαιτούν τους διακομιστές του "
+"έχουν απενεργοποιηθεί."
+
+#: src/gui_frontend/app_list_view/sidebar.rs:311
+msgid "Fetching completion…"
+msgstr "Ανάκτηση ολοκλήρωσης…"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:317
+msgid "Click to cancel"
+msgstr "Κάντε κλικ για ακύρωση"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:348
+msgid "Filters"
+msgstr "Φίλτρα"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:359
+msgid "Steam collection"
+msgstr "Συλλογή Steam"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:360
+#: src/gui_frontend/app_list_view/sidebar.rs:580
+msgid "All games"
+msgstr "Όλα τα παιχνίδια"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:442
+msgid "Sort by"
+msgstr "Ταξινόμηση κατά"
+
+#: src/gui_frontend/app_list_view/sidebar.rs:505
+msgid "Reset filters"
+msgstr "Επαναφορά φίλτρων"
+
+#: src/gui_frontend/profile_view/mod.rs:71
+msgid "Games in library"
+msgstr "Παιχνίδια στη βιβλιοθήκη"
+
+#: src/gui_frontend/profile_view/mod.rs:75
+msgid "Achievements unlocked"
+msgstr "Ξεκλειδωμένα επιτεύγματα"
+
+#: src/gui_frontend/profile_view/mod.rs:79
+msgid "Average completion"
+msgstr "Μέσος όρος ολοκλήρωσης"
+
+#: src/gui_frontend/profile_view/mod.rs:83
+msgid "Perfect games"
+msgstr "Τέλεια παιχνίδια"
+
+#: src/gui_frontend/profile_view/mod.rs:87
+msgid "Time played"
+msgstr "Xρόνος παιχνιδιού"
+
+#: src/gui_frontend/profile_view/mod.rs:184
+msgid "never played"
+msgstr "Δεν έχουν παιχτεί ποτέ"
+
+#: src/gui_frontend/profile_view/mod.rs:186
+msgid "{minutes} minute(s) played, ever"
+msgstr "{minutes} λεπτό(ά) παιχνιδιού, συνολικά"
+
+#: src/gui_frontend/profile_view/mod.rs:190
+msgid "nothing else was unlocked for this game outside this moment"
+msgstr ""
+"Δεν ξεκλειδώθηκε τίποτα άλλο για αυτό το παιχνίδι εκτός από αυτή τη στιγμή"
+
+#: src/gui_frontend/profile_view/mod.rs:193
+msgid "the rest of your unlocks in this game came at other times"
+msgstr ""
+"Τα υπόλοιπα επιτεύγματά σας σε αυτό το παιχνίδι ξεκλειδώθηκαν σε άλλες "
+"χρονικές στιγμές"
+
+#: src/gui_frontend/profile_view/mod.rs:196
+msgid "at the very start of this game's history, ordinary unlocks after it"
+msgstr ""
+"Στην αρχή της ιστορίας αυτού του παιχνιδιού, κανονικά ξεκλειδώματα στη "
+"συνέχεια"
+
+#: src/gui_frontend/profile_view/mod.rs:264
+#: src/gui_frontend/profile_view/mod.rs:288
+msgid "No unlocks yet."
+msgstr "Δεν υπάρχουν ακόμη ξεκλειδώματα."
+
+#: src/gui_frontend/profile_view/mod.rs:292
+msgid "{total} unlocked since {since}."
+msgstr "{total} ξεκλειδώθηκαν από τις {since}."
+
+#: src/gui_frontend/profile_view/mod.rs:296
+msgid "{year} in the last year, {total} since {since}."
+msgstr "{year} τον τελευταίο χρόνο, {total} από τις {since}."
+
+#: src/gui_frontend/profile_view/mod.rs:301
+msgid "{count} in {year}, {total} since {since}."
+msgstr "{count} το {year}, {total} από τις {since}."
+
+#: src/gui_frontend/profile_view/mod.rs:563
+msgid ""
+"Rescan for up-to-date numbers if you also use Steam on another computer."
+msgstr ""
+"Επανασάρωση για ενημερωμένους αριθμούς αν χρησιμοποιείτε το Steam και σε "
+"άλλο υπολογιστή."
+
+#: src/gui_frontend/profile_view/mod.rs:576
+#: src/gui_frontend/profile_view/mod.rs:905
+msgid "Read all my games"
+msgstr "Ανάγνωση όλων των παιχνιδιών μου"
+
+#: src/gui_frontend/profile_view/mod.rs:647
+msgid "Year to show"
+msgstr "Έτος προς εμφανιση"
+
+#: src/gui_frontend/profile_view/mod.rs:662
+msgid "Everything here looks like ordinary play."
+msgstr "Όλα εδώ φαίνονται σαν κανονικό παιχνίδι."
+
+#: src/gui_frontend/profile_view/mod.rs:706
+msgid "Unlock activity"
+msgstr "Δραστηριότητα ξεκλειδωμάτων"
+
+#: src/gui_frontend/profile_view/mod.rs:724
+msgid "Completion over time"
+msgstr "Πρόοδος ολοκλήρωσης στο χρόνο"
+
+#: src/gui_frontend/profile_view/mod.rs:730
+msgid "Irregular activity history"
+msgstr "Μη φυσιολογικό ιστορικό δραστηριότητας"
+
+#: src/gui_frontend/profile_view/mod.rs:733
+msgid ""
+"Anyone visiting your Steam profile sees when each achievement was unlocked. "
+"Listed here are the moments that do not look like ordinary play."
+msgstr ""
+"Όποιος επισκέπτεται το προφίλ σας στο Steam βλέπει πότε ξεκλειδώθηκε κάθε "
+"επίτευγμα. Εδώ παρατίθενται οι στιγμές που δεν φαίνονται σαν κανονικό "
+"παιχνίδι."
+
+#: src/gui_frontend/profile_view/mod.rs:880
+msgid "{hours} h"
+msgstr "{hours} ώρ"
+
+#: src/gui_frontend/profile_view/mod.rs:903
+msgid "Rescan now"
+msgstr "Επανασάρωση τώρα"
+
+#: src/gui_frontend/profile_view/mod.rs:919
+msgid ""
+"Reading your games' achievements ({measured}/{total}). The activity and the "
+"runs below fill in as it goes."
+msgstr ""
+"Ανάγνωση επιτευγμάτων των παιχνιδιών σας ({measured}/{total}). Η "
+"δραστηριότητα και οι εκτελέσεις παρακάτω συμπληρώνονται καθώς προχωρά η "
+"διαδικασία."
+
+#: src/gui_frontend/profile_view/mod.rs:923
+msgid ""
+"Only {measured} of your {total} games have been read from Steam, so the "
+"figures above cannot be totalled yet."
+msgstr ""
+"Μόνο {measured} από τα {total} παιχνίδια σας έχουν διαβαστεί από το Steam, "
+"οπότε τα παραπάνω στοιχεία δεν μπορούν να αθροιστούν ακόμα."
+
+#: src/gui_frontend/profile_view/mod.rs:963
+msgid "Waiting for Steam to say who is signed in."
+msgstr "Αναμονή από το Steam για επιβεβαίωση της τρέχουσας σύνδεσης."
+
+#: src/gui_frontend/profile_view/mod.rs:971
+msgid "Reading your unlock history…"
+msgstr "Ανάγνωση ιστορικού ξεκλειδωμάτων…"
+
+#: src/gui_frontend/profile_view/mod.rs:1027
+#: src/gui_frontend/profile_view/mod.rs:1032
+msgid "Your unlock history could not be read."
+msgstr "Δεν ήταν δυνατή η ανάγνωση του ιστορικού ξεκλειδωμάτων σας."
+
+#: src/gui_frontend/profile_view/mod.rs:1138
+msgid "No completion to plot yet."
+msgstr "Δεν υπάρχει ακόμη ολοκλήρωση προς σχεδίαση."
+
+#: src/gui_frontend/profile_view/mod.rs:1140
+msgid ""
+"Averaged over the games you have started, so it dips when you start a new "
+"one. Now at {percent}%."
+msgstr ""
+"Κατά μέσο όρο στα παιχνίδια που έχετε ξεκινήσει, οπότε πέφτει όταν ξεκινάτε "
+"ένα καινούργιο. Τώρα στο {percent}%."
+
+#: src/gui_frontend/profile_view/mod.rs:1149
+msgid ""
+"The activity below is missing {count} game(s). Restart Steam to get them "
+"back."
+msgstr ""
+"Η παρακάτω δραστηριότητα δεν περιλαμβάνει {count} παιχνίδι(-α). "
+"Επανεκκινήστε το Steam για να τα ανακτήσετε."
+
+#: src/gui_frontend/profile_view/mod.rs:1168
+msgid "Select these {games} games"
+msgstr "Επιλογή αυτών των {games} παιχνιδιών"
+
+#: src/gui_frontend/profile_view/mod.rs:1186
+msgid "{count} achievements across {games} games"
+msgstr "{count} επιτεύγματα σε {games} παιχνίδια"
+
+#: src/gui_frontend/profile_view/mod.rs:1189
+msgid "{when} — one game after another, in a single sitting"
+msgstr "{when} — το ένα παιχνίδι μετά το άλλο, σε μία μόνο συνεδρία"
+
+#: src/gui_frontend/profile_view/mod.rs:1196
+#: src/gui_frontend/profile_view/journal_section.rs:251
+#: src/gui_frontend/app_list_view/progress_actions.rs:377
+#: src/gui_frontend/app_list_view/progress_actions.rs:399
+#: src/gui_frontend/app_list_view/progress_actions.rs:488
+msgid "App {id}"
+msgstr "Εφαρμογή {id}"
+
+#: src/gui_frontend/profile_view/mod.rs:1204
+msgid "Open {app}"
+msgstr "Άνοιγμα {app}"
+
+#: src/gui_frontend/profile_view/mod.rs:1218
+msgid "{when}, all in the same second"
+msgstr "{when}, όλα στο ίδιο δευτερόλεπτο"
+
+#: src/gui_frontend/profile_view/mod.rs:1220
+msgid "{when}, inside {span} second(s)"
+msgstr "{when}, εντός {span} δευτερολέπτου(-ων)"
+
+#: src/gui_frontend/profile_view/mod.rs:1225
+msgid "{count} achievements in {app}"
+msgstr "{count} επιτεύγματα σε {app}"
+
+#: src/gui_frontend/profile_view/mod.rs:1228
+msgid "{timing} — {reading}"
+msgstr "{timing} — {reading}"
+
+#: src/gui_frontend/profile_view/mod.rs:1240
+msgid "… and {count} more that stand out less."
+msgstr "… και {count} ακόμη που ξεχωρίζουν λιγότερο."
+
+#: src/gui_frontend/profile_view/mod.rs:1256
+msgid "Last full scan on {date}."
+msgstr "Τελευταία πλήρης σάρωση στις {date}."
+
+#: src/gui_frontend/profile_view/mod.rs:1261
+msgid "Steam last refreshed these figures on {date}."
+msgstr "Το Steam ανανέωσε αυτά τα στοιχεία στις {date}."
+
+#: src/gui_frontend/profile_view/mod.rs:1264
+msgid "How old these figures are is unknown."
+msgstr "Η ηλικία αυτών των στοιχείων είναι άγνωστη."
+
+#: src/gui_frontend/profile_view/heatmap.rs:30
+msgid "Jan"
+msgstr "Ιαν"
+
+#: src/gui_frontend/profile_view/heatmap.rs:31
+msgid "Feb"
+msgstr "Φεβ"
+
+#: src/gui_frontend/profile_view/heatmap.rs:32
+msgid "Mar"
+msgstr "Μάρ"
+
+#: src/gui_frontend/profile_view/heatmap.rs:33
+msgid "Apr"
+msgstr "Απρ"
+
+#: src/gui_frontend/profile_view/heatmap.rs:34
+msgid "May"
+msgstr "Μάι"
+
+#: src/gui_frontend/profile_view/heatmap.rs:35
+msgid "Jun"
+msgstr "Ιούν"
+
+#: src/gui_frontend/profile_view/heatmap.rs:36
+msgid "Jul"
+msgstr "Ιούλ"
+
+#: src/gui_frontend/profile_view/heatmap.rs:37
+msgid "Aug"
+msgstr "Αύγ"
+
+#: src/gui_frontend/profile_view/heatmap.rs:38
+msgid "Sep"
+msgstr "Σεπ"
+
+#: src/gui_frontend/profile_view/heatmap.rs:39
+msgid "Oct"
+msgstr "Οκτ"
+
+#: src/gui_frontend/profile_view/heatmap.rs:40
+msgid "Nov"
+msgstr "Νοε"
+
+#: src/gui_frontend/profile_view/heatmap.rs:41
+msgid "Dec"
+msgstr "Δεκ"
+
+#: src/gui_frontend/profile_view/heatmap.rs:397
+msgid "No unlocks on {date}"
+msgstr "Καμία ξεκλείδωση στις {date}"
+
+#: src/gui_frontend/profile_view/heatmap.rs:398
+msgid "{count} unlock(s) in {game} on {date}"
+msgstr "{count} ξεκλείδωση(-εις) στο {game} στις {date}"
+
+#: src/gui_frontend/profile_view/heatmap.rs:403
+msgid "{count} unlock(s) across {games} games on {date}"
+msgstr "{count} ξεκλείδωση(-εις) σε {games} παιχνίδια στις {date}"
+
+#: src/gui_frontend/profile_view/heatmap.rs:408
+msgid "{count} unlock(s) on {date}"
+msgstr "{count} ξεκλείδωση(-εις) στις {date}"
+
+#: src/gui_frontend/profile_view/completion_graph.rs:287
+#, no-c-format
+msgid "{percent}% average on {date}"
+msgstr "Μέσος όρος {percent}% στις {date}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:71
+msgid "What SamRewritten changed"
+msgstr "Τι άλλαξε στο SamRewritten"
+
+#: src/gui_frontend/profile_view/journal_section.rs:74
+msgid "Keep a history of what SamRewritten changes"
+msgstr "Ιστορικό αλλαγών του SamRewritten"
+
+#: src/gui_frontend/profile_view/journal_section.rs:82
+msgid "Delete this history"
+msgstr "Το ιστορικό αλλαγών διαγράφηκε"
+
+#: src/gui_frontend/profile_view/journal_section.rs:90
+msgid "More"
+msgstr "Περισσότερα"
+
+#: src/gui_frontend/profile_view/journal_section.rs:109
+msgid "Show more"
+msgstr "Εμφάνιση περισότερων"
+
+#: src/gui_frontend/profile_view/journal_section.rs:268
+msgid ""
+"Nothing recorded yet. From now on, every change made here lands in this list."
+msgstr ""
+"Δεν έχει καταγραφεί τίποτα ακόμα. Από τώρα και στο εξής, κάθε αλλαγή που "
+"γίνεται εδώ προστίθεται σε αυτή τη λίστα."
+
+#: src/gui_frontend/profile_view/journal_section.rs:271
+msgid ""
+"Off. Switch it on and SamRewritten will keep a list of the changes it makes, "
+"so you can undo them."
+msgstr ""
+"Ανενεργό. Ενεργοποιήστε το και το SamRewritten θα διατηρεί μια λίστα με τις "
+"αλλαγές που κάνει, ώστε να μπορείτε να τις αναιρέσετε."
+
+#: src/gui_frontend/profile_view/journal_section.rs:297
+msgid "{count} older change(s) not shown"
+msgstr "{count} παλαιότερη(-ες) αλλαγή(-ές) δεν εμφανίζεται(-ονται)"
+
+#: src/gui_frontend/profile_view/journal_section.rs:389
+#: src/gui_frontend/profile_view/journal_section.rs:483
+msgid "Undone"
+msgstr "Αναιρέθηκε"
+
+#: src/gui_frontend/profile_view/journal_section.rs:400
+msgid "and {count} more"
+msgstr "και {count} ακόμα"
+
+#: src/gui_frontend/profile_view/journal_section.rs:419
+#: src/gui_frontend/profile_view/journal_section.rs:593
+msgid "Undo"
+msgstr "Αναίρεση"
+
+#: src/gui_frontend/profile_view/journal_section.rs:433
+msgid "{count} games"
+msgstr "{count} παιχνίδια"
+
+#: src/gui_frontend/profile_view/journal_section.rs:451
+msgid "Unlocked {count} achievement(s) in {app}"
+msgstr "Ξεκλειδωμένα {count} επίτευγμα(-τα) στο {app}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:453
+msgid "Locked {count} achievement(s) in {app}"
+msgstr "Κλειδωμένα {count} επίτευγμα(-τα) στο {app}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:455
+msgid "Changed {count} achievement(s) in {app}"
+msgstr "Αλλαγμένα {count} επιτεύγματα στο {app}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:463
+msgid "Changed {count} stat(s) in {app}"
+msgstr "Αλλάχθηκαν {count} στατιστική/ες στο {app}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:464
+msgid "Reset {app}"
+msgstr "Επαναφορά {app}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:465
+msgid "Unlocked everything in {app}"
+msgstr "Αποκλειδώθηκε όλα στο {app}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:466
+msgid "Wrote a file's progress into {app}"
+msgstr "Εγράφη η πρόοδος ενός αρχείου στο {app}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:467
+msgid "Changed {count} thing(s) in {app}"
+msgstr "Αλλάχθηκαν {count} αντικείμενο(-α) στο {app}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:480
+msgid "an undo"
+msgstr "μια αναίρεση"
+
+#: src/gui_frontend/profile_view/journal_section.rs:485
+msgid "partly undone"
+msgstr "μερικά ανακλημένα"
+
+#: src/gui_frontend/profile_view/journal_section.rs:487
+msgid "cannot be undone from here"
+msgstr "δεν μπορεί να ανακληθεί από εδώ"
+
+#: src/gui_frontend/profile_view/journal_section.rs:489
+msgid "another Steam account"
+msgstr "ένας άλλος λογαριασμός Steam"
+
+#: src/gui_frontend/profile_view/journal_section.rs:498
+msgid "{name} — unlocked"
+msgstr "{name} — αποκαλειδωμένο"
+
+#: src/gui_frontend/profile_view/journal_section.rs:501
+msgid "{name} — locked"
+msgstr "{name} — κλειδωμένο"
+
+#: src/gui_frontend/profile_view/journal_section.rs:504
+#: src/gui_frontend/profile_view/journal_section.rs:509
+msgid "{name} — was {value}"
+msgstr "{name} — ήταν {value}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:513
+#: src/gui_frontend/profile_view/journal_section.rs:517
+msgid "{name} — {before} to {after}"
+msgstr "{name} — από {before} σε {after}"
+
+#: src/gui_frontend/profile_view/journal_section.rs:536
+msgid "Delete this history?"
+msgstr "Διαγραφή αυτού του ιστορικού;"
+
+#: src/gui_frontend/profile_view/journal_section.rs:537
+msgid ""
+"The list is emptied for good. Nothing is put back. Whatever was changed in "
+"your games stays changed."
+msgstr ""
+"Η λίστα καθαρίζεται οριστικά. Τίποτα δεν επανέρχεται. Ό,τι άλλαξε στα "
+"παιχνίδια σου μένει αλλαγμένο."
+
+#: src/gui_frontend/profile_view/journal_section.rs:538
+msgid "Delete"
+msgstr "Διαγραφή"
+
+#: src/gui_frontend/profile_view/journal_section.rs:589
+msgid "Undo this change?"
+msgstr "Αναίρεση αυτής της αλλαγής;"
+
+#: src/gui_frontend/profile_view/journal_section.rs:590
+msgid "{count} change(s) in {app} will be put back the way they were."
+msgstr "{count} αλλαγή/ες στο {app} θα επανέλθουν όπως ήταν."
+
+#: src/gui_frontend/profile_view/journal_section.rs:757
+msgid "{count} change(s) were put back. These could not:"
+msgstr "{count} αλλαγή/ες επανήλθαν. Αυτές δεν μπορούσαν:"
+
+#: src/gui_frontend/profile_view/journal_section.rs:760
+msgid "An unexpected failure occurred while putting this back:"
+msgstr "Προέκυψε απρόσμενη αποτυχία κατά την επαναφορά:"
+
+#: src/gui_frontend/profile_view/journal_section.rs:764
+msgid "Undo incomplete"
+msgstr "Ανεπίτυχη αναίρεση"
+
+#: src/gui_frontend/app_list_view/settings_bindings.rs:159
+msgid "The new language will be applied the next time you start SamRewritten."
+msgstr ""
+"H νέα γλώσσα θα εφαρμοστεί την επόμενη φορά που θα ξεκινήσεις το "
+"SamRewritten."
+
+#: src/gui_frontend/app_list_view/settings_bindings.rs:169
+msgid "Language changed"
+msgstr "Η γλώσσα άλλαξε"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:150
+#: src/gui_frontend/app_list_view/bulk_actions.rs:174
+msgid "Unlocking {done} / {total} app(s)…"
+msgstr "Αποκλειδώνονται {done} / {total} εφαρμογή/ες…"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:207
+msgid "every achievement unlocked"
+msgstr "κάθε επίτευγμα αποκαλειδωμένο"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:240
+msgid "Unlock incomplete"
+msgstr "Ανεπιτυχής αποκλειδωμός"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:241
+msgid "Failed to unlock achievements for the following apps:"
+msgstr "Ανεπιτυχής αποκλειδωμός επιτυγμάτων για τις παρακάτω εφαρμογές:"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:323
+#: src/gui_frontend/app_list_view/bulk_actions.rs:350
+msgid "Locking {done} / {total} app(s)…"
+msgstr "Kλειδώνονται {done} / {total} εφαρμογή/ες…"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:375
+msgid "every achievement and stat reset"
+msgstr "κάθε επίτευγμα και στατιστική επαναφορά"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:414
+msgid "Reset incomplete"
+msgstr "Ανεπιτυχής επαναφορά"
+
+#: src/gui_frontend/app_list_view/bulk_actions.rs:415
+msgid "The following apps were left as they were:"
+msgstr "Οι παρακάτω εφαρμογές παρέμειναν όπως ήταν:"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:158
+#: src/gui_frontend/app_list_view/progress_actions.rs:181
+msgid "Exporting {done} / {total} app(s)…"
+msgstr "Eξαγωγή {done} / {total} εφαρμογή/ες…"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:247
+msgid "Export complete"
+msgstr "Eξαγωγή ολοκληρώθηκε"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:248
+msgid "Exported {count} app(s) to {path}"
+msgstr "Eξάχθηκαν {count} εφαρμογή/ες στο {path}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:258
+msgid "Export partially complete"
+msgstr "Eξαγωγή μερικώς ολοκληρώθηκε"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:259
+msgid ""
+"Wrote {path}\n"
+"\n"
+"Failed to read data for these apps:"
+msgstr ""
+"Eγράφη το {path}\n"
+"\n"
+"Aπετυχή ανάγνωση δεδομένων για αυτές τις εφαρμογές:"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:266
+msgid "Export failed"
+msgstr "Eξαγωγή απέτυχε"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:302
+msgid "Import progress"
+msgstr "Εισαγωγή προόδου"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:338
+#: src/gui_frontend/app_list_view/progress_actions.rs:351
+#: src/gui_frontend/app_list_view/progress_actions.rs:361
+msgid "Import failed"
+msgstr "Εισαγωγή απέτυχε"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:339
+msgid "Could not read file: {error}"
+msgstr "Δεν ήταν δυνατή η ανάγνωση του αρχείου: {error}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:352
+msgid "Could not parse file: {error}"
+msgstr "Δεν ήταν δυνατή η ανάλυση του αρχείου: {error}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:362
+msgid "Unsupported format version: {found} (this build expects {expected})"
+msgstr ""
+"Ανυποστήρικτη έκδοση μορφής: {found} (αυτή η έκδοση περιμένει {expected})"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:388
+#: src/gui_frontend/app_list_view/progress_actions.rs:445
+msgid "Nothing to import"
+msgstr "Κανένα για εισαγωγή"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:389
+msgid "None of the apps in the file are in your current library."
+msgstr ""
+"Καμία από τις εφαρμογές στο αρχείο δεν βρίσκεται στην τρέχουσα βιβλιοθήκη "
+"σου."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:409
+msgid ""
+"{list}\n"
+"... and {count} more"
+msgstr ""
+"{list}\n"
+"... και {count} ακόμα"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:418
+msgid "Some apps contain protected fields."
+msgstr "Κάποιες εφαρμογές περιέχουν προστατευμένα πεδία."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:420
+msgid ""
+"The following apps contain fields that may not be importable. Proceed at "
+"your own risk.\n"
+"\n"
+"{list}"
+msgstr ""
+"Οι παρακάτω εφαρμογές περιέχουν πεδία που ενδέχεται να μην είναι εισαγόμενα. "
+"Συνέχισε με δική σου ευθύνη.\n"
+"\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:425
+msgid "Skip these apps"
+msgstr "Παράλειψη αυτών των εφαρμογών"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:426
+msgid "Proceed anyway"
+msgstr "Συνέχισε ούτως ή άλλως"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:446
+msgid "All remaining apps were skipped."
+msgstr "Όλες οι υπόλοιπες εφαρμογές παραλείφθηκαν."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:474
+#: src/gui_frontend/app_list_view/progress_actions.rs:507
+msgid "Importing {done} / {total} app(s)…"
+msgstr "Eισαγωγή {done} / {total} εφαρμογή/ες…"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:552
+msgid "achievements and stats written from a file"
+msgstr "επιτεύγματα και στατιστικές εγγεγραμμένες από αρχείο"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:607
+msgid "Applied {achievements} achievement(s) and {stats} stat(s)."
+msgstr "Εφαρμόστηκαν {achievements} επίτευγμα/α και {stats} στατιστική/ες."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:612
+msgid ""
+"\n"
+"Skipped {count} protected field(s)."
+msgstr ""
+"\n"
+"Παραλείφθηκαν {count} προστατευμένο/α πεδίο/α."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:618
+msgid ""
+"\n"
+"Skipped {count} unwriteable stat(s) (out of range or increment-only)."
+msgstr ""
+"\n"
+"Παραλείφθηκαν {count} μη γραφίσιμη/ες στατιστική/ες (εκτός εμβέλειας ή μόνο "
+"αύξηση)."
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:626
+msgid ""
+"Would succeed if you reset stats first:\n"
+"{list}"
+msgstr ""
+"Θα ήταν επιτυχές αν πρώτα επαναφοράς τις στατιστικές:\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:632
+msgid ""
+"Skipped (not in your library):\n"
+"{list}"
+msgstr ""
+"Παραλείφθηκαν (δεν είναι στη βιβλιοθήκη σου):\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:637
+msgid ""
+"Errors:\n"
+"{list}"
+msgstr ""
+"Σφάλματα:\n"
+"{list}"
+
+#: src/gui_frontend/app_list_view/progress_actions.rs:642
+#: src/gui_frontend/app_list_view/progress_actions.rs:644
+msgid "Import complete"
+msgstr "Εισαγωγή ολοκληρώθηκε"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:122
+msgid "No apps found on your account. Search for App Id to get started."
+msgstr ""
+"Δεν βρέθηκαν εφαρμογές στον λογαριασμό σου. Αναζήτηση App Id για να "
+"ξεκινήσεις."
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:139
+msgid "No results. Check for spelling mistakes or try typing an App Id."
+msgstr ""
+"Κανένα αποτέλεσμα. Ελέγξε για λάθη ορθογραφίας ή δοκίμασε να πληκτρολογήσεις "
+"ένα App Id."
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:149
+msgid ""
+"Failed to load library. Check your internet connection. Search for App Id to "
+"get started."
+msgstr ""
+"Απέτυχε η φόρτωση της βιβλιοθήκης. Ελέγξε τη σύνδεση στο διαδίκτυο. "
+"Αναζήτηση App Id για να ξεκινήσεις."
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:435
+msgid "Reset Everything"
+msgstr "Επαναφορά Όλων"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:436
+msgid "This will reset all achievements and stats for this app. Are you sure?"
+msgstr ""
+"Αυτή θα επαναφέρει όλα τα επιτεύγματα και τις στατιστικές για αυτή την "
+"εφαρμογή. Είσαι σίγουρος;"
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:437
+msgid "Sure, reset"
+msgstr "Σίγουρα, επαναφορά"
+
+#: src/gui_frontend/widgets/steam_app_card.rs:112
+msgid "Idle"
+msgstr "Αδράνεια"
+
+#: src/gui_frontend/widgets/steam_app_card.rs:136
+msgid "Manage"
+msgstr "Διαχείριση"
+
+#: src/gui_frontend/widgets/steam_app_card.rs:155
+msgid "Manage this app in a new window"
+msgstr "Διαχείριση αυτής της εφαρμογής σε νέο παράθυρο"
+
+#: src/gui_frontend/widgets/achievement_row.rs:265
+#: src/gui_frontend/widgets/achievement_row.rs:270
+msgid "This achievement is protected."
+msgstr "Αυτό το επίτευγμα είναι προστατευμένο."
+
+#: src/gui_frontend/widgets/achievement_row.rs:285
+msgid "Click to stage this achievement; click again to remove."
+msgstr "Κλικ για να σταθεί αυτό το επίτευγμα, κλικ ξανά για αφαίρεση."
+
+#: src/gui_frontend/widgets/achievement_row.rs:295
+msgid "Already unlocked."
+msgstr "Ήδη αποκαλειδωμένο."
