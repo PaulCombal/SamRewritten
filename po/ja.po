@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-30 23:21+0200\n"
-"PO-Revision-Date: 2026-08-23 00:35+0900\n"
+"PO-Revision-Date: 2026-09-08 07:00+0900\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -42,7 +42,7 @@ msgstr "進行状況をインポート..."
 
 #: src/gui_frontend/ui_components.rs:216
 msgid "Appear in-game while managing"
-msgstr ""
+msgstr "管理中にゲーム内で表示する"
 
 #: src/gui_frontend/ui_components.rs:222
 msgid "Refresh app list"
@@ -50,7 +50,7 @@ msgstr "アプリ一覧を更新"
 
 #: src/gui_frontend/ui_components.rs:226
 msgid "Refresh achievement counts"
-msgstr ""
+msgstr "実績のカウントを更新する"
 
 #: src/gui_frontend/ui_components.rs:229 src/gui_frontend/ui_components.rs:413
 msgid "About"
@@ -143,9 +143,9 @@ msgstr "<b>すでにSteamをインストールしていますか？</b>"
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
-"to it using environment variables. Please check the <a href=\"https://github."
-"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
-"your issue."
+"to it using environment variables. Please check the <a href=\"https://"
+"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
+"report your issue."
 msgstr ""
 "Steamをカスタムの場所にインストールしている場合は、環境変数でSamRewrittenに場"
 "所を指定できます。手順や問題の報告については<a href=\"https://github.com/"
@@ -462,13 +462,14 @@ msgstr "実績または統計…"
 #: src/gui_frontend/app_list_view/mod.rs:1719
 #: src/gui_frontend/app_list_view/settings_bindings.rs:265
 msgid "Could not change the in-game setting"
-msgstr ""
+msgstr "ゲーム内の設定を変更できませんでした"
 
 #: src/gui_frontend/app_list_view/mod.rs:1721
 #: src/gui_frontend/app_list_view/settings_bindings.rs:266
-#, fuzzy
 msgid "The change could not be applied. Restart SamRewritten and try again."
-msgstr "新しい言語はSamRewrittenを再起動すると適用されます。"
+msgstr ""
+"変更を適用できませんでした。SamRewrittenを再起動して、もう一度お試しくださ"
+"い。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:47
 msgid "Hide with no achievements"
@@ -608,6 +609,8 @@ msgstr "{year}年に{count}件、{since}以降で合計{total}件。"
 msgid ""
 "Rescan for up-to-date numbers if you also use Steam on another computer."
 msgstr ""
+"別のパソコンでもSteamを利用している場合は、最新の数値を取得するために再スキャ"
+"ンを行ってください。"
 
 #: src/gui_frontend/profile_view/mod.rs:576
 #: src/gui_frontend/profile_view/mod.rs:905
@@ -648,7 +651,7 @@ msgstr "{hours}時間"
 
 #: src/gui_frontend/profile_view/mod.rs:903
 msgid "Rescan now"
-msgstr ""
+msgstr "今すぐ再スキャン"
 
 #: src/gui_frontend/profile_view/mod.rs:919
 msgid ""
@@ -745,15 +748,15 @@ msgstr "…その他{count}件は目立ったものではありません。"
 
 #: src/gui_frontend/profile_view/mod.rs:1256
 msgid "Last full scan on {date}."
-msgstr ""
+msgstr "最後のフルスキャンは{date}に行われました。"
 
 #: src/gui_frontend/profile_view/mod.rs:1261
 msgid "Steam last refreshed these figures on {date}."
-msgstr ""
+msgstr "Steamがこれらの数値を最後に更新したのは{date}です。"
 
 #: src/gui_frontend/profile_view/mod.rs:1264
 msgid "How old these figures are is unknown."
-msgstr ""
+msgstr "これらの像がどれほど古いものかは不明である。"
 
 #: src/gui_frontend/profile_view/heatmap.rs:30
 msgid "Jan"
