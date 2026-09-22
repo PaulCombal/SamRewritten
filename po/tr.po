@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-30 23:21+0200\n"
-"PO-Revision-Date: 2026-08-26 11:12+0000\n"
+"PO-Revision-Date: 2026-09-23 06:51+0000\n"
 "Last-Translator: Deniz Çolak <28dnzclk@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/samrewritten/"
 "samrewritten/tr/>\n"
@@ -50,8 +50,9 @@ msgid "Import progress..."
 msgstr "İlerlemeyi içe aktar..."
 
 #: src/gui_frontend/ui_components.rs:216
+#, fuzzy
 msgid "Appear in-game while managing"
-msgstr ""
+msgstr "Oyunun içinde görünürken"
 
 #: src/gui_frontend/ui_components.rs:222
 msgid "Refresh app list"
@@ -167,11 +168,11 @@ msgstr "Uyumlu bir Steam sürümü bulunamadı"
 
 #: src/gui_frontend/dialogs.rs:331
 msgid "    (Steam is running here)"
-msgstr ""
+msgstr "    (Burada Steam çalışıyor)"
 
 #: src/gui_frontend/dialogs.rs:333
 msgid "    (Steam not running here)"
-msgstr ""
+msgstr "    (Burada Steam çalışmıyor)"
 
 #: src/gui_frontend/dialogs.rs:356
 msgid ""
@@ -284,7 +285,7 @@ msgstr "Geliştirici:"
 
 #: src/gui_frontend/app_view.rs:141
 msgid "Metacritic:"
-msgstr ""
+msgstr "Metacritic:"
 
 #: src/gui_frontend/app_view.rs:155
 msgid "Failed to load app."
@@ -473,12 +474,13 @@ msgstr "Başarım veya istatistik..."
 #: src/gui_frontend/app_list_view/mod.rs:1719
 #: src/gui_frontend/app_list_view/settings_bindings.rs:265
 msgid "Could not change the in-game setting"
-msgstr ""
+msgstr "Oyun içindeki ayarlar değiştirilemedi"
 
 #: src/gui_frontend/app_list_view/mod.rs:1721
 #: src/gui_frontend/app_list_view/settings_bindings.rs:266
 msgid "The change could not be applied. Restart SamRewritten and try again."
 msgstr ""
+"Değişiklik uygulanamadı. SamRewritten'ı yeniden başlatıp tekrar deneyin."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:47
 msgid "Hide with no achievements"
@@ -731,128 +733,130 @@ msgstr "{when} — tek oturuşta, iki oyun peş peşe"
 #: src/gui_frontend/app_list_view/progress_actions.rs:399
 #: src/gui_frontend/app_list_view/progress_actions.rs:488
 msgid "App {id}"
-msgstr ""
+msgstr "Uygulama {id}"
 
 #: src/gui_frontend/profile_view/mod.rs:1204
 msgid "Open {app}"
-msgstr ""
+msgstr "Aç {app}"
 
 #: src/gui_frontend/profile_view/mod.rs:1218
+#, fuzzy
 msgid "{when}, all in the same second"
-msgstr ""
+msgstr "{when}, hepsi aynı saniyede"
 
 #: src/gui_frontend/profile_view/mod.rs:1220
 msgid "{when}, inside {span} second(s)"
-msgstr ""
+msgstr "{when}, {span} saniye içinde"
 
 #: src/gui_frontend/profile_view/mod.rs:1225
 msgid "{count} achievements in {app}"
-msgstr ""
+msgstr "{app} içindeki {count} başarı"
 
 #: src/gui_frontend/profile_view/mod.rs:1228
 msgid "{timing} — {reading}"
-msgstr ""
+msgstr "{timing} — {reading}"
 
 #: src/gui_frontend/profile_view/mod.rs:1240
+#, fuzzy
 msgid "… and {count} more that stand out less."
-msgstr ""
+msgstr "… ve daha az dikkat çeken {count} tane daha."
 
 #: src/gui_frontend/profile_view/mod.rs:1256
 msgid "Last full scan on {date}."
-msgstr ""
+msgstr "Son tam tarama {date}."
 
 #: src/gui_frontend/profile_view/mod.rs:1261
 msgid "Steam last refreshed these figures on {date}."
-msgstr ""
+msgstr "Steam, bu verileri son olarak {date} tarihinde yeniledi."
 
 #: src/gui_frontend/profile_view/mod.rs:1264
 msgid "How old these figures are is unknown."
-msgstr ""
+msgstr "Bu verilerin ne kadar eski olduğu bilinmiyor."
 
 #: src/gui_frontend/profile_view/heatmap.rs:30
 msgid "Jan"
-msgstr ""
+msgstr "Oca"
 
 #: src/gui_frontend/profile_view/heatmap.rs:31
 msgid "Feb"
-msgstr ""
+msgstr "Şub"
 
 #: src/gui_frontend/profile_view/heatmap.rs:32
 msgid "Mar"
-msgstr ""
+msgstr "Mar"
 
 #: src/gui_frontend/profile_view/heatmap.rs:33
 msgid "Apr"
-msgstr ""
+msgstr "Nis"
 
 #: src/gui_frontend/profile_view/heatmap.rs:34
 msgid "May"
-msgstr ""
+msgstr "May"
 
 #: src/gui_frontend/profile_view/heatmap.rs:35
 msgid "Jun"
-msgstr ""
+msgstr "Haz"
 
 #: src/gui_frontend/profile_view/heatmap.rs:36
 msgid "Jul"
-msgstr ""
+msgstr "Tem"
 
 #: src/gui_frontend/profile_view/heatmap.rs:37
 msgid "Aug"
-msgstr ""
+msgstr "Ağu"
 
 #: src/gui_frontend/profile_view/heatmap.rs:38
 msgid "Sep"
-msgstr ""
+msgstr "Eyl"
 
 #: src/gui_frontend/profile_view/heatmap.rs:39
 msgid "Oct"
-msgstr ""
+msgstr "Eki"
 
 #: src/gui_frontend/profile_view/heatmap.rs:40
 msgid "Nov"
-msgstr ""
+msgstr "Kas"
 
 #: src/gui_frontend/profile_view/heatmap.rs:41
 msgid "Dec"
-msgstr ""
+msgstr "Ara"
 
 #: src/gui_frontend/profile_view/heatmap.rs:397
 msgid "No unlocks on {date}"
-msgstr ""
+msgstr "{date} tarihinde kilit açılmadı"
 
 #: src/gui_frontend/profile_view/heatmap.rs:398
 msgid "{count} unlock(s) in {game} on {date}"
-msgstr ""
+msgstr "date} tarihinde {game} oyununda {count} kilit açıldı"
 
 #: src/gui_frontend/profile_view/heatmap.rs:403
 msgid "{count} unlock(s) across {games} games on {date}"
-msgstr ""
+msgstr "{date} tarihinde {games} oyunlarında {count} kilit açıldı"
 
 #: src/gui_frontend/profile_view/heatmap.rs:408
 msgid "{count} unlock(s) on {date}"
-msgstr ""
+msgstr "{date} tarihinde {count} kilit açıldı"
 
 #: src/gui_frontend/profile_view/completion_graph.rs:287
 #, no-c-format
 msgid "{percent}% average on {date}"
-msgstr ""
+msgstr "{date} tarihinde ortalama %{percent}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:71
 msgid "What SamRewritten changed"
-msgstr ""
+msgstr "SamRewritten'ın Değiştirdikleri"
 
 #: src/gui_frontend/profile_view/journal_section.rs:74
 msgid "Keep a history of what SamRewritten changes"
-msgstr ""
+msgstr "SamRewritten'ın yaptığı değişikliklerin geçmişini tut"
 
 #: src/gui_frontend/profile_view/journal_section.rs:82
 msgid "Delete this history"
-msgstr ""
+msgstr "Bu geçmişi sil"
 
 #: src/gui_frontend/profile_view/journal_section.rs:90
 msgid "More"
-msgstr ""
+msgstr "Daha fazla"
 
 #: src/gui_frontend/profile_view/journal_section.rs:109
 msgid "Show more"
