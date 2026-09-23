@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-30 23:21+0200\n"
-"PO-Revision-Date: 2026-09-23 06:51+0000\n"
+"PO-Revision-Date: 2026-09-24 08:51+0000\n"
 "Last-Translator: Deniz Çolak <28dnzclk@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/samrewritten/"
 "samrewritten/tr/>\n"
@@ -50,9 +50,8 @@ msgid "Import progress..."
 msgstr "İlerlemeyi içe aktar..."
 
 #: src/gui_frontend/ui_components.rs:216
-#, fuzzy
 msgid "Appear in-game while managing"
-msgstr "Oyunun içinde görünürken"
+msgstr "Oyunun içinde görünürken düzenle"
 
 #: src/gui_frontend/ui_components.rs:222
 msgid "Refresh app list"
@@ -860,12 +859,14 @@ msgstr "Daha fazla"
 
 #: src/gui_frontend/profile_view/journal_section.rs:109
 msgid "Show more"
-msgstr ""
+msgstr "Daha fazla göster"
 
 #: src/gui_frontend/profile_view/journal_section.rs:268
 msgid ""
 "Nothing recorded yet. From now on, every change made here lands in this list."
 msgstr ""
+"Şuanda hiçbir şey kayıt edilmedi. Burada yapılan bütün değişimler bu listeye "
+"kaydedilecek."
 
 #: src/gui_frontend/profile_view/journal_section.rs:271
 msgid ""
