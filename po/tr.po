@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-30 23:21+0200\n"
-"PO-Revision-Date: 2026-09-24 08:51+0000\n"
+"PO-Revision-Date: 2026-09-29 09:51+0000\n"
 "Last-Translator: Deniz Çolak <28dnzclk@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/samrewritten/"
 "samrewritten/tr/>\n"
@@ -739,7 +739,6 @@ msgid "Open {app}"
 msgstr "Aç {app}"
 
 #: src/gui_frontend/profile_view/mod.rs:1218
-#, fuzzy
 msgid "{when}, all in the same second"
 msgstr "{when}, hepsi aynı saniyede"
 
@@ -756,7 +755,6 @@ msgid "{timing} — {reading}"
 msgstr "{timing} — {reading}"
 
 #: src/gui_frontend/profile_view/mod.rs:1240
-#, fuzzy
 msgid "… and {count} more that stand out less."
 msgstr "… ve daha az dikkat çeken {count} tane daha."
 
@@ -873,10 +871,12 @@ msgid ""
 "Off. Switch it on and SamRewritten will keep a list of the changes it makes, "
 "so you can undo them."
 msgstr ""
+"Kapalı. Açık konuma getirin; SamRewritten, yaptığı değişikliklerin bir "
+"listesini tutarak bunları geri almanızı sağlar."
 
 #: src/gui_frontend/profile_view/journal_section.rs:297
 msgid "{count} older change(s) not shown"
-msgstr ""
+msgstr "Gösterilmeyen {count} eski değişiklik var"
 
 #: src/gui_frontend/profile_view/journal_section.rs:389
 #: src/gui_frontend/profile_view/journal_section.rs:483
@@ -885,86 +885,87 @@ msgstr ""
 
 #: src/gui_frontend/profile_view/journal_section.rs:400
 msgid "and {count} more"
-msgstr ""
+msgstr "ve {count} tane daha"
 
 #: src/gui_frontend/profile_view/journal_section.rs:419
 #: src/gui_frontend/profile_view/journal_section.rs:593
 msgid "Undo"
-msgstr ""
+msgstr "Geri al"
 
 #: src/gui_frontend/profile_view/journal_section.rs:433
 msgid "{count} games"
-msgstr ""
+msgstr "{count} oyun"
 
 #: src/gui_frontend/profile_view/journal_section.rs:451
 msgid "Unlocked {count} achievement(s) in {app}"
-msgstr ""
+msgstr "{app} için {count} başarım açıldı"
 
 #: src/gui_frontend/profile_view/journal_section.rs:453
 msgid "Locked {count} achievement(s) in {app}"
-msgstr ""
+msgstr "{app} için {count} başarım kilitlendi"
 
 #: src/gui_frontend/profile_view/journal_section.rs:455
 msgid "Changed {count} achievement(s) in {app}"
-msgstr ""
+msgstr "{app} için {count} başarım değiştirildi"
 
 #: src/gui_frontend/profile_view/journal_section.rs:463
 msgid "Changed {count} stat(s) in {app}"
-msgstr ""
+msgstr "{app} için {count} istatistik değiştirildi"
 
 #: src/gui_frontend/profile_view/journal_section.rs:464
 msgid "Reset {app}"
-msgstr ""
+msgstr "{app} uygulamasını sıfırla"
 
 #: src/gui_frontend/profile_view/journal_section.rs:465
 msgid "Unlocked everything in {app}"
-msgstr ""
+msgstr "{app} uygulamasındaki her şeyin kilidi açıldı"
 
 #: src/gui_frontend/profile_view/journal_section.rs:466
 msgid "Wrote a file's progress into {app}"
-msgstr ""
+msgstr "{app} uygulamasına bir dosyanın ilerleme durumu yazıldı"
 
 #: src/gui_frontend/profile_view/journal_section.rs:467
 msgid "Changed {count} thing(s) in {app}"
-msgstr ""
+msgstr "{app} uygulamasında {count} öğe değiştirildi"
 
 #: src/gui_frontend/profile_view/journal_section.rs:480
 msgid "an undo"
-msgstr ""
+msgstr "Geri alma"
 
 #: src/gui_frontend/profile_view/journal_section.rs:485
 msgid "partly undone"
-msgstr ""
+msgstr "Kısmen geri alındı"
 
 #: src/gui_frontend/profile_view/journal_section.rs:487
 msgid "cannot be undone from here"
-msgstr ""
+msgstr "Buradan geri alınamaz"
 
 #: src/gui_frontend/profile_view/journal_section.rs:489
 msgid "another Steam account"
-msgstr ""
+msgstr "başka Steam hesabı"
 
 #: src/gui_frontend/profile_view/journal_section.rs:498
 msgid "{name} — unlocked"
-msgstr ""
+msgstr "{name} — açıldı"
 
 #: src/gui_frontend/profile_view/journal_section.rs:501
 msgid "{name} — locked"
-msgstr ""
+msgstr "{name} — kilitli"
 
 #: src/gui_frontend/profile_view/journal_section.rs:504
 #: src/gui_frontend/profile_view/journal_section.rs:509
 msgid "{name} — was {value}"
-msgstr ""
+msgstr "{name} — eski değeri: {value}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:513
 #: src/gui_frontend/profile_view/journal_section.rs:517
+#, fuzzy
 msgid "{name} — {before} to {after}"
-msgstr ""
+msgstr "{name} — {before} - {after}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:536
 msgid "Delete this history?"
-msgstr ""
+msgstr "Geçmişi sil?"
 
 #: src/gui_frontend/profile_view/journal_section.rs:537
 msgid ""
