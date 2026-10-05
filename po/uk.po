@@ -235,8 +235,8 @@ msgid ""
 msgstr ""
 "Вас запитають знову під час наступного запуску. Щоб пропустити це назавжди, "
 "встановіть змінну середовища <tt>SAM_STEAM_INSTALL_ROOT</tt> для потрібного "
-"встановлення — дивіться <a href=\"https://github.com/PaulCombal/SamRewritten?"
-"tab=readme-ov-file#environment-variables\">README</a>."
+"встановлення — дивіться <a href=\"https://github.com/PaulCombal/"
+"SamRewritten?tab=readme-ov-file#environment-variables\">README</a>."
 
 #: src/gui_frontend/dialogs.rs:377 src/gui_frontend/dialogs.rs:426
 msgid "Choose a Steam installation"
