@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-03 21:30+0200\n"
+"POT-Creation-Date: 2026-10-05 22:49+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: none\n"
@@ -144,10 +144,12 @@ msgid "All"
 msgstr ""
 
 #: src/gui_frontend/ui_components.rs:455
+#: src/gui_frontend/achievement_view.rs:307
 msgid "Locked"
 msgstr ""
 
 #: src/gui_frontend/ui_components.rs:456
+#: src/gui_frontend/achievement_view.rs:305
 msgid "Unlocked"
 msgstr ""
 
@@ -157,7 +159,7 @@ msgstr ""
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
-#: src/gui_frontend/unlock_scheduler.rs:217
+#: src/gui_frontend/unlock_scheduler.rs:214
 #: src/gui_frontend/app_list_view/progress_actions.rs:43
 msgid "OK"
 msgstr ""
@@ -187,9 +189,9 @@ msgstr ""
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
-"to it using environment variables. Please check the <a href=\"https://github."
-"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
-"your issue."
+"to it using environment variables. Please check the <a href=\"https://"
+"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
+"report your issue."
 msgstr ""
 
 #: src/gui_frontend/dialogs.rs:295
@@ -314,12 +316,28 @@ msgstr ""
 msgid "Stats"
 msgstr ""
 
-#: src/gui_frontend/stat_view.rs:166
+#: src/gui_frontend/stat_view.rs:180
 msgid "Increment only"
 msgstr ""
 
-#: src/gui_frontend/stat_view.rs:171
+#: src/gui_frontend/stat_view.rs:185
 msgid "This statistic is protected."
+msgstr ""
+
+#: src/gui_frontend/achievement_view.rs:271
+msgid "No achievements match the current filters"
+msgstr ""
+
+#: src/gui_frontend/achievement_view.rs:282
+msgid "Show all achievements"
+msgstr ""
+
+#: src/gui_frontend/achievement_view.rs:301
+msgid "Search: “{search}”"
+msgstr ""
+
+#: src/gui_frontend/achievement_view.rs:309
+msgid "Showing: {state}"
 msgstr ""
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
@@ -482,12 +500,12 @@ msgstr ""
 msgid "Achievement or stat..."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:1883
+#: src/gui_frontend/app_list_view/mod.rs:1891
 #: src/gui_frontend/app_list_view/settings_bindings.rs:328
 msgid "Could not change the in-game setting"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:1885
+#: src/gui_frontend/app_list_view/mod.rs:1893
 #: src/gui_frontend/app_list_view/settings_bindings.rs:329
 msgid "The change could not be applied. Restart SamRewritten and try again."
 msgstr ""
