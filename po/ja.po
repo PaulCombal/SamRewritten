@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 23:21+0200\n"
+"POT-Creation-Date: 2026-10-05 22:49+0200\n"
 "PO-Revision-Date: 2026-09-08 07:00+0900\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -10,107 +10,149 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: src/gui_frontend/ui_components.rs:159 src/gui_frontend/app_view.rs:62
-#: src/gui_frontend/app_list_view/mod.rs:380
+#: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
+#: src/gui_frontend/app_list_view/mod.rs:421
 msgid "Loading..."
 msgstr "読み込み中..."
 
-#: src/gui_frontend/ui_components.rs:190
+#: src/gui_frontend/ui_components.rs:191
 msgid "Select all visible apps"
 msgstr "表示されているすべてのアプリを選択"
 
-#: src/gui_frontend/ui_components.rs:194
+#: src/gui_frontend/ui_components.rs:195
 msgid "Deselect all apps"
 msgstr "すべてのアプリの選択を解除"
 
-#: src/gui_frontend/ui_components.rs:198
+#: src/gui_frontend/ui_components.rs:199
 msgid "Unlock all in selection"
 msgstr "選択した項目をすべてアンロック"
 
-#: src/gui_frontend/ui_components.rs:202
+#: src/gui_frontend/ui_components.rs:203
 msgid "Reset all in selection"
 msgstr "選択した項目をすべてリセット"
 
-#: src/gui_frontend/ui_components.rs:206
+#: src/gui_frontend/ui_components.rs:207
 #: src/gui_frontend/app_list_view/progress_actions.rs:116
 msgid "Export selected apps progress"
 msgstr "選択したアプリの進行状況をエクスポート"
 
-#: src/gui_frontend/ui_components.rs:210
+#: src/gui_frontend/ui_components.rs:211
 msgid "Import progress..."
 msgstr "進行状況をインポート..."
 
-#: src/gui_frontend/ui_components.rs:216
+#: src/gui_frontend/ui_components.rs:217
 msgid "Appear in-game while managing"
 msgstr "管理中にゲーム内で表示する"
 
-#: src/gui_frontend/ui_components.rs:222
+#: src/gui_frontend/ui_components.rs:223
 msgid "Refresh app list"
 msgstr "アプリ一覧を更新"
 
-#: src/gui_frontend/ui_components.rs:226
+#: src/gui_frontend/ui_components.rs:227
 msgid "Refresh achievement counts"
 msgstr "実績のカウントを更新する"
 
-#: src/gui_frontend/ui_components.rs:229 src/gui_frontend/ui_components.rs:413
+#: src/gui_frontend/ui_components.rs:230 src/gui_frontend/ui_components.rs:471
 msgid "About"
 msgstr "このアプリについて"
 
-#: src/gui_frontend/ui_components.rs:233
+#: src/gui_frontend/ui_components.rs:234
 msgid "Change Steam folder…"
 msgstr "Steamフォルダを変更…"
 
-#: src/gui_frontend/ui_components.rs:240
+#: src/gui_frontend/ui_components.rs:241
 msgid "Bulk process"
 msgstr "一括処理"
 
-#: src/gui_frontend/ui_components.rs:246
+#: src/gui_frontend/ui_components.rs:247
 msgid "System"
 msgstr "システム"
 
-#: src/gui_frontend/ui_components.rs:247
+#: src/gui_frontend/ui_components.rs:248
 msgid "Light"
 msgstr "ライト"
 
-#: src/gui_frontend/ui_components.rs:248
+#: src/gui_frontend/ui_components.rs:249
 msgid "Dark"
 msgstr "ダーク"
 
-#: src/gui_frontend/ui_components.rs:257
+#: src/gui_frontend/ui_components.rs:258
 msgid "Disable animations"
 msgstr "アニメーションを無効化"
 
-#: src/gui_frontend/ui_components.rs:261
+#: src/gui_frontend/ui_components.rs:262
 msgid "Appearance"
 msgstr "外観"
 
-#: src/gui_frontend/ui_components.rs:267
+#: src/gui_frontend/ui_components.rs:268
 msgid "System default"
 msgstr "システムの既定"
 
-#: src/gui_frontend/ui_components.rs:270
+#: src/gui_frontend/ui_components.rs:271
 msgid "Language"
 msgstr "言語"
 
-#: src/gui_frontend/ui_components.rs:387
+#: src/gui_frontend/ui_components.rs:388
 msgid "Game default"
 msgstr "ゲームの既定"
 
-#: src/gui_frontend/ui_components.rs:406
+#: src/gui_frontend/ui_components.rs:411
 msgid "Refresh achievements & stats"
 msgstr "実績と統計を更新"
 
-#: src/gui_frontend/ui_components.rs:410
+#: src/gui_frontend/ui_components.rs:415
 msgid "Reset everything"
 msgstr "すべてをリセット"
 
-#: src/gui_frontend/ui_components.rs:418
+#: src/gui_frontend/ui_components.rs:435
 msgid "Achievement language"
 msgstr "実績の言語"
 
+#: src/gui_frontend/ui_components.rs:440
+msgid "Achievement order"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:443 src/gui_frontend/ui_components.rs:465
+msgid "Steam default"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:444 src/gui_frontend/ui_components.rs:466
+msgid "Alphabetically"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:445
+msgid "Global percentage"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:446
+msgid "Unlock date"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:451
+msgid "Achievement state"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:454
+msgid "All"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:455
+#: src/gui_frontend/achievement_view.rs:307
+msgid "Locked"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:456
+#: src/gui_frontend/achievement_view.rs:305
+msgid "Unlocked"
+msgstr ""
+
+#: src/gui_frontend/ui_components.rs:462
+msgid "Stat order"
+msgstr ""
+
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
-#: src/gui_frontend/unlock_scheduler.rs:185
+#: src/gui_frontend/unlock_scheduler.rs:214
 #: src/gui_frontend/app_list_view/progress_actions.rs:43
 msgid "OK"
 msgstr "OK"
@@ -118,7 +160,7 @@ msgstr "OK"
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
 #: src/gui_frontend/profile_view/mod.rs:587
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
-#: src/gui_frontend/app_list_view/refresh_actions.rs:433
+#: src/gui_frontend/app_list_view/refresh_actions.rs:437
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -291,60 +333,76 @@ msgstr "実績"
 msgid "Stats"
 msgstr "統計"
 
-#: src/gui_frontend/stat_view.rs:102
+#: src/gui_frontend/stat_view.rs:180
 msgid "Increment only"
 msgstr "増加のみ"
 
-#: src/gui_frontend/stat_view.rs:107
+#: src/gui_frontend/stat_view.rs:185
 msgid "This statistic is protected."
 msgstr "この統計情報は保護されています。"
+
+#: src/gui_frontend/achievement_view.rs:271
+msgid "No achievements match the current filters"
+msgstr ""
+
+#: src/gui_frontend/achievement_view.rs:282
+msgid "Show all achievements"
+msgstr ""
+
+#: src/gui_frontend/achievement_view.rs:301
+msgid "Search: “{search}”"
+msgstr ""
+
+#: src/gui_frontend/achievement_view.rs:309
+msgid "Showing: {state}"
+msgstr ""
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
 msgstr "停止して戻る"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:57
+#: src/gui_frontend/achievement_manual_view/mod.rs:58
 msgid "No achievements staged"
 msgstr "保留中の実績はありません"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:58
+#: src/gui_frontend/achievement_manual_view/mod.rs:59
 msgid "{count} staged"
 msgstr "{count}件保留中"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:96
+#: src/gui_frontend/achievement_manual_view/mod.rs:97
 msgid "Already at or above target ({progress})"
 msgstr "すでに目標以上です ({progress})"
 
-#: src/gui_frontend/achievement_manual_view/mod.rs:102
+#: src/gui_frontend/achievement_manual_view/mod.rs:103
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr "実績を自動補完 ({count}件、{progress})"
 
-#: src/gui_frontend/achievement_manual_view/header.rs:49
+#: src/gui_frontend/achievement_manual_view/header.rs:50
 msgid "Instant"
 msgstr "即時"
 
-#: src/gui_frontend/achievement_manual_view/header.rs:52
+#: src/gui_frontend/achievement_manual_view/header.rs:53
 msgid "Stage"
 msgstr "保留"
 
-#: src/gui_frontend/achievement_manual_view/header.rs:56
+#: src/gui_frontend/achievement_manual_view/header.rs:57
 msgid "Copy user"
 msgstr "ユーザーからコピー"
 
-#: src/gui_frontend/achievement_manual_view/header.rs:74
+#: src/gui_frontend/achievement_manual_view/header.rs:75
 msgid "Auto-fill"
 msgstr "自動実行"
 
-#: src/gui_frontend/achievement_manual_view/header.rs:77
+#: src/gui_frontend/achievement_manual_view/header.rs:78
 msgid "Configuration"
 msgstr "設定"
 
-#: src/gui_frontend/achievement_manual_view/header.rs:103
+#: src/gui_frontend/achievement_manual_view/header.rs:104
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
 msgid "Start"
 msgstr "開始"
 
-#: src/gui_frontend/achievement_manual_view/header.rs:108
+#: src/gui_frontend/achievement_manual_view/header.rs:109
 msgid "Changes apply instantly"
 msgstr "変更は即時反映されます"
 
@@ -381,7 +439,7 @@ msgid "Spacing"
 msgstr "間隔"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:234
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:238
 msgid "Choose a friend to copy timing from"
 msgstr "タイミングをコピーするフレンドを選択"
 
@@ -402,11 +460,11 @@ msgstr "最大間隔"
 msgid "First delay"
 msgstr "初回遅延"
 
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:101
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:105
 msgid "No friend loaded"
 msgstr "フレンドが読み込まれていません"
 
-#: src/gui_frontend/achievement_manual_view/copy_mode.rs:111
+#: src/gui_frontend/achievement_manual_view/copy_mode.rs:115
 msgid "{count} achievements over {time}"
 msgstr "{time}で{count}件の実績"
 
@@ -438,113 +496,152 @@ msgstr "フレンドを検索するかSteamID64を貼り付けてください"
 msgid "Clear selected user"
 msgstr "選択したユーザーをクリア"
 
-#: src/gui_frontend/app_list_view/mod.rs:401
+#: src/gui_frontend/app_list_view/mod.rs:442
 msgid "SamRewritten could not connect to Steam. Is it running?"
 msgstr "SamRewrittenはSteamに接続できませんでした。起動していますか？"
 
-#: src/gui_frontend/app_list_view/mod.rs:406
+#: src/gui_frontend/app_list_view/mod.rs:447
 msgid "Try again"
 msgstr "もう一度試す"
 
-#: src/gui_frontend/app_list_view/mod.rs:423
-#: src/gui_frontend/app_list_view/mod.rs:1605
+#: src/gui_frontend/app_list_view/mod.rs:464
+#: src/gui_frontend/app_list_view/mod.rs:1769
 msgid "Name or AppId (Ctrl+K)"
 msgstr "名前またはAppID (Ctrl+K)"
 
-#: src/gui_frontend/app_list_view/mod.rs:439
+#: src/gui_frontend/app_list_view/mod.rs:499
 msgid "Show or hide the sidebar"
 msgstr "サイドバーを表示・非表示にする"
 
-#: src/gui_frontend/app_list_view/mod.rs:1600
+#: src/gui_frontend/app_list_view/mod.rs:1764
 msgid "Achievement or stat..."
 msgstr "実績または統計…"
 
-#: src/gui_frontend/app_list_view/mod.rs:1719
-#: src/gui_frontend/app_list_view/settings_bindings.rs:265
+#: src/gui_frontend/app_list_view/mod.rs:1891
+#: src/gui_frontend/app_list_view/settings_bindings.rs:328
 msgid "Could not change the in-game setting"
 msgstr "ゲーム内の設定を変更できませんでした"
 
-#: src/gui_frontend/app_list_view/mod.rs:1721
-#: src/gui_frontend/app_list_view/settings_bindings.rs:266
+#: src/gui_frontend/app_list_view/mod.rs:1893
+#: src/gui_frontend/app_list_view/settings_bindings.rs:329
 msgid "The change could not be applied. Restart SamRewritten and try again."
 msgstr ""
 "変更を適用できませんでした。SamRewrittenを再起動して、もう一度お試しくださ"
 "い。"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:47
+#: src/gui_frontend/app_list_view/sidebar.rs:57
 msgid "Hide with no achievements"
 msgstr "実績がないゲームを非表示にする"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:52
+#: src/gui_frontend/app_list_view/sidebar.rs:63
 msgid "Hide at 100%"
 msgstr "達成率100%のゲームを非表示にする"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:57
+#: src/gui_frontend/app_list_view/sidebar.rs:69
 msgid "Hide at 0%"
 msgstr "達成率0%のゲームを非表示にする"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:62
+#: src/gui_frontend/app_list_view/sidebar.rs:75
 msgid "Hide never launched"
 msgstr "未起動のゲームを非表示にする"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:67
+#: src/gui_frontend/app_list_view/sidebar.rs:81
 msgid "Only currently idling"
 msgstr "現在アイドリング中のゲームのみ"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:72
+#: src/gui_frontend/app_list_view/sidebar.rs:87
+msgid "Hide hidden in Steam"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/sidebar.rs:93
 msgid "Show junk"
 msgstr "不要なゲームを表示する"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:86
+#: src/gui_frontend/app_list_view/sidebar.rs:107
 msgid "App ID"
 msgstr "アプリID"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:91
+#: src/gui_frontend/app_list_view/sidebar.rs:112
 msgid "Name"
 msgstr "名前"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:96
+#: src/gui_frontend/app_list_view/sidebar.rs:117
 msgid "Last played"
 msgstr "最終プレイ"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:101
+#: src/gui_frontend/app_list_view/sidebar.rs:122
 msgid "Playtime"
 msgstr "プレイ時間"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:106
+#: src/gui_frontend/app_list_view/sidebar.rs:127
 msgid "Completion"
 msgstr "達成率"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:111
+#: src/gui_frontend/app_list_view/sidebar.rs:132
 msgid "Achievements left"
 msgstr "残りの実績"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:153
+#: src/gui_frontend/app_list_view/sidebar.rs:180
+msgid "Filters on a search term, which SamRewritten cannot reproduce exactly."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/sidebar.rs:183
+msgid "Uses a Steam filter SamRewritten cannot reproduce exactly."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/sidebar.rs:186
+msgid ""
+"Needs information from Steam that could not be read. Refresh to try again."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/sidebar.rs:189
+msgid ""
+"Needs your friends' games, which Steam can only tell us when it is online."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/sidebar.rs:198
+msgid "Favorites"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/sidebar.rs:225
 msgid "View profile"
 msgstr "プロフィールを表示"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:208
+#: src/gui_frontend/app_list_view/sidebar.rs:280
 #: src/gui_frontend/profile_view/mod.rs:484
 msgid "Steam user"
 msgstr "Steamユーザー"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:229
+#: src/gui_frontend/app_list_view/sidebar.rs:300
+msgid "Steam is offline. What needs its servers is turned off."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/sidebar.rs:311
 msgid "Fetching completion…"
 msgstr "達成率を取得中…"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:235
+#: src/gui_frontend/app_list_view/sidebar.rs:317
 msgid "Click to cancel"
 msgstr "クリックしてキャンセルする"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:266
+#: src/gui_frontend/app_list_view/sidebar.rs:348
 msgid "Filters"
 msgstr "フィルター"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:274
+#: src/gui_frontend/app_list_view/sidebar.rs:359
+msgid "Steam collection"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/sidebar.rs:360
+#: src/gui_frontend/app_list_view/sidebar.rs:580
+msgid "All games"
+msgstr ""
+
+#: src/gui_frontend/app_list_view/sidebar.rs:442
 msgid "Sort by"
 msgstr "並び替え"
 
-#: src/gui_frontend/app_list_view/sidebar.rs:313
+#: src/gui_frontend/app_list_view/sidebar.rs:505
 msgid "Reset filters"
 msgstr "フィルターをリセット"
 
@@ -986,11 +1083,11 @@ msgstr "元に戻す際に予期しないエラーが発生しました："
 msgid "Undo incomplete"
 msgstr "元に戻す処理が未完了"
 
-#: src/gui_frontend/app_list_view/settings_bindings.rs:138
+#: src/gui_frontend/app_list_view/settings_bindings.rs:159
 msgid "The new language will be applied the next time you start SamRewritten."
 msgstr "新しい言語はSamRewrittenを再起動すると適用されます。"
 
-#: src/gui_frontend/app_list_view/settings_bindings.rs:148
+#: src/gui_frontend/app_list_view/settings_bindings.rs:169
 msgid "Language changed"
 msgstr "言語が変更されました"
 
@@ -1187,18 +1284,18 @@ msgstr ""
 msgid "Import complete"
 msgstr "インポート完了"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:118
+#: src/gui_frontend/app_list_view/refresh_actions.rs:122
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
 "アカウント内にアプリが見つかりませんでした。App IDを検索して開始してくださ"
 "い。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:135
+#: src/gui_frontend/app_list_view/refresh_actions.rs:139
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr ""
 "結果が見つかりませんでした。スペルを確認するか、App IDを入力してください。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:145
+#: src/gui_frontend/app_list_view/refresh_actions.rs:149
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
@@ -1206,15 +1303,15 @@ msgstr ""
 "ライブラリの読み込みに失敗しました。インターネット接続を確認し、App IDを検索"
 "して開始してください。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:431
+#: src/gui_frontend/app_list_view/refresh_actions.rs:435
 msgid "Reset Everything"
 msgstr "すべてリセット"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:432
+#: src/gui_frontend/app_list_view/refresh_actions.rs:436
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr "このアプリのすべての実績と統計をリセットします。本当によろしいですか？"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:433
+#: src/gui_frontend/app_list_view/refresh_actions.rs:437
 msgid "Sure, reset"
 msgstr "はい、リセットします"
 
