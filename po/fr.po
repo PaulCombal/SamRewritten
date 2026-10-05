@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-03 21:30+0200\n"
+"POT-Creation-Date: 2026-10-05 22:38+0200\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -136,10 +136,12 @@ msgid "All"
 msgstr "Tous"
 
 #: src/gui_frontend/ui_components.rs:455
+#: src/gui_frontend/achievement_view.rs:307
 msgid "Locked"
 msgstr "Verrouillés"
 
 #: src/gui_frontend/ui_components.rs:456
+#: src/gui_frontend/achievement_view.rs:305
 msgid "Unlocked"
 msgstr "Déverrouillés"
 
@@ -149,7 +151,7 @@ msgstr "Tri des stats"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
-#: src/gui_frontend/unlock_scheduler.rs:217
+#: src/gui_frontend/unlock_scheduler.rs:214
 #: src/gui_frontend/app_list_view/progress_actions.rs:43
 msgid "OK"
 msgstr "OK"
@@ -333,13 +335,29 @@ msgstr "Succès"
 msgid "Stats"
 msgstr "Statistiques"
 
-#: src/gui_frontend/stat_view.rs:166
+#: src/gui_frontend/stat_view.rs:180
 msgid "Increment only"
 msgstr "Incrément uniquement"
 
-#: src/gui_frontend/stat_view.rs:171
+#: src/gui_frontend/stat_view.rs:185
 msgid "This statistic is protected."
 msgstr "Cette statistique est protégée."
+
+#: src/gui_frontend/achievement_view.rs:271
+msgid "No achievements match the current filters"
+msgstr "Aucun succès ne correspond aux filtres actifs"
+
+#: src/gui_frontend/achievement_view.rs:282
+msgid "Show all achievements"
+msgstr "Afficher tous les succès"
+
+#: src/gui_frontend/achievement_view.rs:301
+msgid "Search: “{search}”"
+msgstr "Recherche : « {search} »"
+
+#: src/gui_frontend/achievement_view.rs:309
+msgid "Showing: {state}"
+msgstr "Affichage : {state}"
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
@@ -501,12 +519,12 @@ msgstr "Afficher ou masquer la barre latérale"
 msgid "Achievement or stat..."
 msgstr "Succès ou statistique..."
 
-#: src/gui_frontend/app_list_view/mod.rs:1883
+#: src/gui_frontend/app_list_view/mod.rs:1891
 #: src/gui_frontend/app_list_view/settings_bindings.rs:328
 msgid "Could not change the in-game setting"
 msgstr "Impossible de changer l'option in-game"
 
-#: src/gui_frontend/app_list_view/mod.rs:1885
+#: src/gui_frontend/app_list_view/mod.rs:1893
 #: src/gui_frontend/app_list_view/settings_bindings.rs:329
 msgid "The change could not be applied. Restart SamRewritten and try again."
 msgstr ""

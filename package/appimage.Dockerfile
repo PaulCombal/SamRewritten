@@ -12,6 +12,7 @@ ENV APPIMAGE_EXTRACT_AND_RUN=1
 RUN wget https://github.com/AppImage/appimagetool/releases/download/$APPIMAGE_VERSION/appimagetool-x86_64.AppImage \
     && chmod +x appimagetool-x86_64.AppImage \
     && ./appimagetool-x86_64.AppImage --appimage-extract \
+    && chmod -R a+rX /squashfs-root \
     && ln -nfs /squashfs-root/usr/bin/appimagetool /usr/bin/appimagetool \
     && rm appimagetool-x86_64.AppImage
 

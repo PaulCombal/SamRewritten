@@ -113,6 +113,7 @@ pub fn create_achievements_manual_view(
     app_unlocked_achievements_count: &Rc<Cell<usize>>,
     filtered_model: &NoSelection,
     model_updates: &AchievementModelUpdates,
+    filtered_empty_state: &impl IsA<gtk::Widget>,
     raw_model: &ListStore,
     timed_raw_model: &ListStore,
     achievement_views_stack: &Stack,
@@ -451,10 +452,27 @@ pub fn create_achievements_manual_view(
         .child(&app_achievements_list_view)
         .vexpand(true)
         .build();
+    let list_stack = Stack::builder().vexpand(true).build();
+    list_stack.add_named(&app_achievements_scrolled_window, Some("list"));
+    list_stack.add_named(filtered_empty_state, Some("empty"));
+    let show_list_or_empty = clone!(
+        #[weak]
+        list_stack,
+        move |model: &NoSelection| {
+            let name = if model.n_items() == 0 {
+                "empty"
+            } else {
+                "list"
+            };
+            list_stack.set_visible_child_name(name);
+        }
+    );
+    show_list_or_empty(filtered_model);
+    filtered_model.connect_items_changed(move |model, _, _, _| show_list_or_empty(model));
 
     let vbox = Box::new(Orientation::Vertical, 5);
     vbox.append(&header.container);
-    vbox.append(&app_achievements_scrolled_window);
+    vbox.append(&list_stack);
 
     let frame = Frame::builder()
         .margin_end(15)

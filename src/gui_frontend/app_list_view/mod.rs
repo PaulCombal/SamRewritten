@@ -52,7 +52,7 @@ use crate::utils::app_paths::get_executable_path;
 use crate::utils::arguments::parse_gui_arguments;
 use achievement_loader::AchievementLoader;
 use bulk_actions::create_bulk_actions;
-use gtk::gio::{ApplicationCommandLine, ListStore, spawn_blocking};
+use gtk::gio::{ApplicationCommandLine, ListStore, SimpleAction, spawn_blocking};
 use gtk::glib::ExitCode;
 use gtk::glib::{MainContext, clone};
 use gtk::prelude::*;
@@ -1831,6 +1831,14 @@ pub fn create_main_ui(
         &action_export_selected,
         &action_import_progress,
     );
+
+    let action_clear_search = SimpleAction::new("clear-search", None);
+    action_clear_search.connect_activate(clone!(
+        #[weak]
+        search_entry,
+        move |_, _| search_entry.set_text("")
+    ));
+    application.add_action(&action_clear_search);
 
     let key_controller = gtk::EventControllerKey::new();
     key_controller.connect_key_pressed(clone!(
