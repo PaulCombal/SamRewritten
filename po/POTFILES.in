@@ -4,6 +4,7 @@ src/gui_frontend/ui_components.rs
 src/gui_frontend/dialogs.rs
 src/gui_frontend/app_view.rs
 src/gui_frontend/stat_view.rs
+src/gui_frontend/achievement_view.rs
 src/gui_frontend/achievement_automatic_view.rs
 src/gui_frontend/achievement_manual_view/mod.rs
 src/gui_frontend/achievement_manual_view/header.rs

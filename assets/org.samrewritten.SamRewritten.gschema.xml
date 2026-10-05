@@ -91,6 +91,12 @@
             <description>How achievements are sorted. Valid values are 'steam-default', 'alphabetical', 'global-percentage', and 'unlock-date'.</description>
         </key>
 
+        <key name="achievement-state" type="s">
+            <default>'all'</default>
+            <summary>Achievement State Filter</summary>
+            <description>Which achievements are shown. Valid values are 'all', 'locked', and 'unlocked'.</description>
+        </key>
+
         <key name="stat-order" type="s">
             <default>'steam-default'</default>
             <summary>Stat Order</summary>
