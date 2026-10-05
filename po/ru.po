@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 22:49+0200\n"
-"PO-Revision-Date: 2026-08-23 05:40+0000\n"
+"PO-Revision-Date: 2026-10-05 22:27+0000\n"
 "Last-Translator: AxelPAL\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:421
@@ -230,8 +230,8 @@ msgid ""
 msgstr ""
 "При следующем запуске вопрос появится снова. Чтобы больше не спрашивать, "
 "задайте переменную окружения <tt>SAM_STEAM_INSTALL_ROOT</tt> на нужную "
-"установку. См. <a href=\"https://github.com/PaulCombal/SamRewritten?"
-"tab=readme-ov-file#environment-variables\">README</a>."
+"установку. См. <a href=\"https://github.com/PaulCombal/"
+"SamRewritten?tab=readme-ov-file#environment-variables\">README</a>."
 
 #: src/gui_frontend/dialogs.rs:377 src/gui_frontend/dialogs.rs:426
 msgid "Choose a Steam installation"
