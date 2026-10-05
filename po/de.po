@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 22:49+0200\n"
-"PO-Revision-Date: 2026-08-26 19:00+0200\n"
+"PO-Revision-Date: 2026-10-05 22:26+0000\n"
 "Last-Translator: Christian Lauinger <christian@lauinger-clan.de>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.9\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:421
@@ -692,8 +693,7 @@ msgstr ""
 
 #: src/gui_frontend/profile_view/mod.rs:193
 msgid "the rest of your unlocks in this game came at other times"
-msgstr ""
-"Die übrigen Freischaltungen in diesem Spiel erfolgten zu anderen Zeiten"
+msgstr "Die übrigen Freischaltungen in diesem Spiel erfolgten zu anderen Zeiten"
 
 #: src/gui_frontend/profile_view/mod.rs:196
 msgid "at the very start of this game's history, ordinary unlocks after it"
@@ -1255,8 +1255,7 @@ msgstr "Errungenschaften und Statistiken aus einer Datei geschrieben"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:607
 msgid "Applied {achievements} achievement(s) and {stats} stat(s)."
-msgstr ""
-"{achievements} Errungenschaft(en) und {stats} Statistik(en) angewendet."
+msgstr "{achievements} Errungenschaft(en) und {stats} Statistik(en) angewendet."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:612
 msgid ""
