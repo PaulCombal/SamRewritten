@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 22:49+0200\n"
-"PO-Revision-Date: 2026-09-18 06:51+0000\n"
+"PO-Revision-Date: 2026-10-09 04:51+0000\n"
 "Last-Translator: Dan <jonweblin2205@protonmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/samrewritten/"
 "samrewritten/uk/>\n"
@@ -120,45 +120,45 @@ msgstr "Мова досягнень"
 
 #: src/gui_frontend/ui_components.rs:440
 msgid "Achievement order"
-msgstr ""
+msgstr "Порядок досягнень"
 
 #: src/gui_frontend/ui_components.rs:443 src/gui_frontend/ui_components.rs:465
 msgid "Steam default"
-msgstr ""
+msgstr "Типовий у Steam"
 
 #: src/gui_frontend/ui_components.rs:444 src/gui_frontend/ui_components.rs:466
 msgid "Alphabetically"
-msgstr ""
+msgstr "За абеткою"
 
 #: src/gui_frontend/ui_components.rs:445
 msgid "Global percentage"
-msgstr ""
+msgstr "Загальний відсоток"
 
 #: src/gui_frontend/ui_components.rs:446
 msgid "Unlock date"
-msgstr ""
+msgstr "Дата розблокування"
 
 #: src/gui_frontend/ui_components.rs:451
 msgid "Achievement state"
-msgstr ""
+msgstr "Стан досягнення"
 
 #: src/gui_frontend/ui_components.rs:454
 msgid "All"
-msgstr ""
+msgstr "Усі"
 
 #: src/gui_frontend/ui_components.rs:455
 #: src/gui_frontend/achievement_view.rs:307
 msgid "Locked"
-msgstr ""
+msgstr "Заблоковано"
 
 #: src/gui_frontend/ui_components.rs:456
 #: src/gui_frontend/achievement_view.rs:305
 msgid "Unlocked"
-msgstr ""
+msgstr "Розблоковано"
 
 #: src/gui_frontend/ui_components.rs:462
 msgid "Stat order"
-msgstr ""
+msgstr "Порядок статистики"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
@@ -353,19 +353,19 @@ msgstr "Ця статистика захищена."
 
 #: src/gui_frontend/achievement_view.rs:271
 msgid "No achievements match the current filters"
-msgstr ""
+msgstr "Жодне досягнення не відповідає поточним фільтрам"
 
 #: src/gui_frontend/achievement_view.rs:282
 msgid "Show all achievements"
-msgstr ""
+msgstr "Показати всі досягнення"
 
 #: src/gui_frontend/achievement_view.rs:301
 msgid "Search: “{search}”"
-msgstr ""
+msgstr "Пошук: «{search}»"
 
 #: src/gui_frontend/achievement_view.rs:309
 msgid "Showing: {state}"
-msgstr ""
+msgstr "Показано: {state}"
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
@@ -560,7 +560,7 @@ msgstr "Наразі лише в режимі очікування"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:87
 msgid "Hide hidden in Steam"
-msgstr ""
+msgstr "Приховати приховане в Steam"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:93
 msgid "Show junk"
@@ -593,24 +593,29 @@ msgstr "Залишилося досягнень"
 #: src/gui_frontend/app_list_view/sidebar.rs:180
 msgid "Filters on a search term, which SamRewritten cannot reproduce exactly."
 msgstr ""
+"Фільтри за пошуковим запитом, які SamRewritten не може точно відтворити."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:183
 msgid "Uses a Steam filter SamRewritten cannot reproduce exactly."
-msgstr ""
+msgstr "Використовує фільтр Steam, який SamRewritten не може точно відтворити."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:186
 msgid ""
 "Needs information from Steam that could not be read. Refresh to try again."
 msgstr ""
+"Потрібна інформація зі Steam, яку не вдалося прочитати. Оновіть сторінку, "
+"щоб спробувати ще раз."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:189
 msgid ""
 "Needs your friends' games, which Steam can only tell us when it is online."
 msgstr ""
+"Потрібні ігри ваших друзів, про які Steam може повідомити нам, лише коли "
+"вони в мережі."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:198
 msgid "Favorites"
-msgstr ""
+msgstr "Улюблені"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:225
 msgid "View profile"
@@ -623,7 +628,7 @@ msgstr "Користувач Steam"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:300
 msgid "Steam is offline. What needs its servers is turned off."
-msgstr ""
+msgstr "Steam поза мережею. Сервери, які йому потрібні, вимкнені."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:311
 msgid "Fetching completion…"
@@ -639,12 +644,12 @@ msgstr "Фільтри"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:359
 msgid "Steam collection"
-msgstr ""
+msgstr "Колекція Steam"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:360
 #: src/gui_frontend/app_list_view/sidebar.rs:580
 msgid "All games"
-msgstr ""
+msgstr "Усі ігри"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:442
 msgid "Sort by"
