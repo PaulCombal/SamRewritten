@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 22:49+0200\n"
-"PO-Revision-Date: 2026-10-18 12:18+0000\n"
+"PO-Revision-Date: 2026-10-18 12:43+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: none\n"
 "Language: zh_Hans\n"
@@ -20,7 +20,7 @@ msgstr ""
 #: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:421
 msgid "Loading..."
-msgstr "加载中..."
+msgstr "正在加载…"
 
 #: src/gui_frontend/ui_components.rs:191
 msgid "Select all visible apps"
@@ -173,21 +173,20 @@ msgstr "取消"
 
 #: src/gui_frontend/dialogs.rs:284
 msgid "<b>No Steam installations were found on your system.</b>"
-msgstr "<b>在你的系统中没有找到Steam位置。</b>"
+msgstr "<b>在你的系统中没有找到任何 Steam 安装。</b>"
 
 #: src/gui_frontend/dialogs.rs:286
-#, fuzzy
 msgid ""
 "SamRewritten couldn't find Steam in any of the standard locations. If you "
 "haven't installed Steam yet, please install it through your distribution's "
 "official repository or app store."
 msgstr ""
-"SamRewritten 在所有位置都没能找到 Steam。如果你还没有安装 Steam，请通过官网进"
-"行安装。"
+"SamRewritten 在所有标准位置都没能找到 Steam。如果你还没有安装 Steam，请通过你"
+"所使用发行版的官方软件源或应用商店进行安装。"
 
 #: src/gui_frontend/dialogs.rs:288
 msgid "<b>Already have Steam installed?</b>"
-msgstr "<b>Steam已安装？</b>"
+msgstr "<b>已经安装了 Steam？</b>"
 
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
@@ -196,9 +195,9 @@ msgid ""
 "com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
 "your issue."
 msgstr ""
-"如果你把 Steam 安装在自定义位置，可以通过环境变量告诉 SamRewritten 它在哪。请"
-"查看<a href=\"https://github.com/PaulCombal/SamRewritten\">GitHub 页面</a>获"
-"取说明，或在那里反馈你的问题。"
+"如果你把 Steam 安装在了自定义位置，可以通过环境变量告诉 SamRewritten 它在哪。"
+"请查看 <a href=\"https://github.com/PaulCombal/SamRewritten\">GitHub 页面</"
+"a> 获取说明，或在那里反馈你的问题。"
 
 #: src/gui_frontend/dialogs.rs:295
 msgid "No compatible version of Steam found"
@@ -206,11 +205,11 @@ msgstr "未找到兼容的 Steam 版本"
 
 #: src/gui_frontend/dialogs.rs:331
 msgid "    (Steam is running here)"
-msgstr ""
+msgstr "    （Steam 正在此处运行）"
 
 #: src/gui_frontend/dialogs.rs:333
 msgid "    (Steam not running here)"
-msgstr ""
+msgstr "    （Steam 未在此处运行）"
 
 #: src/gui_frontend/dialogs.rs:356
 msgid ""
@@ -218,6 +217,8 @@ msgid ""
 "currently running from is preselected, the others won't work unless you "
 "start Steam from them first."
 msgstr ""
+"SamRewritten 发现了不止一个 Steam 安装。当前正在运行 Steam 的那个已被预选；其"
+"余的除非你先从它们那里启动 Steam，否则无法使用。"
 
 #: src/gui_frontend/dialogs.rs:361
 msgid ""
@@ -226,18 +227,22 @@ msgid ""
 "want. See the <a href=\"https://github.com/PaulCombal/SamRewritten?"
 "tab=readme-ov-file#environment-variables\">README</a>."
 msgstr ""
+"下次启动时还会再问你一次。若要永久跳过此询问，请把环境变量 <tt>"
+"SAM_STEAM_INSTALL_ROOT</tt> 设置为你想要的那个安装目录。详见 <a "
+"href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
+"file#environment-variables\">README</a>。"
 
 #: src/gui_frontend/dialogs.rs:377 src/gui_frontend/dialogs.rs:426
 msgid "Choose a Steam installation"
-msgstr ""
+msgstr "选择一个 Steam 安装"
 
 #: src/gui_frontend/dialogs.rs:389 src/gui_frontend/dialogs.rs:553
 msgid "Quit"
-msgstr ""
+msgstr "退出"
 
 #: src/gui_frontend/dialogs.rs:390 src/gui_frontend/dialogs.rs:466
 msgid "Use this installation"
-msgstr ""
+msgstr "使用此安装"
 
 #: src/gui_frontend/dialogs.rs:543
 msgid ""
@@ -249,22 +254,28 @@ msgid ""
 "<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam "
 "with Flatpak, please use the AppImage instead."
 msgstr ""
+"这是 SamRewritten 的沙盒 <b>Snap</b> 版本，因此需要你的授权才能读取 Steam 文"
+"件。请选择一次你的 Steam 文件夹：系统会弹出一个对话框，确认后即可授予访问权限"
+"。之后不会再询问你。\n"
+"\n"
+"Snap 版<b>不支持 Flatpak 版 Steam</b>。如果你是用 Flatpak 安装的 Steam，请改"
+"用 AppImage。"
 
 #: src/gui_frontend/dialogs.rs:550 src/gui_frontend/dialogs.rs:589
 msgid "Connect to Steam"
-msgstr ""
+msgstr "连接到 Steam"
 
 #: src/gui_frontend/dialogs.rs:554 src/gui_frontend/dialogs.rs:620
 msgid "Choose a folder…"
-msgstr ""
+msgstr "选择文件夹…"
 
 #: src/gui_frontend/dialogs.rs:555 src/gui_frontend/dialogs.rs:637
 msgid "Use Snap Steam"
-msgstr ""
+msgstr "使用 Snap 版 Steam"
 
 #: src/gui_frontend/dialogs.rs:691
 msgid "Steam folder not usable"
-msgstr ""
+msgstr "Steam 文件夹不可用"
 
 #: src/gui_frontend/dialogs.rs:699
 msgid ""
@@ -273,518 +284,527 @@ msgid ""
 "<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
 "use the AppImage."
 msgstr ""
+"SamRewritten 无法读取你所选文件夹中的 <tt>steamclient.so</tt>。请选择 <b>"
+"Steam</b> 目录——也就是包含 <tt>linux64</tt> 文件夹的那个目录。Snap 版无法使"
+"用 Flatpak 版的 Steam，请改用 AppImage。"
 
 #: src/gui_frontend/dialogs.rs:707
 msgid "Choose again"
-msgstr ""
+msgstr "重新选择"
 
 #: src/gui_frontend/dialogs.rs:865
 msgid "Select your Steam folder"
-msgstr ""
+msgstr "选择你的 Steam 文件夹"
 
 #: src/gui_frontend/app_view.rs:68
 msgid "Achievements:"
-msgstr ""
+msgstr "成就："
 
 #: src/gui_frontend/app_view.rs:82
 msgid "Stats:"
-msgstr ""
+msgstr "统计："
 
 #: src/gui_frontend/app_view.rs:96
 msgid "Last playtime:"
-msgstr ""
+msgstr "上次游玩："
 
 #: src/gui_frontend/app_view.rs:110
 msgid "Type:"
-msgstr ""
+msgstr "类型："
 
 #: src/gui_frontend/app_view.rs:124
 msgid "Developer:"
-msgstr ""
+msgstr "开发商："
 
 #: src/gui_frontend/app_view.rs:141
 msgid "Metacritic:"
-msgstr ""
+msgstr "Metacritic："
 
 #: src/gui_frontend/app_view.rs:155
 msgid "Failed to load app."
-msgstr ""
+msgstr "加载应用失败。"
 
 #: src/gui_frontend/app_view.rs:161
 msgid "No entries found."
-msgstr ""
+msgstr "未找到任何条目。"
 
 #: src/gui_frontend/app_view.rs:178
 msgid "Achievements"
-msgstr ""
+msgstr "成就"
 
 #: src/gui_frontend/app_view.rs:181
 msgid "Stats"
-msgstr ""
+msgstr "统计"
 
 #: src/gui_frontend/stat_view.rs:180
 msgid "Increment only"
-msgstr ""
+msgstr "仅可增加"
 
 #: src/gui_frontend/stat_view.rs:185
 msgid "This statistic is protected."
-msgstr ""
+msgstr "此统计数据受保护。"
 
 #: src/gui_frontend/achievement_view.rs:271
 msgid "No achievements match the current filters"
-msgstr ""
+msgstr "没有符合当前筛选条件的成就"
 
 #: src/gui_frontend/achievement_view.rs:282
 msgid "Show all achievements"
-msgstr ""
+msgstr "显示所有成就"
 
 #: src/gui_frontend/achievement_view.rs:301
 msgid "Search: “{search}”"
-msgstr ""
+msgstr "搜索：“{search}”"
 
 #: src/gui_frontend/achievement_view.rs:309
 msgid "Showing: {state}"
-msgstr ""
+msgstr "显示：{state}"
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
-msgstr ""
+msgstr "停止并返回"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:58
 msgid "No achievements staged"
-msgstr ""
+msgstr "暂无待处理的成就"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:59
 msgid "{count} staged"
-msgstr ""
+msgstr "已暂存 {count} 项"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:97
 msgid "Already at or above target ({progress})"
-msgstr ""
+msgstr "已达到或超过目标（{progress}）"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:103
 msgid "Auto-fill {count} achievement(s) ({progress})"
-msgstr ""
+msgstr "自动填充 {count} 个成就（{progress}）"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:50
 msgid "Instant"
-msgstr ""
+msgstr "立即"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:53
 msgid "Stage"
-msgstr ""
+msgstr "暂存"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:57
 msgid "Copy user"
-msgstr ""
+msgstr "复制用户"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:75
 msgid "Auto-fill"
-msgstr ""
+msgstr "自动填充"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:78
 msgid "Configuration"
-msgstr ""
+msgstr "配置"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:104
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
 msgid "Start"
-msgstr ""
+msgstr "开始"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:109
 msgid "Changes apply instantly"
-msgstr ""
+msgstr "更改立即生效"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:63
 msgid "Count"
-msgstr ""
+msgstr "数量"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:65
 msgid "Percent"
-msgstr ""
+msgstr "百分比"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:99
 msgid "minutes (0 = instant)"
-msgstr ""
+msgstr "分钟（0 = 立即）"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:108
 msgid "Even"
-msgstr ""
+msgstr "均匀"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:112
 msgid "Random"
-msgstr ""
+msgstr "随机"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:132
 msgid "Target"
-msgstr ""
+msgstr "目标"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:136
 msgid "Spread over"
-msgstr ""
+msgstr "分散于"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:140
 msgid "Spacing"
-msgstr ""
+msgstr "间隔"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:238
 msgid "Choose a friend to copy timing from"
-msgstr ""
+msgstr "选择要复制解锁时间的好友"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
 msgid "Advanced"
-msgstr ""
+msgstr "高级"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:68
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:89
 msgid "minutes"
-msgstr ""
+msgstr "分钟"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:103
 msgid "Max gap"
-msgstr ""
+msgstr "最大间隔"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:105
 msgid "First delay"
-msgstr ""
+msgstr "首次延迟"
 
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:105
 msgid "No friend loaded"
-msgstr ""
+msgstr "未加载好友"
 
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:115
 msgid "{count} achievements over {time}"
-msgstr ""
+msgstr "{time} 内 {count} 个成就"
 
 #: src/gui_frontend/friend_picker.rs:76
 msgid "Private"
-msgstr ""
+msgstr "私密"
 
 #: src/gui_frontend/friend_picker.rs:98
 msgid "Copy timing from a friend"
-msgstr ""
+msgstr "从好友复制解锁时间"
 
 #: src/gui_frontend/friend_picker.rs:202
 msgid "Use the pasted SteamID64"
-msgstr ""
+msgstr "使用粘贴的 SteamID64"
 
 #: src/gui_frontend/friend_picker.rs:497
 msgid "This profile is private"
-msgstr ""
+msgstr "该个人资料为私密"
 
 #: src/gui_frontend/friend_picker.rs:499
 msgid "Couldn't load this user"
-msgstr ""
+msgstr "无法加载此用户"
 
 #: src/gui_frontend/friend_picker.rs:511
 msgid "Search friends or paste a SteamID64"
-msgstr ""
+msgstr "搜索好友或粘贴 SteamID64"
 
 #: src/gui_frontend/friend_picker.rs:598
 msgid "Clear selected user"
-msgstr ""
+msgstr "清除所选用户"
 
 #: src/gui_frontend/app_list_view/mod.rs:442
 msgid "SamRewritten could not connect to Steam. Is it running?"
-msgstr ""
+msgstr "SamRewritten 无法连接到 Steam，是否在运行中？"
 
 #: src/gui_frontend/app_list_view/mod.rs:447
 msgid "Try again"
-msgstr ""
+msgstr "重试"
 
 #: src/gui_frontend/app_list_view/mod.rs:464
 #: src/gui_frontend/app_list_view/mod.rs:1769
 msgid "Name or AppId (Ctrl+K)"
-msgstr ""
+msgstr "名称或 AppId（Ctrl+K）"
 
 #: src/gui_frontend/app_list_view/mod.rs:499
 msgid "Show or hide the sidebar"
-msgstr ""
+msgstr "显示或隐藏侧边栏"
 
 #: src/gui_frontend/app_list_view/mod.rs:1764
 msgid "Achievement or stat..."
-msgstr ""
+msgstr "成就或统计…"
 
 #: src/gui_frontend/app_list_view/mod.rs:1891
 #: src/gui_frontend/app_list_view/settings_bindings.rs:328
 msgid "Could not change the in-game setting"
-msgstr ""
+msgstr "无法更改游戏内设置"
 
 #: src/gui_frontend/app_list_view/mod.rs:1893
 #: src/gui_frontend/app_list_view/settings_bindings.rs:329
 msgid "The change could not be applied. Restart SamRewritten and try again."
-msgstr ""
+msgstr "更改未能生效。请重启 SamRewritten 后重试。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:57
 msgid "Hide with no achievements"
-msgstr ""
+msgstr "隐藏无成就的应用"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:63
 msgid "Hide at 100%"
-msgstr ""
+msgstr "隐藏 100% 完成的应用"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:69
 msgid "Hide at 0%"
-msgstr ""
+msgstr "隐藏 0% 完成的应用"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:75
 msgid "Hide never launched"
-msgstr ""
+msgstr "隐藏从未启动过的应用"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:81
 msgid "Only currently idling"
-msgstr ""
+msgstr "仅显示正在挂机的"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:87
 msgid "Hide hidden in Steam"
-msgstr ""
+msgstr "隐藏在 Steam 中已隐藏的应用"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:93
 msgid "Show junk"
-msgstr ""
+msgstr "显示杂项应用"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:107
 msgid "App ID"
-msgstr ""
+msgstr "应用 ID"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:112
 msgid "Name"
-msgstr ""
+msgstr "名称"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:117
 msgid "Last played"
-msgstr ""
+msgstr "上次游玩"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:122
 msgid "Playtime"
-msgstr ""
+msgstr "游玩时长"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:127
 msgid "Completion"
-msgstr ""
+msgstr "完成度"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:132
 msgid "Achievements left"
-msgstr ""
+msgstr "剩余成就"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:180
 msgid "Filters on a search term, which SamRewritten cannot reproduce exactly."
-msgstr ""
+msgstr "按搜索词筛选，SamRewritten 无法精确复现。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:183
 msgid "Uses a Steam filter SamRewritten cannot reproduce exactly."
-msgstr ""
+msgstr "使用了 SamRewritten 无法精确复现的 Steam 筛选条件。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:186
 msgid ""
 "Needs information from Steam that could not be read. Refresh to try again."
-msgstr ""
+msgstr "需要来自 Steam 的信息，但未能读取。刷新即可重试。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:189
 msgid ""
 "Needs your friends' games, which Steam can only tell us when it is online."
-msgstr ""
+msgstr "需要好友的游戏数据，而 Steam 只有在在线时才能提供。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:198
 msgid "Favorites"
-msgstr ""
+msgstr "收藏夹"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:225
 msgid "View profile"
-msgstr ""
+msgstr "查看个人资料"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:280
 #: src/gui_frontend/profile_view/mod.rs:484
 msgid "Steam user"
-msgstr ""
+msgstr "Steam 用户"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:300
 msgid "Steam is offline. What needs its servers is turned off."
-msgstr ""
+msgstr "Steam 处于离线状态。依赖其服务器的功能已关闭。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:311
 msgid "Fetching completion…"
-msgstr ""
+msgstr "正在获取完成度…"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:317
 msgid "Click to cancel"
-msgstr ""
+msgstr "点击取消"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:348
 msgid "Filters"
-msgstr ""
+msgstr "筛选"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:359
 msgid "Steam collection"
-msgstr ""
+msgstr "Steam 合集"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:360
 #: src/gui_frontend/app_list_view/sidebar.rs:580
 msgid "All games"
-msgstr ""
+msgstr "所有游戏"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:442
 msgid "Sort by"
-msgstr ""
+msgstr "排序方式"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:505
 msgid "Reset filters"
-msgstr ""
+msgstr "重置筛选"
 
 #: src/gui_frontend/profile_view/mod.rs:71
 msgid "Games in library"
-msgstr ""
+msgstr "库中游戏"
 
 #: src/gui_frontend/profile_view/mod.rs:75
 msgid "Achievements unlocked"
-msgstr ""
+msgstr "已解锁成就"
 
 #: src/gui_frontend/profile_view/mod.rs:79
 msgid "Average completion"
-msgstr ""
+msgstr "平均完成度"
 
 #: src/gui_frontend/profile_view/mod.rs:83
 msgid "Perfect games"
-msgstr ""
+msgstr "全成就游戏"
 
 #: src/gui_frontend/profile_view/mod.rs:87
 msgid "Time played"
-msgstr ""
+msgstr "游玩时间"
 
 #: src/gui_frontend/profile_view/mod.rs:184
 msgid "never played"
-msgstr ""
+msgstr "从未游玩"
 
 #: src/gui_frontend/profile_view/mod.rs:186
 msgid "{minutes} minute(s) played, ever"
-msgstr ""
+msgstr "累计游玩 {minutes} 分钟"
 
 #: src/gui_frontend/profile_view/mod.rs:190
 msgid "nothing else was unlocked for this game outside this moment"
-msgstr ""
+msgstr "这款游戏除这一刻之外没有解锁过其他任何内容"
 
 #: src/gui_frontend/profile_view/mod.rs:193
 msgid "the rest of your unlocks in this game came at other times"
-msgstr ""
+msgstr "这款游戏其余的解锁发生在其他时间"
 
 #: src/gui_frontend/profile_view/mod.rs:196
 msgid "at the very start of this game's history, ordinary unlocks after it"
-msgstr ""
+msgstr "位于这款游戏记录的最开头，之后的解锁都属正常"
 
 #: src/gui_frontend/profile_view/mod.rs:264
 #: src/gui_frontend/profile_view/mod.rs:288
 msgid "No unlocks yet."
-msgstr ""
+msgstr "还没有解锁记录。"
 
 #: src/gui_frontend/profile_view/mod.rs:292
 msgid "{total} unlocked since {since}."
-msgstr ""
+msgstr "自 {since} 起共解锁 {total} 个。"
 
 #: src/gui_frontend/profile_view/mod.rs:296
 msgid "{year} in the last year, {total} since {since}."
-msgstr ""
+msgstr "过去一年 {year} 个，自 {since} 起共 {total} 个。"
 
 #: src/gui_frontend/profile_view/mod.rs:301
 msgid "{count} in {year}, {total} since {since}."
-msgstr ""
+msgstr "{year} 年 {count} 个，自 {since} 起共 {total} 个。"
 
 #: src/gui_frontend/profile_view/mod.rs:563
 msgid ""
 "Rescan for up-to-date numbers if you also use Steam on another computer."
-msgstr ""
+msgstr "如果你还在另一台电脑上使用 Steam，可以重新扫描以获取最新数据。"
 
 #: src/gui_frontend/profile_view/mod.rs:576
 #: src/gui_frontend/profile_view/mod.rs:905
 msgid "Read all my games"
-msgstr ""
+msgstr "读取我的所有游戏"
 
 #: src/gui_frontend/profile_view/mod.rs:647
 msgid "Year to show"
-msgstr ""
+msgstr "显示的年份"
 
 #: src/gui_frontend/profile_view/mod.rs:662
 msgid "Everything here looks like ordinary play."
-msgstr ""
+msgstr "这里的一切看起来都是正常游玩。"
 
 #: src/gui_frontend/profile_view/mod.rs:706
 msgid "Unlock activity"
-msgstr ""
+msgstr "解锁活动"
 
 #: src/gui_frontend/profile_view/mod.rs:724
 msgid "Completion over time"
-msgstr ""
+msgstr "完成度变化"
 
 #: src/gui_frontend/profile_view/mod.rs:730
 msgid "Irregular activity history"
-msgstr ""
+msgstr "异常活动记录"
 
 #: src/gui_frontend/profile_view/mod.rs:733
 msgid ""
 "Anyone visiting your Steam profile sees when each achievement was unlocked. "
 "Listed here are the moments that do not look like ordinary play."
 msgstr ""
+"任何访问你 Steam 个人资料的人都能看到每个成就是何时解锁的。下面列出的是看起来"
+"不像正常游玩的那些时刻。"
 
 #: src/gui_frontend/profile_view/mod.rs:880
 msgid "{hours} h"
-msgstr ""
+msgstr "{hours} 小时"
 
 #: src/gui_frontend/profile_view/mod.rs:903
 msgid "Rescan now"
-msgstr ""
+msgstr "立即重新扫描"
 
 #: src/gui_frontend/profile_view/mod.rs:919
 msgid ""
 "Reading your games' achievements ({measured}/{total}). The activity and the "
 "runs below fill in as it goes."
 msgstr ""
+"正在读取你游戏的成就（{measured}/{total}）。下方的活动和记录会随进度逐步填充"
+"。"
 
 #: src/gui_frontend/profile_view/mod.rs:923
 msgid ""
 "Only {measured} of your {total} games have been read from Steam, so the "
 "figures above cannot be totalled yet."
 msgstr ""
+"你的 {total} 款游戏中只有 {measured} 款已从 Steam 读取，因此上方数据暂时还无"
+"法汇总。"
 
 #: src/gui_frontend/profile_view/mod.rs:963
 msgid "Waiting for Steam to say who is signed in."
-msgstr ""
+msgstr "正在等待 Steam 告知当前登录的账号。"
 
 #: src/gui_frontend/profile_view/mod.rs:971
 msgid "Reading your unlock history…"
-msgstr ""
+msgstr "正在读取你的解锁历史…"
 
 #: src/gui_frontend/profile_view/mod.rs:1027
 #: src/gui_frontend/profile_view/mod.rs:1032
 msgid "Your unlock history could not be read."
-msgstr ""
+msgstr "无法读取你的解锁历史。"
 
 #: src/gui_frontend/profile_view/mod.rs:1138
 msgid "No completion to plot yet."
-msgstr ""
+msgstr "暂无可绘制的完成度数据。"
 
 #: src/gui_frontend/profile_view/mod.rs:1140
 msgid ""
 "Averaged over the games you have started, so it dips when you start a new "
 "one. Now at {percent}%."
-msgstr ""
+msgstr "按你已开始的游戏取平均，因此开始新游戏时会下降。当前为 {percent}%。"
 
 #: src/gui_frontend/profile_view/mod.rs:1149
 msgid ""
 "The activity below is missing {count} game(s). Restart Steam to get them "
 "back."
-msgstr ""
+msgstr "下方活动缺少 {count} 款游戏。重启 Steam 即可恢复。"
 
 #: src/gui_frontend/profile_view/mod.rs:1168
 msgid "Select these {games} games"
-msgstr ""
+msgstr "选择这 {games} 款游戏"
 
 #: src/gui_frontend/profile_view/mod.rs:1186
 msgid "{count} achievements across {games} games"
-msgstr ""
+msgstr "{games} 款游戏中共 {count} 个成就"
 
 #: src/gui_frontend/profile_view/mod.rs:1189
 msgid "{when} — one game after another, in a single sitting"
-msgstr ""
+msgstr "{when} — 一口气连玩多款游戏"
 
 #: src/gui_frontend/profile_view/mod.rs:1196
 #: src/gui_frontend/profile_view/journal_section.rs:251
@@ -792,324 +812,324 @@ msgstr ""
 #: src/gui_frontend/app_list_view/progress_actions.rs:399
 #: src/gui_frontend/app_list_view/progress_actions.rs:488
 msgid "App {id}"
-msgstr ""
+msgstr "应用 {id}"
 
 #: src/gui_frontend/profile_view/mod.rs:1204
 msgid "Open {app}"
-msgstr ""
+msgstr "打开 {app}"
 
 #: src/gui_frontend/profile_view/mod.rs:1218
 msgid "{when}, all in the same second"
-msgstr ""
+msgstr "{when}，全部在同一秒内"
 
 #: src/gui_frontend/profile_view/mod.rs:1220
 msgid "{when}, inside {span} second(s)"
-msgstr ""
+msgstr "{when}，在 {span} 秒内"
 
 #: src/gui_frontend/profile_view/mod.rs:1225
 msgid "{count} achievements in {app}"
-msgstr ""
+msgstr "{app} 中 {count} 个成就"
 
 #: src/gui_frontend/profile_view/mod.rs:1228
 msgid "{timing} — {reading}"
-msgstr ""
+msgstr "{timing} — {reading}"
 
 #: src/gui_frontend/profile_view/mod.rs:1240
 msgid "… and {count} more that stand out less."
-msgstr ""
+msgstr "… 另有 {count} 条不太显眼。"
 
 #: src/gui_frontend/profile_view/mod.rs:1256
 msgid "Last full scan on {date}."
-msgstr ""
+msgstr "上次完整扫描：{date}。"
 
 #: src/gui_frontend/profile_view/mod.rs:1261
 msgid "Steam last refreshed these figures on {date}."
-msgstr ""
+msgstr "Steam 上次刷新这些数据是在 {date}。"
 
 #: src/gui_frontend/profile_view/mod.rs:1264
 msgid "How old these figures are is unknown."
-msgstr ""
+msgstr "这些数据的时间有多旧无从得知。"
 
 #: src/gui_frontend/profile_view/heatmap.rs:30
 msgid "Jan"
-msgstr ""
+msgstr "1月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:31
 msgid "Feb"
-msgstr ""
+msgstr "2月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:32
 msgid "Mar"
-msgstr ""
+msgstr "3月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:33
 msgid "Apr"
-msgstr ""
+msgstr "4月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:34
 msgid "May"
-msgstr ""
+msgstr "5月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:35
 msgid "Jun"
-msgstr ""
+msgstr "6月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:36
 msgid "Jul"
-msgstr ""
+msgstr "7月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:37
 msgid "Aug"
-msgstr ""
+msgstr "8月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:38
 msgid "Sep"
-msgstr ""
+msgstr "9月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:39
 msgid "Oct"
-msgstr ""
+msgstr "10月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:40
 msgid "Nov"
-msgstr ""
+msgstr "11月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:41
 msgid "Dec"
-msgstr ""
+msgstr "12月"
 
 #: src/gui_frontend/profile_view/heatmap.rs:397
 msgid "No unlocks on {date}"
-msgstr ""
+msgstr "{date} 没有解锁"
 
 #: src/gui_frontend/profile_view/heatmap.rs:398
 msgid "{count} unlock(s) in {game} on {date}"
-msgstr ""
+msgstr "{date} 在 {game} 中解锁了 {count} 个"
 
 #: src/gui_frontend/profile_view/heatmap.rs:403
 msgid "{count} unlock(s) across {games} games on {date}"
-msgstr ""
+msgstr "{date} 在 {games} 款游戏中共解锁了 {count} 个"
 
 #: src/gui_frontend/profile_view/heatmap.rs:408
 msgid "{count} unlock(s) on {date}"
-msgstr ""
+msgstr "{date} 解锁了 {count} 个"
 
 #: src/gui_frontend/profile_view/completion_graph.rs:287
 #, no-c-format
 msgid "{percent}% average on {date}"
-msgstr ""
+msgstr "{date} 平均 {percent}%"
 
 #: src/gui_frontend/profile_view/journal_section.rs:71
 msgid "What SamRewritten changed"
-msgstr ""
+msgstr "SamRewritten 更改了什么"
 
 #: src/gui_frontend/profile_view/journal_section.rs:74
 msgid "Keep a history of what SamRewritten changes"
-msgstr ""
+msgstr "记录 SamRewritten 所做的更改"
 
 #: src/gui_frontend/profile_view/journal_section.rs:82
 msgid "Delete this history"
-msgstr ""
+msgstr "删除此记录"
 
 #: src/gui_frontend/profile_view/journal_section.rs:90
 msgid "More"
-msgstr ""
+msgstr "更多"
 
 #: src/gui_frontend/profile_view/journal_section.rs:109
 msgid "Show more"
-msgstr ""
+msgstr "显示更多"
 
 #: src/gui_frontend/profile_view/journal_section.rs:268
 msgid ""
 "Nothing recorded yet. From now on, every change made here lands in this list."
-msgstr ""
+msgstr "暂无记录。从现在起，这里所做的每次更改都会记入此列表。"
 
 #: src/gui_frontend/profile_view/journal_section.rs:271
 msgid ""
 "Off. Switch it on and SamRewritten will keep a list of the changes it makes, "
 "so you can undo them."
-msgstr ""
+msgstr "已关闭。开启后，SamRewritten 会记录它所做的更改，以便你撤销。"
 
 #: src/gui_frontend/profile_view/journal_section.rs:297
 msgid "{count} older change(s) not shown"
-msgstr ""
+msgstr "另有 {count} 条较早的更改未显示"
 
 #: src/gui_frontend/profile_view/journal_section.rs:389
 #: src/gui_frontend/profile_view/journal_section.rs:483
 msgid "Undone"
-msgstr ""
+msgstr "已撤销"
 
 #: src/gui_frontend/profile_view/journal_section.rs:400
 msgid "and {count} more"
-msgstr ""
+msgstr "以及另外 {count} 项"
 
 #: src/gui_frontend/profile_view/journal_section.rs:419
 #: src/gui_frontend/profile_view/journal_section.rs:593
 msgid "Undo"
-msgstr ""
+msgstr "撤销"
 
 #: src/gui_frontend/profile_view/journal_section.rs:433
 msgid "{count} games"
-msgstr ""
+msgstr "{count} 款游戏"
 
 #: src/gui_frontend/profile_view/journal_section.rs:451
 msgid "Unlocked {count} achievement(s) in {app}"
-msgstr ""
+msgstr "在 {app} 中解锁了 {count} 个成就"
 
 #: src/gui_frontend/profile_view/journal_section.rs:453
 msgid "Locked {count} achievement(s) in {app}"
-msgstr ""
+msgstr "在 {app} 中锁定了 {count} 个成就"
 
 #: src/gui_frontend/profile_view/journal_section.rs:455
 msgid "Changed {count} achievement(s) in {app}"
-msgstr ""
+msgstr "在 {app} 中更改了 {count} 个成就"
 
 #: src/gui_frontend/profile_view/journal_section.rs:463
 msgid "Changed {count} stat(s) in {app}"
-msgstr ""
+msgstr "在 {app} 中更改了 {count} 项统计"
 
 #: src/gui_frontend/profile_view/journal_section.rs:464
 msgid "Reset {app}"
-msgstr ""
+msgstr "重置了 {app}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:465
 msgid "Unlocked everything in {app}"
-msgstr ""
+msgstr "解锁了 {app} 中的全部内容"
 
 #: src/gui_frontend/profile_view/journal_section.rs:466
 msgid "Wrote a file's progress into {app}"
-msgstr ""
+msgstr "将文件中的进度写入了 {app}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:467
 msgid "Changed {count} thing(s) in {app}"
-msgstr ""
+msgstr "在 {app} 中更改了 {count} 项"
 
 #: src/gui_frontend/profile_view/journal_section.rs:480
 msgid "an undo"
-msgstr ""
+msgstr "一次撤销"
 
 #: src/gui_frontend/profile_view/journal_section.rs:485
 msgid "partly undone"
-msgstr ""
+msgstr "部分已撤销"
 
 #: src/gui_frontend/profile_view/journal_section.rs:487
 msgid "cannot be undone from here"
-msgstr ""
+msgstr "无法从此处撤销"
 
 #: src/gui_frontend/profile_view/journal_section.rs:489
 msgid "another Steam account"
-msgstr ""
+msgstr "另一个 Steam 账号"
 
 #: src/gui_frontend/profile_view/journal_section.rs:498
 msgid "{name} — unlocked"
-msgstr ""
+msgstr "{name} — 已解锁"
 
 #: src/gui_frontend/profile_view/journal_section.rs:501
 msgid "{name} — locked"
-msgstr ""
+msgstr "{name} — 已锁定"
 
 #: src/gui_frontend/profile_view/journal_section.rs:504
 #: src/gui_frontend/profile_view/journal_section.rs:509
 msgid "{name} — was {value}"
-msgstr ""
+msgstr "{name} — 原为 {value}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:513
 #: src/gui_frontend/profile_view/journal_section.rs:517
 msgid "{name} — {before} to {after}"
-msgstr ""
+msgstr "{name} — {before} → {after}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:536
 msgid "Delete this history?"
-msgstr ""
+msgstr "删除此记录？"
 
 #: src/gui_frontend/profile_view/journal_section.rs:537
 msgid ""
 "The list is emptied for good. Nothing is put back. Whatever was changed in "
 "your games stays changed."
-msgstr ""
+msgstr "列表将被永久清空，不会还原任何内容。你在游戏中做过的更改仍会保持。"
 
 #: src/gui_frontend/profile_view/journal_section.rs:538
 msgid "Delete"
-msgstr ""
+msgstr "删除"
 
 #: src/gui_frontend/profile_view/journal_section.rs:589
 msgid "Undo this change?"
-msgstr ""
+msgstr "撤销此更改？"
 
 #: src/gui_frontend/profile_view/journal_section.rs:590
 msgid "{count} change(s) in {app} will be put back the way they were."
-msgstr ""
+msgstr "{app} 中的 {count} 项更改将恢复原状。"
 
 #: src/gui_frontend/profile_view/journal_section.rs:757
 msgid "{count} change(s) were put back. These could not:"
-msgstr ""
+msgstr "已恢复 {count} 项更改。以下各项未能恢复："
 
 #: src/gui_frontend/profile_view/journal_section.rs:760
 msgid "An unexpected failure occurred while putting this back:"
-msgstr ""
+msgstr "恢复过程中发生了意外错误："
 
 #: src/gui_frontend/profile_view/journal_section.rs:764
 msgid "Undo incomplete"
-msgstr ""
+msgstr "撤销未完成"
 
 #: src/gui_frontend/app_list_view/settings_bindings.rs:159
 msgid "The new language will be applied the next time you start SamRewritten."
-msgstr ""
+msgstr "新语言将在下次启动 SamRewritten 时生效。"
 
 #: src/gui_frontend/app_list_view/settings_bindings.rs:169
 msgid "Language changed"
-msgstr ""
+msgstr "语言已更改"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:150
 #: src/gui_frontend/app_list_view/bulk_actions.rs:174
 msgid "Unlocking {done} / {total} app(s)…"
-msgstr ""
+msgstr "正在解锁 {done} / {total} 个应用…"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:207
 msgid "every achievement unlocked"
-msgstr ""
+msgstr "已解锁全部成就"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:240
 msgid "Unlock incomplete"
-msgstr ""
+msgstr "解锁未完成"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:241
 msgid "Failed to unlock achievements for the following apps:"
-msgstr ""
+msgstr "以下应用的成就解锁失败："
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:323
 #: src/gui_frontend/app_list_view/bulk_actions.rs:350
 msgid "Locking {done} / {total} app(s)…"
-msgstr ""
+msgstr "正在锁定 {done} / {total} 个应用…"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:375
 msgid "every achievement and stat reset"
-msgstr ""
+msgstr "已重置全部成就与统计"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:414
 msgid "Reset incomplete"
-msgstr ""
+msgstr "重置未完成"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:415
 msgid "The following apps were left as they were:"
-msgstr ""
+msgstr "以下应用保持原样："
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:158
 #: src/gui_frontend/app_list_view/progress_actions.rs:181
 msgid "Exporting {done} / {total} app(s)…"
-msgstr ""
+msgstr "正在导出 {done} / {total} 个应用…"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:247
 msgid "Export complete"
-msgstr ""
+msgstr "导出完成"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:248
 msgid "Exported {count} app(s) to {path}"
-msgstr ""
+msgstr "已将 {count} 个应用导出到 {path}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:258
 msgid "Export partially complete"
-msgstr ""
+msgstr "导出部分完成"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:259
 msgid ""
@@ -1117,51 +1137,56 @@ msgid ""
 "\n"
 "Failed to read data for these apps:"
 msgstr ""
+"已写入 {path}\n"
+"\n"
+"无法读取以下应用的数据："
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:266
 msgid "Export failed"
-msgstr ""
+msgstr "导出失败"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:302
 msgid "Import progress"
-msgstr ""
+msgstr "导入进度"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:338
 #: src/gui_frontend/app_list_view/progress_actions.rs:351
 #: src/gui_frontend/app_list_view/progress_actions.rs:361
 msgid "Import failed"
-msgstr ""
+msgstr "导入失败"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:339
 msgid "Could not read file: {error}"
-msgstr ""
+msgstr "无法读取文件：{error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:352
 msgid "Could not parse file: {error}"
-msgstr ""
+msgstr "无法解析文件：{error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:362
 msgid "Unsupported format version: {found} (this build expects {expected})"
-msgstr ""
+msgstr "不支持的格式版本：{found}（此版本需要 {expected}）"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:388
 #: src/gui_frontend/app_list_view/progress_actions.rs:445
 msgid "Nothing to import"
-msgstr ""
+msgstr "没有可导入的内容"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:389
 msgid "None of the apps in the file are in your current library."
-msgstr ""
+msgstr "文件中的任何应用都不在你当前的库中。"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:409
 msgid ""
 "{list}\n"
 "... and {count} more"
 msgstr ""
+"{list}\n"
+"… 另有 {count} 项"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:418
 msgid "Some apps contain protected fields."
-msgstr ""
+msgstr "部分应用包含受保护的字段。"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:420
 msgid ""
@@ -1170,114 +1195,127 @@ msgid ""
 "\n"
 "{list}"
 msgstr ""
+"以下应用包含可能无法导入的字段。继续操作风险自负。\n"
+"\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:425
 msgid "Skip these apps"
-msgstr ""
+msgstr "跳过这些应用"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:426
 msgid "Proceed anyway"
-msgstr ""
+msgstr "仍然继续"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:446
 msgid "All remaining apps were skipped."
-msgstr ""
+msgstr "所有剩余应用均已跳过。"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:474
 #: src/gui_frontend/app_list_view/progress_actions.rs:507
 msgid "Importing {done} / {total} app(s)…"
-msgstr ""
+msgstr "正在导入 {done} / {total} 个应用…"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:552
 msgid "achievements and stats written from a file"
-msgstr ""
+msgstr "从文件写入的成就与统计"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:607
 msgid "Applied {achievements} achievement(s) and {stats} stat(s)."
-msgstr ""
+msgstr "已应用 {achievements} 个成就和 {stats} 项统计。"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:612
 msgid ""
 "\n"
 "Skipped {count} protected field(s)."
 msgstr ""
+"\n"
+"已跳过 {count} 个受保护字段。"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:618
 msgid ""
 "\n"
 "Skipped {count} unwriteable stat(s) (out of range or increment-only)."
 msgstr ""
+"\n"
+"已跳过 {count} 项无法写入的统计（超出范围或仅可增加）。"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:626
 msgid ""
 "Would succeed if you reset stats first:\n"
 "{list}"
 msgstr ""
+"先重置统计即可成功：\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:632
 msgid ""
 "Skipped (not in your library):\n"
 "{list}"
 msgstr ""
+"已跳过（不在你的库中）：\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:637
 msgid ""
 "Errors:\n"
 "{list}"
 msgstr ""
+"错误：\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:642
 #: src/gui_frontend/app_list_view/progress_actions.rs:644
 msgid "Import complete"
-msgstr ""
+msgstr "导入完成"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:122
 msgid "No apps found on your account. Search for App Id to get started."
-msgstr ""
+msgstr "你的账号中没有找到任何应用。搜索 App Id 即可开始。"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:139
 msgid "No results. Check for spelling mistakes or try typing an App Id."
-msgstr ""
+msgstr "没有结果。请检查拼写错误，或尝试输入 App Id。"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:149
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
-msgstr ""
+msgstr "加载库失败。请检查你的网络连接。搜索 App Id 即可开始。"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:435
 msgid "Reset Everything"
-msgstr ""
+msgstr "重置全部内容"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:436
 msgid "This will reset all achievements and stats for this app. Are you sure?"
-msgstr ""
+msgstr "这将重置此应用的所有成就与统计。你确定吗？"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:437
 msgid "Sure, reset"
-msgstr ""
+msgstr "确定，重置"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:112
 msgid "Idle"
-msgstr ""
+msgstr "挂机中"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:136
 msgid "Manage"
-msgstr ""
+msgstr "管理"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:155
 msgid "Manage this app in a new window"
-msgstr ""
+msgstr "在新窗口中管理此应用"
 
 #: src/gui_frontend/widgets/achievement_row.rs:265
 #: src/gui_frontend/widgets/achievement_row.rs:270
 msgid "This achievement is protected."
-msgstr ""
+msgstr "此成就受保护。"
 
 #: src/gui_frontend/widgets/achievement_row.rs:285
 msgid "Click to stage this achievement; click again to remove."
-msgstr ""
+msgstr "点击暂存此成就；再次点击可移除。"
 
 #: src/gui_frontend/widgets/achievement_row.rs:295
 msgid "Already unlocked."
-msgstr ""
+msgstr "已解锁。"
