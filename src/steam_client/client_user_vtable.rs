@@ -13,22 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-// CClientUserMap vtable has 259 slots in current Steam. We only use slot 182
-// (GetSubscribedApps), so the leading 182 slots are kept as opaque pointers
-// to preserve offsets.
+// CClientUserMap vtable has ~260 slots and Steam inserts methods into it: the
+// October 2026 beta moved GetSubscribedApps from 182 to 183. The slot is
+// therefore looked up by name at runtime, with 182 as the fallback.
 
 use crate::steam_client::steamworks_types::AppId_t;
 use std::os::raw::c_void;
 
 #[repr(C)]
 pub struct IClientUser {
-    pub vtable: *const IClientUserVTable,
+    pub vtable: *const *const c_void,
 }
 
-#[repr(C)]
-pub struct IClientUserVTable {
-    pub _vt_pre_get_subscribed_apps: [*const c_void; 182],
-    /// The bool adds expired and just-granted licences: `true` answers a
-    /// superset, it is not an ownership filter.
-    pub get_subscribed_apps: unsafe extern "C" fn(*mut IClientUser, *mut AppId_t, u32, bool) -> u32,
-}
+pub const GET_SUBSCRIBED_APPS_SLOT: usize = 182;
+pub const GET_SUBSCRIBED_APPS_NAME: &str = "GetSubscribedApps";
+
+/// The bool adds expired and just-granted licences: `true` answers a
+/// superset, it is not an ownership filter.
+pub type GetSubscribedAppsFn =
+    unsafe extern "C" fn(*mut IClientUser, *mut AppId_t, u32, bool) -> u32;

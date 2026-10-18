@@ -37,8 +37,11 @@ pub const LANGUAGES: &[(&str, &str)] = &[
     ("ru", "Русский"),
     ("de", "Deutsch"),
     ("uk", "Українська"),
+    ("zh_Hans", "简体中文"),
     ("zh_Hant", "繁體中文"),
     ("tr", "Türkçe"),
+    ("el", "Ελληνικά"),
+    ("it", "Italiano"),
 ];
 
 /// Steam's own language names as they appear in `UserGameStatsSchema_<appid>.bin`,

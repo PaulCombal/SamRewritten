@@ -19,7 +19,10 @@ use std::process::Command;
 /// script (`zh_Hant`), but libintl looks catalogues up by POSIX locale name: it
 /// strips the territory (`de_AT` -> `de`) and never maps a script, so a `zh_TW`
 /// or `zh_HK` system finds nothing under `zh_Hant`.
-const LOCALE_ALIASES: &[(&str, &[&str])] = &[("zh_Hant", &["zh_TW", "zh_HK"])];
+const LOCALE_ALIASES: &[(&str, &[&str])] = &[
+    ("zh_Hans", &["zh_CN", "zh_SG"]),
+    ("zh_Hant", &["zh_TW", "zh_HK"]),
+];
 
 /// Compile each `po/<lang>.po` to `locale/<lang>/LC_MESSAGES/samrewritten.mo`.
 /// Best-effort: a missing `msgfmt` drops translations rather than failing.

@@ -39,4 +39,5 @@ pub mod steam_user_wrapper;
 pub mod steam_utils_vtable;
 pub mod steam_utils_wrapper;
 pub mod steamworks_types;
+pub mod vtable_probe;
 pub mod wrapper_types;
