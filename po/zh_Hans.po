@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 22:49+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2026-10-18 12:18+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: none\n"
 "Language: zh_Hans\n"
@@ -20,171 +20,174 @@ msgstr ""
 #: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:421
 msgid "Loading..."
-msgstr ""
+msgstr "加载中..."
 
 #: src/gui_frontend/ui_components.rs:191
 msgid "Select all visible apps"
-msgstr ""
+msgstr "选择所有可见的应用"
 
 #: src/gui_frontend/ui_components.rs:195
 msgid "Deselect all apps"
-msgstr ""
+msgstr "取消选择所有应用"
 
 #: src/gui_frontend/ui_components.rs:199
 msgid "Unlock all in selection"
-msgstr ""
+msgstr "解锁所选中的全部成就"
 
 #: src/gui_frontend/ui_components.rs:203
 msgid "Reset all in selection"
-msgstr ""
+msgstr "重置所选中的全部内容"
 
 #: src/gui_frontend/ui_components.rs:207
 #: src/gui_frontend/app_list_view/progress_actions.rs:116
 msgid "Export selected apps progress"
-msgstr ""
+msgstr "导出选中应用的进度"
 
 #: src/gui_frontend/ui_components.rs:211
 msgid "Import progress..."
-msgstr ""
+msgstr "导入进度…"
 
 #: src/gui_frontend/ui_components.rs:217
 msgid "Appear in-game while managing"
-msgstr ""
+msgstr "管理时显示为正在游戏中"
 
 #: src/gui_frontend/ui_components.rs:223
 msgid "Refresh app list"
-msgstr ""
+msgstr "刷新应用列表"
 
 #: src/gui_frontend/ui_components.rs:227
 msgid "Refresh achievement counts"
-msgstr ""
+msgstr "刷新成就数量"
 
 #: src/gui_frontend/ui_components.rs:230 src/gui_frontend/ui_components.rs:471
 msgid "About"
-msgstr ""
+msgstr "关于"
 
 #: src/gui_frontend/ui_components.rs:234
 msgid "Change Steam folder…"
-msgstr ""
+msgstr "更改 Steam 文件夹…"
 
 #: src/gui_frontend/ui_components.rs:241
 msgid "Bulk process"
-msgstr ""
+msgstr "批量处理"
 
 #: src/gui_frontend/ui_components.rs:247
 msgid "System"
-msgstr ""
+msgstr "跟随系统"
 
 #: src/gui_frontend/ui_components.rs:248
 msgid "Light"
-msgstr ""
+msgstr "浅色"
 
 #: src/gui_frontend/ui_components.rs:249
 msgid "Dark"
-msgstr ""
+msgstr "深色"
 
 #: src/gui_frontend/ui_components.rs:258
 msgid "Disable animations"
-msgstr ""
+msgstr "禁用动画"
 
 #: src/gui_frontend/ui_components.rs:262
 msgid "Appearance"
-msgstr ""
+msgstr "外观"
 
 #: src/gui_frontend/ui_components.rs:268
 msgid "System default"
-msgstr ""
+msgstr "系统默认"
 
 #: src/gui_frontend/ui_components.rs:271
 msgid "Language"
-msgstr ""
+msgstr "语言"
 
 #: src/gui_frontend/ui_components.rs:388
 msgid "Game default"
-msgstr ""
+msgstr "游戏默认"
 
 #: src/gui_frontend/ui_components.rs:411
 msgid "Refresh achievements & stats"
-msgstr ""
+msgstr "刷新成就与统计"
 
 #: src/gui_frontend/ui_components.rs:415
 msgid "Reset everything"
-msgstr ""
+msgstr "重置全部"
 
 #: src/gui_frontend/ui_components.rs:435
 msgid "Achievement language"
-msgstr ""
+msgstr "成就语言"
 
 #: src/gui_frontend/ui_components.rs:440
 msgid "Achievement order"
-msgstr ""
+msgstr "成就排序"
 
 #: src/gui_frontend/ui_components.rs:443 src/gui_frontend/ui_components.rs:465
 msgid "Steam default"
-msgstr ""
+msgstr "Steam 默认"
 
 #: src/gui_frontend/ui_components.rs:444 src/gui_frontend/ui_components.rs:466
 msgid "Alphabetically"
-msgstr ""
+msgstr "按字母顺序"
 
 #: src/gui_frontend/ui_components.rs:445
 msgid "Global percentage"
-msgstr ""
+msgstr "全球完成率"
 
 #: src/gui_frontend/ui_components.rs:446
 msgid "Unlock date"
-msgstr ""
+msgstr "解锁日期"
 
 #: src/gui_frontend/ui_components.rs:451
 msgid "Achievement state"
-msgstr ""
+msgstr "成就状态"
 
 #: src/gui_frontend/ui_components.rs:454
 msgid "All"
-msgstr ""
+msgstr "全部"
 
 #: src/gui_frontend/ui_components.rs:455
 #: src/gui_frontend/achievement_view.rs:307
 msgid "Locked"
-msgstr ""
+msgstr "未解锁"
 
 #: src/gui_frontend/ui_components.rs:456
 #: src/gui_frontend/achievement_view.rs:305
 msgid "Unlocked"
-msgstr ""
+msgstr "已解锁"
 
 #: src/gui_frontend/ui_components.rs:462
 msgid "Stat order"
-msgstr ""
+msgstr "统计排序"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
 #: src/gui_frontend/unlock_scheduler.rs:214
 #: src/gui_frontend/app_list_view/progress_actions.rs:43
 msgid "OK"
-msgstr ""
+msgstr "确定"
 
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
 #: src/gui_frontend/profile_view/mod.rs:587
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
 #: src/gui_frontend/app_list_view/refresh_actions.rs:437
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: src/gui_frontend/dialogs.rs:284
 msgid "<b>No Steam installations were found on your system.</b>"
-msgstr ""
+msgstr "<b>在你的系统中没有找到Steam位置。</b>"
 
 #: src/gui_frontend/dialogs.rs:286
+#, fuzzy
 msgid ""
 "SamRewritten couldn't find Steam in any of the standard locations. If you "
 "haven't installed Steam yet, please install it through your distribution's "
 "official repository or app store."
 msgstr ""
+"SamRewritten 在所有位置都没能找到 Steam。如果你还没有安装 Steam，请通过官网进"
+"行安装。"
 
 #: src/gui_frontend/dialogs.rs:288
 msgid "<b>Already have Steam installed?</b>"
-msgstr ""
+msgstr "<b>Steam已安装？</b>"
 
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
@@ -193,10 +196,13 @@ msgid ""
 "com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
 "your issue."
 msgstr ""
+"如果你把 Steam 安装在自定义位置，可以通过环境变量告诉 SamRewritten 它在哪。请"
+"查看<a href=\"https://github.com/PaulCombal/SamRewritten\">GitHub 页面</a>获"
+"取说明，或在那里反馈你的问题。"
 
 #: src/gui_frontend/dialogs.rs:295
 msgid "No compatible version of Steam found"
-msgstr ""
+msgstr "未找到兼容的 Steam 版本"
 
 #: src/gui_frontend/dialogs.rs:331
 msgid "    (Steam is running here)"
