@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 22:49+0200\n"
-"PO-Revision-Date: 2026-09-09 19:51+0000\n"
+"PO-Revision-Date: 2026-10-16 23:51+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: none\n"
 "Language: it\n"
@@ -187,7 +187,7 @@ msgstr ""
 
 #: src/gui_frontend/dialogs.rs:288
 msgid "<b>Already have Steam installed?</b>"
-msgstr ""
+msgstr "<b>Steam già installato?</b>"
 
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
@@ -196,18 +196,22 @@ msgid ""
 "github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
 "report your issue."
 msgstr ""
+"Se hai installato Steam in un percorso personalizzato, puoi indicare a "
+"SamRewritten dove trovarlo utilizzando le variabili d'ambiente. Consulta la "
+"<a href=\"https://github.com/PaulCombal/SamRewritten\">pagina GitHub</a> per "
+"le istruzioni o per segnalare il problema."
 
 #: src/gui_frontend/dialogs.rs:295
 msgid "No compatible version of Steam found"
-msgstr ""
+msgstr "Nessuna versione compatibile di Steam trovata"
 
 #: src/gui_frontend/dialogs.rs:331
 msgid "    (Steam is running here)"
-msgstr ""
+msgstr "    (Steam è in esecuzione qui)"
 
 #: src/gui_frontend/dialogs.rs:333
 msgid "    (Steam not running here)"
-msgstr ""
+msgstr "    (Steam non è in esecuzione qui)"
 
 #: src/gui_frontend/dialogs.rs:356
 msgid ""
@@ -215,6 +219,9 @@ msgid ""
 "currently running from is preselected, the others won't work unless you "
 "start Steam from them first."
 msgstr ""
+"SamRewritten ha trovato più di un'installazione di Steam. Quella attualmente "
+"in uso da Steam è già preselezionata; le altre non funzioneranno a meno che "
+"tu non avvii prima Steam da esse."
 
 #: src/gui_frontend/dialogs.rs:361
 msgid ""
@@ -223,18 +230,23 @@ msgid ""
 "want. See the <a href=\"https://github.com/PaulCombal/SamRewritten?"
 "tab=readme-ov-file#environment-variables\">README</a>."
 msgstr ""
+"Ti verrà chiesto di nuovo al prossimo avvio. Per saltare questo passaggio "
+"definitivamente, imposta la variabile d'ambiente <tt>SAM_STEAM_INSTALL_ROOT</"
+"tt> sull'installazione desiderata. Consulta il <a href=\"https://github.com/"
+"PaulCombal/SamRewritten?tab=readme-ov-file#environment-variables\">README</a>"
+"."
 
 #: src/gui_frontend/dialogs.rs:377 src/gui_frontend/dialogs.rs:426
 msgid "Choose a Steam installation"
-msgstr ""
+msgstr "Scegli una installazione di Steam"
 
 #: src/gui_frontend/dialogs.rs:389 src/gui_frontend/dialogs.rs:553
 msgid "Quit"
-msgstr ""
+msgstr "Esci"
 
 #: src/gui_frontend/dialogs.rs:390 src/gui_frontend/dialogs.rs:466
 msgid "Use this installation"
-msgstr ""
+msgstr "Usa questa installazione"
 
 #: src/gui_frontend/dialogs.rs:543
 msgid ""
@@ -246,22 +258,30 @@ msgid ""
 "<b>Flatpak Steam is not supported</b> by the Snap. If you installed Steam "
 "with Flatpak, please use the AppImage instead."
 msgstr ""
+"Questa è la versione sandboxed in formato <b>Snap</b> di SamRewritten, "
+"quindi necessita del tuo permesso per accedere ai file di Steam. Seleziona "
+"la tua cartella di Steam: si aprirà una finestra di dialogo del sistema, ti "
+"basterà confermare per autorizzare l'accesso. Non ti verrà chiesto di "
+"nuovo.\n"
+"\n"
+"<b>La versione Flatpak di Steam non è supportata</b> dallo Snap. Se hai "
+"installato Steam tramite Flatpak, utilizza l'AppImage."
 
 #: src/gui_frontend/dialogs.rs:550 src/gui_frontend/dialogs.rs:589
 msgid "Connect to Steam"
-msgstr ""
+msgstr "Connetti a Steam"
 
 #: src/gui_frontend/dialogs.rs:554 src/gui_frontend/dialogs.rs:620
 msgid "Choose a folder…"
-msgstr ""
+msgstr "Scegli una cartella…"
 
 #: src/gui_frontend/dialogs.rs:555 src/gui_frontend/dialogs.rs:637
 msgid "Use Snap Steam"
-msgstr ""
+msgstr "Usa Steam in versione Snap"
 
 #: src/gui_frontend/dialogs.rs:691
 msgid "Steam folder not usable"
-msgstr ""
+msgstr "Cartella di Steam non utilizzabile"
 
 #: src/gui_frontend/dialogs.rs:699
 msgid ""
@@ -270,155 +290,159 @@ msgid ""
 "<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
 "use the AppImage."
 msgstr ""
+"SamRewritten non è riuscito a leggere <tt>steamclient.so</tt> nella cartella "
+"selezionata. Scegli la cartella di <b>Steam</b>, ovvero quella che contiene "
+"una cartella <tt>linux64</tt>. La versione Flatpak di Steam non può essere "
+"utilizzata dallo Snap; utilizza l'AppImage."
 
 #: src/gui_frontend/dialogs.rs:707
 msgid "Choose again"
-msgstr ""
+msgstr "Scegli di nuovo"
 
 #: src/gui_frontend/dialogs.rs:865
 msgid "Select your Steam folder"
-msgstr ""
+msgstr "Seleziona la tua cartella Steam"
 
 #: src/gui_frontend/app_view.rs:68
 msgid "Achievements:"
-msgstr ""
+msgstr "Achievement:"
 
 #: src/gui_frontend/app_view.rs:82
 msgid "Stats:"
-msgstr ""
+msgstr "Statistiche:"
 
 #: src/gui_frontend/app_view.rs:96
 msgid "Last playtime:"
-msgstr ""
+msgstr "Ultima sessione di gioco:"
 
 #: src/gui_frontend/app_view.rs:110
 msgid "Type:"
-msgstr ""
+msgstr "Tipo:"
 
 #: src/gui_frontend/app_view.rs:124
 msgid "Developer:"
-msgstr ""
+msgstr "Sviluppatore:"
 
 #: src/gui_frontend/app_view.rs:141
 msgid "Metacritic:"
-msgstr ""
+msgstr "Metacritic:"
 
 #: src/gui_frontend/app_view.rs:155
 msgid "Failed to load app."
-msgstr ""
+msgstr "Impossibile caricare l'applicazione."
 
 #: src/gui_frontend/app_view.rs:161
 msgid "No entries found."
-msgstr ""
+msgstr "Nessun elemento trovato."
 
 #: src/gui_frontend/app_view.rs:178
 msgid "Achievements"
-msgstr ""
+msgstr "Achievement"
 
 #: src/gui_frontend/app_view.rs:181
 msgid "Stats"
-msgstr ""
+msgstr "Statistiche"
 
 #: src/gui_frontend/stat_view.rs:180
 msgid "Increment only"
-msgstr ""
+msgstr "Solo incremento"
 
 #: src/gui_frontend/stat_view.rs:185
 msgid "This statistic is protected."
-msgstr ""
+msgstr "Questa statistica è protetta."
 
 #: src/gui_frontend/achievement_view.rs:271
 msgid "No achievements match the current filters"
-msgstr ""
+msgstr "Nessun achievement corrisponde ai filtri attuali"
 
 #: src/gui_frontend/achievement_view.rs:282
 msgid "Show all achievements"
-msgstr ""
+msgstr "Mostra tutti gli achievement"
 
 #: src/gui_frontend/achievement_view.rs:301
 msgid "Search: “{search}”"
-msgstr ""
+msgstr "Cerca: “{search}”"
 
 #: src/gui_frontend/achievement_view.rs:309
 msgid "Showing: {state}"
-msgstr ""
+msgstr "Visualizzazione: {state}"
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
-msgstr ""
+msgstr "Termina e vai indietro"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:58
 msgid "No achievements staged"
-msgstr ""
+msgstr "Nessun achievement programmato"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:59
 msgid "{count} staged"
-msgstr ""
+msgstr "{count} programmato"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:97
 msgid "Already at or above target ({progress})"
-msgstr ""
+msgstr "Obiettivo ({progress}) già raggiunto o superato"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:103
 msgid "Auto-fill {count} achievement(s) ({progress})"
-msgstr ""
+msgstr "Compilazione automatica di {count} achievement ({progress})"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:50
 msgid "Instant"
-msgstr ""
+msgstr "Istantaneo"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:53
 msgid "Stage"
-msgstr ""
+msgstr "Programma"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:57
 msgid "Copy user"
-msgstr ""
+msgstr "Copia utente"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:75
 msgid "Auto-fill"
-msgstr ""
+msgstr "Compilazione automatica"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:78
 msgid "Configuration"
-msgstr ""
+msgstr "Configurazione"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:104
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:48
 msgid "Start"
-msgstr ""
+msgstr "Inizia"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:109
 msgid "Changes apply instantly"
-msgstr ""
+msgstr "Modifiche applicate istantaneamente"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:63
 msgid "Count"
-msgstr ""
+msgstr "Conteggio"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:65
 msgid "Percent"
-msgstr ""
+msgstr "Percentuale"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:99
 msgid "minutes (0 = instant)"
-msgstr ""
+msgstr "minuti (0 = istantaneo)"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:108
 msgid "Even"
-msgstr ""
+msgstr "Pari"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:112
 msgid "Random"
-msgstr ""
+msgstr "Casuale"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:132
 msgid "Target"
-msgstr ""
+msgstr "Obiettivo"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:136
 msgid "Spread over"
-msgstr ""
+msgstr "Spalmato su"
 
 #: src/gui_frontend/achievement_manual_view/config_popover.rs:140
 msgid "Spacing"

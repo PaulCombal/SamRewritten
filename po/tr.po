@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 22:49+0200\n"
-"PO-Revision-Date: 2026-09-29 09:51+0000\n"
+"PO-Revision-Date: 2026-10-16 23:51+0000\n"
 "Last-Translator: Deniz Çolak <28dnzclk@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/samrewritten/"
 "samrewritten/tr/>\n"
@@ -119,45 +119,45 @@ msgstr "Başarım dili"
 
 #: src/gui_frontend/ui_components.rs:440
 msgid "Achievement order"
-msgstr ""
+msgstr "Başarım sıralaması"
 
 #: src/gui_frontend/ui_components.rs:443 src/gui_frontend/ui_components.rs:465
 msgid "Steam default"
-msgstr ""
+msgstr "Steam varsayılan"
 
 #: src/gui_frontend/ui_components.rs:444 src/gui_frontend/ui_components.rs:466
 msgid "Alphabetically"
-msgstr ""
+msgstr "Alfabetik"
 
 #: src/gui_frontend/ui_components.rs:445
 msgid "Global percentage"
-msgstr ""
+msgstr "Global yüzdesi"
 
 #: src/gui_frontend/ui_components.rs:446
 msgid "Unlock date"
-msgstr ""
+msgstr "Kazanma tarihi"
 
 #: src/gui_frontend/ui_components.rs:451
 msgid "Achievement state"
-msgstr ""
+msgstr "Başarım durumu"
 
 #: src/gui_frontend/ui_components.rs:454
 msgid "All"
-msgstr ""
+msgstr "Hepsi"
 
 #: src/gui_frontend/ui_components.rs:455
 #: src/gui_frontend/achievement_view.rs:307
 msgid "Locked"
-msgstr ""
+msgstr "Kilitli"
 
 #: src/gui_frontend/ui_components.rs:456
 #: src/gui_frontend/achievement_view.rs:305
 msgid "Unlocked"
-msgstr ""
+msgstr "Kazanılan"
 
 #: src/gui_frontend/ui_components.rs:462
 msgid "Stat order"
-msgstr ""
+msgstr "İstatistik sıralaması"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
@@ -354,19 +354,19 @@ msgstr "Bu istatistik korumalı."
 
 #: src/gui_frontend/achievement_view.rs:271
 msgid "No achievements match the current filters"
-msgstr ""
+msgstr "Hiçbir başarı mevcut filtrelerle eşleşmiyor"
 
 #: src/gui_frontend/achievement_view.rs:282
 msgid "Show all achievements"
-msgstr ""
+msgstr "Bütün başarımları göster"
 
 #: src/gui_frontend/achievement_view.rs:301
 msgid "Search: “{search}”"
-msgstr ""
+msgstr "Ara: “{search}”"
 
 #: src/gui_frontend/achievement_view.rs:309
 msgid "Showing: {state}"
-msgstr ""
+msgstr "Gösterilen:{state}"
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
@@ -561,7 +561,7 @@ msgstr "Arka planda çalışanlar"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:87
 msgid "Hide hidden in Steam"
-msgstr ""
+msgstr "Steam'de gizli olanları gizle"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:93
 msgid "Show junk"
@@ -594,24 +594,30 @@ msgstr "Kalan Başarımlar"
 #: src/gui_frontend/app_list_view/sidebar.rs:180
 msgid "Filters on a search term, which SamRewritten cannot reproduce exactly."
 msgstr ""
+"SamRewritten'ın tam olarak yeniden üretemediği bir arama terimiyle filtreler."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:183
 msgid "Uses a Steam filter SamRewritten cannot reproduce exactly."
 msgstr ""
+"SamRewritten'ın tam olarak yeniden yapamadığı bir Steam filtresi ile "
+"filtreler."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:186
 msgid ""
 "Needs information from Steam that could not be read. Refresh to try again."
 msgstr ""
+"Steam'den okunamayan bilgilere ihtiyacı var. Tekrar denemek için yenileyin."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:189
 msgid ""
 "Needs your friends' games, which Steam can only tell us when it is online."
 msgstr ""
+"Steam'in bize sadece çevrimiçi olduğunda söyleyebileceği arkadaşlarınızın "
+"oyunlarına ihtiyacı var."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:198
 msgid "Favorites"
-msgstr ""
+msgstr "Favoriler"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:225
 msgid "View profile"
@@ -624,7 +630,7 @@ msgstr "Steam kullanıcısı"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:300
 msgid "Steam is offline. What needs its servers is turned off."
-msgstr ""
+msgstr "Steam çevrimdışıdır. Sunucularına ihtiyacı olan şey kapalıdır."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:311
 msgid "Fetching completion…"
@@ -640,12 +646,12 @@ msgstr "Filtreler"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:359
 msgid "Steam collection"
-msgstr ""
+msgstr "Steam koleksiyonu"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:360
 #: src/gui_frontend/app_list_view/sidebar.rs:580
 msgid "All games"
-msgstr ""
+msgstr "Bütün oyunlar"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:442
 msgid "Sort by"
@@ -978,7 +984,7 @@ msgstr "Gösterilmeyen {count} eski değişiklik var"
 #: src/gui_frontend/profile_view/journal_section.rs:389
 #: src/gui_frontend/profile_view/journal_section.rs:483
 msgid "Undone"
-msgstr ""
+msgstr "Geri alınmış"
 
 #: src/gui_frontend/profile_view/journal_section.rs:400
 msgid "and {count} more"
@@ -1056,9 +1062,8 @@ msgstr "{name} — eski değeri: {value}"
 
 #: src/gui_frontend/profile_view/journal_section.rs:513
 #: src/gui_frontend/profile_view/journal_section.rs:517
-#, fuzzy
 msgid "{name} — {before} to {after}"
-msgstr "{name} — {before} - {after}"
+msgstr "{name} — {before} isminden {after} ismine"
 
 #: src/gui_frontend/profile_view/journal_section.rs:536
 msgid "Delete this history?"
@@ -1069,89 +1074,91 @@ msgid ""
 "The list is emptied for good. Nothing is put back. Whatever was changed in "
 "your games stays changed."
 msgstr ""
+"Liste boşaltıldı. Hiçbir şey geri konulmadı. Oyunlarınızda ne değiştiyse "
+"değişmiş kalır."
 
 #: src/gui_frontend/profile_view/journal_section.rs:538
 msgid "Delete"
-msgstr ""
+msgstr "Sil"
 
 #: src/gui_frontend/profile_view/journal_section.rs:589
 msgid "Undo this change?"
-msgstr ""
+msgstr "Bu değişikliği geri alınsın mı?"
 
 #: src/gui_frontend/profile_view/journal_section.rs:590
 msgid "{count} change(s) in {app} will be put back the way they were."
-msgstr ""
+msgstr "{app} 'deki {count} değişiklik(ler), oldukları gibi geri alınacaktır."
 
 #: src/gui_frontend/profile_view/journal_section.rs:757
 msgid "{count} change(s) were put back. These could not:"
-msgstr ""
+msgstr "{count} değişiklik(ler) geri alındı. Bunlar geri alınamadı:"
 
 #: src/gui_frontend/profile_view/journal_section.rs:760
 msgid "An unexpected failure occurred while putting this back:"
-msgstr ""
+msgstr "Bunu geri koyarken beklenmeyen bir hata oluştu:"
 
 #: src/gui_frontend/profile_view/journal_section.rs:764
 msgid "Undo incomplete"
-msgstr ""
+msgstr "Tamamlanmamış olanları geri al"
 
 #: src/gui_frontend/app_list_view/settings_bindings.rs:159
 msgid "The new language will be applied the next time you start SamRewritten."
-msgstr ""
+msgstr "SamRewritten'ı bir sonraki başlatışınızda yeni dil uygulanacaktır."
 
 #: src/gui_frontend/app_list_view/settings_bindings.rs:169
 msgid "Language changed"
-msgstr ""
+msgstr "Dil değiştirildi"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:150
 #: src/gui_frontend/app_list_view/bulk_actions.rs:174
 msgid "Unlocking {done} / {total} app(s)…"
-msgstr ""
+msgstr "{done} / {total} uygulama(lar) açılıyor…"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:207
 msgid "every achievement unlocked"
-msgstr ""
+msgstr "her başarım kazanıldı"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:240
 msgid "Unlock incomplete"
-msgstr ""
+msgstr "Açma tamamlanamadı"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:241
 msgid "Failed to unlock achievements for the following apps:"
-msgstr ""
+msgstr "Bu uygulamalar için başarıların kilidini açılamadı:"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:323
 #: src/gui_frontend/app_list_view/bulk_actions.rs:350
 msgid "Locking {done} / {total} app(s)…"
-msgstr ""
+msgstr "{done} / {total} uygulama(lar) kilitleniyor…"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:375
 msgid "every achievement and stat reset"
-msgstr ""
+msgstr "her başarım ve istatistik sıfırlandı"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:414
 msgid "Reset incomplete"
-msgstr ""
+msgstr "Sıfırlama tamamlanmadı"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:415
 msgid "The following apps were left as they were:"
-msgstr ""
+msgstr "Bu uygulamalar olduğu gibi bırakıldı:"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:158
 #: src/gui_frontend/app_list_view/progress_actions.rs:181
 msgid "Exporting {done} / {total} app(s)…"
-msgstr ""
+msgstr "{done} / {total} uygulama(lar) dışarıya aktarılıyor…"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:247
 msgid "Export complete"
-msgstr ""
+msgstr "Dışarıya aktarma tamamlandı"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:248
 msgid "Exported {count} app(s) to {path}"
-msgstr ""
+msgstr "{count} uygulama(lar) {path} yerine dışa aktarıldı"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:258
 msgid "Export partially complete"
-msgstr ""
+msgstr "Dışa aktarma kısmen tamamlandı"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:259
 msgid ""
@@ -1159,51 +1166,56 @@ msgid ""
 "\n"
 "Failed to read data for these apps:"
 msgstr ""
+"{path} yazıldı \n"
+"\n"
+"Bu uygulamalar için veri okunamadı:"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:266
 msgid "Export failed"
-msgstr ""
+msgstr "Dışa aktarılma tamamlanamadı"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:302
 msgid "Import progress"
-msgstr ""
+msgstr "İlerleme durumunu içe aktar"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:338
 #: src/gui_frontend/app_list_view/progress_actions.rs:351
 #: src/gui_frontend/app_list_view/progress_actions.rs:361
 msgid "Import failed"
-msgstr ""
+msgstr "İçe aktarma başarısız oldu"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:339
 msgid "Could not read file: {error}"
-msgstr ""
+msgstr "Dosya okunamadı: {error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:352
 msgid "Could not parse file: {error}"
-msgstr ""
+msgstr "Dosya ayrıştırılamadı: {error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:362
 msgid "Unsupported format version: {found} (this build expects {expected})"
-msgstr ""
+msgstr "Desteklenmeyen biçim sürümü: {found} (bu yapı {expected} bekliyor)"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:388
 #: src/gui_frontend/app_list_view/progress_actions.rs:445
 msgid "Nothing to import"
-msgstr ""
+msgstr "İçe aktarılacak hiçbir şey yok"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:389
 msgid "None of the apps in the file are in your current library."
-msgstr ""
+msgstr "Dosyadaki uygulamaların hiçbiri mevcut kütüphanenizde bulunmuyor."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:409
 msgid ""
 "{list}\n"
 "... and {count} more"
 msgstr ""
+"{list}\n"
+"... ve {count} daha fazla"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:418
 msgid "Some apps contain protected fields."
-msgstr ""
+msgstr "Bazı uygulamalar korumalı alanlar içerir."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:420
 msgid ""
@@ -1212,114 +1224,134 @@ msgid ""
 "\n"
 "{list}"
 msgstr ""
+"Aşağıdaki uygulamalar içe aktarılamayan alanlar içerebilir. İşlemi kendi "
+"sorumluluğunuzda gerçekleştirin.\n"
+" \n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:425
 msgid "Skip these apps"
-msgstr ""
+msgstr "Bu uygulamaları atla"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:426
 msgid "Proceed anyway"
-msgstr ""
+msgstr "Yine de devam et"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:446
 msgid "All remaining apps were skipped."
-msgstr ""
+msgstr "Kalan tüm uygulamalar atlandı."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:474
 #: src/gui_frontend/app_list_view/progress_actions.rs:507
 msgid "Importing {done} / {total} app(s)…"
-msgstr ""
+msgstr "{done} / {total} uygulama(lar) içe aktarılıyor…"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:552
 msgid "achievements and stats written from a file"
-msgstr ""
+msgstr "bir dosyadan yazılan başarılar ve istatistikler"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:607
 msgid "Applied {achievements} achievement(s) and {stats} stat(s)."
-msgstr ""
+msgstr "{achievements} başarım(lar) ve {stats} istatistik(ler) uygulandı."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:612
 msgid ""
 "\n"
 "Skipped {count} protected field(s)."
 msgstr ""
+"\n"
+"{count} korunan alan(lar) atlandı."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:618
 msgid ""
 "\n"
 "Skipped {count} unwriteable stat(s) (out of range or increment-only)."
 msgstr ""
+"\n"
+"{count} yazılamayan istatistik(ler) atlandı (aralık dışı veya yalnızca artış)"
+"."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:626
 msgid ""
 "Would succeed if you reset stats first:\n"
 "{list}"
 msgstr ""
+"Önce istatistikleri sıfırlarsanız başarılı olur:\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:632
 msgid ""
 "Skipped (not in your library):\n"
 "{list}"
 msgstr ""
+"Atlandı (kütüphanenizde değil):\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:637
 msgid ""
 "Errors:\n"
 "{list}"
 msgstr ""
+"Hatalar: \n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:642
 #: src/gui_frontend/app_list_view/progress_actions.rs:644
 msgid "Import complete"
-msgstr ""
+msgstr "İçe aktarma tamamlandı"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:122
 msgid "No apps found on your account. Search for App Id to get started."
-msgstr ""
+msgstr "Hesabınızda uygulama bulunamadı. Başlamak için App Id arayın."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:139
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr ""
+"Sonuç yok. Yazım hatalarını kontrol edin veya bir App Id yazmayı deneyin."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:149
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
 msgstr ""
+"Kütüphane yüklenemedi. İnternet bağlantınızı kontrol edin. Başlamak için App "
+"Id arayın."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:435
 msgid "Reset Everything"
-msgstr ""
+msgstr "Her Şeyi Sıfırla"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:436
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr ""
+"Bu, bu uygulamaya ait tüm başarıları ve istatistikleri sıfırlayacaktır. Emin "
+"misin?"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:437
 msgid "Sure, reset"
-msgstr ""
+msgstr "Evet, sıfırla"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:112
 msgid "Idle"
-msgstr ""
+msgstr "Zaman Biriktir"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:136
 msgid "Manage"
-msgstr ""
+msgstr "Yönet"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:155
 msgid "Manage this app in a new window"
-msgstr ""
+msgstr "Bu uygulamayı yeni bir pencerede yönet"
 
 #: src/gui_frontend/widgets/achievement_row.rs:265
 #: src/gui_frontend/widgets/achievement_row.rs:270
 msgid "This achievement is protected."
-msgstr ""
+msgstr "Bu başarım korunmaktadır."
 
 #: src/gui_frontend/widgets/achievement_row.rs:285
 msgid "Click to stage this achievement; click again to remove."
-msgstr ""
+msgstr "Bu başarımı arttırmak için tıklayın; kaldırmak için tekrar tıklayın."
 
 #: src/gui_frontend/widgets/achievement_row.rs:295
 msgid "Already unlocked."
-msgstr ""
+msgstr "Zaten kazanılmış."
