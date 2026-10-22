@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 22:49+0200\n"
-"PO-Revision-Date: 2026-09-08 07:00+0900\n"
+"PO-Revision-Date: 2026-10-20 22:48+0900\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -110,45 +110,45 @@ msgstr "実績の言語"
 
 #: src/gui_frontend/ui_components.rs:440
 msgid "Achievement order"
-msgstr ""
+msgstr "実績の並び順"
 
 #: src/gui_frontend/ui_components.rs:443 src/gui_frontend/ui_components.rs:465
 msgid "Steam default"
-msgstr ""
+msgstr "Steamのデフォルト"
 
 #: src/gui_frontend/ui_components.rs:444 src/gui_frontend/ui_components.rs:466
 msgid "Alphabetically"
-msgstr ""
+msgstr "アルファベット順"
 
 #: src/gui_frontend/ui_components.rs:445
 msgid "Global percentage"
-msgstr ""
+msgstr "全プレイヤーの達成率順"
 
 #: src/gui_frontend/ui_components.rs:446
 msgid "Unlock date"
-msgstr ""
+msgstr "アンロック日時順"
 
 #: src/gui_frontend/ui_components.rs:451
 msgid "Achievement state"
-msgstr ""
+msgstr "実績の状態"
 
 #: src/gui_frontend/ui_components.rs:454
 msgid "All"
-msgstr ""
+msgstr "すべて"
 
 #: src/gui_frontend/ui_components.rs:455
 #: src/gui_frontend/achievement_view.rs:307
 msgid "Locked"
-msgstr ""
+msgstr "ロック中"
 
 #: src/gui_frontend/ui_components.rs:456
 #: src/gui_frontend/achievement_view.rs:305
 msgid "Unlocked"
-msgstr ""
+msgstr "アンロック済み"
 
 #: src/gui_frontend/ui_components.rs:462
 msgid "Stat order"
-msgstr ""
+msgstr "統計情報の並び順"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
@@ -343,19 +343,19 @@ msgstr "この統計情報は保護されています。"
 
 #: src/gui_frontend/achievement_view.rs:271
 msgid "No achievements match the current filters"
-msgstr ""
+msgstr "現在のフィルターに一致する実績はありません"
 
 #: src/gui_frontend/achievement_view.rs:282
 msgid "Show all achievements"
-msgstr ""
+msgstr "すべての実績を表示"
 
 #: src/gui_frontend/achievement_view.rs:301
 msgid "Search: “{search}”"
-msgstr ""
+msgstr "検索: 「{search}」"
 
 #: src/gui_frontend/achievement_view.rs:309
 msgid "Showing: {state}"
-msgstr ""
+msgstr "表示中: {state}"
 
 #: src/gui_frontend/achievement_automatic_view.rs:40
 msgid "Stop and go back"
@@ -551,7 +551,7 @@ msgstr "現在アイドリング中のゲームのみ"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:87
 msgid "Hide hidden in Steam"
-msgstr ""
+msgstr "Steamで非表示の実績を隠す"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:93
 msgid "Show junk"
@@ -583,25 +583,27 @@ msgstr "残りの実績"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:180
 msgid "Filters on a search term, which SamRewritten cannot reproduce exactly."
-msgstr ""
+msgstr "検索語で絞り込んでいます。SamRewrittenでは正確に再現できません。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:183
 msgid "Uses a Steam filter SamRewritten cannot reproduce exactly."
-msgstr ""
+msgstr "SamRewrittenでは正確に再現できないSteamのフィルターを使用しています。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:186
 msgid ""
 "Needs information from Steam that could not be read. Refresh to try again."
 msgstr ""
+"Steamから取得できなかった情報が必要です。更新してもう一度試してください。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:189
 msgid ""
 "Needs your friends' games, which Steam can only tell us when it is online."
 msgstr ""
+"フレンドのゲーム情報が必要です。Steamがオンラインのときのみ取得できます。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:198
 msgid "Favorites"
-msgstr ""
+msgstr "お気に入り"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:225
 msgid "View profile"
@@ -615,6 +617,7 @@ msgstr "Steamユーザー"
 #: src/gui_frontend/app_list_view/sidebar.rs:300
 msgid "Steam is offline. What needs its servers is turned off."
 msgstr ""
+"Steamはオフラインです。Steamのサーバーが必要な機能は無効になっています。"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:311
 msgid "Fetching completion…"
@@ -630,12 +633,12 @@ msgstr "フィルター"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:359
 msgid "Steam collection"
-msgstr ""
+msgstr "Steamコレクション"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:360
 #: src/gui_frontend/app_list_view/sidebar.rs:580
 msgid "All games"
-msgstr ""
+msgstr "すべてのゲーム"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:442
 msgid "Sort by"
