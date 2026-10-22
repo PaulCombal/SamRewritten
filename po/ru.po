@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-05 22:49+0200\n"
-"PO-Revision-Date: 2026-08-23 05:40+0000\n"
+"PO-Revision-Date: 2026-10-21 06:51+0000\n"
 "Last-Translator: AxelPAL\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:421
@@ -49,7 +49,7 @@ msgstr "Импортировать прогресс..."
 
 #: src/gui_frontend/ui_components.rs:217
 msgid "Appear in-game while managing"
-msgstr ""
+msgstr "Отображать статус «В игре» во время управления"
 
 #: src/gui_frontend/ui_components.rs:223
 msgid "Refresh app list"
@@ -117,45 +117,45 @@ msgstr "Язык достижений"
 
 #: src/gui_frontend/ui_components.rs:440
 msgid "Achievement order"
-msgstr ""
+msgstr "Порядок достижений"
 
 #: src/gui_frontend/ui_components.rs:443 src/gui_frontend/ui_components.rs:465
 msgid "Steam default"
-msgstr ""
+msgstr "По умолчанию"
 
 #: src/gui_frontend/ui_components.rs:444 src/gui_frontend/ui_components.rs:466
 msgid "Alphabetically"
-msgstr ""
+msgstr "В алфавитном порядке"
 
 #: src/gui_frontend/ui_components.rs:445
 msgid "Global percentage"
-msgstr ""
+msgstr "Глобальный процент"
 
 #: src/gui_frontend/ui_components.rs:446
 msgid "Unlock date"
-msgstr ""
+msgstr "Дата получения"
 
 #: src/gui_frontend/ui_components.rs:451
 msgid "Achievement state"
-msgstr ""
+msgstr "Состояние"
 
 #: src/gui_frontend/ui_components.rs:454
 msgid "All"
-msgstr ""
+msgstr "Все"
 
 #: src/gui_frontend/ui_components.rs:455
 #: src/gui_frontend/achievement_view.rs:307
 msgid "Locked"
-msgstr ""
+msgstr "Не получены"
 
 #: src/gui_frontend/ui_components.rs:456
 #: src/gui_frontend/achievement_view.rs:305
 msgid "Unlocked"
-msgstr ""
+msgstr "Получены"
 
 #: src/gui_frontend/ui_components.rs:462
 msgid "Stat order"
-msgstr ""
+msgstr "Сортировка статистики"
 
 #: src/gui_frontend/dialogs.rs:89 src/gui_frontend/dialogs.rs:162
 #: src/gui_frontend/dialogs.rs:185 src/gui_frontend/dialogs.rs:233
@@ -347,11 +347,11 @@ msgstr "Эта статистика защищена."
 
 #: src/gui_frontend/achievement_view.rs:271
 msgid "No achievements match the current filters"
-msgstr ""
+msgstr "Нет достижений по текущим фильтрам"
 
 #: src/gui_frontend/achievement_view.rs:282
 msgid "Show all achievements"
-msgstr ""
+msgstr "Показать все достижения"
 
 #: src/gui_frontend/achievement_view.rs:301
 msgid "Search: “{search}”"
@@ -528,9 +528,10 @@ msgstr ""
 
 #: src/gui_frontend/app_list_view/mod.rs:1893
 #: src/gui_frontend/app_list_view/settings_bindings.rs:329
-#, fuzzy
 msgid "The change could not be applied. Restart SamRewritten and try again."
-msgstr "Новый язык применится при следующем запуске SamRewritten."
+msgstr ""
+"Изменения не могут быть применены. Перезапустите SamRewritten и попробуйте "
+"снова."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:57
 msgid "Hide with no achievements"
@@ -808,7 +809,7 @@ msgstr "Выбрать эти игры ({games})"
 
 #: src/gui_frontend/profile_view/mod.rs:1186
 msgid "{count} achievements across {games} games"
-msgstr "{count} достиж. в {games} игр."
+msgstr "{count} достиж. в {games} игр"
 
 #: src/gui_frontend/profile_view/mod.rs:1189
 msgid "{when} — one game after another, in a single sitting"
