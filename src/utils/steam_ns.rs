@@ -13,9 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-//! Flatpak Steam support, Linux only.
+//! Sandboxed Steam support, Linux only.
 //!
-//! Flatpak runs the Steam client in its own PID namespace. Steam's IPC tracks
+//! Flatpak (Valve's `com.valvesoftware.Steam`, or a distro's own package such
+//! as Anatase's `org.anatase.Steam`) runs the Steam client in its own PID
+//! namespace. Steam's IPC tracks
 //! each connection's liveness by PID, so a process on the host (whose PID is
 //! meaningless inside Steam's namespace) gets its cross-process pipe reaped
 //! mid-call — the "broken pipe" failure. The fix is to put every process that
@@ -77,32 +79,32 @@ enum NsOutcome {
 /// Flatpak first); this only reacts to that choice. `Some(code)` means we are
 /// the post-fork parent stub and the caller must exit; `None` means carry on as
 /// the orchestrator.
-pub fn enter_flatpak_steam_ns_if_needed() -> Option<u8> {
-    let lib = SteamLocator::get_steamclient_lib_path(true)?;
-    if !lib.to_string_lossy().contains("com.valvesoftware.Steam") {
-        return None;
-    }
+pub fn enter_steam_pid_ns_if_needed() -> Option<u8> {
+    let root = selected_install_root()?;
+    let pid = sandboxed_steam_pid(&root)?;
 
-    let Some(pid) = detect_flatpak_steam() else {
-        eprintln!(
-            "[STEAM NS] Flatpak Steam is the selected install but no running Flatpak Steam \
-             process was found; the connection will likely fail"
-        );
-        return None;
-    };
-
-    dev_println!("STEAM NS", "Joining Flatpak Steam namespace via pid {pid}");
+    dev_println!("STEAM NS", "Joining Steam's PID namespace via pid {pid}");
     match enter_namespace(pid) {
         NsOutcome::Entered => None,
         NsOutcome::ParentExit(code) => Some(code),
         NsOutcome::Unavailable => {
             eprintln!(
-                "[STEAM NS] Could not join Flatpak Steam's namespace (is this a confined build?); \
+                "[STEAM NS] Could not join Steam's PID namespace (is this a confined build?); \
                  Steam integration may be unstable"
             );
             None
         }
     }
+}
+
+// Resolve via the install root, not the loaded steamclient.so path: the snap
+// dlopens a copy from $SNAP_USER_COMMON, so the .so path isn't the real
+// install. Skip dirs without a steamclient.so to match prior behaviour.
+fn selected_install_root() -> Option<PathBuf> {
+    SteamLocator::get_local_steam_install_root_folders()
+        .into_iter()
+        .find(|root| root.join("linux64/steamclient.so").exists())
+        .and_then(|root| fs::canonicalize(root).ok())
 }
 
 /// Install roots a Steam client is currently running from, read from the
@@ -149,7 +151,9 @@ fn steam_root_from_maps(pid: i32) -> Option<PathBuf> {
         if !line.contains("steamclient.so") {
             continue;
         }
-        let path = Path::new(&line[line.find('/')?..]);
+        // A library replaced on disk while still mapped is listed as "<path> (deleted)".
+        let mapped = &line[line.find('/')?..];
+        let path = Path::new(mapped.strip_suffix(" (deleted)").unwrap_or(mapped));
         if path.file_name()?.to_str()? != "steamclient.so" {
             continue;
         }
@@ -163,14 +167,7 @@ fn steam_root_from_maps(pid: i32) -> Option<PathBuf> {
 /// crashes on the first app-manager call, so this is the check that keeps us on
 /// the clean `SteamConnectionFailed` path instead.
 pub fn loaded_install_is_running() -> bool {
-    // Resolve via the install root, not the loaded steamclient.so path: the snap
-    // dlopens a copy from $SNAP_USER_COMMON, so the .so path isn't the real
-    // install. Skip dirs without a steamclient.so to match prior behaviour.
-    let Some(target) = SteamLocator::get_local_steam_install_root_folders()
-        .into_iter()
-        .find(|root| root.join("linux64/steamclient.so").exists())
-        .and_then(|root| fs::canonicalize(root).ok())
-    else {
+    let Some(target) = selected_install_root() else {
         return false;
     };
 
@@ -209,9 +206,12 @@ fn any_steam_process_running() -> bool {
 }
 
 /// A match is a process named `steam`, in a different PID namespace than us,
-/// whose command line points into the Flatpak Steam install.
-fn detect_flatpak_steam() -> Option<i32> {
+/// running from `root`. Matching on the resolved install rather than the
+/// Flatpak app id also covers repackaged Flatpaks (e.g. `org.anatase.Steam`,
+/// which keeps its data in `~/.local/share/Steam`) and symlinked installs.
+fn sandboxed_steam_pid(root: &Path) -> Option<i32> {
     let self_pidns = fs::read_link("/proc/self/ns/pid").ok()?;
+    let mut mismatches = Vec::new();
 
     for entry in fs::read_dir("/proc").ok()?.flatten() {
         let Some(pid) = entry
@@ -233,12 +233,26 @@ fn detect_flatpak_steam() -> Option<i32> {
             Ok(_) => {}
         }
 
-        let cmdline = fs::read(format!("/proc/{pid}/cmdline")).unwrap_or_default();
-        if String::from_utf8_lossy(&cmdline).contains("com.valvesoftware.Steam") {
-            return Some(pid);
+        match steam_root_from_maps(pid) {
+            Some(found) if found == root => return Some(pid),
+            found => mismatches.push((pid, found)),
         }
     }
 
+    for (pid, found) in mismatches {
+        let running_from = match found {
+            Some(path) => format!("running from {}", path.display()),
+            None if fs::read_to_string(format!("/proc/{pid}/maps")).is_err() => {
+                format!("install unreadable (/proc/{pid}/maps denied)")
+            }
+            None => "no steamclient.so loaded".to_owned(),
+        };
+        eprintln!(
+            "[STEAM NS] Steam pid {pid} is in another PID namespace, {running_from}; selected \
+             install is {}; not joining",
+            root.display()
+        );
+    }
     None
 }
 
