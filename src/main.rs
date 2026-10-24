@@ -52,7 +52,7 @@ fn main() -> std::process::ExitCode {
         let mut tx = arguments.tx.unwrap();
         let mut rx = arguments.rx.unwrap();
         #[cfg(target_os = "linux")]
-        if let Some(code) = crate::utils::steam_ns::enter_flatpak_steam_ns_if_needed() {
+        if let Some(code) = crate::utils::steam_ns::enter_steam_pid_ns_if_needed() {
             return std::process::ExitCode::from(code);
         }
         let exit_code = orchestrator(&mut tx, &mut rx);
@@ -82,7 +82,7 @@ fn main() -> gtk::glib::ExitCode {
         let mut tx = arguments.tx.unwrap();
         let mut rx = arguments.rx.unwrap();
         #[cfg(target_os = "linux")]
-        if let Some(code) = crate::utils::steam_ns::enter_flatpak_steam_ns_if_needed() {
+        if let Some(code) = crate::utils::steam_ns::enter_steam_pid_ns_if_needed() {
             return gtk::glib::ExitCode::from(code);
         }
         let exit_code = orchestrator(&mut tx, &mut rx);
