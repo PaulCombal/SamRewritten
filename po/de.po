@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 22:49+0200\n"
+"POT-Creation-Date: 2026-10-29 16:56+0100\n"
 "PO-Revision-Date: 2026-08-26 19:00+0200\n"
 "Last-Translator: Christian Lauinger <christian@lauinger-clan.de>\n"
 "Language-Team: \n"
@@ -19,6 +19,7 @@ msgstr ""
 
 #: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:421
+#: src/gui_frontend/app_list_view/refresh_actions.rs:92
 msgid "Loading..."
 msgstr "Wird geladen …"
 
@@ -167,7 +168,7 @@ msgstr "OK"
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
 #: src/gui_frontend/profile_view/mod.rs:587
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
-#: src/gui_frontend/app_list_view/refresh_actions.rs:437
+#: src/gui_frontend/app_list_view/refresh_actions.rs:471
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -517,7 +518,7 @@ msgid "Try again"
 msgstr "Erneut versuchen"
 
 #: src/gui_frontend/app_list_view/mod.rs:464
-#: src/gui_frontend/app_list_view/mod.rs:1769
+#: src/gui_frontend/app_list_view/mod.rs:1770
 msgid "Name or AppId (Ctrl+K)"
 msgstr "Name oder App-ID (Strg+K)"
 
@@ -525,16 +526,16 @@ msgstr "Name oder App-ID (Strg+K)"
 msgid "Show or hide the sidebar"
 msgstr "Seitenleiste ein- oder ausblenden"
 
-#: src/gui_frontend/app_list_view/mod.rs:1764
+#: src/gui_frontend/app_list_view/mod.rs:1765
 msgid "Achievement or stat..."
 msgstr "Errungenschaft oder Statistik …"
 
-#: src/gui_frontend/app_list_view/mod.rs:1891
+#: src/gui_frontend/app_list_view/mod.rs:1892
 #: src/gui_frontend/app_list_view/settings_bindings.rs:328
 msgid "Could not change the in-game setting"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:1893
+#: src/gui_frontend/app_list_view/mod.rs:1894
 #: src/gui_frontend/app_list_view/settings_bindings.rs:329
 #, fuzzy
 msgid "The change could not be applied. Restart SamRewritten and try again."
@@ -1304,18 +1305,22 @@ msgstr ""
 msgid "Import complete"
 msgstr "Import abgeschlossen"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:122
+#: src/gui_frontend/app_list_view/refresh_actions.rs:111
+msgid "Downloading the app list, allow up to 5 minutes on a slow connection..."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:156
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
 "In Ihrem Konto wurden keine Apps gefunden. Suchen Sie nach einer App-ID, um "
 "zu beginnen."
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:139
+#: src/gui_frontend/app_list_view/refresh_actions.rs:173
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr ""
 "Keine Ergebnisse. Prüfen Sie die Schreibweise oder geben Sie eine App-ID ein."
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:149
+#: src/gui_frontend/app_list_view/refresh_actions.rs:183
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
@@ -1323,17 +1328,17 @@ msgstr ""
 "Die Bibliothek konnte nicht geladen werden. Prüfen Sie Ihre "
 "Internetverbindung. Suchen Sie nach einer App-ID, um zu beginnen."
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:435
+#: src/gui_frontend/app_list_view/refresh_actions.rs:469
 msgid "Reset Everything"
 msgstr "Alles zurücksetzen"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:436
+#: src/gui_frontend/app_list_view/refresh_actions.rs:470
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr ""
 "Dadurch werden alle Errungenschaften und Statistiken dieser App "
 "zurückgesetzt. Sind Sie sicher?"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:437
+#: src/gui_frontend/app_list_view/refresh_actions.rs:471
 msgid "Sure, reset"
 msgstr "Ja, zurücksetzen"
 

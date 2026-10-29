@@ -185,9 +185,9 @@ msgstr "<b>Steam est déjà installé ?</b>"
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
-"to it using environment variables. Please check the <a href=\"https://github."
-"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
-"your issue."
+"to it using environment variables. Please check the <a href=\"https://"
+"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
+"report your issue."
 msgstr ""
 "Si vous avez installé Steam dans un emplacement personnalisé, vous pouvez "
 "l'indiquer à SamRewritten à l'aide de variables d'environnement. Consultez "
@@ -1296,7 +1296,9 @@ msgstr "Importation terminée"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:111
 msgid "Downloading the app list, allow up to 5 minutes on a slow connection..."
-msgstr "Téléchargement de la liste des apps, comptez jusqu'à 5 minutes avec une connexion lente..."
+msgstr ""
+"Téléchargement de la liste des apps, comptez jusqu'à 5 minutes avec une "
+"connexion lente..."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:156
 msgid "No apps found on your account. Search for App Id to get started."
