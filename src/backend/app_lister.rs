@@ -174,11 +174,15 @@ fn valid_app_list<R: BufRead>(input: R) -> bool {
     let mut depth = 0usize;
     let mut saw_root = false;
     let mut in_game = false;
+    let mut game_has_id = false;
     let mut game_count = 0usize;
     loop {
         buf.clear();
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(e)) => {
+                if in_game {
+                    return false;
+                }
                 if depth == 0 {
                     if saw_root || e.name().as_ref() != b"games" {
                         return false;
@@ -188,6 +192,7 @@ fn valid_app_list<R: BufRead>(input: R) -> bool {
                 depth += 1;
                 if depth == 2 && e.name().as_ref() == b"game" {
                     in_game = true;
+                    game_has_id = false;
                 }
             }
             Ok(Event::End(e)) => {
@@ -195,15 +200,21 @@ fn valid_app_list<R: BufRead>(input: R) -> bool {
                     return false;
                 }
                 if depth == 2 && e.name().as_ref() == b"game" {
+                    if !game_has_id {
+                        return false;
+                    }
                     in_game = false;
                 }
                 depth -= 1;
             }
             Ok(Event::Text(t)) if in_game => {
-                if t.decode().is_ok_and(|s| s.trim().parse::<u32>().is_ok()) {
-                    game_count += 1;
+                if game_has_id || !t.decode().is_ok_and(|s| s.trim().parse::<u32>().is_ok()) {
+                    return false;
                 }
+                game_has_id = true;
+                game_count += 1;
             }
+            Ok(Event::Empty(e)) if e.name().as_ref() == b"game" => return false,
             Ok(Event::Text(t)) if depth == 0 => {
                 if !t.decode().is_ok_and(|s| s.trim().is_empty()) {
                     return false;
@@ -620,6 +631,19 @@ mod cache_tests {
         let cache = CacheFile::new(Some(OLD_LIST), true);
         ensure_cached_app_list(&cache.0, |_| Ok("<games><game>440</game>".into())).unwrap();
         assert_eq!(fs::read_to_string(&cache.0).unwrap(), OLD_LIST);
+    }
+
+    #[test]
+    fn malformed_game_does_not_replace_expired_cache() {
+        for response in [
+            "<games><game>440</game><game>broken</game></games>",
+            "<games><game>440</game><game/></games>",
+            "<games><game>440</game><game><id>480</id></game></games>",
+        ] {
+            let cache = CacheFile::new(Some(OLD_LIST), true);
+            ensure_cached_app_list(&cache.0, |_| Ok(response.into())).unwrap();
+            assert_eq!(fs::read_to_string(&cache.0).unwrap(), OLD_LIST);
+        }
     }
 
     #[test]
