@@ -40,6 +40,8 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
+const SLOW_LOAD_HINT_DELAY_SECONDS: u32 = 5;
+
 #[allow(clippy::too_many_arguments)]
 pub fn create_refresh_app_list_action(
     application: &MainApplication,
@@ -49,13 +51,19 @@ pub fn create_refresh_app_list_action(
     list_of_apps_or_no_result: &Stack,
     app_list_no_result_label: &Label,
     list_stack: &Stack,
+    list_spinner_label: &Label,
     search_entry: &SearchEntry,
     idle_count: Rc<Cell<usize>>,
     achievement_loader: AchievementLoader,
     on_library_loaded: Rc<dyn Fn()>,
 ) -> SimpleAction {
     let action_refresh_app_list = SimpleAction::new("refresh_app_list", None);
+    let load_generation = Rc::new(Cell::new(0u32));
     action_refresh_app_list.connect_activate(clone!(
+        #[weak]
+        list_spinner_label,
+        #[strong]
+        load_generation,
         #[strong]
         grid_view,
         #[strong]
@@ -80,6 +88,29 @@ pub fn create_refresh_app_list_action(
         on_library_loaded,
         move |_, _| {
             list_stack.set_visible_child_name("loading");
+            list_spinner_label.set_text(&tr("Loading..."));
+            let generation = load_generation.get().wrapping_add(1);
+            load_generation.set(generation);
+            glib::timeout_add_seconds_local_once(
+                SLOW_LOAD_HINT_DELAY_SECONDS,
+                clone!(
+                    #[weak]
+                    list_spinner_label,
+                    #[weak]
+                    list_stack,
+                    #[strong]
+                    load_generation,
+                    move || {
+                        if load_generation.get() == generation
+                            && list_stack.visible_child_name().as_deref() == Some("loading")
+                        {
+                            list_spinner_label.set_text(&tr(
+                                "Downloading the app list, allow up to 5 minutes on a slow connection...",
+                            ));
+                        }
+                    }
+                ),
+            );
             set_selection_actions_enabled(&application, false);
             search_entry.set_sensitive(false);
             let apps = spawn_blocking(move || {

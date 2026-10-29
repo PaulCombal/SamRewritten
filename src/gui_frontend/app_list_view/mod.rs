@@ -1697,6 +1697,7 @@ pub fn create_main_ui(
         &list_of_apps_or_no_result,
         &app_list_no_result_label,
         &list_stack,
+        &list_spinner_label,
         &search_entry,
         idle_count.clone(),
         achievement_loader.clone(),
