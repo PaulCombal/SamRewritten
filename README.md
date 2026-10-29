@@ -82,17 +82,7 @@ The snap ships three commands: `samrewritten` (GTK), `samrewritten.samrewritten-
 </details>
 
 <details>
-<summary><b>Linux (AppImage)</b></summary>
-
-The AppImage bundles many dependencies, but still relies on the host system's
-glibc. Current builds target Ubuntu 24.04 and newer; distributions with older
-glibc, such as Ubuntu or Pop!_OS 22.04, may fail with a `GLIBC_2.39 not found`
-error. You can check your version with `ldd --version`.
-
-On Ubuntu 22.04 or Pop!_OS 22.04, consider the [Snap package](https://snapcraft.io/samrewritten)
-(except when Steam is installed as a Flatpak), or the older
-[v1.2.3-legacy release](https://github.com/PaulCombal/SamRewritten/releases/tag/v1.2.3-legacy).
-The legacy release does not include fixes and features added since then.
+<summary><b>All Linux distributions (AppImage)</b></summary>
 
 1. Download the latest AppImage from the [Releases page](https://github.com/PaulCombal/SamRewritten/releases).
 2. Make it executable. You can either right-click the file → "Permissions" → check "Allow executing file as program", or run:
@@ -103,6 +93,8 @@ The legacy release does not include fixes and features added since then.
    ```bash
    ./samrewritten-gtk.AppImage
    ```
+
+For older Linux distributions, like based on Ubuntu 22.04, use the [v1.2.3-legacy](https://github.com/PaulCombal/SamRewritten/releases/tag/v1.2.3-legacy) AppImage.
 
 If SamRewritten fails to launch, run it from a terminal to see the logs. If you see an error mentioning "FUSE" or "libfuse", install the library:
 
