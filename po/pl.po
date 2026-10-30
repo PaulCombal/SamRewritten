@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-29 16:56+0100\n"
-"PO-Revision-Date: 2026-10-29 16:09+0000\n"
+"PO-Revision-Date: 2026-10-31 08:51+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: none\n"
 "Language: pl\n"
@@ -743,8 +743,10 @@ msgid "the rest of your unlocks in this game came at other times"
 msgstr "reszta osiągnięć w tej grze została zdobyta w innym czasie"
 
 #: src/gui_frontend/profile_view/mod.rs:196
+#, fuzzy
 msgid "at the very start of this game's history, ordinary unlocks after it"
 msgstr ""
+"na samym początku historii tej gry, typowe odblokowania pojawią się tutaj"
 
 #: src/gui_frontend/profile_view/mod.rs:264
 #: src/gui_frontend/profile_view/mod.rs:288
@@ -914,7 +916,7 @@ msgstr "{timing} — {reading}"
 
 #: src/gui_frontend/profile_view/mod.rs:1240
 msgid "… and {count} more that stand out less."
-msgstr ""
+msgstr "… oraz {count} innych, które mniej się wyróżniają."
 
 #: src/gui_frontend/profile_view/mod.rs:1256
 msgid "Last full scan on {date}."
@@ -1235,45 +1237,50 @@ msgid "Export failed"
 msgstr "Eksport nie powiódł się"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:302
+#, fuzzy
 msgid "Import progress"
-msgstr ""
+msgstr "Importuj postęp"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:338
 #: src/gui_frontend/app_list_view/progress_actions.rs:351
 #: src/gui_frontend/app_list_view/progress_actions.rs:361
 msgid "Import failed"
-msgstr ""
+msgstr "Import nie powiódł się"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:339
 msgid "Could not read file: {error}"
-msgstr ""
+msgstr "Wystąpił błąd podczas odczytu pliku: {error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:352
 msgid "Could not parse file: {error}"
-msgstr ""
+msgstr "Analiza pliku nie powiodła się: {error}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:362
 msgid "Unsupported format version: {found} (this build expects {expected})"
 msgstr ""
+"Nieobsługiwana wersja formatu: {found} (ta wersja programu oczekuje "
+"{expected})"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:388
 #: src/gui_frontend/app_list_view/progress_actions.rs:445
 msgid "Nothing to import"
-msgstr ""
+msgstr "Brak danych do zaimportowania"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:389
 msgid "None of the apps in the file are in your current library."
-msgstr ""
+msgstr "Żadna z gier z pliku nie znajduje się w Twojej bieżącej kolekcji."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:409
 msgid ""
 "{list}\n"
 "... and {count} more"
 msgstr ""
+"{list}\n"
+"... i {count} więcej"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:418
 msgid "Some apps contain protected fields."
-msgstr ""
+msgstr "Niektóre z gier zawierają chronione pola."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:420
 msgid ""
@@ -1282,70 +1289,87 @@ msgid ""
 "\n"
 "{list}"
 msgstr ""
+"Następujące gry zawierają pola, których nie da się zaimportować. "
+"Kontynuujesz na własną odpowiedzialność.\n"
+"\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:425
 msgid "Skip these apps"
-msgstr ""
+msgstr "Pomiń te gry"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:426
 msgid "Proceed anyway"
-msgstr ""
+msgstr "Mimo wszystko, kontynuuj"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:446
 msgid "All remaining apps were skipped."
-msgstr ""
+msgstr "Wszystkie pozostałe gry zostały pominięte."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:474
 #: src/gui_frontend/app_list_view/progress_actions.rs:507
 msgid "Importing {done} / {total} app(s)…"
-msgstr ""
+msgstr "Zaimportowano {done} z {total} gier…"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:552
 msgid "achievements and stats written from a file"
-msgstr ""
+msgstr "osiągnięcia i statystyki zapisane z pliku"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:607
 msgid "Applied {achievements} achievement(s) and {stats} stat(s)."
-msgstr ""
+msgstr "Zaktualizowano {achievements} osiągnięć i {stats} statystyk."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:612
 msgid ""
 "\n"
 "Skipped {count} protected field(s)."
 msgstr ""
+"\n"
+"pominięto {count} chronionych pól."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:618
+#, fuzzy
 msgid ""
 "\n"
 "Skipped {count} unwriteable stat(s) (out of range or increment-only)."
 msgstr ""
+"\n"
+"Pominięto {count} statystyki niemożliwe do zapisania (poza zakresem lub "
+"tylko przyrostowe)."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:626
 msgid ""
 "Would succeed if you reset stats first:\n"
 "{list}"
 msgstr ""
+"Operacja powiedzie się, jeśli poniższe statystyki zostaną wyzerowane:\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:632
 msgid ""
 "Skipped (not in your library):\n"
 "{list}"
 msgstr ""
+"Pominięte gry (brak w kolekcji):\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:637
 msgid ""
 "Errors:\n"
 "{list}"
 msgstr ""
+"Błędy:\n"
+"{list}"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:642
 #: src/gui_frontend/app_list_view/progress_actions.rs:644
 msgid "Import complete"
-msgstr ""
+msgstr "Import zakończony"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:111
 msgid "Downloading the app list, allow up to 5 minutes on a slow connection..."
 msgstr ""
+"Pobieranie listy gier, na wolnym połączeniu może to potrwać do 5 minut..."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:156
 msgid "No apps found on your account. Search for App Id to get started."
