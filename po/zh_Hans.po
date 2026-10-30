@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 22:49+0200\n"
+"POT-Creation-Date: 2026-10-29 16:56+0100\n"
 "PO-Revision-Date: 2026-10-18 12:43+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: none\n"
@@ -19,6 +19,7 @@ msgstr ""
 
 #: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:421
+#: src/gui_frontend/app_list_view/refresh_actions.rs:92
 msgid "Loading..."
 msgstr "正在加载…"
 
@@ -167,7 +168,7 @@ msgstr "确定"
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
 #: src/gui_frontend/profile_view/mod.rs:587
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
-#: src/gui_frontend/app_list_view/refresh_actions.rs:437
+#: src/gui_frontend/app_list_view/refresh_actions.rs:471
 msgid "Cancel"
 msgstr "取消"
 
@@ -191,9 +192,9 @@ msgstr "<b>已经安装了 Steam？</b>"
 #: src/gui_frontend/dialogs.rs:290
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
-"to it using environment variables. Please check the <a href=\"https://github."
-"com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to report "
-"your issue."
+"to it using environment variables. Please check the <a href=\"https://"
+"github.com/PaulCombal/SamRewritten\">GitHub page</a> for instructions, or to "
+"report your issue."
 msgstr ""
 "如果你把 Steam 安装在了自定义位置，可以通过环境变量告诉 SamRewritten 它在哪。"
 "请查看 <a href=\"https://github.com/PaulCombal/SamRewritten\">GitHub 页面</"
@@ -227,8 +228,8 @@ msgid ""
 "want. See the <a href=\"https://github.com/PaulCombal/SamRewritten?"
 "tab=readme-ov-file#environment-variables\">README</a>."
 msgstr ""
-"下次启动时还会再问你一次。若要永久跳过此询问，请把环境变量 <tt>"
-"SAM_STEAM_INSTALL_ROOT</tt> 设置为你想要的那个安装目录。详见 <a "
+"下次启动时还会再问你一次。若要永久跳过此询问，请把环境变量 "
+"<tt>SAM_STEAM_INSTALL_ROOT</tt> 设置为你想要的那个安装目录。详见 <a "
 "href=\"https://github.com/PaulCombal/SamRewritten?tab=readme-ov-"
 "file#environment-variables\">README</a>。"
 
@@ -255,8 +256,8 @@ msgid ""
 "with Flatpak, please use the AppImage instead."
 msgstr ""
 "这是 SamRewritten 的沙盒 <b>Snap</b> 版本，因此需要你的授权才能读取 Steam 文"
-"件。请选择一次你的 Steam 文件夹：系统会弹出一个对话框，确认后即可授予访问权限"
-"。之后不会再询问你。\n"
+"件。请选择一次你的 Steam 文件夹：系统会弹出一个对话框，确认后即可授予访问权"
+"限。之后不会再询问你。\n"
 "\n"
 "Snap 版<b>不支持 Flatpak 版 Steam</b>。如果你是用 Flatpak 安装的 Steam，请改"
 "用 AppImage。"
@@ -284,9 +285,9 @@ msgid ""
 "<tt>linux64</tt> folder. A Flatpak Steam can't be used by the Snap; please "
 "use the AppImage."
 msgstr ""
-"SamRewritten 无法读取你所选文件夹中的 <tt>steamclient.so</tt>。请选择 <b>"
-"Steam</b> 目录——也就是包含 <tt>linux64</tt> 文件夹的那个目录。Snap 版无法使"
-"用 Flatpak 版的 Steam，请改用 AppImage。"
+"SamRewritten 无法读取你所选文件夹中的 <tt>steamclient.so</tt>。请选择 "
+"<b>Steam</b> 目录——也就是包含 <tt>linux64</tt> 文件夹的那个目录。Snap 版无法"
+"使用 Flatpak 版的 Steam，请改用 AppImage。"
 
 #: src/gui_frontend/dialogs.rs:707
 msgid "Choose again"
@@ -508,7 +509,7 @@ msgid "Try again"
 msgstr "重试"
 
 #: src/gui_frontend/app_list_view/mod.rs:464
-#: src/gui_frontend/app_list_view/mod.rs:1769
+#: src/gui_frontend/app_list_view/mod.rs:1770
 msgid "Name or AppId (Ctrl+K)"
 msgstr "名称或 AppId（Ctrl+K）"
 
@@ -516,16 +517,16 @@ msgstr "名称或 AppId（Ctrl+K）"
 msgid "Show or hide the sidebar"
 msgstr "显示或隐藏侧边栏"
 
-#: src/gui_frontend/app_list_view/mod.rs:1764
+#: src/gui_frontend/app_list_view/mod.rs:1765
 msgid "Achievement or stat..."
 msgstr "成就或统计…"
 
-#: src/gui_frontend/app_list_view/mod.rs:1891
+#: src/gui_frontend/app_list_view/mod.rs:1892
 #: src/gui_frontend/app_list_view/settings_bindings.rs:328
 msgid "Could not change the in-game setting"
 msgstr "无法更改游戏内设置"
 
-#: src/gui_frontend/app_list_view/mod.rs:1893
+#: src/gui_frontend/app_list_view/mod.rs:1894
 #: src/gui_frontend/app_list_view/settings_bindings.rs:329
 msgid "The change could not be applied. Restart SamRewritten and try again."
 msgstr "更改未能生效。请重启 SamRewritten 后重试。"
@@ -754,8 +755,8 @@ msgid ""
 "Reading your games' achievements ({measured}/{total}). The activity and the "
 "runs below fill in as it goes."
 msgstr ""
-"正在读取你游戏的成就（{measured}/{total}）。下方的活动和记录会随进度逐步填充"
-"。"
+"正在读取你游戏的成就（{measured}/{total}）。下方的活动和记录会随进度逐步填"
+"充。"
 
 #: src/gui_frontend/profile_view/mod.rs:923
 msgid ""
@@ -1269,29 +1270,33 @@ msgstr ""
 msgid "Import complete"
 msgstr "导入完成"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:122
+#: src/gui_frontend/app_list_view/refresh_actions.rs:111
+msgid "Downloading the app list, allow up to 5 minutes on a slow connection..."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:156
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr "你的账号中没有找到任何应用。搜索 App Id 即可开始。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:139
+#: src/gui_frontend/app_list_view/refresh_actions.rs:173
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr "没有结果。请检查拼写错误，或尝试输入 App Id。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:149
+#: src/gui_frontend/app_list_view/refresh_actions.rs:183
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
 msgstr "加载库失败。请检查你的网络连接。搜索 App Id 即可开始。"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:435
+#: src/gui_frontend/app_list_view/refresh_actions.rs:469
 msgid "Reset Everything"
 msgstr "重置全部内容"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:436
+#: src/gui_frontend/app_list_view/refresh_actions.rs:470
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr "这将重置此应用的所有成就与统计。你确定吗？"
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:437
+#: src/gui_frontend/app_list_view/refresh_actions.rs:471
 msgid "Sure, reset"
 msgstr "确定，重置"
 

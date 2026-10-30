@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 22:49+0200\n"
+"POT-Creation-Date: 2026-10-29 16:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: none\n"
@@ -19,6 +19,7 @@ msgstr ""
 
 #: src/gui_frontend/ui_components.rs:160 src/gui_frontend/app_view.rs:62
 #: src/gui_frontend/app_list_view/mod.rs:421
+#: src/gui_frontend/app_list_view/refresh_actions.rs:92
 msgid "Loading..."
 msgstr ""
 
@@ -167,7 +168,7 @@ msgstr ""
 #: src/gui_frontend/dialogs.rs:123 src/gui_frontend/dialogs.rs:150
 #: src/gui_frontend/profile_view/mod.rs:587
 #: src/gui_frontend/app_list_view/progress_actions.rs:424
-#: src/gui_frontend/app_list_view/refresh_actions.rs:437
+#: src/gui_frontend/app_list_view/refresh_actions.rs:471
 msgid "Cancel"
 msgstr ""
 
@@ -488,7 +489,7 @@ msgid "Try again"
 msgstr ""
 
 #: src/gui_frontend/app_list_view/mod.rs:464
-#: src/gui_frontend/app_list_view/mod.rs:1769
+#: src/gui_frontend/app_list_view/mod.rs:1770
 msgid "Name or AppId (Ctrl+K)"
 msgstr ""
 
@@ -496,16 +497,16 @@ msgstr ""
 msgid "Show or hide the sidebar"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:1764
+#: src/gui_frontend/app_list_view/mod.rs:1765
 msgid "Achievement or stat..."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:1891
+#: src/gui_frontend/app_list_view/mod.rs:1892
 #: src/gui_frontend/app_list_view/settings_bindings.rs:328
 msgid "Could not change the in-game setting"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/mod.rs:1893
+#: src/gui_frontend/app_list_view/mod.rs:1894
 #: src/gui_frontend/app_list_view/settings_bindings.rs:329
 msgid "The change could not be applied. Restart SamRewritten and try again."
 msgstr ""
@@ -1225,29 +1226,33 @@ msgstr ""
 msgid "Import complete"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:122
+#: src/gui_frontend/app_list_view/refresh_actions.rs:111
+msgid "Downloading the app list, allow up to 5 minutes on a slow connection..."
+msgstr ""
+
+#: src/gui_frontend/app_list_view/refresh_actions.rs:156
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:139
+#: src/gui_frontend/app_list_view/refresh_actions.rs:173
 msgid "No results. Check for spelling mistakes or try typing an App Id."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:149
+#: src/gui_frontend/app_list_view/refresh_actions.rs:183
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:435
+#: src/gui_frontend/app_list_view/refresh_actions.rs:469
 msgid "Reset Everything"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:436
+#: src/gui_frontend/app_list_view/refresh_actions.rs:470
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr ""
 
-#: src/gui_frontend/app_list_view/refresh_actions.rs:437
+#: src/gui_frontend/app_list_view/refresh_actions.rs:471
 msgid "Sure, reset"
 msgstr ""
 
