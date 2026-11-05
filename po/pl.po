@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-29 16:56+0100\n"
-"PO-Revision-Date: 2026-10-31 08:51+0000\n"
+"PO-Revision-Date: 2026-11-02 07:51+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: none\n"
 "Language: pl\n"
@@ -43,20 +43,19 @@ msgstr "Resetuj wszystkie wybrane"
 #: src/gui_frontend/ui_components.rs:207
 #: src/gui_frontend/app_list_view/progress_actions.rs:116
 msgid "Export selected apps progress"
-msgstr "Eksportuj postęp wybranych aplikacji"
+msgstr "Eksportuj postęp wybranych gier"
 
 #: src/gui_frontend/ui_components.rs:211
 msgid "Import progress..."
 msgstr "Importuj postęp..."
 
 #: src/gui_frontend/ui_components.rs:217
-#, fuzzy
 msgid "Appear in-game while managing"
 msgstr "Włącz tryb \"w grze\" podczas zarządzania"
 
 #: src/gui_frontend/ui_components.rs:223
 msgid "Refresh app list"
-msgstr "Odśwież listę aplikacji"
+msgstr "Odśwież listę gier"
 
 #: src/gui_frontend/ui_components.rs:227
 msgid "Refresh achievement counts"
@@ -71,9 +70,8 @@ msgid "Change Steam folder…"
 msgstr "Zmień lokalizację folderu Steam…"
 
 #: src/gui_frontend/ui_components.rs:241
-#, fuzzy
 msgid "Bulk process"
-msgstr "Przetwarzaj wiele"
+msgstr "Operacje masowe"
 
 #: src/gui_frontend/ui_components.rs:247
 msgid "System"
@@ -92,7 +90,6 @@ msgid "Disable animations"
 msgstr "Wyłącz animacje"
 
 #: src/gui_frontend/ui_components.rs:262
-#, fuzzy
 msgid "Appearance"
 msgstr "Wygląd"
 
@@ -105,7 +102,6 @@ msgid "Language"
 msgstr "Język"
 
 #: src/gui_frontend/ui_components.rs:388
-#, fuzzy
 msgid "Game default"
 msgstr "Domyślny dla gry"
 
@@ -114,9 +110,8 @@ msgid "Refresh achievements & stats"
 msgstr "Odśwież osiągnięcia i statystyki"
 
 #: src/gui_frontend/ui_components.rs:415
-#, fuzzy
 msgid "Reset everything"
-msgstr "Resetuj wszystko"
+msgstr "Zresetuj wszystko"
 
 #: src/gui_frontend/ui_components.rs:435
 msgid "Achievement language"
@@ -135,7 +130,6 @@ msgid "Alphabetically"
 msgstr "Alfabetycznie"
 
 #: src/gui_frontend/ui_components.rs:445
-#, fuzzy
 msgid "Global percentage"
 msgstr "Ogólny odsetek"
 
@@ -144,7 +138,6 @@ msgid "Unlock date"
 msgstr "Data odblokowania"
 
 #: src/gui_frontend/ui_components.rs:451
-#, fuzzy
 msgid "Achievement state"
 msgstr "Status osiągnięć"
 
@@ -154,13 +147,11 @@ msgstr "Wszystko"
 
 #: src/gui_frontend/ui_components.rs:455
 #: src/gui_frontend/achievement_view.rs:307
-#, fuzzy
 msgid "Locked"
 msgstr "Zablokowany"
 
 #: src/gui_frontend/ui_components.rs:456
 #: src/gui_frontend/achievement_view.rs:305
-#, fuzzy
 msgid "Unlocked"
 msgstr "Odblokowany"
 
@@ -183,12 +174,10 @@ msgid "Cancel"
 msgstr "Anuluj"
 
 #: src/gui_frontend/dialogs.rs:284
-#, fuzzy
 msgid "<b>No Steam installations were found on your system.</b>"
 msgstr "<b>Aplikacja Steam nie jest zainstalowana.</b>"
 
 #: src/gui_frontend/dialogs.rs:286
-#, fuzzy
 msgid ""
 "SamRewritten couldn't find Steam in any of the standard locations. If you "
 "haven't installed Steam yet, please install it through your distribution's "
@@ -203,7 +192,6 @@ msgid "<b>Already have Steam installed?</b>"
 msgstr "<b>Czy aplikacja Steam jest już zainstalowana?</b>"
 
 #: src/gui_frontend/dialogs.rs:290
-#, fuzzy
 msgid ""
 "If you've installed Steam in a custom location, you can point SamRewritten "
 "to it using environment variables. Please check the <a href=\"https://"
@@ -220,7 +208,6 @@ msgid "No compatible version of Steam found"
 msgstr "Nie znaleziono kompatybilnej wersji aplikacji Steam"
 
 #: src/gui_frontend/dialogs.rs:331
-#, fuzzy
 msgid "    (Steam is running here)"
 msgstr "    (Aplikacja Steam jest tutaj uruchomiona)"
 
@@ -229,7 +216,6 @@ msgid "    (Steam not running here)"
 msgstr "    (Aplikacja Steam nie jest tutaj uruchomiona)"
 
 #: src/gui_frontend/dialogs.rs:356
-#, fuzzy
 msgid ""
 "SamRewritten found more than one Steam installation. The one Steam is "
 "currently running from is preselected, the others won't work unless you "
@@ -253,7 +239,6 @@ msgstr ""
 "SamRewritten?tab=readme-ov-file#environment-variables\">README</a>."
 
 #: src/gui_frontend/dialogs.rs:377 src/gui_frontend/dialogs.rs:426
-#, fuzzy
 msgid "Choose a Steam installation"
 msgstr "Wybierz wersję aplikacji Steam"
 
@@ -262,7 +247,6 @@ msgid "Quit"
 msgstr "Zakończ"
 
 #: src/gui_frontend/dialogs.rs:390 src/gui_frontend/dialogs.rs:466
-#, fuzzy
 msgid "Use this installation"
 msgstr "Użyj tej instalacji"
 
@@ -285,7 +269,6 @@ msgstr ""
 "zainstalowałeś Steam za pomocą Flatpaka, użyj zamiast tego wersji AppImage."
 
 #: src/gui_frontend/dialogs.rs:550 src/gui_frontend/dialogs.rs:589
-#, fuzzy
 msgid "Connect to Steam"
 msgstr "Połącz z aplikacją Steam"
 
@@ -298,7 +281,6 @@ msgid "Use Snap Steam"
 msgstr "Wybierz Snap Steam"
 
 #: src/gui_frontend/dialogs.rs:691
-#, fuzzy
 msgid "Steam folder not usable"
 msgstr "Folder aplikacji Steam jest niedostępny"
 
@@ -348,7 +330,7 @@ msgstr "Ocena Metacritic:"
 
 #: src/gui_frontend/app_view.rs:155
 msgid "Failed to load app."
-msgstr "Błąd odczytu aplikacji."
+msgstr "Błąd odczytu gry."
 
 #: src/gui_frontend/app_view.rs:161
 msgid "No entries found."
@@ -363,7 +345,6 @@ msgid "Stats"
 msgstr "Statystyki"
 
 #: src/gui_frontend/stat_view.rs:180
-#, fuzzy
 msgid "Increment only"
 msgstr "Tylko zwiększ"
 
@@ -380,12 +361,10 @@ msgid "Show all achievements"
 msgstr "Pokaż wszystkie osiągnięcia"
 
 #: src/gui_frontend/achievement_view.rs:301
-#, fuzzy
 msgid "Search: “{search}”"
 msgstr "Szukaj: “{search}”"
 
 #: src/gui_frontend/achievement_view.rs:309
-#, fuzzy
 msgid "Showing: {state}"
 msgstr "Wyświetlane: {state}"
 
@@ -398,17 +377,14 @@ msgid "No achievements staged"
 msgstr "Nie wybrano osiągnięć"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:59
-#, fuzzy
 msgid "{count} staged"
 msgstr "wybrano {count}"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:97
-#, fuzzy
 msgid "Already at or above target ({progress})"
 msgstr "Cel osiągnięty lub przekroczony ({progress})"
 
 #: src/gui_frontend/achievement_manual_view/mod.rs:103
-#, fuzzy
 msgid "Auto-fill {count} achievement(s) ({progress})"
 msgstr "Automatycznie odblokuj {count} osiągniecie(a) ({progress})"
 
@@ -425,7 +401,6 @@ msgid "Copy user"
 msgstr "Skopiuj od użytkownika"
 
 #: src/gui_frontend/achievement_manual_view/header.rs:75
-#, fuzzy
 msgid "Auto-fill"
 msgstr "Wypełnij automatycznie"
 
@@ -476,9 +451,8 @@ msgstr "Odstęp"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:38
 #: src/gui_frontend/achievement_manual_view/copy_mode.rs:238
-#, fuzzy
 msgid "Choose a friend to copy timing from"
-msgstr "Wybierz użytkownika, aby skopiować moment odblokowania"
+msgstr "Wybierz użytkownika, aby skopiować czas odblokowania"
 
 #: src/gui_frontend/achievement_manual_view/copy_controls.rs:46
 msgid "Advanced"
@@ -506,7 +480,6 @@ msgid "{count} achievements over {time}"
 msgstr "{count} osiągnieć w czasie {time}"
 
 #: src/gui_frontend/friend_picker.rs:76
-#, fuzzy
 msgid "Private"
 msgstr "Prywatne"
 
@@ -515,28 +488,24 @@ msgid "Copy timing from a friend"
 msgstr "Skopiuj czas osiągnięć od innego gracza"
 
 #: src/gui_frontend/friend_picker.rs:202
-#, fuzzy
 msgid "Use the pasted SteamID64"
 msgstr "Użyj SteamID64"
 
 #: src/gui_frontend/friend_picker.rs:497
-#, fuzzy
 msgid "This profile is private"
 msgstr "Ten profil jest prywatny"
 
 #: src/gui_frontend/friend_picker.rs:499
-#, fuzzy
 msgid "Couldn't load this user"
-msgstr "Błąd wczytywania danych gracza"
+msgstr "Błąd wczytywania profilu gracza"
 
 #: src/gui_frontend/friend_picker.rs:511
 msgid "Search friends or paste a SteamID64"
 msgstr "Wyszukaj znajomych lub wklej SteamID64"
 
 #: src/gui_frontend/friend_picker.rs:598
-#, fuzzy
 msgid "Clear selected user"
-msgstr "Odznacz wybranego użytkownika"
+msgstr "Odznacz wybranego gracza"
 
 #: src/gui_frontend/app_list_view/mod.rs:442
 msgid "SamRewritten could not connect to Steam. Is it running?"
@@ -551,7 +520,7 @@ msgstr "Spróbuj ponownie"
 #: src/gui_frontend/app_list_view/mod.rs:464
 #: src/gui_frontend/app_list_view/mod.rs:1770
 msgid "Name or AppId (Ctrl+K)"
-msgstr "Nazwa lub AppId (Ctrl+K)"
+msgstr "Tytuł lub AppId (Ctrl+K)"
 
 #: src/gui_frontend/app_list_view/mod.rs:499
 msgid "Show or hide the sidebar"
@@ -574,7 +543,6 @@ msgstr ""
 "jeszcze raz."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:57
-#, fuzzy
 msgid "Hide with no achievements"
 msgstr "Ukryj gry bez osiągnięć"
 
@@ -595,14 +563,12 @@ msgid "Only currently idling"
 msgstr "Tylko obecnie uruchomione"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:87
-#, fuzzy
 msgid "Hide hidden in Steam"
-msgstr "Ukryj gry już ukryte na Steam'ie"
+msgstr "Ukryj gry już ukryte na Steamie"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:93
-#, fuzzy
 msgid "Show junk"
-msgstr "Pokaż tendete"
+msgstr "Pokaż śmieci"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:107
 msgid "App ID"
@@ -610,7 +576,7 @@ msgstr "App ID"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:112
 msgid "Name"
-msgstr "Nazwa"
+msgstr "Tytuł"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:117
 msgid "Last played"
@@ -629,7 +595,6 @@ msgid "Achievements left"
 msgstr "Brakujące osiągnięcia"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:180
-#, fuzzy
 msgid "Filters on a search term, which SamRewritten cannot reproduce exactly."
 msgstr ""
 "Używa filtra Steam, którego SamRewritten nie jest w stanie dokładnie "
@@ -649,7 +614,6 @@ msgstr ""
 "spróbować ponownie."
 
 #: src/gui_frontend/app_list_view/sidebar.rs:189
-#, fuzzy
 msgid ""
 "Needs your friends' games, which Steam can only tell us when it is online."
 msgstr ""
@@ -670,7 +634,6 @@ msgid "Steam user"
 msgstr "Użytkownik Steam"
 
 #: src/gui_frontend/app_list_view/sidebar.rs:300
-#, fuzzy
 msgid "Steam is offline. What needs its servers is turned off."
 msgstr "Steam jest w trybie offline. Wybrane funkcje są wyłączone."
 
@@ -704,16 +667,14 @@ msgid "Reset filters"
 msgstr "Wyczyść filtry"
 
 #: src/gui_frontend/profile_view/mod.rs:71
-#, fuzzy
 msgid "Games in library"
-msgstr "Gry w bibliotece"
+msgstr "Gry w kolekcji"
 
 #: src/gui_frontend/profile_view/mod.rs:75
 msgid "Achievements unlocked"
 msgstr "Osiągnięcia odblokowane"
 
 #: src/gui_frontend/profile_view/mod.rs:79
-#, fuzzy
 msgid "Average completion"
 msgstr "Średni postęp"
 
@@ -730,9 +691,8 @@ msgid "never played"
 msgstr "nigdy nieuruchomiona"
 
 #: src/gui_frontend/profile_view/mod.rs:186
-#, fuzzy
 msgid "{minutes} minute(s) played, ever"
-msgstr "{minutes} minuta(y) zagrane, kiedykolwiek"
+msgstr "Łączny czas gry {minutes}"
 
 #: src/gui_frontend/profile_view/mod.rs:190
 msgid "nothing else was unlocked for this game outside this moment"
@@ -743,10 +703,8 @@ msgid "the rest of your unlocks in this game came at other times"
 msgstr "reszta osiągnięć w tej grze została zdobyta w innym czasie"
 
 #: src/gui_frontend/profile_view/mod.rs:196
-#, fuzzy
 msgid "at the very start of this game's history, ordinary unlocks after it"
-msgstr ""
-"na samym początku historii tej gry, typowe odblokowania pojawią się tutaj"
+msgstr "początek historii tej gry; standardowe odblokowania następują później"
 
 #: src/gui_frontend/profile_view/mod.rs:264
 #: src/gui_frontend/profile_view/mod.rs:288
@@ -758,7 +716,6 @@ msgid "{total} unlocked since {since}."
 msgstr "Odblokowano {total} od {since}."
 
 #: src/gui_frontend/profile_view/mod.rs:296
-#, fuzzy
 msgid "{year} in the last year, {total} since {since}."
 msgstr "{year} w ubiegłym roku. {total} od {since}."
 
@@ -767,12 +724,9 @@ msgid "{count} in {year}, {total} since {since}."
 msgstr "{count} w{year}, {total} od {since}."
 
 #: src/gui_frontend/profile_view/mod.rs:563
-#, fuzzy
 msgid ""
 "Rescan for up-to-date numbers if you also use Steam on another computer."
-msgstr ""
-"Wykonaj ponowne skanowanie, aby uzyskać aktualne dane, jeśli używasz "
-"aplikacji Steam także na innym komputerze."
+msgstr "Odśwież statystyki, jeśli używasz Steam także na innym komputerze."
 
 #: src/gui_frontend/profile_view/mod.rs:576
 #: src/gui_frontend/profile_view/mod.rs:905
@@ -780,9 +734,8 @@ msgid "Read all my games"
 msgstr "Wczytaj wszystkie moje gry"
 
 #: src/gui_frontend/profile_view/mod.rs:647
-#, fuzzy
 msgid "Year to show"
-msgstr "Pokaż rok"
+msgstr "Wybierz rok"
 
 #: src/gui_frontend/profile_view/mod.rs:662
 msgid "Everything here looks like ordinary play."
@@ -793,24 +746,21 @@ msgid "Unlock activity"
 msgstr "Odblokuj aktywność"
 
 #: src/gui_frontend/profile_view/mod.rs:724
-#, fuzzy
 msgid "Completion over time"
-msgstr "Postęp w czasie"
+msgstr "Stopień ukończenia w czasie"
 
 #: src/gui_frontend/profile_view/mod.rs:730
-#, fuzzy
 msgid "Irregular activity history"
 msgstr "Historia nietypowej aktynowści"
 
 #: src/gui_frontend/profile_view/mod.rs:733
-#, fuzzy
 msgid ""
 "Anyone visiting your Steam profile sees when each achievement was unlocked. "
 "Listed here are the moments that do not look like ordinary play."
 msgstr ""
-"Osoby odwiedzające Twój profil Steam mogą sprawdzić datę odblokowania "
-"każdego osiągnięcia. W tym miejscu wyszczególniono momenty, które odbiegają "
-"od standardowej rozgrywki."
+"Każdy odwiedzający Twój profil Steam widzi, kiedy odblokowano każde "
+"osiągnięcie. Poniżej wymieniono momenty, które budzą wątpliwości co do "
+"normalnego przebiegu gry."
 
 #: src/gui_frontend/profile_view/mod.rs:880
 msgid "{hours} h"
@@ -856,12 +806,11 @@ msgstr ""
 "wykresu."
 
 #: src/gui_frontend/profile_view/mod.rs:1140
-#, fuzzy
 msgid ""
 "Averaged over the games you have started, so it dips when you start a new "
 "one. Now at {percent}%."
 msgstr ""
-"Średnia liczona z gier, które zostały uruchomione — spada przy rozpoczęciu "
+"Średnia liczona z gier, które zostały uruchomione - spada przy rozpoczęciu "
 "nowego tytułu. Aktualnie: {percent}%."
 
 #: src/gui_frontend/profile_view/mod.rs:1149
@@ -877,12 +826,10 @@ msgid "Select these {games} games"
 msgstr "Wybierz te {games} gry"
 
 #: src/gui_frontend/profile_view/mod.rs:1186
-#, fuzzy
 msgid "{count} achievements across {games} games"
-msgstr "{count} osiągnięć z {games} gier"
+msgstr "Łącznie {count} osiągnięć w {games} grach"
 
 #: src/gui_frontend/profile_view/mod.rs:1189
-#, fuzzy
 msgid "{when} — one game after another, in a single sitting"
 msgstr "jedna gra po drugiej, podczas jednej sesji"
 
@@ -1057,9 +1004,8 @@ msgid "{count} games"
 msgstr "{count} gier"
 
 #: src/gui_frontend/profile_view/journal_section.rs:451
-#, fuzzy
 msgid "Unlocked {count} achievement(s) in {app}"
-msgstr "Odblokowane/ych {count} osiągnięcie/ć w {app)"
+msgstr "Łącznie odblokowanych {count} osiągnięć w {app)"
 
 #: src/gui_frontend/profile_view/journal_section.rs:453
 msgid "Locked {count} achievement(s) in {app}"
@@ -1098,7 +1044,6 @@ msgid "partly undone"
 msgstr "częściowo cofnięte"
 
 #: src/gui_frontend/profile_view/journal_section.rs:487
-#, fuzzy
 msgid "cannot be undone from here"
 msgstr "nie może być cofnięte od tego momentu"
 
@@ -1145,10 +1090,9 @@ msgid "Undo this change?"
 msgstr "Cofnąć tą zmianę?"
 
 #: src/gui_frontend/profile_view/journal_section.rs:590
-#, fuzzy
 msgid "{count} change(s) in {app} will be put back the way they were."
 msgstr ""
-"{count} zmian/a w {app} zostanie/ą przywrócona/e do stanu początkowego."
+"Łącznie zostanie przywróconych {count} zmian w {app} do stanu początkowego."
 
 #: src/gui_frontend/profile_view/journal_section.rs:757
 msgid "{count} change(s) were put back. These could not:"
@@ -1174,7 +1118,7 @@ msgstr "Język został zmieniony"
 #: src/gui_frontend/app_list_view/bulk_actions.rs:150
 #: src/gui_frontend/app_list_view/bulk_actions.rs:174
 msgid "Unlocking {done} / {total} app(s)…"
-msgstr "Odblokowano {done} z {total} aplikacji…"
+msgstr "Odblokowano {done} z {total} gier…"
 
 #: src/gui_frontend/app_list_view/bulk_actions.rs:207
 msgid "every achievement unlocked"
@@ -1237,7 +1181,6 @@ msgid "Export failed"
 msgstr "Eksport nie powiódł się"
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:302
-#, fuzzy
 msgid "Import progress"
 msgstr "Importuj postęp"
 
@@ -1328,14 +1271,13 @@ msgstr ""
 "pominięto {count} chronionych pól."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:618
-#, fuzzy
 msgid ""
 "\n"
 "Skipped {count} unwriteable stat(s) (out of range or increment-only)."
 msgstr ""
 "\n"
-"Pominięto {count} statystyki niemożliwe do zapisania (poza zakresem lub "
-"tylko przyrostowe)."
+"Pominięto {count} statystyk(i) bez możliwości zapisu (poza zakresem / tylko "
+"do modyfikacji w górę)."
 
 #: src/gui_frontend/app_list_view/progress_actions.rs:626
 msgid ""
@@ -1374,50 +1316,58 @@ msgstr ""
 #: src/gui_frontend/app_list_view/refresh_actions.rs:156
 msgid "No apps found on your account. Search for App Id to get started."
 msgstr ""
+"Na Twoim koncie nie ma żadnych gier. Wyszukaj grę za pomocą App Id, aby "
+"rozpocząć."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:173
 msgid "No results. Check for spelling mistakes or try typing an App Id."
-msgstr ""
+msgstr "Brak wyników wyszukiwania. Sprawdź pisownię lub podaj App Id."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:183
 msgid ""
 "Failed to load library. Check your internet connection. Search for App Id to "
 "get started."
 msgstr ""
+"Nie można załadować biblioteki. Sprawdź swoje połączenie internetowe, lub "
+"wyszukaj App Id, aby rozpocząć."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:469
 msgid "Reset Everything"
-msgstr ""
+msgstr "Zresetuj wszystko"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:470
 msgid "This will reset all achievements and stats for this app. Are you sure?"
 msgstr ""
+"Wszystkie osiągnięcia i statystyki dla tej gry zostaną zresetowane. Czy na "
+"pewno chcesz to zrobić?"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:471
 msgid "Sure, reset"
-msgstr ""
+msgstr "Tak, zresetuj"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:112
 msgid "Idle"
-msgstr ""
+msgstr "Uruchom w tle"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:136
 msgid "Manage"
-msgstr ""
+msgstr "Zarządzaj"
 
 #: src/gui_frontend/widgets/steam_app_card.rs:155
 msgid "Manage this app in a new window"
-msgstr ""
+msgstr "Zarządaj tą grą w nowym oknie"
 
 #: src/gui_frontend/widgets/achievement_row.rs:265
 #: src/gui_frontend/widgets/achievement_row.rs:270
 msgid "This achievement is protected."
-msgstr ""
+msgstr "To osiągnięcie jest zabezpieczone."
 
 #: src/gui_frontend/widgets/achievement_row.rs:285
 msgid "Click to stage this achievement; click again to remove."
 msgstr ""
+"Kliknij, aby dodać to osiągnięcie do kolejki zmian; kliknij ponownie, aby je "
+"usunąć."
 
 #: src/gui_frontend/widgets/achievement_row.rs:295
 msgid "Already unlocked."
-msgstr ""
+msgstr "Odblokowane."
