@@ -84,17 +84,17 @@ The snap ships three commands: `samrewritten` (GTK), `samrewritten.samrewritten-
 <details>
 <summary><b>All Linux distributions (AppImage)</b></summary>
 
-For any Linux distribution, you can use the AppImage. AppImages are self-contained executables that run on almost any Linux distribution.
-
 1. Download the latest AppImage from the [Releases page](https://github.com/PaulCombal/SamRewritten/releases).
 2. Make it executable. You can either right-click the file → "Permissions" → check "Allow executing file as program", or run:
    ```bash
-   chmod +x SamRewritten-gtk.AppImage
+   chmod +x samrewritten-gtk.AppImage
    ```
 3. Double-click the file to launch, or run it from a terminal:
    ```bash
-   ./SamRewritten-gtk.AppImage
+   ./samrewritten-gtk.AppImage
    ```
+
+For older Linux distributions, like based on Ubuntu 22.04, use the [v1.2.3-legacy](https://github.com/PaulCombal/SamRewritten/releases/tag/v1.2.3-legacy) AppImage.
 
 If SamRewritten fails to launch, run it from a terminal to see the logs. If you see an error mentioning "FUSE" or "libfuse", install the library:
 
