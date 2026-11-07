@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SamRewritten\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-29 16:56+0100\n"
-"PO-Revision-Date: 2026-10-16 23:51+0000\n"
+"PO-Revision-Date: 2026-11-08 10:51+0000\n"
 "Last-Translator: Deniz Çolak <28dnzclk@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/samrewritten/"
 "samrewritten/tr/>\n"
@@ -1304,6 +1304,8 @@ msgstr "İçe aktarma tamamlandı"
 #: src/gui_frontend/app_list_view/refresh_actions.rs:111
 msgid "Downloading the app list, allow up to 5 minutes on a slow connection..."
 msgstr ""
+"Uygulama listesi indiriliyor, yavaş bir bağlantıda 5 dakikaya kadar "
+"sürebilir..."
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:156
 msgid "No apps found on your account. Search for App Id to get started."
