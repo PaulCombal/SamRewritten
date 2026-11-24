@@ -1290,7 +1290,7 @@ msgstr "インポート完了"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:111
 msgid "Downloading the app list, allow up to 5 minutes on a slow connection..."
-msgstr ""
+msgstr "アプリ一覧をダウンロードしています。接続が遅い場合は最大5分ほどかかることがあります…"
 
 #: src/gui_frontend/app_list_view/refresh_actions.rs:156
 msgid "No apps found on your account. Search for App Id to get started."
